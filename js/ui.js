@@ -35,7 +35,7 @@ function claimBand(c, text, x, y, size = 16, col = BRAND.olive) {
 }
 function soundBtn(c, x, y) {
   const a = ACC(), on = !!(a && a.sound);
-  roundBtn(c, x, y, 22, on ? '#d0ebff' : '#e9ecef', on ? 'sound' : 'mute', () => { if (!a) return; a.sound = !a.sound; Save.write(); Sfx.play('tap'); });
+  roundBtn(c, x, y, 22, on ? '#d0ebff' : '#e9ecef', on ? 'sound' : 'mute', () => { if (!a) return; a.sound = !a.sound; Save.write(); if (a.sound) { Sfx.play('tap'); } else Voice.stop(); });
 }
 function topBar(c, back) {
   if (back) roundBtn(c, 44, 44, 28, '#fff', 'back', back, '#ffd166');
@@ -61,7 +61,12 @@ function accountChip(c, x, y, a, onTap) {
 
 class Menu {
   constructor() { this.t = 0; }
-  enter() { FX.clear(); if (!ACC()) setScene(new Accounts()); }
+  enter() {
+    FX.clear(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
+    if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
+    if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
+    if (!(a.tut && a.tut.guide)) { setScene(new Tutorial()); return; }
+  }
   update(dt) { this.t += dt; }
   draw(c) {
     skyBg(c);
@@ -73,6 +78,7 @@ class Menu {
     accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
+    roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 14 : 24);
     DIFFS.forEach((d, i) => {
@@ -81,7 +87,7 @@ class Menu {
       else { w = Math.min(W - 40, 400); h = Math.min(190, (bottom - top - 28) / 3); x = (W - w) / 2; y = top + i * (h + 14); }
       const bob = Math.sin(this.t * 2 + i) * 2;
       panel(c, x, y + bob, w, h, d.col, 24);
-      const kind = ANIMAL_OF[d.id], sp = SP(d.id, 'spielplatz');
+      CUR_DIFF = d.id; const kind = ANIMAL_OF[d.id], sp = SP(d.id, 'spielplatz');
       if (wide) {
         for (let s = 0; s < d.stars; s++) icon(c, 'star', x + w / 2 + (s - (d.stars - 1) / 2) * 40, y + bob + 36, 38);
         drawAnimal(c, kind, x + w / 2, y + bob + h * 0.8, Math.min(2.6, h / 110), { t: this.t + i, cap: hasCap(kind) });
@@ -150,7 +156,7 @@ class Accounts {
     skyBg(c);
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
     logo(c, W / 2, 100 * ls, ls);
-    claimBand(c, CLAIMS.ankommen, W / 2, 172 * ls, 14);
+    claimBand(c, 'Willkommen im Original!', W / 2, 172 * ls, 14);
     const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
     const all = list.concat([['new', null], ['login', null]]);
@@ -199,8 +205,9 @@ function askDelete(id, a) {
 class ConfirmDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
-  close() { if (overlay === this) overlay = null; }
+  close() { if (overlay === this) overlay = null; Voice.stop(); }
   draw(c) {
+    Voice.once(this.o.text);
     const lines = wrapLines(c, this.o.text, Math.min(W - 30, 380) - 48, 18);
     const w = Math.min(W - 30, 380), h = 150 + lines.length * 25, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
@@ -217,8 +224,9 @@ class ConfirmDialog {
 class MsgDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
-  close() { if (overlay === this) overlay = null; if (this.o.onClose) this.o.onClose(); }
+  close() { if (overlay === this) overlay = null; Voice.stop(); if (this.o.onClose) this.o.onClose(); }
   draw(c) {
+    Voice.once(this.o.text);
     const lines = wrapLines(c, this.o.text, Math.min(W - 30, 380) - 48, 18);
     const w = Math.min(W - 30, 380), h = 90 + lines.length * 25, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.6)'; c.fillRect(0, 0, W, H);
@@ -245,6 +253,8 @@ class AccountPanel {
     fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
+    rrPath(c, x + 14, y + 14, 112, 36, 14); fs(c, '#caffbf', 2.5); drawAnimal(c, a.char || 'cat', x + 34, y + 46, 0.55, { noShadow: true }); txt(c, 'Figur ändern', x + 50, y + 33, 12, BRAND.olive, 'left', null);
+    UI.btn(x + 14, y + 14, 112, 36, () => { this.close(); setScene(new CharSelect(() => setScene(new Menu()))); });
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
     txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
     const st = Net.status(a); ell(c, W / 2 - 70, y + 160, 6, 6); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - 58, y + 161, 13, '#8d5a3b', 'left', null);
@@ -303,6 +313,27 @@ class LoginScene {
       if (this.mode === 'code') { this.busy = true; Net.call({ action: 'login', login: v }).then(r => this.done(r)); }
       else overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r => this.done(r)); } });
     } : null); c.restore(); }
+  }
+}
+
+// Figur selbst aussuchen (gilt für alle Schwierigkeitsstufen)
+class CharSelect {
+  constructor(next) { this.next = next; this.t = 0; }
+  enter() { FX.clear(); Voice.say('Wähle deine Figur.', true); }
+  update(dt) { this.t += dt; }
+  draw(c) {
+    skyBg(c);
+    txt(c, 'Wähle deine Figur', W / 2, 44, Math.min(32, W / 14), '#fff', 'center', BRAND.olive);
+    const opts = [['cat', 'Katze'], ['dog', 'Hund'], ['lion', 'Löwe']], a = ACC();
+    const land = W > H * 0.9, cw = land ? Math.min(240, (W - 60) / 3) : Math.min(W - 40, 360), ch = land ? Math.min(H - 110, 300) : Math.min(190, (H - 120) / 3 - 12);
+    opts.forEach(([k, name], i) => {
+      const x = land ? W / 2 + (i - 1) * (cw + 14) - cw / 2 : (W - cw) / 2, y = land ? 84 : 84 + i * (ch + 12);
+      const sel = a && a.char === k, bob = Math.sin(this.t * 2 + i) * 3;
+      panel(c, x, y + bob, cw, ch, sel ? '#d8f5e3' : '#fbf8f2', 22);
+      drawAnimal(c, k, land ? x + cw / 2 : x + ch * 0.6, land ? y + bob + ch * 0.78 : y + bob + ch * 0.86, land ? Math.min(3, ch / 85) : Math.min(2.4, ch / 76), { t: this.t + i, look: DEFAULT_LOOK, moving: sel });
+      txt(c, name, land ? x + cw / 2 : x + ch * 1.3, land ? y + bob + ch - 24 : y + bob + ch / 2, 24, BRAND.olive, land ? 'center' : 'left', null);
+      UI.btn(x, y + bob, cw, ch, () => { if (!a) return; a.char = k; Save.write(); Sfx.play('win'); setTimeout(() => this.next(), 500); });
+    });
   }
 }
 
@@ -545,24 +576,29 @@ class StageMap {
       ell(c, x, oy, 18, 18); fs(c, got ? '#ffd166' : '#e9ecef', 2.5); drawOutfitIcon(c, OUTFIT_OF[id], x, oy, 26, !got);
     });
     roundBtn(c, W - 44, oy, 28, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
-    // wechselnde Original-Mottos
-    const free = W - (ox + ow) - 90;
-    if (free > 230) { const m = MOTTOS[Math.floor(this.t / 5) % MOTTOS.length]; c.save(); c.globalAlpha = clamp(Math.min(this.t % 5, 5 - (this.t % 5)) * 2, 0, 1); const L3 = wrapLines(c, m, free - 40, 14); L3.forEach((l, i) => claimBand(c, l, ox + ow + 10 + free / 2, oy + (i - (L3.length - 1) / 2) * 30, 14)); c.restore(); }
   }
 }
 
 // ---------- Trailer: die Geschichte "Der neue Helfer" ohne Worte ----------
+const STORY_SAY = [
+  'Das ist das Original in Teningen – ein Restaurant mit Glashaus, Biergarten, Eis und einem großen Spielplatz. Heute kommen drei neue Helfer!',
+  'Der Chefkoch Bruno begrüßt euch und schenkt jedem ein grünes Helfer-Halstuch. Ab jetzt gehört ihr zum Team!',
+  'Das Gelände hat sechs Bereiche. In jedem Bereich wartet ein neues Teil deiner Uniform. Mit allen sechs Teilen bist du ein echter Chef-Helfer.',
+  'Im Spielplatz arbeiten Hoppel, Fridolin, Ida, Willi und Emma. Ihnen ist einiges verloren gegangen. Such die Sachen und hilf dem Team!',
+  'Ist allen geholfen, öffnet sich das Tor zum nächsten Bereich. Bist du bereit für deine Mission?',
+];
 class Trailer {
-  constructor() { this.t = 0; this.cuts = [0, 4.5, 10.5, 16.5, 21, 25.5]; }
+  constructor() { this.t = 0; this.cuts = [0, 7, 15.5, 23.5, 33, 41]; this.said = -1; }
   enter() { FX.clear(); }
-  end() { Save.data.seenTrailer = true; Save.write(); setScene(ACC() ? new Menu() : new Accounts()); }
+  end() { Voice.stop(); Save.data.seenTrailer = true; Save.write(); setScene(ACC() ? new Menu() : new Accounts()); }
   scene() { let i = 0; while (i < this.cuts.length - 1 && this.t >= this.cuts[i + 1]) i++; return i; }
   update(dt) {
-    const s0 = this.scene(); this.t += dt; const s1 = this.scene();
-    if (this.t >= this.cuts[this.cuts.length - 1]) this.end();
-    if (s1 === 1 && s0 === 1 && this.t > 8 && this.t - dt <= 8) { const k = this.k(); FX.sparkle(W / 2 - 60 * k, H * 0.62, 24, '#80ed99'); Sfx.play('good'); }
-    if (s1 === 3 && this.t > 18.6 && this.t - dt <= 18.6) { FX.sparkle(W * 0.62, H * 0.5, 22); Sfx.play('good'); }
-    if (s1 === 4 && this.t > 22.6 && this.t - dt <= 22.6) { FX.confetti(W / 2, H * 0.4, 40); Sfx.play('win'); }
+    this.t += dt; const s1 = this.scene(), lt = this.t - this.cuts[s1], at = v => lt > v && lt - dt <= v;
+    if (this.t >= this.cuts[this.cuts.length - 1]) { this.end(); return; }
+    if (this.said !== s1) { this.said = s1; Voice.say(STORY_SAY[s1], true); }
+    if (s1 === 1 && at(3.6)) { const k = this.k(); FX.sparkle(W / 2 - 60 * k, H * 0.62, 24, '#80ed99'); Sfx.play('good'); }
+    if (s1 === 3 && at(2.6)) { FX.sparkle(W * 0.62, H * 0.5, 22); Sfx.play('good'); }
+    if (s1 === 4 && at(1.6)) { FX.confetti(W / 2, H * 0.4, 40); Sfx.play('win'); }
   }
   k() { return clamp(Math.min(W / 400, H / 720), 0.7, 2); }
   draw(c) {
@@ -599,10 +635,11 @@ class Trailer {
       c.fillStyle = CHIP_BASE; c.fillRect(0, 0, W, H);
       for (let i = 0; i < 500; i++) { c.fillStyle = CHIP_COLS[i % 6]; ell(c, (i * 97.3) % W, (i * 61.7) % H, 3, 1.5, i); c.fill(); }
       drawYucca(c, W * 0.62, H * 0.56, 1.6 * k, t, lt > 1.6 && lt < 2.6 ? 0.5 : 0);
-      const pos = [['hase', 0.18, 0.32], ['fuchs', 0.82, 0.28], ['igel', 0.2, 0.82], ['waschbaer', 0.85, 0.8], ['eule', 0.5, 0.2]];
+      const pos = W > H ? [['hase', 0.12, 0.56], ['fuchs', 0.88, 0.56], ['igel', 0.24, 0.9], ['waschbaer', 0.78, 0.9], ['eule', 0.36, 0.6]] : [['hase', 0.18, 0.36], ['fuchs', 0.82, 0.34], ['igel', 0.2, 0.82], ['waschbaer', 0.85, 0.8], ['eule', 0.5, 0.3]];
       pos.forEach(([id, x, y], i) => {
         const pk = ease.back(clamp(lt * 2 - i * 0.4, 0, 1)); if (pk <= 0) return;
-        drawCritter(c, id, W * x, H * y, 1.3 * k * pk, t, { wave: true });
+        drawCritter(c, id, W * x, H * y, 1.3 * k * pk, t, { wave: true, staff: true });
+        if (pk >= 1) txt(c, NPC_NAMES[id], W * x, H * y + 22 * k, 13 * Math.min(k, 1.3), '#fff', 'center', BRAND.olive);
         const b = Math.sin(t * 4 + i) * 4; ell(c, W * x, H * y - 90 * k + b, 18 * k, 18 * k); fs(c, '#ffd23f', 3); txt(c, '!', W * x, H * y - 89 * k + b, 22 * k, OL, 'center', null);
       });
       const ax = lerp(W * 0.3, W * 0.5, ease.out(clamp(lt / 1.4, 0, 1)));
@@ -621,13 +658,12 @@ class Trailer {
       drawAnimal(c, 'lion', cx, py, 1.6 * k, { t, moving: lt > 2.2, cap: true });
       if (lt > 2.4) { const pk = ease.back(clamp(lt - 2.4, 0, 1)); c.save(); c.translate(cx + 120 * k, H * 0.88); c.scale(pk, pk); ell(c, 0, 0, 34, 34); fs(c, '#fff7e6', 3); stageIcon(c, 'parkplatz', 0, 0, 40); icon(c, 'hourglass', 24, -24, 20); c.restore(); }
     }
-    // Was das Original verspricht – als Untertitel
-    const cap = [CLAIMS.urlaub, CLAIMS.ankommen + ' ' + CLAIMS.rest, CLAIMS.da, 'Hilf den Gästen im Original!', CLAIMS.feiern][s];
-    if (lt > (s === 0 ? 1.6 : 0.5)) {
-      const ck = ease.back(clamp((lt - (s === 0 ? 1.6 : 0.5)) * 3, 0, 1)), cy2 = s === 0 ? H * 0.22 + 95 * k : H * 0.11;
-      c.save(); c.translate(cx, cy2); c.scale(ck, ck);
-      const lines = wrapLines(c, cap, Math.min(W - 60, 380), 17); lines.forEach((l, i) => claimBand(c, l, 0, (i - (lines.length - 1) / 2) * 38, 17));
-      c.restore();
+    // Erzähler-Untertitel (wird auch vorgelesen)
+    if (lt > 0.4) {
+      const fz = clamp(W / 34, 14, 19), tw = Math.min(W - 40, 640), lines = wrapLines(c, STORY_SAY[s], tw - 28, fz), lh = fz * 1.3, ph = lines.length * lh + 20;
+      const py = s === 0 ? H - ph - 44 : 14; c.globalAlpha = clamp((lt - 0.4) * 3, 0, 1);
+      rrPath(c, (W - tw) / 2, py, tw, ph, 16); c.fillStyle = 'rgba(32,44,30,.82)'; c.fill();
+      lines.forEach((l, i) => txt(c, l, W / 2, py + 10 + lh / 2 + i * lh, fz, '#fff', 'center', null)); c.globalAlpha = 1;
     }
     if (s === 1 && lt > 0.8) drawLogo(c, cx + 110 * k, gy - 120 * k, 120 * k, true);
     c.fillStyle = `rgba(0,0,0,${1 - fade})`; c.fillRect(0, 0, W, H);
@@ -641,7 +677,7 @@ class Trailer {
 
 // ---------- Kleiderschrank: gesammelte Skins je Stage + Stufe ansehen und anziehen ----------
 class Wardrobe {
-  constructor(diff) { this.diff = diff; this.kind = ANIMAL_OF[diff]; this.stage = 'spielplatz'; this.t = 0; }
+  constructor(diff) { this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff]; this.stage = 'spielplatz'; this.t = 0; }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
@@ -683,6 +719,72 @@ class Wardrobe {
   down() {} move() {} up() {}
 }
 
+// ---------- Glücksrad: welcher Skin dieser Stage ist es geworden? ----------
+class WheelOverlay {
+  constructor(o, done) {
+    this.o = o; this.done = done; this.t = 0; this.state = 'spin';
+    this.ids = stageSkins(o.stage, o.diff);
+    const ws = this.ids.map(id => RARITY[SKINS[id].rarity].w), tot = ws.reduce((a, b) => a + b, 0);
+    let acc = 0; this.segs = this.ids.map((id, i) => { const a0 = acc / tot * TAU; acc += ws[i]; return { id, a0, a1: acc / tot * TAU }; });
+    const sg = this.segs[this.ids.indexOf(o.skin)], mid = (sg.a0 + sg.a1) / 2 + (rnd() - 0.5) * (sg.a1 - sg.a0) * 0.6;
+    this.target = TAU * 6 - mid;   // Zeiger oben: Segmentmitte nach oben drehen
+    this.ang = 0; this.dur = 4.2; this.lastSeg = -1;
+  }
+  update(dt) {
+    this.t += dt;
+    if (this.state === 'spin') {
+      const k = clamp(this.t / this.dur, 0, 1); this.ang = this.target * (1 - Math.pow(1 - k, 3));
+      const pa = ((-this.ang) % TAU + TAU) % TAU, si = this.segs.findIndex(s => pa >= s.a0 && pa < s.a1);
+      if (si !== this.lastSeg) { this.lastSeg = si; Sfx.play('tap'); buzz(8); }
+      if (k >= 1) {
+        this.state = 'won'; this.wt = 0; const sk = SKINS[this.o.skin];
+        Sfx.play('win'); buzz([40, 60, 120]); FX.confetti(W / 2, H * 0.35, sk.rarity === 'legend' ? 140 : 80, 1.3);
+
+      }
+    } else this.wt += dt;
+  }
+  close() { if (overlay === this) overlay = null; this.done(); }
+  draw(c) {
+    c.fillStyle = 'rgba(16,28,18,.82)'; c.fillRect(0, 0, W, H);
+    const land = W > H, R = Math.min(land ? H * 0.38 : W * 0.4, 230), cx = land && this.state === 'won' ? W * 0.3 : W / 2, cy = land ? H / 2 + 8 : H * 0.4;
+    // Strahlen
+    c.save(); c.translate(cx, cy); c.rotate(this.t * 0.4); for (let i = 0; i < 16; i++) { c.rotate(TAU / 16); polyPath(c, [[0, 0], [R * 1.6, -R * 0.1], [R * 1.6, R * 0.1]]); c.fillStyle = 'rgba(255,214,10,.10)'; c.fill(); } c.restore();
+    c.save(); c.translate(cx, cy); c.rotate(this.ang - Math.PI / 2);
+    this.segs.forEach((sg, i) => {
+      const sk = SKINS[sg.id], col = sk.rarity === 'legend' ? '#ffc300' : sk.rarity === 'rare' ? '#74c0fc' : (i % 2 ? '#fbf8f2' : BRAND.apricot);
+      c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, sg.a0, sg.a1); c.closePath(); fs(c, col, 3);
+      const m = (sg.a0 + sg.a1) / 2; c.save(); c.translate(Math.cos(m) * R * 0.62, Math.sin(m) * R * 0.62); c.rotate(m + Math.PI / 2);
+      drawAnimal(c, this.o.kind, 0, 18, R / 120, { look: sk, cap: true, noShadow: true, t: this.t });
+      c.restore();
+    });
+    ell(c, 0, 0, R, R); c.lineWidth = 8; c.strokeStyle = BRAND.olive; c.stroke();
+    for (let i = 0; i < 24; i++) { const a = (i / 24) * TAU; ell(c, Math.cos(a) * (R - 2), Math.sin(a) * (R - 2), 4, 4); c.fillStyle = i % 2 ? '#fff' : '#ffd60a'; c.fill(); }
+    c.restore();
+    ell(c, cx, cy, R * 0.16, R * 0.16); fs(c, BRAND.olive, 4); leaf(c, cx, cy, R * 0.02 + 1.2);
+    polyPath(c, [[cx - 16, cy - R - 22], [cx + 16, cy - R - 22], [cx, cy - R + 8]]); fs(c, '#ef476f', 4);
+    if (this.state === 'won') {
+      const sk = SKINS[this.o.skin], k = ease.back(clamp(this.wt * 2.5, 0, 1));
+      const px = land ? W * 0.72 : W / 2, py = land ? H / 2 : H * 0.8, pw = Math.min(land ? W * 0.42 : W - 30, 380);
+      c.save(); c.translate(px, py); c.scale(k, k);
+      const ph = sk.ability ? 250 : 190;
+      panel(c, -pw / 2, -ph / 2, pw, ph, '#fbf8f2', 22);
+      const rc = RARITY[sk.rarity];
+      rrPath(c, -60, -ph / 2 - 16, 120, 32, 16); fs(c, rc.col, 3); txt(c, rc.name, 0, -ph / 2, 16, sk.rarity === 'common' ? BRAND.olive : '#fff', 'center', sk.rarity === 'common' ? null : BRAND.ink);
+      drawAnimal(c, this.o.kind, -pw / 2 + 64, ph / 2 - 30, 1.6, { look: sk, cap: true, t: this.t });
+      txt(c, sk.name, -pw / 2 + 126, -ph / 2 + 44, 18, BRAND.olive, 'left', null);
+      txt(c, this.o.newSkin ? 'Neu im Kleiderschrank!' : 'Den hattest du schon.', -pw / 2 + 126, -ph / 2 + 70, 14, '#6b5a48', 'left', null);
+      if (sk.ability) {
+        const A = ABILITIES[sk.ability];
+        rrPath(c, -pw / 2 + 120, -ph / 2 + 88, pw - 136, 26, 13); fs(c, '#ffd60a', 2); txt(c, 'Fähigkeit: ' + A.name, -pw / 2 + 132, -ph / 2 + 101, 14, BRAND.ink, 'left', null);
+        wrapLines(c, A.text, pw - 140, 13).forEach((l, i) => txt(c, l, -pw / 2 + 122, -ph / 2 + 134 + i * 18, 13, '#3d2c1f', 'left', null));
+      }
+      c.restore();
+      if (this.wt > 1) roundBtn(c, px, py + (sk.ability ? 125 : 95) * k + 6, 30, '#06d6a0', 'play', () => this.close());
+    } else txt(c, 'Glücksrad!', W / 2, Math.max(28, cy - R - 44), 26, '#fff', 'center', BRAND.olive);
+  }
+  down() {} move() {} up() {}
+}
+
 // ---------- Stage geschafft: neues Ausrüstungsteil + zufälliger Skin ----------
 class ClearOverlay {
   constructor(o, done) { this.o = o; this.done = done; this.t = 0; FX.confetti(W / 2, H * 0.3, 90, 1.2); Sfx.play('win'); }
@@ -706,7 +808,7 @@ class ClearOverlay {
     c.restore();
     for (let s = 0; s < 3; s++) { const kk = ease.back(clamp(t * 2 - 0.4 - s * 0.2, 0, 1)); c.save(); c.translate(cx + (s - 1) * 56, cy - 122 - (s === 1 ? 14 : 0)); c.scale(kk, kk); icon(c, 'star', 0, 0, s === 1 ? 54 : 44); c.restore(); }
     drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);
-    if (t > 1.2) claimBand(c, CLAIMS.feiern + '!', cx, cy + 196, 16);
+    if (t > 1.2) { claimBand(c, 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, cy + 196, 16); }
     const ry = cy + 128, kk = ease.back(clamp(t * 2 - 1, 0, 1));
     c.save(); c.translate(cx, ry); c.scale(kk, kk);
     panel(c, -150, -34, 300, 76, '#fff7e6', 20);
@@ -737,7 +839,7 @@ function resize() {
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
 }
-function setScene(s) { scene = s; overlay = null; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
+function setScene(s) { Voice.stop(); scene = s; overlay = null; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
 // Hochformat auf dem Handy: bitte drehen (das Spiel ist fürs Querformat gemacht)
 function drawRotate(c, t) {
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -817,7 +919,7 @@ window.addEventListener('resize', resize);
 document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });
 
 // Diese Fenster decken das Spiel ab: Hintergrund einfrieren spart viel Rechenzeit
-[GameOverlay, QuestDialog, Wardrobe, ClearOverlay, CodePad, AccountPanel, ConfirmDialog, MsgDialog].forEach(K => { K.prototype.freezeBg = true; });
+[GameOverlay, QuestDialog, Wardrobe, ClearOverlay, WheelOverlay, CodePad, AccountPanel, ConfirmDialog, MsgDialog].forEach(K => { K.prototype.freezeBg = true; });
 
 Save.load();
 resize();

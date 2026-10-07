@@ -11,7 +11,7 @@ const SWING = { y: 600, x0: 160, x1: 550, top: 118, seats: [270, 430] };
 const START = { x: 500, y: 228 };                            // kommt von der Terrasse herunter
 const GATE = { x: 520, y: 1214, ix: 520, iy: 1158 };        // Ausgang zum Parkplatz
 
-function hasCap(k) { return !!(ACC() && SP(DIFF_OF[k], 'spielplatz').outfit); }
+function hasCap(k, diff = CUR_DIFF) { return !!(ACC() && SP(diff, 'spielplatz').outfit); }
 
 // Auftrags-Tiere: mehrere mögliche Plätze, pro Durchgang zufällig. Der Hase sitzt immer auf einer Schaukel.
 const NPC_DEFS = [
@@ -294,7 +294,7 @@ function drawFace(c, id, x, y, s, t, o = {}) {
 // ---------- Spielszene ----------
 class Play {
   constructor(diff) {
-    this.diff = diff; this.kind = ANIMAL_OF[diff];
+    this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff];
     this.sp = SP(diff, 'spielplatz');
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
     this.st = this.sp.run; this.st.clears = this.sp.clears;
@@ -372,7 +372,7 @@ class Play {
     const k = Math.min(1, dt * 6); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
   }
   updatePlayer(dt) {
-    const p = this.p, spd = 180;
+    const p = this.p, spd = ability('turbo') ? 255 : 180;
     if (p.slide) {
       p.slide.t += dt / 0.8; const e = Math.min(1, p.slide.t * p.slide.t);
       p.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); p.slideZ = HOUSE.fz * (1 - (p.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)); p.dir = 1; p.moving = false;
@@ -439,7 +439,7 @@ class Play {
     const q = this.st.active; if (!q) return;
     const onSt = this.onStairs();
     let k = -1, bd = 1e9;
-    q.hidden.forEach((h, i) => { if (q.got[i]) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach && d < bd) { bd = d; k = i; } });
+    q.hidden.forEach((h, i) => { if (q.got[i]) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * (ability('detektor') ? 1.6 : 1) && d < bd) { bd = d; k = i; } });
     if (k >= 0) {
       const h = q.hidden[k], sc = this.w2s(h.x, h.y, (h.l ? HOUSE.fz : 0) + 20);
       FX.sparkle(sc.x, sc.y, 18); Sfx.play('good');
@@ -520,7 +520,7 @@ class Play {
   genQuest(id) {
     const seed = (Date.now() ^ (id.length * 7919) ^ ((this.st.clears + 1) * 104729)) >>> 0, r = mulberry32(seed);
     const boss = id === 'gate';
-    const cnt = (this.diff === 'medium' ? ri(2, 3, r) : ri(4, 6, r)) + (boss ? 2 : 0);
+    const cnt = (this.diff === 'medium' ? 3 : 4) + (boss ? 2 : 0);
     const items = shuffle(ITEM_IDS, r).slice(0, cnt);
     // Verstecke: mal in der Umgebung, mal irgendwo im Hackschnitzel vergraben – jedes Mal neu
     const hidden = [], spots = shuffle(SPOTS, r), npcP = this.npcs.map(n => this.npcPos(n));
@@ -542,13 +542,16 @@ class Play {
       hidden.push(h);
     }
     // Spiele: möglichst abwechslungsreich (nichts doppelt im Auftrag, zuletzt gespielte meiden)
-    const recent = ACC().recent || [], used = [];
+    // keine Aufgabe doppelt im ganzen Durchgang (alle Mitarbeiter + Tor)
+    const recent = ACC().recent || [], runUsed = this.st.usedGames || (this.st.usedGames = []), used = [];
     const games = items.map(() => {
       const ch = r() < (boss ? 0.7 : 0.4);
       const pool = ch ? (this.diff === 'hard' && r() < 0.4 ? CHALLENGES_HARD : r() < 0.45 ? CHALLENGES_SP : CHALLENGES_STD) : PUZZLES;
-      let cand = pool.filter(g => !used.includes(g) && !recent.includes(g));
-      if (!cand.length) cand = pool.filter(g => !used.includes(g));
-      if (!cand.length) cand = pool;
+      const allPool = PUZZLES.concat(CHALLENGES_STD, CHALLENGES_SP, this.diff === 'hard' ? CHALLENGES_HARD : []);
+      let cand = pool.filter(g => !used.includes(g) && !runUsed.includes(g) && !recent.includes(g));
+      if (!cand.length) cand = pool.filter(g => !used.includes(g) && !runUsed.includes(g));
+      if (!cand.length) cand = allPool.filter(g => !used.includes(g) && !runUsed.includes(g));
+      if (!cand.length) cand = allPool.filter(g => !used.includes(g));
       const g = pick(cand, r); used.push(g); return g;
     });
     // Täuschungen: an anderen Stellen guckt auch etwas heraus (Stöckchen, Blatt, Steinchen, Kronkorken)
@@ -559,6 +562,7 @@ class Play {
       while (g < 300 && (!canStand(0, x, y) || hidden.some(h => dist(peekOf(h).x, peekOf(h).y, x, y) < 110) || decoys.some(d => dist(d.x, d.y, x, y) < 110) || dist(x, y, START.x, START.y) < 120));
       decoys.push({ x: Math.round(x), y: Math.round(y), kind: pick(JUNK, r), done: false });
     }
+    runUsed.push(...games);
     return { npc: id, boss, items, got: items.map(() => false), hidden, decoys, dug: [], games, seed };
   }
   earn(q, k) {
@@ -583,7 +587,7 @@ class Play {
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5;
-    this.banner = { text: (id === 'gate' ? 'Geschafft! ' : 'Danke! ') + pick(MOTTOS), t: 0 };
+    this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
   }
@@ -596,11 +600,9 @@ class Play {
     let e = st.easy[id];
     if (!e) {
       const seed = (Date.now() ^ (id.length * 31337)) >>> 0, r = mulberry32(seed);
-      const cnt = id === 'gate' ? 6 : ri(4, 6, r), steps = [];
-      const recent = ACC().recentEasy || [];
-      let pool = shuffle(EASY_GAMES.filter(g => !recent.includes(g)), r);
-      if (pool.length < cnt) pool = pool.concat(shuffle(EASY_GAMES.filter(g => !pool.includes(g)), r));
-      steps.push(...pool.slice(0, cnt));
+      // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
+      if (!st.easyPlan || st.easyPlan.length < 24) st.easyPlan = shuffle(EASY_GAMES, mulberry32((Date.now() ^ 0x9e3779b9) >>> 0)).slice(0, 24);
+      const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed }; Save.write();
     }
     this.runEasyStep(id);
@@ -623,7 +625,7 @@ class Play {
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5;
-    this.banner = { text: 'Danke! ' + pick(MOTTOS), t: 0 };
+    this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
   }
   // Tor geht auf, Figur läuft hinaus zum Parkplatz
@@ -661,9 +663,10 @@ class Play {
     if (newSkin) DP(this.diff).equip = skin;
     sp.clears++; sp.run = null;
     Save.write();
-    overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, have: sp.skins.length, diff: this.diff }, again => {
+    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, have: sp.skins.length, diff: this.diff }, again => {
       if (again) setScene(new Play(this.diff)); else setScene(new StageMap(this.diff));
-    });
+    }); };
+    overlay = new WheelOverlay({ kind, diff: this.diff, stage: 'spielplatz', skin, newSkin }, after);
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
@@ -752,7 +755,7 @@ class Play {
   drawNpc(c, n) {
     const a = this.npcAnim[n.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 12 : 0;
     const zz = n.l ? HOUSE.fz : 0;
-    drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
+    drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { staff: true, ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
   }
   drawSwingFrame(c) { drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
   drawSwingFrameRaw(c) {
@@ -767,7 +770,7 @@ class Play {
     const rider = this.npcs.find(n => n.swing === k);
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, sx, sy, 20, 6); c.fill();
     line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
-    if (rider) { const a = this.npcAnim[rider.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, sy - zz + 4 - j, 1.0, this.t, { ph: a.ph, noShadow: true, wave: a.wave > 0 || this.npcState(rider.id) === 'ready' }); }
+    if (rider) { const a = this.npcAnim[rider.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, sy - zz + 4 - j, 1.0, this.t, { staff: true, ph: a.ph, noShadow: true, wave: a.wave > 0 || this.npcState(rider.id) === 'ready' }); }
     rrPath(c, sx - 19, sy - zz - 4, 38, 9, 3); fs(c, '#343a40', 3);
     line(c, sx + 14, bY + 4, sx + 15, sy - zz, 2, '#ced4da');
   }
@@ -867,6 +870,14 @@ class Play {
       if (s === 'open' || s === 'waiting') { c.globalAlpha = 0.6 * (0.5 + 0.5 * Math.sin(t * 6)); ell(c, 0, 0, r + 6, r + 6); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke(); }
       c.restore();
     }
+    // Fähigkeiten: Metalldetektor (Pfeil zum nächsten Versteck), Adlerauge (Verstecke leuchten)
+    if (q && this.diff !== 'easy') {
+      if (ability('detektor')) {
+        let bh = null, bd2 = 1e9; q.hidden.forEach((h, i) => { if (q.got[i]) return; const d = dist(h.x, h.y, p.x, p.y); if (d < bd2) { bd2 = d; bh = h; } });
+        if (bh && bd2 > 60) { const a = Math.atan2(bh.y - p.y, bh.x - p.x), pz2 = this.z(); c.save(); c.translate(p.x + Math.cos(a) * 46, p.y - pz2 - 20 + Math.sin(a) * 30); c.rotate(a); polyPath(c, [[14, 0], [-8, -10], [-3, 0], [-8, 10]]); fs(c, '#ffd60a', 2.5); c.restore(); }
+      }
+      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (q.got[i] || dist(h.x, h.y, p.x, p.y) > 280) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
+    }
     // Hilfe: großer Pfeil + Lichtkegel über dem Versteck
     if (q && q.hint !== null && q.hint !== undefined && !q.got[q.hint]) {
       const h = q.hidden[q.hint], pk = peekOf(h), zz = h.l ? HOUSE.fz : 0, b = Math.abs(Math.sin(t * 4)) * 16;
@@ -919,7 +930,7 @@ class Play {
     if (q && this.diff !== 'easy') {
       const n = q.items.length, iw = Math.min(48, (W - 40) / (n + 1.6)), w = iw * (n + 1.4) + 16, x0 = W / 2 - w / 2, y0 = 82;
       panel(c, x0, y0, w, iw + 18, '#fff7e6', 18);
-      drawFace(c, q.npc, x0 + 10 + iw * 0.6, y0 + iw + 6, iw / 70, this.t, { noShadow: true });
+      drawFace(c, q.npc, x0 + 10 + iw * 0.6, y0 + iw + 6, iw / 70, this.t, { noShadow: true, staff: true });
       q.items.forEach((it, k) => {
         const x = x0 + 8 + iw * (1.4 + k) + iw / 2, y = y0 + 9 + iw / 2;
         c.save(); if (!q.got[k]) c.globalAlpha = 0.35; drawItem(c, it, x, y, iw * 0.9); c.restore();
@@ -932,14 +943,14 @@ class Play {
     ids.forEach((id, i) => {
       const x = fx + i * fw, done = this.st.done[id];
       c.save(); if (!done) c.globalAlpha = 0.55;
-      if (id === 'gate') drawGate(c, x, fy + 14, 0.26, done ? 1 : 0, !this.bossOpen(), 0); else drawCritter(c, id, x, fy + 14, 0.55, 0, { noShadow: true });
+      if (id === 'gate') drawGate(c, x, fy + 14, 0.26, done ? 1 : 0, !this.bossOpen(), 0); else drawCritter(c, id, x, fy + 14, 0.55, 0, { noShadow: true, staff: true });
       c.restore();
       if (done) icon(c, 'check', x + 10, fy + 6, 16, '#06d6a0');
     });
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
     if (this.canSearch() && hq) {
-      const HELP = 150, f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
+      const HELP = ability('glueck') ? 60 : 150, f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
       const pu = ready ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(pu, pu);
       ell(c, 0, 4, 32, 32); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill();
@@ -983,20 +994,22 @@ class Play {
       const L2 = wrapLines(c, this.banner.text, Math.min(W - 60, 560), 18); L2.forEach((l, i) => claimBand(c, l, 0, (i - (L2.length - 1) / 2) * 40, 18));
       c.restore();
     }
-    if (this.helpOpen) {
+    if (this.helpOpen && !overlay) {
       const T = this.diff === 'easy' ? [
-        'Tippe auf die Tiere mit dem gelben Ausrufezeichen. Jedes Tier hat ein paar Aufgaben für dich.',
-        'Wenn alle Tiere fertig sind, geht das Tor zum Parkplatz auf. Dort wartet die letzte Aufgabe.',
+        'Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich.',
+        'Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
       ] : [
-        'Sprich mit den Tieren mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.',
+        'Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.',
         'Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen!',
         'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
         this.diff === 'medium' ? 'Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah.' : 'Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau.',
-        'Hast du alles, bring es zurück zum Tier. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
-        'Wenn alle Tiere fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
+        'Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
+        'Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
+        'Die ganze Anleitung findest du im Menü unter dem Buch.',
       ];
-      helpPanel(c, T, () => { this.helpOpen = false; });
+      if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }
+      helpPanel(c, T, () => { this.helpOpen = false; this.helpRead = false; Voice.stop(); }, false);
     }
     const j = this.joy;
     if (j && j.moved) {
@@ -1009,17 +1022,17 @@ class Play {
 
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
-const NPC_NAMES = { hase: 'Hase Hoppel', fuchs: 'Fuchs Fridolin', igel: 'Igel Ida', waschbaer: 'Waschbär Willi', eule: 'Eule Emma', gate: 'Das Tor' };
+const NPC_NAMES = { hase: 'Hoppel vom Service', fuchs: 'Fridolin aus der Küche', igel: 'Ida von der Eistheke', waschbaer: 'Willi, der Hausmeister', eule: 'Emma vom Empfang', gate: 'Das Tor' };
 const NPC_LINES = {
-  hase: 'Beim Schaukeln ist mir einiges aus der Tasche gefallen!',
-  fuchs: 'Ich wollte gerade spielen – aber meine Sachen sind weg!',
-  igel: 'Ich habe alles versteckt und vergessen, wo!',
-  waschbaer: 'Irgendwer hat meine Spielsachen auf dem Spielplatz verteilt!',
-  eule: 'Von hier oben sehe ich viel – nur meine Sachen nicht!',
+  hase: 'Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden!',
+  fuchs: 'Ich habe für die Kinder Spielsachen bereitgelegt, und jetzt sind sie weg!',
+  igel: 'Die Kinder haben ihre Sachen bei mir an der Eistheke liegen lassen – und dann irgendwo versteckt!',
+  waschbaer: 'Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas!',
+  eule: 'Vom Spielhaus aus habe ich alles im Blick – nur die vergessenen Sachen nicht!',
 };
 function itemList(ids) { const n = ids.map(i => (ITEMS[i] || FOOD[i] || { n: i }).n); return n.length > 1 ? n.slice(0, -1).join(', ') + ' und ' + n[n.length - 1] : n[0] || ''; }
 function questText(o) {
-  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn alle 5 Tiere zufrieden sind. Geschafft: ' + o.done + ' von 5.';
+  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn alle 5 Mitarbeiter zufrieden sind. Geschafft: ' + o.done + ' von 5.';
   if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_NAMES[o.other] + ' – danach bin ich dran!';
   if (o.mode === 'progress') { const miss = o.items.filter((_, i) => !o.got[i]); return 'Dir fehlen noch: ' + itemList(miss) + '. Schau hinter Steinen und Büschen und im Hackschnitzel!'; }
   if (o.npc === 'gate') return 'Das Tor klemmt! Bring mir ' + itemList(o.items) + ', dann geht es auf und du kommst zum Parkplatz.';
@@ -1027,13 +1040,13 @@ function questText(o) {
 }
 
 class QuestDialog {
-  constructor(o) { this.o = o; this.t = 0; }
+  constructor(o) { this.o = o; this.t = 0; Voice.say(questText(o), true); }
   update(dt) { this.t += dt; }
-  close() { if (overlay === this) overlay = null; }
+  close() { if (overlay === this) overlay = null; Voice.stop(); }
   draw(c) {
     const o = this.o, k = ease.back(clamp(this.t * 4, 0, 1));
     c.fillStyle = `rgba(16,28,18,${0.55 * clamp(this.t * 5, 0, 1)})`; c.fillRect(0, 0, W, H);
-    const older = scene && scene.diff && scene.diff !== 'easy';
+    const older = true; // Auftrag immer auch als Text (wird vorgelesen)
     const PW = Math.min(W - 28, W > H ? 600 : 460);
     const lines = older ? wrapLines(c, questText(o), PW - 48, 16) : [];
     const w = PW, h = 300 + (older ? 34 + lines.length * 22 : 0), x = (W - w) / 2, y = (H - h) / 2;
@@ -1042,16 +1055,16 @@ class QuestDialog {
     panel(c, x, y, w, h, '#fff7e6', 26);
     ell(c, x + 70, y + 110, 52, 52); fs(c, '#d8f3dc', 3);
     if (o.npc === 'gate') drawGate(c, x + 70, y + 150, 0.75, 0, o.mode === 'lock', this.t);
-    else drawCritter(c, o.npc, x + 70, y + 150, 1.9, this.t, { wave: true, noShadow: true });
+    else drawCritter(c, o.npc, x + 70, y + 150, 1.9, this.t, { staff: true, wave: true, noShadow: true });
     const bx = x + 135, by = y + 26, bw = w - 155, bh = 170;
     rrPath(c, bx, by, bw, bh, 20); fs(c, '#fff', 3.5);
     polyPath(c, [[bx + 2, by + 70], [bx - 16, by + 86], [bx + 2, by + 96]]); fs(c, '#fff', 0);
     c.beginPath(); c.moveTo(bx, by + 70); c.lineTo(bx - 16, by + 86); c.lineTo(bx, by + 96); c.lineWidth = 3.5; c.strokeStyle = OL; c.stroke();
     if (o.mode === 'lock') {
-      for (let i = 0; i < 5; i++) { const px = bx + bw / 2 + (i - 2) * Math.min(48, bw / 5.5); drawCritter(c, NPC_DEFS[i].id, px, by + 90, 0.62, 0, { noShadow: true }); if (i < o.done) icon(c, 'check', px + 10, by + 100, 18, '#06d6a0'); }
+      for (let i = 0; i < 5; i++) { const px = bx + bw / 2 + (i - 2) * Math.min(48, bw / 5.5); drawCritter(c, NPC_DEFS[i].id, px, by + 90, 0.62, 0, { noShadow: true, staff: true }); if (i < o.done) icon(c, 'check', px + 10, by + 100, 18, '#06d6a0'); }
       icon(c, 'lock', bx + bw / 2, by + 135, 32);
     } else if (o.mode === 'busy') {
-      drawFace(c, o.other, bx + 40, by + 70, 0.9, this.t, { noShadow: true });
+      drawFace(c, o.other, bx + 40, by + 70, 0.9, this.t, { noShadow: true, staff: true });
       icon(c, 'back', bx + 92, by + 50, 30, '#ffd166');
       this.items(c, bx + 10, by + 92, bw - 20, 70, o.items, o.got);
     } else {

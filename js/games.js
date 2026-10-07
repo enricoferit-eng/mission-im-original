@@ -13,7 +13,7 @@ class GameOverlay {
     const o = this.opts, self = this;
     this.state = 'play'; this.t = 0; this.endT = 0; this.touched = false; this.flash = 0;
     this.timed = o.diff === 'hard' && !!GAMES[this.id].challenge;   // nur Schwer-Challenges: Leben + Zeit
-    this.lives = 3; this.lostAnim = []; this.lastTick = 99;
+    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? 4 : 3; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
     this.env = {
       diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1,
       r: mulberry32(((o.seed || 7) + this.retries * 977) >>> 0),
@@ -38,7 +38,7 @@ class GameOverlay {
     this.g = GAMES[this.id].make(this.env, o);
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
     if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.help = true; ACC().tut['h_' + this.id] = true; Save.write(); }
-    this.timeMax = this.timed ? (this.g.timeLimit || 30) : 0;
+    this.timeMax = this.timed ? (this.g.timeLimit || 30) + (ability('zeitplus') ? 6 : 0) : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
   }
   lose() { if (this.state === 'play') { this.state = 'lost'; this.endT = 0; Sfx.play('bad'); buzz(250); } }
@@ -82,8 +82,8 @@ class GameOverlay {
     const side = this.side, x = side ? W - 148 : 10, y = side ? 84 : 80, w = side ? 140 : W - 20, h = side ? 168 : 68;
     panel(c, x, y, w, h, '#3d2c1f', 20);
     if (low) { rrPath(c, x, y, w, h, 20); c.lineWidth = 5; c.strokeStyle = `rgba(239,71,111,${0.4 + pulse * 0.6})`; c.stroke(); }
-    for (let i = 0; i < 3; i++) {
-      const hx = side ? x + 28 + i * 42 : x + 34 + i * 46, hy = side ? y + 36 : y + h / 2;
+    for (let i = 0; i < this.maxLives; i++) {
+      const hx = side ? x + 22 + i * (this.maxLives > 3 ? 32 : 42) : x + 34 + i * 46, hy = side ? y + 36 : y + h / 2;
       const alive = i < this.lives, beat = alive && this.lives === 1 ? 1 + Math.sin(this.t * 10) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(beat, beat); icon(c, alive ? 'heart' : 'heartE', 0, 0, 40); c.restore();
     }
@@ -94,7 +94,7 @@ class GameOverlay {
       c.save(); c.globalAlpha = 1 - k;
       c.translate(hx + 10 + k * 20, hy - k * 30); c.rotate(k * 1.2); c.beginPath(); c.rect(0, -30, 30, 60); c.clip(); icon(c, 'heart', -10 - k * 20, k * 30, 40 + k * 20); c.restore();
     }
-    const bx = side ? x - 2 : x + 168, bw = side ? w - 8 : w - 168 - 62, by = side ? y + 122 : y + h / 2 - 14;
+    const hw2 = 30 + this.maxLives * 46, bx = side ? x - 2 : x + hw2, bw = side ? w - 8 : w - hw2 - 62, by = side ? y + 122 : y + h / 2 - 14;
     icon(c, 'clock', side ? x + 26 : bx - 8, side ? y + 88 : y + h / 2, 34);
     rrPath(c, bx + 14, by, bw - 14, 28, 14); fs(c, '#1f150e', 3, '#000');
     const f = clamp(this.timeLeft / this.timeMax, 0, 1);
@@ -152,13 +152,12 @@ class GameOverlay {
       ell(c, 0, 0, 80, 80); fs(c, '#06d6a0', 6);
       if (o.item && o.kind !== 'easy') drawItem(c, o.item, 0, -4, 96); else icon(c, 'check', 0, 0, 110);
       c.restore();
-      if (!this.praise) this.praise = pick(PRAISE);
-      txt(c, this.praise, 200, 370, 30 * k, '#fff', 'center', BRAND.olive);
     }
     if (this.state === 'lost') {
       c.fillStyle = 'rgba(30,20,20,.6)'; c.fillRect(0, 0, GAME_W, GAME_H);
       icon(c, this.timeLeft <= 0 ? 'clock' : 'heartE', 200, 150, 90);
       txt(c, this.timeLeft <= 0 ? 'Die Zeit ist abgelaufen!' : 'Keine Herzen mehr!', 200, 215, 24, '#fff', 'center', BRAND.ink);
+      Voice.once((this.timeLeft <= 0 ? 'Die Zeit ist abgelaufen!' : 'Keine Herzen mehr!') + ' Versuch es gleich nochmal.');
       txt(c, 'Versuch es gleich nochmal.', 200, 245, 17, '#fbf8f2', 'center', BRAND.ink);
     }
     c.restore();
@@ -174,7 +173,7 @@ class GameOverlay {
     if (this.help) {
       const lines = [HELP_TEXT[this.id] || 'Probier es einfach aus!'];
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
-      helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; });
+      helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); });
     }
   }
   down(x, y, id) { if (this.state !== 'play' || this.help) return; this.touched = true; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
@@ -231,7 +230,8 @@ function wrapLines(c, text, maxW, size) {
   for (const para of text.split('\n')) { let cur = ''; for (const w of para.split(' ')) { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > maxW && cur) { out.push(cur); cur = w; } else cur = t; } out.push(cur); }
   return out;
 }
-function helpPanel(c, paras, onClose) {
+function helpPanel(c, paras, onClose, speak = true) {
+  if (speak) Voice.once(paras.join(' '));
   const w = Math.min(W - 30, W > H ? 600 : 420), size = 18, lh = 25;
   const lines = []; paras.forEach((p, i) => { if (i) lines.push(''); lines.push(...wrapLines(c, p, w - 48, size)); });
   const h = 100 + lines.length * lh, x = (W - w) / 2, y = (H - h) / 2;
@@ -322,7 +322,7 @@ const GAMES = {};
 
 // ===== Memory (Leicht: Sandförmchen, Mittel/Schwer: Paare mit mehr Karten) =====
 function memoryMake(env, easy) {
-  const r = env.r, n = easy ? 4 : env.hard ? 8 : 6, cols = 4, rows = (2 * n) / cols;
+  const r = env.r, n = easy ? 6 : env.hard ? 8 : 6, cols = 4, rows = (2 * n) / cols;
   const faces = shuffle(FOOD_IDS, r).slice(0, n);
   const cw = 86, ch = Math.min(140, 470 / rows - 12);
   const deck = shuffle([...Array(n).keys(), ...Array(n).keys()], r).map((k, i) => ({ k, f: 0, open: false, done: false, x: ((i % cols) + 0.5) * 100, y: 40 + (Math.floor(i / cols) + 0.5) * (470 / rows) }));
@@ -367,9 +367,9 @@ GAMES.pairs = { make: env => memoryMake(env, false) };
 
 // ===== LEICHT (Katze): bekannte Kinderspiel-Formate, kein Scheitern =====
 GAMES.connect = { make(env) {
-  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 4);
-  const L = ids.map((id, i) => ({ id, x: 80, y: 80 + i * 120, con: false }));
-  const R = shuffle(ids, r).map((id, i) => ({ id, x: 320, y: 80 + i * 120, con: false }));
+  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 5);
+  const L = ids.map((id, i) => ({ id, x: 80, y: 60 + i * 100, con: false }));
+  const R = shuffle(ids, r).map((id, i) => ({ id, x: 320, y: 60 + i * 100, con: false }));
   const links = []; let drag = null, px = 0, py = 0; const fin = finisher(env);
   const target = R.find(q => q.id === L[0].id);
   return {
@@ -379,26 +379,26 @@ GAMES.connect = { make(env) {
       bgEasy(c);
       links.forEach((l, i) => line(c, l[0].x, l[0].y, l[1].x, l[1].y, 9, FILLS[i]));
       if (drag) line(c, drag.x, drag.y, px, py, 9, '#ffd166');
-      [...L, ...R].forEach(q => { ell(c, q.x, q.y, 46, 46); fs(c, q.con ? '#d8f5e3' : '#fff', 4, q.con ? '#2b9348' : OL); drawAny(c, q.id, q.x, q.y, 64); });
+      [...L, ...R].forEach(q => { ell(c, q.x, q.y, 40, 40); fs(c, q.con ? '#d8f5e3' : '#fff', 4, q.con ? '#2b9348' : OL); drawAny(c, q.id, q.x, q.y, 64); });
     },
     down(x, y) { for (const q of [...L, ...R]) if (!q.con && dist(x, y, q.x, q.y) < 54) { drag = q; px = x; py = y; Sfx.play('tap'); return; } },
     move(x, y) { px = x; py = y; },
     up(x, y) {
       if (!drag) return;
       const other = (L.includes(drag) ? R : L).find(q => !q.con && dist(x, y, q.x, q.y) < 60);
-      if (other && other.id === drag.id) { drag.con = other.con = true; links.push([drag, other]); env.burst(other.x, other.y); Sfx.play('good'); buzz(25); if (links.length === 4) fin.set(); }
+      if (other && other.id === drag.id) { drag.con = other.con = true; links.push([drag, other]); env.burst(other.x, other.y); Sfx.play('good'); buzz(25); if (links.length === 5) fin.set(); }
       drag = null;
     },
   };
 } };
 
 GAMES.pop = { make(env) {
-  const r = env.r, need = 10; let got = 0, sp = 0.2; const bs = [], fin = finisher(env);
+  const r = env.r, need = 14; let got = 0, sp = 0.2; const bs = [], fin = finisher(env);
   return {
     hint: { type: 'tap', x: 200, y: 330 },
     update(dt) {
       sp -= dt;
-      if (sp <= 0 && bs.length < 4 && got + bs.length < need + 3) { sp = 0.65; bs.push({ x: 70 + r() * 260, y: 590, v: 75 + r() * 35, col: pick(FILLS, r), ph: r() * 6, sw: 12 + r() * 18 }); }
+      if (sp <= 0 && bs.length < 4 && got + bs.length < need + 3) { sp = 0.5; bs.push({ x: 70 + r() * 260, y: 590, v: 100 + r() * 50, col: pick(FILLS, r), ph: r() * 6, sw: 12 + r() * 18 }); }
       for (const b of bs) { b.y -= b.v * dt; b.ph += dt; }
       for (let i = bs.length - 1; i >= 0; i--) if (bs[i].y < -70) bs.splice(i, 1);
       fin.tick(dt);
@@ -410,7 +410,7 @@ GAMES.pop = { make(env) {
         c.beginPath(); c.moveTo(x, b.y + 30); c.quadraticCurveTo(x + 8, b.y + 50, x, b.y + 70); c.lineWidth = 2; c.strokeStyle = OL; c.stroke();
         ell(c, x, b.y, 32, 38); fs(c, b.col, 4); ell(c, x - 11, b.y - 13, 7, 11, 0.3); c.fillStyle = 'rgba(255,255,255,.5)'; c.fill();
       }
-      for (let i = 0; i < need; i++) { const x = 200 + (i - 4.5) * 34; ell(c, x, 30, 11, 14); fs(c, i < got ? FILLS[i % 6] : 'rgba(255,255,255,.6)', 3); }
+      for (let i = 0; i < need; i++) { const x = 200 + (i - (need - 1) / 2) * 26; ell(c, x, 30, 11, 14); fs(c, i < got ? FILLS[i % 6] : 'rgba(255,255,255,.6)', 3); }
     },
     down(x, y) {
       if (fin.on()) return;
@@ -440,7 +440,7 @@ GAMES.puzzle = { make(env) {
     draw(c) {
       bgEasy(c);
       rrPath(c, bx - 8, by - 8, P * 3 + 16, P * 3 + 16, 14); fs(c, '#e9d8a6', 4);
-      c.globalAlpha = 0.25; c.drawImage(img, bx, by, P * 3, P * 3); c.globalAlpha = 1;
+      rrPath(c, 318, 22, 72, 72, 10); fs(c, '#fff', 3); c.drawImage(img, 322, 26, 64, 64);
       c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 2; c.setLineDash([5, 5]);
       for (let i = 1; i < 3; i++) { c.beginPath(); c.moveTo(bx + i * P, by); c.lineTo(bx + i * P, by + 3 * P); c.moveTo(bx, by + i * P); c.lineTo(bx + 3 * P, by + i * P); c.stroke(); }
       c.setLineDash([]);
@@ -456,8 +456,8 @@ GAMES.puzzle = { make(env) {
 } };
 
 GAMES.stack = { make(env) {
-  const r = env.r, widths = [190, 160, 130, 100, 70];
-  const spots = shuffle([[105, 70], [295, 70], [105, 140], [295, 140], [200, 210]], r);
+  const r = env.r, widths = [200, 172, 144, 116, 88, 60];
+  const spots = shuffle([[105, 50], [295, 50], [105, 112], [295, 112], [105, 174], [295, 174]], r);
   const bl = widths.map((w, i) => ({ i, w, col: FILLS[i], x: spots[i][0], y: spots[i][1], hx: spots[i][0], hy: spots[i][1], hw: w / 2, hh: 24, locked: false }));
   let placed = 0; const fin = finisher(env);
   const slotY = i => 470 - 22 - i * 44;
@@ -475,13 +475,13 @@ GAMES.stack = { make(env) {
       rrPath(c, 50, 470, 300, 20, 8); fs(c, '#8d5a3b', 4);
       if (placed < widths.length) { const w = widths[placed]; c.setLineDash([8, 7]); rrPath(c, 200 - w / 2, slotY(placed) - 22, w, 44, 8); fs(c, 'rgba(255,255,255,.5)', 3, 'rgba(0,0,0,.35)'); c.setLineDash([]); }
       for (const b of kit.sorted()) {
-        const CAKE = ['#f6d7a7', '#ffc2d1', '#a0522d', '#fff1c1', '#bde0fe'][b.i];
+        const CAKE = ['#f6d7a7', '#ffc2d1', '#a0522d', '#fff1c1', '#bde0fe', '#cdb4db'][b.i];
         rrPath(c, b.x - b.w / 2, b.y - 22, b.w, 44, 8); fs(c, CAKE, 4);
         rrPath(c, b.x - b.w / 2 + 3, b.y + 4, b.w - 6, 6, 3); c.fillStyle = 'rgba(255,255,255,.65)'; c.fill();
         c.beginPath(); c.moveTo(b.x - b.w / 2 + 2, b.y - 20);
         for (let k = 0; k <= b.w - 4; k += 12) c.quadraticCurveTo(b.x - b.w / 2 + 2 + k + 6, b.y - 6, b.x - b.w / 2 + 2 + Math.min(k + 12, b.w - 4), b.y - 20);
         c.lineTo(b.x + b.w / 2 - 2, b.y - 22); c.lineTo(b.x - b.w / 2 + 2, b.y - 22); c.closePath(); fs(c, '#fffaf0', 2);
-        if (b.i === 4) { ell(c, b.x, b.y - 32, 8, 8); fs(c, '#e63946', 2.5); line(c, b.x + 2, b.y - 39, b.x + 6, b.y - 46, 2, '#52b788', false); }
+        if (b.i === 5) { ell(c, b.x, b.y - 32, 8, 8); fs(c, '#e63946', 2.5); line(c, b.x + 2, b.y - 39, b.x + 6, b.y - 46, 2, '#52b788', false); }
       }
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
@@ -489,10 +489,10 @@ GAMES.stack = { make(env) {
 } };
 
 GAMES.shadow = { make(env) {
-  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 4), xs = [58, 153, 247, 342];
+  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 5), xs = [44, 122, 200, 278, 356];
   const sh = ids.map((id, i) => ({ id, x: xs[i], y: 150 }));
   const pos = shuffle(xs, r);
-  const its = ids.map((id, i) => ({ id, x: pos[i], y: 400, hx: pos[i], hy: 400, hw: 44, hh: 44, locked: false, tx: sh[i].x, ty: sh[i].y }));
+  const its = ids.map((id, i) => ({ id, x: pos[i], y: 400, hx: pos[i], hy: 400, hw: 36, hh: 36, locked: false, tx: sh[i].x, ty: sh[i].y }));
   const fin = finisher(env);
   const kit = dragKit(its, o => { if (dist(o.x, o.y, o.tx, o.ty) < 50) { o.hx = o.tx; o.hy = o.ty; o.locked = true; Sfx.play('good'); env.burst(o.tx, o.ty); buzz(25); if (its.every(q => q.locked)) fin.set(0.6); } });
   return {
@@ -501,37 +501,37 @@ GAMES.shadow = { make(env) {
     draw(c) {
       bgEasy(c, '#fdf0d5');
       rrPath(c, 12, 80, 376, 140, 24); fs(c, '#e9d8a6', 3);
-      for (const s of sh) { c.globalAlpha = 0.75; drawAny(c, s.id, s.x, s.y, 82, true); c.globalAlpha = 1; }
-      for (const q of kit.sorted()) { if (!q.locked) { ell(c, q.x, q.y + 40, 30, 8); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); } drawAny(c, q.id, q.x, q.y, 82); }
+      for (const s of sh) { c.globalAlpha = 0.75; drawAny(c, s.id, s.x, s.y, 66, true); c.globalAlpha = 1; }
+      for (const q of kit.sorted()) { if (!q.locked) { ell(c, q.x, q.y + 40, 30, 8); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); } drawAny(c, q.id, q.x, q.y, 66); }
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
   };
 } };
 
 GAMES.sort = { make(env) {
-  const r = env.r, bx = [75, 200, 325];
-  const spots = shuffle([[60, 80], [160, 95], [260, 75], [345, 100], [95, 190], [200, 205], [305, 185], [140, 290], [260, 295]], r);
-  const balls = [0, 0, 0, 1, 1, 1, 2, 2, 2].map((s, i) => ({ s, x: spots[i][0], y: spots[i][1], hx: spots[i][0], hy: spots[i][1], hw: 36, hh: 36, locked: false }));
-  const fill = [0, 0, 0]; const fin = finisher(env);
+  const r = env.r, bx = [52, 150, 250, 348];
+  const spots = shuffle([[50, 70], [150, 80], [250, 65], [350, 85], [60, 165], [160, 180], [255, 160], [345, 175], [70, 265], [170, 280], [260, 260], [340, 275]], r);
+  const balls = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3].map((s, i) => ({ s, x: spots[i][0], y: spots[i][1], hx: spots[i][0], hy: spots[i][1], hw: 36, hh: 36, locked: false }));
+  const fill = [0, 0, 0, 0]; const fin = finisher(env);
   const kit = dragKit(balls, o => {
-    if (Math.abs(o.x - bx[o.s]) < 66 && o.y > 350) {
-      o.hx = bx[o.s] + (fill[o.s] - 1) * 30; o.hy = 418 - (fill[o.s] === 1 ? 10 : 0); fill[o.s]++; o.locked = true; Sfx.play('good'); env.burst(o.hx, 420); buzz(25);
+    if (Math.abs(o.x - bx[o.s]) < 48 && o.y > 350) {
+      o.hx = bx[o.s] + (fill[o.s] - 1) * 22; o.hy = 418 - (fill[o.s] === 1 ? 10 : 0); fill[o.s]++; o.locked = true; Sfx.play('good'); env.burst(o.hx, 420); buzz(25);
       if (balls.every(b => b.locked)) fin.set(0.6);
     }
   });
   const basket = (c, i, front) => {
     const x = bx[i];
-    if (!front) { polyPath(c, [[x - 58, 400], [x + 58, 400], [x + 46, 492], [x - 46, 492]]); fs(c, '#d4a373', 4); }
-    else { rrPath(c, x - 60, 432, 120, 30, 10); fs(c, '#bc8a5f', 4); drawSym(c, i, x, 447, 12, 2.5); }
+    if (!front) { polyPath(c, [[x - 46, 400], [x + 46, 400], [x + 36, 492], [x - 36, 492]]); fs(c, '#d4a373', 4); }
+    else { rrPath(c, x - 48, 432, 96, 30, 10); fs(c, '#bc8a5f', 4); drawSym(c, i, x, 447, 12, 2.5); }
   };
   return {
     hint: { type: 'drag', x: balls[0].x, y: balls[0].y, x2: bx[balls[0].s], y2: 430 },
     update(dt) { kit.update(dt); fin.tick(dt); },
     draw(c) {
       bgEasy(c);
-      [0, 1, 2].forEach(i => basket(c, i, false));
+      [0, 1, 2, 3].forEach(i => basket(c, i, false));
       for (const b of kit.sorted()) { ell(c, b.x, b.y, 30, 30); fs(c, SYMS[b.s].col, 4); ell(c, b.x, b.y, 22, 22); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); drawSym(c, b.s, b.x, b.y, 13); }
-      [0, 1, 2].forEach(i => basket(c, i, true));
+      [0, 1, 2, 3].forEach(i => basket(c, i, true));
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
   };
@@ -1532,7 +1532,7 @@ GAMES.rotimg = { make(env) {
 
 // Punkte der Reihe nach verbinden (Schwer: in Zweierschritten)
 function dotsMake(env, n, step) {
-  const r = env.r, pts = []; let g = 0;
+  const r = env.r, shapeName = pick(Object.keys(DOT_SHAPES), r), pts = shapeDots(shapeName, n); let g = 9999;
   while (pts.length < n && g++ < 2000) { const p = { x: 40 + r() * 320, y: 110 + r() * 370 }; if (pts.every(q => dist(q.x, q.y, p.x, p.y) > 62)) pts.push(p); }
   const order = pts.map((p, i) => ({ ...p, v: (i + 1) * step }));
   const shown = shuffle(order, r);
@@ -1544,7 +1544,9 @@ function dotsMake(env, n, step) {
       bgEasy(c, '#fdf0d5');
       rrPath(c, 110, 18, 180, 60, 18); fs(c, '#fff', 4);
       txt(c, String(step), 150, 48, 30, '#118ab2', 'center', null); icon(c, 'play', 200, 48, 24, '#ffd166'); txt(c, String(2 * step), 250, 48, 30, '#118ab2', 'center', null);
+      if (idx === n) { polyPath(c, order.map(q => [q.x, q.y])); c.fillStyle = 'rgba(149,193,31,.35)'; c.fill(); drawFood(c, shapeName === 'flammkuchen' ? 'flammkuchen' : shapeName === 'palme' ? 'palme' : shapeName === 'eisbecher' ? 'eisbecher' : 'glashaus', 200, 320, 110); }
       for (let i = 1; i < idx; i++) line(c, order[i - 1].x, order[i - 1].y, order[i].x, order[i].y, 6, '#ef476f');
+      if (idx === n) line(c, order[n - 1].x, order[n - 1].y, order[0].x, order[0].y, 6, '#ef476f');
       shown.forEach(p => {
         const done = p.v <= idx * step, sx = shakeX(shake) * 0.4;
         ell(c, p.x + sx, p.y, 24, 24); fs(c, done ? '#06d6a0' : '#fff', 3.5);
@@ -1564,18 +1566,18 @@ GAMES.dots = { make: env => dotsMake(env, env.hard ? 14 : 10, env.hard ? 2 : 1) 
 
 
 // ===== Weitere Leicht-Aufgaben (Katze): viel Abwechslung, nie Scheitern =====
-GAMES.cups = { make: env => shellMake(env, { n: 3, swaps: 2, more: 1, dur: 0.9, rounds: 2 }) };
-GAMES.maze_easy = { make: env => mazeMake(env, 4, false) };
-GAMES.dots_easy = { make: env => dotsMake(env, 6, 1) };
+GAMES.cups = { make: env => shellMake(env, { n: 3, swaps: 4, more: 1, dur: 0.62, rounds: 3 }) };
+GAMES.maze_easy = { make: env => mazeMake(env, 5, false) };
+GAMES.dots_easy = { make: env => dotsMake(env, 10, 1) };
 
 // Wimmelbild: alle gleichen Dinge finden
 GAMES.findall = { make(env) {
-  const r = env.r, target = pick(FOOD_IDS, r), n = ri(3, 4, r);
+  const r = env.r, target = pick(FOOD_IDS, r), n = ri(4, 5, r);
   const LOOKALIKE = [['ball', 'springball', 'murmeln'], ['eimerchen', 'sandfoermchen'], ['frisbee', 'hulahoop']];
   const like = (LOOKALIKE.find(g2 => g2.includes(target)) || [target]);
-  const list = shuffle([...Array(n).fill(target), ...shuffle(FOOD_IDS.filter(i => !like.includes(i)), r).slice(0, 7)], r);
+  const list = shuffle([...Array(n).fill(target), ...shuffle(FOOD_IDS.concat(ITEM_IDS).filter(i => !like.includes(i) && i !== target), r).slice(0, 11)], r);
   const its = []; let g = 0;
-  for (const id of list) { let p; do { p = { x: 50 + r() * 300, y: 130 + r() * 350 }; g++; } while (g < 3000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 80)); its.push({ id, x: p.x, y: p.y, found: false, wob: 0 }); }
+  for (const id of list) { let p; do { p = { x: 50 + r() * 300, y: 130 + r() * 350 }; g++; } while (g < 3000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 64)); its.push({ id, x: p.x, y: p.y, found: false, wob: 0 }); }
   let got = 0; const fin = finisher(env);
   const first = its.find(o => o.id === target);
   return {
@@ -1587,7 +1589,7 @@ GAMES.findall = { make(env) {
       for (let i = 0; i < n; i++) { ell(c, 210 + i * 24, 56, 9, 9); fs(c, i < got ? '#06d6a0' : '#dee2e6', 2.5); }
       its.forEach(o => {
         if (o.found) { ell(c, o.x, o.y, 38, 38); fs(c, 'rgba(6,214,160,.25)', 4, '#06d6a0'); }
-        c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.wob * 30) * 0.2); drawAny(c, o.id, 0, 0, 62); c.restore();
+        c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.wob * 30) * 0.2); drawAny(c, o.id, 0, 0, 54); c.restore();
       });
     },
     down(x, y) {
@@ -1601,7 +1603,7 @@ GAMES.findall = { make(env) {
 
 // Weg nachfahren: den Drachen fliegen lassen
 GAMES.trace = { make(env) {
-  const r = env.r, ctrl = [[60, 460], [80 + r() * 240, 360 + r() * 40], [80 + r() * 240, 250 + r() * 40], [80 + r() * 240, 150 + r() * 40], [330, 80]];
+  const r = env.r, ctrl = [[60, 470], [60 + r() * 280, 400], [60 + r() * 280, 330], [60 + r() * 280, 260], [60 + r() * 280, 190], [60 + r() * 280, 130], [330, 70]];
   const pts = [];
   for (let s = 0; s < ctrl.length - 1; s++) for (let i = 0; i < 20; i++) { const k = i / 20, a = ctrl[s], b = ctrl[s + 1]; const e = ease.inout(k); pts.push([lerp(a[0], b[0], k), lerp(a[1], b[1], e)]); }
   pts.push(ctrl[ctrl.length - 1]);
@@ -1612,7 +1614,7 @@ GAMES.trace = { make(env) {
     draw(c) {
       bgSky(c, GAME_H);
       c.lineCap = 'round'; c.lineJoin = 'round';
-      c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.lineWidth = 46; c.strokeStyle = 'rgba(255,255,255,.75)'; c.stroke();
+      c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.lineWidth = 34; c.strokeStyle = 'rgba(255,255,255,.75)'; c.stroke();
       c.setLineDash([4, 14]); c.lineWidth = 6; c.strokeStyle = '#118ab2'; c.stroke(); c.setLineDash([]);
       if (idx > 0) { c.beginPath(); for (let i = 0; i <= idx; i++) i ? c.lineTo(pts[i][0], pts[i][1]) : c.moveTo(pts[i][0], pts[i][1]); c.lineWidth = 10; c.strokeStyle = '#ffd166'; c.stroke(); }
       const e = pts[pts.length - 1]; drawUmbrella(c, e[0], e[1], 34);
@@ -1621,7 +1623,7 @@ GAMES.trace = { make(env) {
     down(x, y) { const p = pts[idx]; if (dist(x, y, p[0], p[1]) < 60) drag = true; },
     move(x, y) {
       if (!drag || fin.on()) return;
-      for (let k = Math.min(pts.length - 1, idx + 8); k > idx; k--) if (dist(x, y, pts[k][0], pts[k][1]) < 44) { idx = k; break; }
+      for (let k = Math.min(pts.length - 1, idx + 8); k > idx; k--) if (dist(x, y, pts[k][0], pts[k][1]) < 34) { idx = k; break; }
       if (idx >= pts.length - 1) { fin.set(0.5); env.burst(pts[idx][0], pts[idx][1], 20); Sfx.play('good'); }
     },
     up() { drag = false; },
@@ -1630,10 +1632,11 @@ GAMES.trace = { make(env) {
 
 // Zählen mit Würfel-Augen
 GAMES.count_easy = { make(env) {
-  const r = env.r, rounds = 2; let round = 0, n, id, its, opts, shake = 0; const fin = finisher(env);
+  const r = env.r, rounds = 3; let round = 0, n, id, its, opts, shake = 0; const fin = finisher(env);
   const setup = () => {
-    n = ri(2, 5, r); id = pick(['eisclown', 'croissant', 'limo', 'kuchen', 'eisbecher'], r); its = []; let g = 0;
-    for (let i = 0; i < n; i++) { let p; do { p = { x: 70 + r() * 260, y: 110 + r() * 200 }; g++; } while (g < 2000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 80)); its.push(p); }
+    n = ri(3, 6, r); id = pick(['eisclown', 'croissant', 'limo', 'kuchen', 'eisbecher'], r); its = []; let g = 0; const oth = shuffle(FOOD_IDS.filter(q => q !== id), r).slice(0, 2);
+    for (let i = 0; i < n; i++) { let p; do { p = { x: 70 + r() * 260, y: 110 + r() * 200 }; g++; } while (g < 2000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 62)); its.push(p); }
+    for (let i = 0; i < ri(2, 4, r); i++) { let p; do { p = { x: 70 + r() * 260, y: 110 + r() * 200 }; g++; } while (g < 4000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 62)); p.id = pick(oth, r); its.push(p); }
     const pool = shuffle([1, 2, 3, 4, 5, 6].filter(v => v !== n), r).slice(0, 2).concat([n]);
     opts = shuffle(pool, r).map(v => ({ v, ok: v === n }));
   };
@@ -1650,7 +1653,8 @@ GAMES.count_easy = { make(env) {
       bgEasy(c);
       roundDots(c, rounds, round, 40);
       rrPath(c, 30, 70, 340, 280, 24); fs(c, '#e9f5db', 3);
-      its.forEach(p => drawAny(c, id, p.x, p.y, 70));
+      its.forEach(p => drawAny(c, p.id || id, p.x, p.y, 58));
+      rrPath(c, 8, 8, 62, 62, 14); fs(c, '#fff', 3); drawAny(c, id, 39, 39, 46); txt(c, '?', 62, 60, 18, '#118ab2', 'center', '#fff');
       opts.forEach((o, i) => die(c, 80 + i * 120 + (shake > 0 ? shakeX(shake) * 0.4 : 0), 435, o.v));
     },
     down(x, y) {
@@ -1711,12 +1715,12 @@ GAMES.color = { make(env) {
 
 // Seilspringen: tippen, wenn das Seil unten ankommt
 GAMES.rope = { make(env) {
-  const need = 6; let ph = 0, jumpT = 0, got = 0, stop = 0, t = 0, prev = 0; const fin = finisher(env);
+  const need = 9; let ph = 0, jumpT = 0, got = 0, stop = 0, t = 0, prev = 0; const fin = finisher(env);
   return {
     hint: { type: 'tap', x: 200, y: 300 },
     update(dt) {
       t += dt; jumpT = Math.max(0, jumpT - dt);
-      if (stop > 0) stop -= dt; else ph += dt * 2.4;
+      if (stop > 0) stop -= dt; else ph += dt * 2.9;
       const cyc = Math.floor(ph / TAU);
       if (cyc !== prev) { prev = cyc; if (jumpT > 0.1) { got++; Sfx.play('good'); env.burst(200, 380, 10); if (got >= need) fin.set(0.5); } else if (cyc > 0) { stop = 0.6; Sfx.play('tap'); } }
       fin.tick(dt);
@@ -1738,7 +1742,7 @@ GAMES.rope = { make(env) {
 
 // Der Größe nach in eine Reihe legen
 GAMES.size_row = { make(env) {
-  const r = env.r, id = pick(['eisbecher', 'limo', 'kuchen', 'croissant', 'eisclown'], r), sizes = [44, 62, 80, 98], sx = [62, 150, 248, 352];
+  const r = env.r, id = pick(['eisbecher', 'limo', 'kuchen', 'croissant', 'eisclown'], r), sizes = [36, 50, 64, 78, 92], sx = [45, 120, 200, 283, 358];
   const spots = shuffle([[80, 140], [200, 120], [320, 150], [150, 250], [270, 255]], r);
   const its = sizes.map((s, i) => ({ s, i, x: spots[i][0], y: spots[i][1], hx: spots[i][0], hy: spots[i][1], hw: s / 2 + 6, hh: s / 2 + 6, locked: false }));
   const fin = finisher(env);

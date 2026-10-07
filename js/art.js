@@ -15,15 +15,18 @@ SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach(diff => st
   SKINS[id] = { cap: st[0], scarf: st[1], pat: st[2], dots: st[2] === 'dots' ? '#ffffff' : null };
 })));
 const DEFAULT_LOOK = { cap: '#5aa13a', scarf: '#6bb544' }; // Im-Original-Grün
-const ANIMAL_OF = { easy: 'cat', medium: 'dog', hard: 'lion' };
-const DIFF_OF = { cat: 'easy', dog: 'medium', lion: 'hard' };
+// Die Figur sucht sich jedes Kind selbst aus (Konto); Standard je Stufe nur, solange noch nichts gewählt ist
+const DEFAULT_CHAR = { easy: 'cat', medium: 'dog', hard: 'lion' };
+const ANIMAL_OF = {};
+['easy', 'medium', 'hard'].forEach(d => Object.defineProperty(ANIMAL_OF, d, { get() { const a = typeof ACC === 'function' && ACC(); return (a && a.char) || DEFAULT_CHAR[d]; } }));
+let CUR_DIFF = 'medium';   // aktuelle Schwierigkeitsstufe (für Kappe + Skin der Figur)
 
 const ANIMALS = {
   cat: { body: '#f6a04d', light: '#ffe2bf', dark: '#c8702a' },
   dog: { body: '#c99460', light: '#f5e1c8', dark: '#7d5131' },
   lion: { body: '#f5c451', light: '#fdebb8', dark: '#c98a2b', mane: '#b9561d' },
 };
-function lookOf(kind) { const s = ACC() ? DP(DIFF_OF[kind]).equip : null; return SKINS[s] || DEFAULT_LOOK; }
+function lookOf(kind) { const s = ACC() ? DP(CUR_DIFF).equip : null; return SKINS[s] || DEFAULT_LOOK; }
 function paint(c, col, x0, x1) {
   if (col === 'gold') { const g = c.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, '#b8860b'); g.addColorStop(0.5, '#ffe066'); g.addColorStop(1, '#c9a227'); return g; }
   if (col !== 'rainbow') return col;
@@ -39,6 +42,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   const bob = mv ? Math.abs(Math.sin(t * 12)) * 3 : Math.sin(t * 2.2) * 0.8;
   c.save(); c.translate(x, y); c.scale(s, s);
   if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, (o.shadowY || 0), 17, 6); c.fill(); }
+  if (L.sparkle) { for (let i = 0; i < 3; i++) { const a = t * 1.5 + i * 2.1, tw = 0.5 + 0.5 * Math.sin(t * 5 + i); c.globalAlpha = tw; starPath(c, Math.cos(a) * 22, -26 + Math.sin(a) * 26, 3.5, 1.4, 4); c.fillStyle = L.sparkle; c.fill(); c.globalAlpha = 1; } }
   c.scale(o.dir || 1, 1);
   c.lineJoin = 'round'; c.lineCap = 'round';
   const st = mv ? Math.sin(t * 12) * 5 : 0;
@@ -111,6 +115,8 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
 }
 
 // ---------- Auftrags-Tiere (frontal, mit eigener Farbe) ----------
+// Arbeitskleidung der Mitarbeiter
+const STAFF_COL = { hase: '#35452F', fuchs: '#ffffff', igel: '#ff8fab', waschbaer: '#6a994e', eule: '#35452F' };
 const CRIT = {
   hase: { body: '#ece6dc', light: '#ffffff', ear: 'long', inner: '#f7b6c2' },
   fuchs: { body: '#e8742c', light: '#fff3e6', ear: 'point', inner: '#5a2d12' },
@@ -141,12 +147,14 @@ function drawCritter(c, id, x, y, s, t = 0, o = {}) {
     polyPath(c, [[-2.5, -24], [2.5, -24], [0, -19]]); fs(c, '#f4a261', 1.5);
     ell(c, -15, -18, 4, 9, 0.3); fs(c, '#8a5a36', 2.5); ell(c, 15, -18, 4, 9, -0.3); fs(c, '#8a5a36', 2.5);
     ell(c, -5, -1, 4, 2.2); fs(c, '#f4a261', 2); ell(c, 5, -1, 4, 2.2); fs(c, '#f4a261', 2);
+    if (o.staff) { polyPath(c, [[0, -17], [-6, -20], [-6, -14]]); fs(c, BRAND.olive, 1.5); polyPath(c, [[0, -17], [6, -20], [6, -14]]); fs(c, BRAND.olive, 1.5); }
     c.restore(); return;
   }
   // Füße + Körper
   ell(c, -7, -3, 5.5, 4); fs(c, C.body, 2.5); ell(c, 7, -3, 5.5, 4); fs(c, C.body, 2.5);
   ell(c, 0, -14, 12, 11); fs(c, C.body); shadeEll(c, 0, -14, 12, 11);
   ell(c, 0, -12, 7, 7); fs(c, C.light, 0);
+  if (o.staff) { const col = STAFF_COL[id] || BRAND.olive; rrPath(c, -6.5, -21, 13, 17, 3); c.fillStyle = col; c.fill(); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke(); leaf(c, 0, -13, 0.6, col === '#ffffff' ? BRAND.lime : '#fff'); }
   // Arme (einer winkt ab und zu)
   const wave = o.wave ? Math.sin(t * 9) * 0.5 : 0;
   ell(c, -12, -15, 4, 7, 0.5); fs(c, C.body, 2.5);

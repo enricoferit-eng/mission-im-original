@@ -15,7 +15,9 @@ const CLAIMS = {
 };
 // wechselnde Mottos (Stage-Auswahl, Danke-Banner)
 const MOTTOS = [CLAIMS.urlaub, CLAIMS.da, CLAIMS.ankommen + ' ' + CLAIMS.rest, CLAIMS.feiern + '!', CLAIMS.fruehstueck, CLAIMS.versprochen, CLAIMS.herz];
-const PRAISE = ['Ganz Original!', 'Wie im Original!', 'Original gemacht!', 'Ein echtes Original!', 'Original-Klasse!'];
+const PRAISE = ['Super gemacht!', 'Klasse!', 'Toll gelöst!', 'Spitze!', 'Ganz Original!'];
+// Dank der Mitarbeiter nach einem Auftrag (passend zum Spielplatz)
+const THANKS = ['Danke! Jetzt ist auf dem Spielplatz wieder alles an seinem Platz.', 'Danke für deine Hilfe! Die Kinder können weiterspielen.', 'Super! Du bist ein echter Original-Helfer.', 'Danke! Das hätte ich ohne dich nie gefunden.', 'Klasse gemacht! Das Team ist stolz auf dich.'];
 // Schild am Ausgang
 function drawGateSign(c, x, y) {
   c.fillStyle = 'rgba(0,0,0,.22)'; ell(c, x, y + 3, 30, 7); c.fill();
@@ -228,10 +230,27 @@ const UNIFORM_LOOKS = [
   { uniform: 'schuerze', uCol: '#ffffff', uCol2: BRAND.lime, cap: 'gold', scarf: BRAND.lime },                           // Festtags-Service
 ];
 const UNIFORM_NAMES = ['Service-Schürze', 'Koch-Jacke', 'Kellner-Weste', 'Eis-Theke', 'Palmen-Gärtner', 'Chalet-Pulli', 'Barista', 'Chefkoch', 'Limo-Stand', 'Original-Weste', 'Hütten-Pulli', 'Festtags-Service'];
+// Seltenheit: 4 normal, 1 selten, 1 legendär (mit Fähigkeit – nur bei 2 und 3 Sternen)
+const ABILITIES = {
+  detektor: { name: 'Metalldetektor', text: 'Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung.' },
+  adlerauge: { name: 'Adlerauge', text: 'Verstecke in deiner Nähe leuchten golden auf.' },
+  turbo: { name: 'Turbo-Schuhe', text: 'Du läufst viel schneller über den Spielplatz.' },
+  extraherz: { name: 'Extra-Herz', text: 'In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.' },
+  zeitplus: { name: 'Zeit-Uhr', text: 'In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit.' },
+  glueck: { name: 'Glücksklee', text: 'Der Hilfe-Stern lädt sich schon nach 1 Minute statt nach 2,5 Minuten.' },
+};
+const ABIL_KEYS = Object.keys(ABILITIES);
+const RARITY = { common: { name: 'Normal', col: '#e9ecef', w: 1 }, rare: { name: 'Selten', col: '#4dabf7', w: 0.6 }, legend: { name: 'Legendär', col: '#ffc300', w: 0.35 } };
 SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di) => stageSkins(stage, diff).forEach((id, i) => {
   const k = (i * 2 + di + si * 5) % UNIFORM_LOOKS.length;
-  SKINS[id] = Object.assign({}, UNIFORM_LOOKS[k], { name: UNIFORM_NAMES[k] });
+  const rarity = i === 5 ? 'legend' : i === 4 ? 'rare' : 'common';
+  const sk = Object.assign({}, UNIFORM_LOOKS[k], { name: UNIFORM_NAMES[k], rarity });
+  if (rarity === 'rare') { sk.cap = '#4dabf7'; sk.sparkle = '#bde0fe'; }
+  if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Goldene ' + UNIFORM_NAMES[k]; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; }
+  SKINS[id] = sk;
 })));
+// Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)
+function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return false; const sk = SKINS[DP(CUR_DIFF).equip]; return !!(sk && sk.ability === name); }
 // Standard-Look: grünes Helfer-Halstuch mit Blatt
 DEFAULT_LOOK.cap = BRAND.lime; DEFAULT_LOOK.scarf = BRAND.lime; DEFAULT_LOOK.leaf = true;
 

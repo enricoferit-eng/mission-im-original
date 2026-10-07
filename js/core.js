@@ -63,7 +63,7 @@ const Net = {
       return { status: r.status, data };
     } catch (e) { return null; }
   },
-  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound }; },
+  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null }; },
   soon() { clearTimeout(this.tm); this.tm = setTimeout(() => this.syncNow(), 4000); },
   async syncNow(keep) {
     const a = ACC(); if (!a || !a.token) return;
@@ -91,7 +91,7 @@ setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.s
 function accFromServer(p) {
   const d = p.data || {}, diff = d.diff || {};
   ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
-  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: !!d.sound, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff };
+  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff };
 }
 function adoptAccount(p) {
   Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });
@@ -101,7 +101,7 @@ function ACC() { return Save.data && Save.data.current ? Save.data.accounts[Save
 function loginCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 8; i++) s += A[Math.floor(rnd() * A.length)] + (i === 3 ? '-' : ''); return s; }
 function createAccount(name, code) {
   const id = 'a' + Date.now().toString(36) + Math.floor(rnd() * 1e4).toString(36);
-  Save.data.accounts[id] = { name, code, login: loginCode(), avatar: Math.floor(rnd() * 6), created: Date.now(), sound: false, tut: {}, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
+  Save.data.accounts[id] = { name, code, login: loginCode(), avatar: Math.floor(rnd() * 6), created: Date.now(), sound: true, soundV2: true, tut: {}, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
   Save.data.current = id; Save.write(); return id;
 }
 function DP(diff) { const d = ACC().diff[diff]; if (!d.stages) d.stages = {}; if (d.equip === undefined) d.equip = null; return d; }
@@ -112,10 +112,44 @@ function SP(diff, stage = 'spielplatz') {
 }
 
 // ---------- Sound (standardmäßig stumm) ----------
+// ---------- Vorlesen (für Kinder, die noch nicht lesen können) ----------
+const Voice = {
+  last: '', _v: undefined,
+  on() { const a = ACC(); return !a || a.sound !== false; },
+  voice() {
+    if (this._v !== undefined) return this._v;
+    try { const vs = speechSynthesis.getVoices(); if (!vs.length) return null; this._v = vs.find(v => /^de(-|_)DE/i.test(v.lang) && /Anna|Petra|Helena|Google/i.test(v.name)) || vs.find(v => /^de/i.test(v.lang)) || null; } catch (e) { this._v = null; }
+    return this._v;
+  },
+  // Nur Anweisungen werden vorgelesen. Satzweise, weil Chrome lange Texte sonst nach ~15 s abschneidet.
+  say(text, force) {
+    if (!text || !this.on() || !('speechSynthesis' in window)) return;
+    if (!force && text === this.last) return;
+    this.last = text; const gen = ++this.gen;
+    try {
+      const busy = speechSynthesis.speaking || speechSynthesis.pending || performance.now() - this.cancelT < 200;
+      speechSynthesis.cancel();
+      const parts = text.replace(/\s*[–—]\s*/g, ', ').replace(/\(.*?\)/g, '').match(/[^.!?:]+[.!?:]*/g) || [text];
+      // direkt nach cancel() verschluckt Chrome das neue Sprechen – kurz warten
+      setTimeout(() => {
+        if (gen !== this.gen) return;
+        parts.forEach(p => { p = p.trim(); if (!p) return; const u = new SpeechSynthesisUtterance(p); u.lang = 'de-DE'; u.rate = 0.95; u.pitch = 1.05; const v = this.voice(); if (v) u.voice = v; speechSynthesis.speak(u); });
+        try { speechSynthesis.resume(); } catch (e) { /* egal */ }
+      }, busy ? 120 : 0);
+    } catch (e) { /* kein Vorlesen möglich */ }
+  },
+  // für Texte, die in draw() stehen: nur einmal vorlesen, bis das Fenster zu ist (Voice.stop)
+  once(text) { if (this.onceKey === text) return; this.onceKey = text; this.say(text, true); },
+  gen: 0, onceKey: '',
+  cancelT: 0,
+  stop() { this.last = ''; this.onceKey = ''; this.gen++; this.cancelT = performance.now(); try { speechSynthesis.cancel(); } catch (e) { /* egal */ } },
+};
+try { if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { Voice._v = undefined; }; } catch (e) { /* egal */ }
+
 const Sfx = {
   ac: null,
   play(type) {
-    const acc = ACC(); if (!acc || !acc.sound) return;
+    const acc = ACC(); if (acc && acc.sound === false) return;
     try {
       if (!this.ac) this.ac = new (window.AudioContext || window.webkitAudioContext)();
       const c = this.ac, t = c.currentTime;
@@ -257,6 +291,10 @@ function icon(c, name, x, y, s, col) {
       c.lineWidth = 5.5; c.strokeStyle = col || '#fff'; c.stroke();
       polyPath(c, [[9, -16], [17, -2], [3, -3]]); fs(c, col || '#fff', 2.5); break;
     case 'play': polyPath(c, [[-10, -15], [16, 0], [-10, 15]]); fs(c, col || '#fff', 3); break;
+    case 'pause': rrPath(c, -12, -15, 9, 30, 3); fs(c, col || '#fff', 3); rrPath(c, 3, -15, 9, 30, 3); fs(c, col || '#fff', 3); break;
+    case 'book':
+      polyPath(c, [[0, -10], [-18, -15], [-18, 13], [0, 17]]); fs(c, '#fff', 3); polyPath(c, [[0, -10], [18, -15], [18, 13], [0, 17]]); fs(c, '#f1e3c8', 3);
+      line(c, -13, -6, -4, -4, 2, '#adb5bd', false); line(c, -13, 0, -4, 2, 2, '#adb5bd', false); line(c, 4, -4, 13, -6, 2, '#adb5bd', false); line(c, 4, 2, 13, 0, 2, '#adb5bd', false); break;
     case 'shoe':
       polyPath(c, [[-16, -6], [-6, -6], [-2, 2], [14, 4], [16, 12], [-16, 12]]); fs(c, '#4dabf7', 3);
       polyPath(c, [[4, -18], [-4, -4], [3, -4], [-1, 6], [11, -9], [4, -9], [9, -18]]); fs(c, '#ffd60a', 2.5); break;
