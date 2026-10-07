@@ -56,6 +56,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   // Körper
   ell(c, 0, -15, 13, 12); fs(c, A.body); shadeEll(c, 0, -15, 13, 12);
   ell(c, 3, -13, 7, 7.5); fs(c, A.light, 0);
+  if (L.uniform) drawUniform(c, L, A);
   ell(c, 9, -5, 5, 4); fs(c, A.light, 2.5);
   // Mähne
   if (kind === 'lion') {
@@ -91,16 +92,20 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
     if (L.dots) { c.fillStyle = L.dots; ell(c, 3, -20, 1.4, 1.4); c.fill(); ell(c, -2, -24, 1.2, 1.2); c.fill(); }
     if (L.pat === 'stripes') { line(c, -4, -24, 6, -24, 1.4, 'rgba(255,255,255,.8)', false); line(c, 0, -20, 6, -20, 1.4, 'rgba(255,255,255,.8)', false); }
     if (L.pat === 'stars') { starPath(c, 3, -20, 2.6, 1.1); c.fillStyle = '#fff7ae'; c.fill(); }
+    if (L.leaf) leaf(c, 3, -20, 0.55, '#fff');
   }
   // Spielplatz-Ausrüstung: Kappe
   if (o.cap) {
     const cp = paint(c, L.cap, -10, 14);
+    if (!(L.hat && drawHat(c, L, cp))) {
     c.beginPath(); c.arc(1, -45, 11, Math.PI, 0); c.closePath(); fs(c, cp, 2.5);
     ell(c, 12, -45, 8, 2.8); fs(c, cp, 2.5);
     if (L.dots) { c.fillStyle = L.dots; ell(c, -2, -50, 1.5, 1.5); c.fill(); ell(c, 4, -52, 1.3, 1.3); c.fill(); }
     if (L.pat === 'stripes') { line(c, -8, -48, 10, -48, 1.6, 'rgba(255,255,255,.75)', false); }
     if (L.pat === 'stars') { starPath(c, 2, -50, 3.2, 1.4); c.fillStyle = '#fff7ae'; c.fill(); }
     ell(c, 1, -56, 2.2, 2.2); fs(c, '#fff', 1.5);
+    leaf(c, 3, -49, 0.55, '#fff');
+    }
   }
   c.restore();
 }
@@ -171,6 +176,9 @@ function drawCritter(c, id, x, y, s, t = 0, o = {}) {
     rrPath(c, -9, -50, 18, 10, 2); fs(c, '#fff', 2.5);
     for (const [dx, dy, rr] of [[-8, -56, 7], [0, -60, 8], [8, -56, 7]]) { ell(c, dx, dy, rr, rr); fs(c, '#fff', 2.5); }
     rrPath(c, -8, -51, 16, 6, 2); c.fillStyle = '#fff'; c.fill();
+  } else if (id === 'baer' && o.waiter) { // Kellner: Fliege + Schürze mit Blatt
+    rrPath(c, -7, -20, 14, 17, 3); c.fillStyle = BRAND.olive; c.fill(); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke(); leaf(c, 0, -12, 0.6, BRAND.lime);
+    polyPath(c, [[0, -24], [-6, -27], [-6, -21]]); fs(c, '#e63946', 1.5); polyPath(c, [[0, -24], [6, -27], [6, -21]]); fs(c, '#e63946', 1.5);
   } else if (id === 'baer') { // Platzwart-Mütze + Pfeife
     c.beginPath(); c.arc(0, -41, 10, Math.PI, 0); c.closePath(); fs(c, '#e63946', 2.5);
     ell(c, 0, -41, 13, 3); fs(c, '#e63946', 2.5);

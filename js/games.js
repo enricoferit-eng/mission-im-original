@@ -294,7 +294,7 @@ function makeImage(subj, size = 300) {
   ic.fillStyle = '#bde0fe'; ic.fillRect(0, 0, 200, 200); ic.fillStyle = '#95d5b2'; ic.fillRect(0, 140, 200, 60);
   ic.fillStyle = '#fff'; ell(ic, 40, 40, 22, 12); ic.fill(); ell(ic, 160, 30, 18, 10); ic.fill();
   ic.fillStyle = '#ffd166'; ell(ic, 175, 165, 10, 10); ic.fill();
-  drawItem(ic, subj, 100, 100, 150);
+  drawAny(ic, subj, 100, 100, 150);
   return img;
 }
 const ASYM = ['roller', 'wasserpistole', 'sandschaufel', 'seifenblasen', 'kreide', 'luftballon'];
@@ -306,7 +306,7 @@ const GAMES = {};
 // ===== Memory (Leicht: Sandförmchen, Mittel/Schwer: Paare mit mehr Karten) =====
 function memoryMake(env, easy) {
   const r = env.r, n = easy ? 4 : env.hard ? 8 : 6, cols = 4, rows = (2 * n) / cols;
-  const faces = easy ? shuffle(MOLDS, r).slice(0, n) : shuffle(ITEM_IDS, r).slice(0, n);
+  const faces = shuffle(FOOD_IDS, r).slice(0, n);
   const cw = 86, ch = Math.min(140, 470 / rows - 12);
   const deck = shuffle([...Array(n).keys(), ...Array(n).keys()], r).map((k, i) => ({ k, f: 0, open: false, done: false, x: ((i % cols) + 0.5) * 100, y: 40 + (Math.floor(i / cols) + 0.5) * (470 / rows) }));
   let sel = [], wait = 0, tries = 0; const fin = finisher(env);
@@ -324,7 +324,7 @@ function memoryMake(env, easy) {
         c.save(); c.translate(d.x, d.y); c.scale(Math.max(0.04, sx), 1);
         rrPath(c, -cw / 2, -ch / 2, cw, ch, 14); fs(c, front ? '#fffdf7' : easy ? '#6bb544' : '#2d6a4f', 4);
         const s = Math.min(cw, ch) * 0.75;
-        if (front) { if (easy) drawMold(c, faces[d.k], 0, 0, s, MOLD_COLS[d.k]); else drawItem(c, faces[d.k], 0, 0, s); }
+        if (front) drawAny(c, faces[d.k], 0, 0, s * 1.05);
         else { rrPath(c, -cw / 2 + 8, -ch / 2 + 8, cw - 16, ch - 16, 8); fs(c, null, 3, 'rgba(255,255,255,.4)'); icon(c, 'question', 0, 2, s * 0.6); }
         c.restore();
       });
@@ -350,7 +350,7 @@ GAMES.pairs = { make: env => memoryMake(env, false) };
 
 // ===== LEICHT (Katze): bekannte Kinderspiel-Formate, kein Scheitern =====
 GAMES.connect = { make(env) {
-  const r = env.r, ids = shuffle(ITEM_IDS, r).slice(0, 4);
+  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 4);
   const L = ids.map((id, i) => ({ id, x: 80, y: 80 + i * 120, con: false }));
   const R = shuffle(ids, r).map((id, i) => ({ id, x: 320, y: 80 + i * 120, con: false }));
   const links = []; let drag = null, px = 0, py = 0; const fin = finisher(env);
@@ -362,7 +362,7 @@ GAMES.connect = { make(env) {
       bgEasy(c);
       links.forEach((l, i) => line(c, l[0].x, l[0].y, l[1].x, l[1].y, 9, FILLS[i]));
       if (drag) line(c, drag.x, drag.y, px, py, 9, '#ffd166');
-      [...L, ...R].forEach(q => { ell(c, q.x, q.y, 46, 46); fs(c, q.con ? '#d8f5e3' : '#fff', 4, q.con ? '#2b9348' : OL); drawItem(c, q.id, q.x, q.y, 64); });
+      [...L, ...R].forEach(q => { ell(c, q.x, q.y, 46, 46); fs(c, q.con ? '#d8f5e3' : '#fff', 4, q.con ? '#2b9348' : OL); drawAny(c, q.id, q.x, q.y, 64); });
     },
     down(x, y) { for (const q of [...L, ...R]) if (!q.con && dist(x, y, q.x, q.y) < 54) { drag = q; px = x; py = y; Sfx.play('tap'); return; } },
     move(x, y) { px = x; py = y; },
@@ -408,7 +408,7 @@ GAMES.pop = { make(env) {
 } };
 
 GAMES.puzzle = { make(env) {
-  const r = env.r, img = makeImage(pick(['ball', 'pluesch', 'drachen', 'roller', 'springball', 'helm'], r), 210);
+  const r = env.r, img = makeImage(pick(['eisclown', 'eisbecher', 'kuchen', 'glashaus', 'palme', 'flammkuchen'], r), 210);
   const bx = 95, by = 28, P = 70;
   const tray = shuffle([[50, 330], [125, 300], [200, 335], [275, 300], [350, 330], [85, 430], [165, 455], [245, 430], [325, 455]], r);
   const pcs = [...Array(9).keys()].map(k => {
@@ -468,7 +468,7 @@ GAMES.stack = { make(env) {
 } };
 
 GAMES.shadow = { make(env) {
-  const r = env.r, ids = shuffle(ITEM_IDS, r).slice(0, 4), xs = [58, 153, 247, 342];
+  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 4), xs = [58, 153, 247, 342];
   const sh = ids.map((id, i) => ({ id, x: xs[i], y: 150 }));
   const pos = shuffle(xs, r);
   const its = ids.map((id, i) => ({ id, x: pos[i], y: 400, hx: pos[i], hy: 400, hw: 44, hh: 44, locked: false, tx: sh[i].x, ty: sh[i].y }));
@@ -480,8 +480,8 @@ GAMES.shadow = { make(env) {
     draw(c) {
       bgEasy(c, '#fdf0d5');
       rrPath(c, 12, 80, 376, 140, 24); fs(c, '#e9d8a6', 3);
-      for (const s of sh) { c.globalAlpha = 0.75; drawItem(c, s.id, s.x, s.y, 82, true); c.globalAlpha = 1; }
-      for (const q of kit.sorted()) { if (!q.locked) { ell(c, q.x, q.y + 40, 30, 8); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); } drawItem(c, q.id, q.x, q.y, 82); }
+      for (const s of sh) { c.globalAlpha = 0.75; drawAny(c, s.id, s.x, s.y, 82, true); c.globalAlpha = 1; }
+      for (const q of kit.sorted()) { if (!q.locked) { ell(c, q.x, q.y + 40, 30, 8); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); } drawAny(c, q.id, q.x, q.y, 82); }
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
   };
@@ -509,7 +509,7 @@ GAMES.sort = { make(env) {
     draw(c) {
       bgEasy(c);
       [0, 1, 2].forEach(i => basket(c, i, false));
-      for (const b of kit.sorted()) { ell(c, b.x, b.y, 30, 30); fs(c, SYMS[b.s].col, 4); symPath(c, SYMS[b.s].s, b.x, b.y, 12); fs(c, '#fff', 2.5); }
+      for (const b of kit.sorted()) { ell(c, b.x, b.y, 30, 30); fs(c, SYMS[b.s].col, 4); ell(c, b.x, b.y, 22, 22); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); drawSym(c, b.s, b.x, b.y, 13); }
       [0, 1, 2].forEach(i => basket(c, i, true));
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
@@ -541,7 +541,7 @@ GAMES.sequence = { make(env) {
       pads.forEach(([x, y], i) => {
         const L1 = lit === i;
         rrPath(c, x - ps + sx, y - ps, ps * 2, ps * 2, ps * 0.38); fs(c, L1 ? '#fff' : SYMS[i].col, 5);
-        c.globalAlpha = L1 ? 1 : 0.85; symPath(c, SYMS[i].s, x + sx, y, ps * 0.48); fs(c, L1 ? SYMS[i].col : '#fff', 4); c.globalAlpha = 1;
+        ell(c, x + sx, y, ps * 0.66, ps * 0.66); c.fillStyle = L1 ? SYMS[i].col : 'rgba(255,255,255,.88)'; c.fill(); drawSym(c, i, x + sx, y, ps * 0.42);
         if (L1) { rrPath(c, x - ps - 8, y - ps - 8, ps * 2 + 16, ps * 2 + 16, ps * 0.42); c.lineWidth = 6; c.strokeStyle = '#fff7ae'; c.stroke(); }
       });
     },
@@ -647,14 +647,14 @@ GAMES.pipes = { make(env) {
       bgEasy(c, '#e7ecef');
       rrPath(c, gx - 10, gy - 10, 320, 320, 18); fs(c, '#adb5bd', 4);
       const sy = gy + sr * ts + ts / 2, ey = gy + er * ts + ts / 2;
-      line(c, 6, sy, gx, sy, ts * 0.26, '#4dabf7'); ell(c, 18, sy, 18, 22); fs(c, '#00b4d8', 4);
+      line(c, 6, sy, gx, sy, ts * 0.26, '#4dabf7'); ell(c, 18, sy, 18, 22); fs(c, '#ffd60a', 4);
       line(c, gx + 300, ey, 394, ey, ts * 0.26, T[er * N + N - 1].wet && eff(T[er * N + N - 1]) & 2 ? '#4dabf7' : '#ced4da');
-      drawItem(c, 'eimerchen', 372, ey + 34, 50);
+      drawFood(c, 'limo', 372, ey + 34, 54);
       T.forEach(t => {
         const cx = gx + t.x * ts + ts / 2, cy = gy + t.y * ts + ts / 2;
         rrPath(c, cx - ts / 2 + 3, cy - ts / 2 + 3, ts - 6, ts - 6, 10); fs(c, '#f8f9fa', 3);
         c.save(); c.translate(cx, cy); c.rotate((t.a * Math.PI) / 2);
-        const col = t.wet ? '#4dabf7' : '#ced4da', w = ts * 0.26;
+        const col = t.wet ? '#ffd43b' : '#ced4da', w = ts * 0.26;
         for (const [b, dx, dy] of [[1, 0, -1], [2, 1, 0], [4, 0, 1], [8, -1, 0]]) if (t.base & b) line(c, 0, 0, dx * ts / 2, dy * ts / 2, w, col);
         ell(c, 0, 0, w * 0.62, w * 0.62); fs(c, col, 3);
         c.restore();
@@ -679,8 +679,7 @@ GAMES.pattern = { make(env) {
   const cs = 76, ox = 200 - (cs * N) / 2, oy = 196, ts = 24, tox = 200 - (ts * N) / 2, toy = 42;
   let show = env.hard ? 4 : 1e9, cool = 0; const fin = finisher(env);
   const cell = (c, x, y, s, v) => {
-    rrPath(c, x + 2, y + 2, s - 4, s - 4, s * 0.18); fs(c, v ? SYMS[v - 1].col : '#fffdf7', s > 40 ? 3.5 : 2);
-    if (v) { symPath(c, SYMS[v - 1].s, x + s / 2, y + s / 2, s * 0.22); fs(c, '#fff', s > 40 ? 2.5 : 1.2); }
+    if (v) symTile(c, v - 1, x + s / 2, y + s / 2, s - 4); else { rrPath(c, x + 2, y + 2, s - 4, s - 4, s * 0.18); fs(c, '#fffdf7', s > 40 ? 3.5 : 2); }
   };
   return {
     hint: { type: 'tap', x: ox + cs / 2, y: oy + cs / 2 },
@@ -900,12 +899,12 @@ function shellMake(env, P) {
       rrPath(c, 30, 370, 340, 24, 10); fs(c, '#a0673a', 3);
       roundDots(c, rounds, round, 40);
       const bc = cups[ball];
-      drawItem(c, 'ball', bc.x, 354, 40);
+      drawFood(c, 'eisclown', bc.x, 350, 46);
       [...cups].sort((a, b) => a.y - b.y).forEach((cp, i) => {
         const ci = cups.indexOf(cp), up = (lift[ci] || 0) * 70, sx = state === 'pick' ? 0 : 0;
         c.save(); c.translate(cp.x + sx + (shake > 0 && state === 'reveal' ? shakeX(shake) : 0), cp.y - up);
-        polyPath(c, [[-34, 36], [34, 36], [24, -30], [-24, -30]]); fs(c, '#ff9f1c', 4);
-        ell(c, 0, 36, 34, 8); fs(c, '#e07a00', 3); rrPath(c, -24, -36, 48, 10, 5); fs(c, '#ffbf69', 3);
+        c.beginPath(); c.moveTo(-38, 36); c.quadraticCurveTo(-38, -30, 0, -30); c.quadraticCurveTo(38, -30, 38, 36); c.closePath(); fs(c, '#ced4da', 4);
+        ell(c, -14, -6, 8, 16, -0.4); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill(); rrPath(c, -44, 32, 88, 8, 4); fs(c, '#adb5bd', 3); ell(c, 0, -32, 7, 6); fs(c, '#adb5bd', 3);
         c.restore();
       });
     },
@@ -926,7 +925,7 @@ GAMES.diff = { make(env) {
   const r = env.r, k = env.hard ? 5 : 3, H2 = 225, Y1 = 34, Y2 = 280;
   const items = []; let guard = 0;
   while (items.length < (env.hard ? 12 : 9) && guard++ < 500) {
-    const it = { id: pick(ITEM_IDS, r), x: 34 + r() * 332, y: 30 + r() * 165, s: 36 + r() * 16, flip: 1 };
+    const it = { id: pick(FOOD_IDS, r), x: 34 + r() * 332, y: 30 + r() * 165, s: 36 + r() * 16, flip: 1 };
     if (items.every(o => dist(o.x, o.y, it.x, it.y) > 52)) items.push(it);
   }
   const bottom = items.map(o => Object.assign({}, o));
@@ -934,7 +933,7 @@ GAMES.diff = { make(env) {
     const types = ['gone', 'swap', 'big'].concat(env.hard && ASYM.includes(items[i].id) ? ['flip', 'flip'] : []).concat(env.hard ? ['move'] : []);
     const ty = pick(types, r), b = bottom[i];
     if (ty === 'gone') b.gone = true;
-    else if (ty === 'swap') b.id = pick(ITEM_IDS.filter(q => q !== b.id), r);
+    else if (ty === 'swap') b.id = pick(FOOD_IDS.filter(q => q !== b.id), r);
     else if (ty === 'big') b.s *= env.hard ? 1.3 : 1.45;
     else if (ty === 'flip') b.flip = -1;
     else if (ty === 'move') b.y = clamp(b.y + (b.y > 110 ? -28 : 28), 25, 200);
@@ -943,9 +942,9 @@ GAMES.diff = { make(env) {
   let miss = null; const fin = finisher(env);
   const scene = (c, y0, list, marks) => {
     c.save(); c.translate(10, y0); rrPath(c, 0, 0, 380, H2, 16); c.save(); c.clip();
-    c.fillStyle = CHIP_BASE; c.fillRect(0, 0, 380, H2);
-    for (let i = 0; i < 260; i++) { c.fillStyle = CHIP_COLS[i % 6]; ell(c, (i * 67) % 380, (i * 41) % H2, 3, 1.5, i); c.fill(); }
-    list.forEach(o => { if (o.gone) return; c.save(); c.translate(o.x - 10, o.y); c.scale(o.flip, 1); drawItem(c, o.id, 0, 0, o.s); c.restore(); });
+    c.fillStyle = BRAND.cream; c.fillRect(0, 0, 380, H2);
+    c.fillStyle = 'rgba(53,69,47,.12)'; for (let i = 0; i < 380; i += 30) c.fillRect(i, 0, 15, H2); for (let j = 0; j < H2; j += 30) c.fillRect(0, j, 380, 15);
+    list.forEach(o => { if (o.gone) return; c.save(); c.translate(o.x - 10, o.y); c.scale(o.flip, 1); drawAny(c, o.id, 0, 0, o.s); c.restore(); });
     if (marks) diffs.forEach(d => { if (d.found) { ell(c, d.x - 10, d.y, 30, 30); c.lineWidth = 5; c.strokeStyle = '#06d6a0'; c.stroke(); } });
     c.restore(); rrPath(c, 0, 0, 380, H2, 16); fs(c, null, 4); c.restore();
   };
@@ -980,7 +979,7 @@ function mazeMake(env, N, fog) {
     const [dx, dy, b, ob] = pick(opts, r), n = (y + dy) * N + x + dx;
     W4[c0] &= ~b; W4[n] &= ~ob; seen[n] = 1; st.push(n);
   }
-  let pos = 0, ax = 0, ay = 0, t = 0; const goal = N * N - 1, fin = finisher(env), goalId = pick(ITEM_IDS, r);
+  let pos = 0, ax = 0, ay = 0, t = 0; const goal = N * N - 1, fin = finisher(env), goalId = pick(FOOD_IDS, r);
   const tryTo = cx => {
     const x = pos % N, y = Math.floor(pos / N), tx = cx % N, ty = Math.floor(cx / N);
     const dx = tx - x, dy = ty - y; if (Math.abs(dx) + Math.abs(dy) !== 1) return;
@@ -1001,14 +1000,14 @@ function mazeMake(env, N, fog) {
         const segs = []; if (W4[i] & 1) segs.push([x, y, x + S, y]); if (W4[i] & 2) segs.push([x + S, y, x + S, y + S]); if (W4[i] & 4) segs.push([x, y + S, x + S, y + S]); if (W4[i] & 8) segs.push([x, y, x, y + S]);
         segs.forEach(sg => line(c, sg[0], sg[1], sg[2], sg[3], 5, '#2d6a4f', false));
       }
-      drawItem(c, goalId, ox + (N - 0.5) * S, oy + (N - 0.5) * S, S * 0.85);
+      drawAny(c, goalId, ox + (N - 0.5) * S, oy + (N - 0.5) * S, S * 0.85);
       drawAnimal(c, env.kind, ox + (ax + 0.5) * S, oy + (ay + 0.5) * S + S * 0.38, S / 60, { t, noShadow: true });
       if (fog) {
         const cx = ox + (ax + 0.5) * S, cy = oy + (ay + 0.5) * S;
         c.save(); c.beginPath(); c.rect(0, 0, GAME_W, GAME_H); c.arc(cx, cy, S * 2.6, 0, TAU, true); c.fillStyle = 'rgba(20,30,25,.93)'; c.fill('evenodd'); c.restore();
         const g = c.createRadialGradient(cx, cy, S * 1.6, cx, cy, S * 2.6); g.addColorStop(0, 'rgba(20,30,25,0)'); g.addColorStop(1, 'rgba(20,30,25,.93)');
         c.fillStyle = g; ell(c, cx, cy, S * 2.6, S * 2.6); c.fill();
-        drawItem(c, goalId, ox + (N - 0.5) * S, oy + (N - 0.5) * S, S * 0.85);
+        drawAny(c, goalId, ox + (N - 0.5) * S, oy + (N - 0.5) * S, S * 0.85);
       }
     },
     down(x, y) { const ci = cellAt(x, y); if (ci >= 0) tryTo(ci); },
@@ -1022,7 +1021,7 @@ GAMES.oddone = { make(env) {
   const r = env.r, N = env.hard ? 4 : 3, rounds = env.hard ? 4 : 3, P = 330 / N, ox = 35, oy = 130;
   let round = 0, cells, odd, shake = 0; const fin = finisher(env);
   const setup = () => {
-    const id = pick(ASYM, r); odd = ri(0, N * N - 1, r);
+    const id = pick(['kuchen', 'eisclown', 'limo', 'flammkuchen', 'roller', 'wasserpistole'], r); odd = ri(0, N * N - 1, r);
     cells = [...Array(N * N).keys()].map(i => ({ id, rot: 0, flip: i === odd ? -1 : 1 }));
   };
   setup();
@@ -1035,7 +1034,7 @@ GAMES.oddone = { make(env) {
       cells.forEach((q, i) => {
         const x = ox + (i % N) * P + P / 2 + (shake > 0 ? shakeX(shake) * 0.5 : 0), y = oy + Math.floor(i / N) * P + P / 2;
         rrPath(c, x - P / 2 + 4, y - P / 2 + 4, P - 8, P - 8, 14); fs(c, '#fff', 3);
-        c.save(); c.translate(x, y); c.rotate(q.rot); c.scale(q.flip, 1); drawItem(c, q.id, 0, 0, P * 0.7); c.restore();
+        c.save(); c.translate(x, y); c.rotate(q.rot); c.scale(q.flip, 1); drawAny(c, q.id, 0, 0, P * 0.7); c.restore();
       });
     },
     down(x, y) {
@@ -1076,13 +1075,13 @@ GAMES.nextrow = { make(env) {
       bgWood(c);
       roundDots(c, rounds, round, 50);
       rrPath(c, 8, 110, 384, 110, 18); fs(c, '#fff7e6', 4);
-      seq.forEach((q, i) => { symPath(c, SYMS[q.s].s, 10 + sw * (i + 0.5), 165, sw * 0.32); fs(c, q.c, 3); });
+      seq.forEach((q, i) => symTile(c, q.s, 10 + sw * (i + 0.5), 165, sw * 0.86, q.c));
       const qx = 10 + sw * (len + 0.5);
       rrPath(c, qx - sw * 0.42, 130, sw * 0.84, 70, 10); fs(c, '#ffd166', 3); txt(c, '?', qx, 166, 30, '#fff');
       opts.forEach((o, i) => {
         const x = 55 + i * 97 + (shake > 0 ? shakeX(shake) * 0.5 : 0), y = 380;
         rrPath(c, x - 40, y - 46, 80, 92, 16); fs(c, '#fff', 4);
-        symPath(c, SYMS[o.s].s, x, y, 26); fs(c, o.c, 3);
+        symTile(c, o.s, x, y, 64, o.c);
       });
     },
     down(x, y) {
@@ -1099,9 +1098,9 @@ GAMES.count = { make(env) {
   const r = env.r, rounds = 2;
   let round = 0, target, its, opts, shake = 0, t = 0; const fin = finisher(env);
   const setup = () => {
-    target = pick(ITEM_IDS, r);
+    target = pick(FOOD_IDS, r);
     const n = env.hard ? ri(7, 11, r) : ri(4, 8, r), m = env.hard ? 16 : 9;
-    const others = shuffle(ITEM_IDS.filter(q => q !== target), r).slice(0, 5);
+    const others = shuffle(FOOD_IDS.filter(q => q !== target), r).slice(0, 5);
     its = [];
     for (let i = 0; i < n + m; i++) its.push({ id: i < n ? target : pick(others, r), x: 30 + r() * 340, y: 110 + r() * 230, vx: env.hard ? (r() - 0.5) * 70 : 0, vy: env.hard ? (r() - 0.5) * 50 : 0, s: 34 + r() * 10 });
     const vals = shuffle([n - 2, n - 1, n, n + 1, n + 2].filter(v => v > 0), r).slice(0, 3);
@@ -1120,9 +1119,9 @@ GAMES.count = { make(env) {
     },
     draw(c) {
       c.fillStyle = CHIP_BASE; c.fillRect(0, 0, GAME_W, GAME_H); chipsBand(c, 86, 366);
-      rrPath(c, 120, 12, 160, 62, 18); fs(c, '#fff7e6', 4); drawItem(c, target, 165, 43, 44); txt(c, '?', 235, 44, 32, '#118ab2', 'center', null);
+      rrPath(c, 120, 12, 160, 62, 18); fs(c, '#fff7e6', 4); drawAny(c, target, 165, 43, 44); txt(c, '?', 235, 44, 32, '#118ab2', 'center', null);
       roundDots(c, rounds, round, 82);
-      its.forEach(o => drawItem(c, o.id, o.x, o.y, o.s));
+      its.forEach(o => drawAny(c, o.id, o.x, o.y, o.s));
       opts.forEach((o, i) => {
         const x = 55 + i * 97 + (shake > 0 ? shakeX(shake) * 0.5 : 0);
         rrPath(c, x - 40, 395, 80, 80, 18); fs(c, '#fff7e6', 4); txt(c, String(o.v), x, 436, 38, '#3d2c1f', 'center', null);
@@ -1284,7 +1283,7 @@ GAMES.jump = { challenge: true, make(env) {
 } };
 
 GAMES.collect = { challenge: true, make(env) {
-  const r = env.r, target = pick(ITEM_IDS, r), others = shuffle(ITEM_IDS.filter(i => i !== target), r).slice(0, 6);
+  const r = env.r, target = pick(FOOD_IDS, r), others = shuffle(FOOD_IDS.filter(i => i !== target), r).slice(0, 6);
   const need = env.hard ? 12 : 8, v = (env.hard ? 300 : 230) * env.slow;
   let got = 0, px = 200, tx = 200, spT = 0.4, inv = 0, t = 0; const its = [], fin = finisher(env);
   return {
@@ -1313,9 +1312,9 @@ GAMES.collect = { challenge: true, make(env) {
     draw(c) {
       chipsBand(c, 0, GAME_H, Math.floor(t * 20));
       rrPath(c, 100, 12, 200, 70, 20); fs(c, '#fff7e6', 4);
-      drawItem(c, target, 140, 47, 52);
+      drawAny(c, target, 140, 47, 52);
       for (let i = 0; i < need; i++) { ell(c, 186 + (i % 6) * 18, 34 + Math.floor(i / 6) * 24, 7, 7); fs(c, i < got ? '#06d6a0' : '#dee2e6', 2); }
-      for (const o of its) { const ox = o.x + Math.sin(o.ph) * o.sw; if (o.clock) icon(c, 'clock', ox, o.y, 44); else drawItem(c, o.id, ox, o.y, 58); }
+      for (const o of its) { const ox = o.x + Math.sin(o.ph) * o.sw; if (o.clock) icon(c, 'clock', ox, o.y, 44); else drawAny(c, o.id, ox, o.y, 58); }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 470, 1.6, { t, moving: Math.abs(px - tx) > 4, dir: tx < px ? -1 : 1, cap: hasCap(env.kind) });
     },
     down(x) { tx = clamp(x, 40, 360); }, move(x) { tx = clamp(x, 40, 360); },
@@ -1445,8 +1444,7 @@ GAMES.mirror = { make(env) {
       rrPath(c, ox - 8, oy - 8, 376, R * cs + 16, 14); fs(c, '#adb5bd', 4);
       for (let i = 0; i < C * R; i++) {
         const x = ox + (i % C) * cs, y = oy + Math.floor(i / C) * cs, v = g[i], left = i % C < half;
-        rrPath(c, x + 2, y + 2, cs - 4, cs - 4, 7); fs(c, v ? SYMS[v - 1].col : left ? '#dee2e6' : '#fffdf7', 2.5);
-        if (v) { symPath(c, SYMS[v - 1].s, x + cs / 2, y + cs / 2, cs * 0.2); fs(c, '#fff', 1.5); }
+        if (v) symTile(c, v - 1, x + cs / 2, y + cs / 2, cs - 4); else { rrPath(c, x + 2, y + 2, cs - 4, cs - 4, 7); fs(c, left ? '#dee2e6' : '#fffdf7', 2.5); }
       }
       line(c, 200, oy - 20, 200, oy + R * cs + 20, 5, '#ffd166');
       icon(c, 'back', 150, 90, 34, '#ffd166'); c.save(); c.translate(250, 90); c.scale(-1, 1); icon(c, 'back', 0, 0, 34, '#ffd166'); c.restore();
@@ -1549,10 +1547,10 @@ GAMES.dots_easy = { make: env => dotsMake(env, 6, 1) };
 
 // Wimmelbild: alle gleichen Dinge finden
 GAMES.findall = { make(env) {
-  const r = env.r, target = pick(ITEM_IDS, r), n = ri(3, 4, r);
+  const r = env.r, target = pick(FOOD_IDS, r), n = ri(3, 4, r);
   const LOOKALIKE = [['ball', 'springball', 'murmeln'], ['eimerchen', 'sandfoermchen'], ['frisbee', 'hulahoop']];
   const like = (LOOKALIKE.find(g2 => g2.includes(target)) || [target]);
-  const list = shuffle([...Array(n).fill(target), ...shuffle(ITEM_IDS.filter(i => !like.includes(i)), r).slice(0, 7)], r);
+  const list = shuffle([...Array(n).fill(target), ...shuffle(FOOD_IDS.filter(i => !like.includes(i)), r).slice(0, 7)], r);
   const its = []; let g = 0;
   for (const id of list) { let p; do { p = { x: 50 + r() * 300, y: 130 + r() * 350 }; g++; } while (g < 3000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 80)); its.push({ id, x: p.x, y: p.y, found: false, wob: 0 }); }
   let got = 0; const fin = finisher(env);
@@ -1562,11 +1560,11 @@ GAMES.findall = { make(env) {
     update(dt) { its.forEach(o => (o.wob = Math.max(0, o.wob - dt))); fin.tick(dt); },
     draw(c) {
       bgEasy(c, '#e9f5db');
-      rrPath(c, 100, 16, 200, 80, 22); fs(c, '#fff', 4); drawItem(c, target, 150, 56, 56);
+      rrPath(c, 100, 16, 200, 80, 22); fs(c, '#fff', 4); drawAny(c, target, 150, 56, 56);
       for (let i = 0; i < n; i++) { ell(c, 210 + i * 24, 56, 9, 9); fs(c, i < got ? '#06d6a0' : '#dee2e6', 2.5); }
       its.forEach(o => {
         if (o.found) { ell(c, o.x, o.y, 38, 38); fs(c, 'rgba(6,214,160,.25)', 4, '#06d6a0'); }
-        c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.wob * 30) * 0.2); drawItem(c, o.id, 0, 0, 62); c.restore();
+        c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.wob * 30) * 0.2); drawAny(c, o.id, 0, 0, 62); c.restore();
       });
     },
     down(x, y) {
@@ -1594,8 +1592,8 @@ GAMES.trace = { make(env) {
       c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.lineWidth = 46; c.strokeStyle = 'rgba(255,255,255,.75)'; c.stroke();
       c.setLineDash([4, 14]); c.lineWidth = 6; c.strokeStyle = '#118ab2'; c.stroke(); c.setLineDash([]);
       if (idx > 0) { c.beginPath(); for (let i = 0; i <= idx; i++) i ? c.lineTo(pts[i][0], pts[i][1]) : c.moveTo(pts[i][0], pts[i][1]); c.lineWidth = 10; c.strokeStyle = '#ffd166'; c.stroke(); }
-      const e = pts[pts.length - 1]; icon(c, 'star', e[0], e[1] - 6, 46);
-      const p = pts[idx]; drawItem(c, 'drachen', p[0], p[1] - 10, 64);
+      const e = pts[pts.length - 1]; drawUmbrella(c, e[0], e[1], 34);
+      const p = pts[idx]; ell(c, p[0], p[1], 26, 8); fs(c, '#adb5bd', 3); drawFood(c, 'eisclown', p[0], p[1] - 20, 50);
     },
     down(x, y) { const p = pts[idx]; if (dist(x, y, p[0], p[1]) < 60) drag = true; },
     move(x, y) {
@@ -1611,7 +1609,7 @@ GAMES.trace = { make(env) {
 GAMES.count_easy = { make(env) {
   const r = env.r, rounds = 2; let round = 0, n, id, its, opts, shake = 0; const fin = finisher(env);
   const setup = () => {
-    n = ri(2, 5, r); id = pick(['luftballon', 'ball', 'drachen', 'pluesch', 'eimerchen'], r); its = []; let g = 0;
+    n = ri(2, 5, r); id = pick(['eisclown', 'croissant', 'limo', 'kuchen', 'eisbecher'], r); its = []; let g = 0;
     for (let i = 0; i < n; i++) { let p; do { p = { x: 70 + r() * 260, y: 110 + r() * 200 }; g++; } while (g < 2000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 80)); its.push(p); }
     const pool = shuffle([1, 2, 3, 4, 5, 6].filter(v => v !== n), r).slice(0, 2).concat([n]);
     opts = shuffle(pool, r).map(v => ({ v, ok: v === n }));
@@ -1629,7 +1627,7 @@ GAMES.count_easy = { make(env) {
       bgEasy(c);
       roundDots(c, rounds, round, 40);
       rrPath(c, 30, 70, 340, 280, 24); fs(c, '#e9f5db', 3);
-      its.forEach(p => drawItem(c, id, p.x, p.y, 70));
+      its.forEach(p => drawAny(c, id, p.x, p.y, 70));
       opts.forEach((o, i) => die(c, 80 + i * 120 + (shake > 0 ? shakeX(shake) * 0.4 : 0), 435, o.v));
     },
     down(x, y) {
@@ -1676,7 +1674,7 @@ GAMES.color = { make(env) {
         if (!q.done) { c.globalAlpha = 0.55; drawSym(c, q.s, centers[i][0], centers[i][1], 13, 2); c.globalAlpha = 1; }
         c.restore();
       });
-      [0, 1, 2, 3].forEach(s => { const x = 80 + s * 80, y = 490; if (sel === s) { ell(c, x, y, 34, 34); fs(c, '#fff7ae', 0); } ell(c, x, y, 26, 26); fs(c, SYMS[s].col, 4); symPath(c, SYMS[s].s, x, y, 11); fs(c, '#fff', 2); });
+      [0, 1, 2, 3].forEach(s => { const x = 80 + s * 80, y = 490; if (sel === s) { ell(c, x, y, 34, 34); fs(c, '#fff7ae', 0); } ell(c, x, y, 26, 26); fs(c, SYMS[s].col, 4); ell(c, x, y, 19, 19); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); drawSym(c, s, x, y, 11); });
     },
     down(x, y) {
       if (fin.on()) return;
@@ -1717,7 +1715,7 @@ GAMES.rope = { make(env) {
 
 // Der Größe nach in eine Reihe legen
 GAMES.size_row = { make(env) {
-  const r = env.r, id = pick(['ball', 'eimerchen', 'pluesch', 'springball', 'kreisel'], r), sizes = [44, 62, 80, 98], sx = [62, 150, 248, 352];
+  const r = env.r, id = pick(['eisbecher', 'limo', 'kuchen', 'croissant', 'eisclown'], r), sizes = [44, 62, 80, 98], sx = [62, 150, 248, 352];
   const spots = shuffle([[80, 140], [200, 120], [320, 150], [150, 250], [270, 255]], r);
   const its = sizes.map((s, i) => ({ s, i, x: spots[i][0], y: spots[i][1], hx: spots[i][0], hy: spots[i][1], hw: s / 2 + 6, hh: s / 2 + 6, locked: false }));
   const fin = finisher(env);
@@ -1728,9 +1726,9 @@ GAMES.size_row = { make(env) {
     draw(c) {
       bgEasy(c);
       rrPath(c, 14, 360, 372, 140, 22); fs(c, '#e9d8a6', 3);
-      sizes.forEach((s, i) => { c.globalAlpha = 0.35; drawItem(c, id, sx[i], 430, s, true); c.globalAlpha = 1; });
+      sizes.forEach((s, i) => { c.globalAlpha = 0.35; drawAny(c, id, sx[i], 430, s, true); c.globalAlpha = 1; });
       icon(c, 'play', 200, 380, 22, '#ffd166');
-      for (const q of kit.sorted()) drawItem(c, id, q.x, q.y, q.s);
+      for (const q of kit.sorted()) drawAny(c, id, q.x, q.y, q.s);
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
   };
