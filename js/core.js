@@ -33,7 +33,8 @@ function shuffle(a, r = rnd) {
 
 // ---------- Speicherstand mit Konten (Autosave nach jedem Mini-Schritt) ----------
 // Alles getrennt: pro Konto -> pro Schwierigkeitsstufe -> pro Stage eigene Münzen, Skins, Fortschritt.
-const SAVE_KEY = 'mission_im_original_v2';
+const SAVE_KEY = 'mission_im_original_v3';   // v3: alle alten Konten auf den Geräten gelöscht (Neustart mit Server-Konten)
+const OLD_KEYS = ['mission_im_original_v1', 'mission_im_original_v2'];
 const Save = {
   data: null,
   defaults() { return { v: 2, seenTrailer: false, accounts: {}, current: null }; },
@@ -41,6 +42,8 @@ const Save = {
     let d = null;
     try { const s = localStorage.getItem(SAVE_KEY); if (s) d = JSON.parse(s); } catch (e) { d = null; }
     this.data = d && d.v === 2 ? Object.assign(this.defaults(), d) : this.defaults();
+    // alte Speicherstände entfernen, nur "Trailer gesehen" mitnehmen
+    for (const k of OLD_KEYS) { try { const o = localStorage.getItem(k); if (o) { if (JSON.parse(o).seenTrailer) this.data.seenTrailer = true; localStorage.removeItem(k); } } catch (e) { /* egal */ } }
     if (this.data.current && !this.data.accounts[this.data.current]) this.data.current = null;
   },
   write(dirty = true) {
