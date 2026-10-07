@@ -123,10 +123,16 @@ const FOOD = {
 const FOOD6 = ['kuchen', 'eisclown', 'limo', 'flammkuchen', 'pasta', 'croissant'];
 function drawFood(c, id, x, y, size, sil) {
   c.save(); c.translate(x, y); const k = size / 44; c.scale(k, k); c.lineJoin = 'round'; c.lineCap = 'round';
-  const prev = OL;
-  if (sil) { OL = '#2a2340'; c.filter = 'brightness(0) opacity(.85)'; }
+  if (sil) {
+    // Schatten: auf eigene Leinwand zeichnen und einfärben (funktioniert in allen Browsern)
+    const S = 96, cv = drawFood.sc || (drawFood.sc = document.createElement('canvas')); cv.width = cv.height = S;
+    const g = cv.getContext('2d'); g.clearRect(0, 0, S, S); g.save(); g.translate(S / 2, S / 2); g.scale(S / 52, S / 52); g.lineJoin = 'round'; g.lineCap = 'round';
+    FOOD[id].d(g); g.restore();
+    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#2a2340'; g.fillRect(0, 0, S, S); g.globalCompositeOperation = 'source-over';
+    c.drawImage(cv, -26, -26, 52, 52); c.restore(); return;
+  }
   FOOD[id].d(c);
-  OL = prev; c.restore();
+  c.restore();
 }
 // Die 6 Rätsel-Symbole sind jetzt Leckereien aus dem Original (Farbe bleibt als zweites Merkmal)
 SYMS.splice(0, SYMS.length,

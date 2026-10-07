@@ -182,7 +182,7 @@ function txt(c, s, x, y, size, col = '#fff', align = 'center', ol = OL) {
   if (ol) { c.lineWidth = Math.max(3, size * 0.2); c.strokeStyle = ol; c.strokeText(s, x, y); }
   c.fillStyle = col; c.fillText(s, x, y);
 }
-function panel(c, x, y, w, h, col = '#fff7e6', r = 22) {
+function panel(c, x, y, w, h, col = '#fbf8f2', r = 22) {
   c.save();
   c.fillStyle = 'rgba(0,0,0,.28)'; rrPath(c, x, y + 6, w, h, r); c.fill();
   rrPath(c, x, y, w, h, r); c.fillStyle = col; c.fill();

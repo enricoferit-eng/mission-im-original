@@ -33,6 +33,9 @@ const DECOR = [
   { id: 'r4', t: 'rock', x: 560, y: 1060, r: 26 }, { id: 'r5', t: 'rock', x: 330, y: 940, r: 26 },
   { id: 'pl', t: 'planter', x: 390, y: 1110 }, { id: 'bench', t: 'bench', x: 690, y: 1020, w: 86, h: 26 },
   { id: 'lamp', t: 'lamp', x: 205, y: 215, r: 9 },
+  { id: 'board', t: 'board', x: 588, y: 242, r: 16 },                                   // Kreidetafel "Willkommen" am Eingang
+  { id: 'pp1', t: 'potpalm', x: 432, y: 166, r: 0 }, { id: 'pp2', t: 'potpalm', x: 568, y: 166, r: 0 },
+  { id: 'pp3', t: 'potpalm', x: 30, y: 166, r: 0 }, { id: 'pp4', t: 'potpalm', x: 975, y: 166, r: 0 },
 ];
 for (let y = 225, k = 0; y < 1180; y += 112, k++) DECOR.push({ id: 'cy' + k, t: 'cypress', x: 968 + (k % 2) * 8, y, r: 0 });
 const DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d));
@@ -153,11 +156,16 @@ function buildGround() {
   g.strokeStyle = '#f8f9fa'; g.lineWidth = 4;
   for (let x = 0; x <= WORLD_W; x += 50) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 84); g.stroke(); }
   g.beginPath(); g.moveTo(0, 40); g.lineTo(WORLD_W, 40); g.stroke();
+  // Logo-Schild am Glashaus über dem Eingang
+  rrPath(g, START.x - 120, 6, 240, 66, 16); fs(g, 'rgba(251,248,242,.95)', 3);
+  drawLogo(g, START.x, 39, 150, false);
+  for (let x = 145; x < WORLD_W; x += 150) if (Math.abs(x - START.x) > 80) drawUmbrella(g, x, 112, 24);
   g.fillStyle = '#e9ecef'; g.fillRect(0, 80, WORLD_W, 8); g.strokeStyle = OL; g.lineWidth = 2; g.strokeRect(-2, 80, WORLD_W + 4, 8);
   for (let x = 70; x < WORLD_W; x += 150) { // Tische + Rattanstühle
     if (Math.abs(x - START.x) < 60) continue;
     for (const [dx, dy] of [[-24, 0], [24, 0], [0, -22], [0, 22]]) { rrPath(g, x + dx - 9, 128 + dy - 9, 18, 18, 6); fs(g, '#c8a27a', 2); }
-    ell(g, x, 128, 19, 19); fs(g, '#adb5bd', 2.5); ell(g, x - 5, 124, 4, 4); fs(g, '#e76f51', 1.5);
+    ell(g, x, 128, 21, 21); fs(g, '#fbf8f2', 2.5); ell(g, x, 128, 16, 16); fs(g, null, 1, 'rgba(53,69,47,.25)');
+    drawFood(g, FOOD6[(x / 150 | 0) % 6], x, 127, 24);
   }
   // Natursteinmauer mit Durchgang + Stufen (Eingang)
   g.fillStyle = '#cbbfa8'; g.fillRect(0, 170, WORLD_W, 24);
@@ -288,6 +296,7 @@ class Play {
     this.camX = START.x; this.camY = START.y; this.zoom = 1;
     this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null;
     this.gateA = this.st.done.gate ? 1 : 0;
+    if (diff !== 'easy' && ACC() && !ACC().tut['intro_' + diff]) { this.helpOpen = true; ACC().tut['intro_' + diff] = true; Save.write(); }
     this.shake = {};
     this.npcAnim = {}; ALL_IDS.forEach((id, i) => (this.npcAnim[id] = { ph: i * 1.7, wave: 0, jump: 0 }));
     this.pigeons = [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i }));
@@ -341,6 +350,10 @@ class Play {
     }
     else { this.joy = null; this.p.moving = false; }
     this.updatePigeons(dt);
+    // Kellner auf der Terrasse (Deko, ohne Auftrag)
+    const wt = this.waiter || (this.waiter = { x: 260, dir: 1, dish: 0 });
+    wt.x += wt.dir * 45 * dt;
+    if (wt.x > 900 || wt.x < 90) { wt.dir *= -1; wt.dish = (wt.dish + 1) % 6; }
     const z = this.z(), hw = W / 2 / this.zoom, hh = H / 2 / this.zoom;
     const tx = WORLD_W < hw * 2 ? WORLD_W / 2 : clamp(p.x, hw, WORLD_W - hw);
     const ty = WORLD_H < hh * 2 ? WORLD_H / 2 : clamp(p.y - z - 30, hh, WORLD_H - hh);
@@ -648,6 +661,7 @@ class Play {
     const z = this.zoom, p = this.p, t = this.t, pz = this.z();
     c.fillStyle = '#86a866'; c.fillRect(0, 0, W, H);
     c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z));
+    if (!GROUND) buildGround();
     c.drawImage(GROUND, 0, 0, WORLD_W, WORLD_H);
     const q = this.st.active;
     // Gegrabene Stellen + vergrabene Hinweise
@@ -692,12 +706,15 @@ class Play {
       const sh = this.shake[d.id] || 0;
       if (d.t === 'yucca') L.push({ y: d.y, f: () => drawYucca(c, d.x, d.y, 1, t, sh) });
       else if (d.t === 'rock') L.push({ y: d.y, f: () => drawRock(c, d.x, d.y, d.r, sh) });
+      else if (d.t === 'potpalm') L.push({ y: d.y, f: () => drawPotPalm(c, d.x, d.y, 0.85, t) });
+      else if (d.t === 'board') L.push({ y: d.y, f: () => drawChalkboard(c, d.x, d.y, t) });
       else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawCypress(c, d.x, d.y) });
       else if (d.t === 'planter') L.push({ y: d.y, f: () => drawPlanter(c, d.x, d.y, t, sh) });
       else if (d.t === 'lamp') L.push({ y: d.y, f: () => { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y, 12, 4); c.fill(); line(c, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(c, d.x - 4, d.y - 182, 30, 10, 4); fs(c, '#6c757d', 3); } });
       else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => { const sx = sh > 0 ? Math.sin(sh * 60) * 2 : 0; c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 12, 48, 8); c.fill(); rrPath(c, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(c, '#a0673a', 3); rrPath(c, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(c, '#8d5a3b', 3); rrPath(c, d.x - 38, d.y + 8, 8, 10, 2); fs(c, '#495057', 2); rrPath(c, d.x + 30, d.y + 8, 8, 10, 2); fs(c, '#495057', 2); } });
     }
     for (const n of this.npcs) if (!n.l && n.swing === undefined) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
+    if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) });
     SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); });
@@ -857,6 +874,11 @@ class Play {
       c.save(); c.globalAlpha = a; c.translate(T.x, T.y - (T.l ? HOUSE.fz : 0) - 70 - T.t * 20); c.scale(ease.back(k), ease.back(k));
       ell(c, 0, 0, 26, 26); fs(c, T.kind === 'found' ? '#fff7e6' : '#dee2e6', 3);
       if (T.kind === 'found') drawItem(c, T.item, 0, 0, 36); else if (T.kind === 'junk') { drawJunk(c, 0, 8, T.junk, 1.4); icon(c, 'cross', 14, 12, 18, '#ef476f'); } else icon(c, 'puff', 0, 0, 34);
+      if (this.diff !== 'easy') {
+        const JN = { twig: 'ein Stöckchen', leaf: 'ein Blatt', pebble: 'ein Steinchen', cap: 'ein Kronkorken' };
+        const tx = T.kind === 'found' ? ITEMS[T.item].n + ' gefunden!' : T.kind === 'junk' ? 'Nur ' + JN[T.junk] + ' …' : 'Hier ist nichts.';
+        txt(c, tx, 0, 44, 17, T.kind === 'found' ? '#fff' : '#fbf8f2', 'center', BRAND.olive);
+      }
       c.restore();
     }
   }
@@ -957,6 +979,24 @@ class Play {
 }
 
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
+// Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
+const NPC_NAMES = { hase: 'Hase Hoppel', fuchs: 'Fuchs Fridolin', igel: 'Igel Ida', waschbaer: 'Waschbär Willi', eule: 'Eule Emma', gate: 'Das Tor' };
+const NPC_LINES = {
+  hase: 'Beim Schaukeln ist mir einiges aus der Tasche gefallen!',
+  fuchs: 'Ich wollte gerade spielen – aber meine Sachen sind weg!',
+  igel: 'Ich habe alles versteckt und vergessen, wo!',
+  waschbaer: 'Irgendwer hat meine Spielsachen auf dem Spielplatz verteilt!',
+  eule: 'Von hier oben sehe ich viel – nur meine Sachen nicht!',
+};
+function itemList(ids) { const n = ids.map(i => (ITEMS[i] || FOOD[i] || { n: i }).n); return n.length > 1 ? n.slice(0, -1).join(', ') + ' und ' + n[n.length - 1] : n[0] || ''; }
+function questText(o) {
+  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn alle 5 Tiere zufrieden sind. Geschafft: ' + o.done + ' von 5.';
+  if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_NAMES[o.other] + ' – danach bin ich dran!';
+  if (o.mode === 'progress') { const miss = o.items.filter((_, i) => !o.got[i]); return 'Dir fehlen noch: ' + itemList(miss) + '. Schau hinter Steinen und Büschen und im Hackschnitzel!'; }
+  if (o.npc === 'gate') return 'Das Tor klemmt! Bring mir ' + itemList(o.items) + ', dann geht es auf und du kommst zum Parkplatz.';
+  return (NPC_LINES[o.npc] || '') + ' Kannst du ' + itemList(o.items) + ' für mich finden?';
+}
+
 class QuestDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
@@ -964,7 +1004,9 @@ class QuestDialog {
   draw(c) {
     const o = this.o, k = ease.back(clamp(this.t * 4, 0, 1));
     c.fillStyle = `rgba(16,28,18,${0.55 * clamp(this.t * 5, 0, 1)})`; c.fillRect(0, 0, W, H);
-    const w = Math.min(W - 28, 460), h = 300, x = (W - w) / 2, y = (H - h) / 2;
+    const older = scene && scene.diff && scene.diff !== 'easy';
+    const lines = older ? wrapLines(c, questText(o), Math.min(W - 28, 460) - 48, 16) : [];
+    const w = Math.min(W - 28, 460), h = 300 + (older ? 34 + lines.length * 22 : 0), x = (W - w) / 2, y = (H - h) / 2;
     c.save(); c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
     panel(c, x, y, w, h, '#fff7e6', 26);
     ell(c, x + 70, y + 110, 52, 52); fs(c, '#d8f3dc', 3);
@@ -985,6 +1027,10 @@ class QuestDialog {
       if (o.boss) icon(c, 'crown', bx + bw - 26, by + 24, 32);
       this.items(c, bx + 10, by + 14, bw - 20, bh - 28, o.items, o.mode === 'progress' ? o.got : null);
       if (o.mode === 'progress') icon(c, 'search', bx + 24, by + bh - 22, 30);
+    }
+    if (older) {
+      txt(c, NPC_NAMES[o.npc] || '', x + 24, y + 222, 16, BRAND.olive, 'left', null);
+      lines.forEach((l, i) => txt(c, l, x + 24, y + 248 + i * 22, 16, '#3d2c1f', 'left', null));
     }
     c.restore();
     if (this.t > 0.2) {

@@ -1,9 +1,9 @@
 'use strict';
 // ---------- Menü, Stage-Karte, Shop, Stage-Abschluss, Start ----------
 const DIFFS = [
-  { id: 'easy', stars: 1, age: '6–8', col: '#ffd6a5' },
-  { id: 'medium', stars: 2, age: '9–11', col: '#caffbf' },
-  { id: 'hard', stars: 3, age: '12–14', col: '#ffc8c8' },
+  { id: 'easy', stars: 1, age: '6–8', col: '#f6d3a3' },
+  { id: 'medium', stars: 2, age: '9–11', col: '#d5e8a6' },
+  { id: 'hard', stars: 3, age: '12–14', col: '#e9bb93' },
 ];
 
 function skyBg(c) {
@@ -21,11 +21,17 @@ function skyBg(c) {
   }
   c.fillStyle = 'rgba(255,255,255,.85)'; c.fillRect(0, gy - gh - 6, W, 8);
 }
+// Titel: "Mission:" + das echte Im-Original-Logo
 function logo(c, x, y, s) {
-  txt(c, 'Mission:', x, y - 34 * s, 26 * s, '#fff');
-  c.save(); c.translate(x, y + 8 * s); c.rotate(-0.03);
-  txt(c, 'Im Original', 0, 0, 50 * s, '#ffd23f');
-  c.restore();
+  txt(c, 'Mission:', x, y - 58 * s, 26 * s, '#fff', 'center', BRAND.olive);
+  drawLogo(c, x, y + 10 * s, 250 * s, true);
+}
+// Leitsatz von Im Original als Band
+function claimBand(c, text, x, y, size = 16, col = BRAND.olive) {
+  c.font = `800 ${size}px ${FONT}`; const w = c.measureText(text).width + size * 2;
+  rrPath(c, x - w / 2, y - size * 0.95, w, size * 1.9, size * 0.95); c.fillStyle = 'rgba(251,248,242,.93)'; c.fill(); c.lineWidth = 2.5; c.strokeStyle = col; c.stroke();
+  leaf(c, x - w / 2 + size * 0.75, y, size * 0.075); leaf(c, x + w / 2 - size * 0.75, y, size * 0.075, BRAND.lime, Math.PI + 0.5);
+  txt(c, text, x, y + 1, size, col, 'center', null);
 }
 function soundBtn(c, x, y) {
   const a = ACC(), on = !!(a && a.sound);
@@ -62,11 +68,12 @@ class Menu {
     const a = ACC(); if (!a) return;
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
     logo(c, W / 2, Math.max(132, H * 0.15), ls);
+    claimBand(c, CLAIMS.urlaub, W / 2, Math.max(132, H * 0.15) + 76 * ls, 15 * Math.min(1.2, ls));
     accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     const wide = W > H * 0.95;
-    const top = Math.max(132, H * 0.15) + 66 * ls, bottom = H - 24;
+    const top = Math.max(132, H * 0.15) + 102 * ls, bottom = H - 24;
     DIFFS.forEach((d, i) => {
       let x, y, w, h;
       if (wide) { w = Math.min(240, (W - 80) / 3); h = Math.min(bottom - top, w * 1.35); x = W / 2 + (i - 1) * (w + 20) - w / 2; y = top + (bottom - top - h) / 2; }
@@ -139,11 +146,12 @@ class Accounts {
   draw(c) {
     skyBg(c);
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
-    logo(c, W / 2, 96 * ls, ls);
+    logo(c, W / 2, 100 * ls, ls);
+    claimBand(c, CLAIMS.ankommen, W / 2, 172 * ls, 14);
     const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
     const all = list.concat([['new', null], ['login', null]]);
-    const x0 = W / 2 - (cols * (cw + 12) - 12) / 2, y0 = 170 * ls;
+    const x0 = W / 2 - (cols * (cw + 12) - 12) / 2, y0 = 205 * ls;
     all.forEach(([id, a], i) => {
       const x = x0 + (i % cols) * (cw + 12), y = y0 + Math.floor(i / cols) * (ch + 12);
       if (y > H - 40) return;
@@ -374,6 +382,7 @@ function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
   const g = A('gastraum'); rrPath(c, g.x - g.w / 2, g.y - g.h / 2, g.w, g.h, 10); fs(c, '#cfeef7', 3.5);
   c.strokeStyle = '#fff'; c.lineWidth = 2.5; for (let i = 1; i < 8; i++) { const xx = g.x - g.w / 2 + (g.w * i) / 8; c.beginPath(); c.moveTo(xx, g.y - g.h / 2 + 3); c.lineTo(xx, g.y + g.h / 2 - 3); c.stroke(); }
   for (let i = 0; i < 4; i++) { const px = g.x - g.w * 0.35 + i * g.w * 0.23, py = g.y + Math.sin(i) * 6; for (let k = 0; k < 6; k++) { const a = (k / 6) * TAU + t * 0.3; ell(c, px + Math.cos(a) * 9, py + Math.sin(a) * 6, 8, 4, a); c.fillStyle = '#52b788'; c.fill(); } }
+  drawLogo(c, g.x, g.y - g.h * 0.08, Math.min(g.w * 0.62, 170), true);
   const kc = A('kueche'); rrPath(c, kc.x - kc.w / 2, kc.y - kc.h / 2, kc.w, kc.h, 6); fs(c, '#e9ecef', 3.5); rrPath(c, kc.x - kc.w / 2, kc.y - kc.h / 2, kc.w, kc.h * 0.35, 6); fs(c, '#b5654a', 3);
   for (let i = 0; i < 3; i++) { const sy = kc.y - kc.h / 2 - 8 - ((t * 20 + i * 12) % 36); c.globalAlpha = 0.6 - ((t * 20 + i * 12) % 36) / 60; ell(c, kc.x + kc.w * 0.3 + Math.sin(t * 2 + i) * 4, sy, 7, 6); c.fillStyle = '#fff'; c.fill(); c.globalAlpha = 1; }
   const au = A('aussen'); rrPath(c, au.x - au.w / 2, au.y - au.h / 2, au.w, au.h, 10); fs(c, '#e3dbcd', 3);
@@ -420,6 +429,7 @@ class StageMap {
     topBar(c, () => setScene(new Menu()));
     for (let s = 0; s < d.stars; s++) icon(c, 'star', 96 + s * 30, 44, 28);
     const bx = 14, by = 84, bw = W - 28, bh = H - by - 116;
+    drawLogo(c, W / 2 + 26, 44, Math.min(120, W - 290), true);
     const nodes = drawGrounds(c, bx, by, bw, bh, { t: this.t, kind });
     const spp = SP(this.diff, 'spielplatz'), sp = spp.run ? Object.assign({ clears: spp.clears }, spp.run) : { clears: spp.clears }, n = nodes.spielplatz;
     txt(c, spp.skins.length + '/6', n.x + n.R + 18, n.y + 30, 14, '#fff');
@@ -511,6 +521,15 @@ class Trailer {
       drawAnimal(c, 'lion', cx, py, 1.6 * k, { t, moving: lt > 2.2, cap: true });
       if (lt > 2.4) { const pk = ease.back(clamp(lt - 2.4, 0, 1)); c.save(); c.translate(cx + 120 * k, H * 0.88); c.scale(pk, pk); ell(c, 0, 0, 34, 34); fs(c, '#fff7e6', 3); stageIcon(c, 'parkplatz', 0, 0, 40); icon(c, 'hourglass', 24, -24, 20); c.restore(); }
     }
+    // Was das Original verspricht – als Untertitel
+    const cap = [CLAIMS.urlaub, CLAIMS.ankommen + ' ' + CLAIMS.rest, CLAIMS.da, 'Hilf den Gästen im Original!', CLAIMS.feiern][s];
+    if (lt > (s === 0 ? 1.6 : 0.5)) {
+      const ck = ease.back(clamp((lt - (s === 0 ? 1.6 : 0.5)) * 3, 0, 1)), cy2 = s === 0 ? H * 0.22 + 95 * k : H * 0.11;
+      c.save(); c.translate(cx, cy2); c.scale(ck, ck);
+      const lines = wrapLines(c, cap, Math.min(W - 60, 380), 17); lines.forEach((l, i) => claimBand(c, l, 0, (i - (lines.length - 1) / 2) * 38, 17));
+      c.restore();
+    }
+    if (s === 1 && lt > 0.8) drawLogo(c, cx + 110 * k, gy - 120 * k, 120 * k, true);
     c.fillStyle = `rgba(0,0,0,${1 - fade})`; c.fillRect(0, 0, W, H);
     // Fortschritt + Überspringen
     for (let i = 0; i < 5; i++) { ell(c, cx + (i - 2) * 18, H - 24, 5, 5); fs(c, i <= s ? '#fff' : 'rgba(255,255,255,.35)', 2); }
@@ -583,6 +602,8 @@ class ClearOverlay {
     if (o.newSkin) { c.save(); c.translate(70, -70); c.rotate(0.3); starPath(c, 0, 0, 30, 15, 8); fs(c, '#ef476f', 3); txt(c, 'NEU', 0, 1, 14, '#fff', 'center', null); c.restore(); }
     c.restore();
     for (let s = 0; s < 3; s++) { const kk = ease.back(clamp(t * 2 - 0.4 - s * 0.2, 0, 1)); c.save(); c.translate(cx + (s - 1) * 56, cy - 122 - (s === 1 ? 14 : 0)); c.scale(kk, kk); icon(c, 'star', 0, 0, s === 1 ? 54 : 44); c.restore(); }
+    drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);
+    if (t > 1.2) claimBand(c, CLAIMS.feiern + '!', cx, cy + 196, 16);
     const ry = cy + 128, kk = ease.back(clamp(t * 2 - 1, 0, 1));
     c.save(); c.translate(cx, ry); c.scale(kk, kk);
     panel(c, -150, -34, 300, 76, '#fff7e6', 20);

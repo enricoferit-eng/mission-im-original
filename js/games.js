@@ -36,6 +36,8 @@ class GameOverlay {
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
     this.g = GAMES[this.id].make(this.env, o);
+    // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
+    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.help = true; ACC().tut['h_' + this.id] = true; Save.write(); }
     this.timeMax = this.timed ? (this.g.timeLimit || 30) : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
   }
@@ -145,6 +147,8 @@ class GameOverlay {
     if (this.state === 'lost') {
       c.fillStyle = 'rgba(30,20,20,.6)'; c.fillRect(0, 0, GAME_W, GAME_H);
       icon(c, this.timeLeft <= 0 ? 'clock' : 'heartE', 200, 150, 90);
+      txt(c, this.timeLeft <= 0 ? 'Die Zeit ist abgelaufen!' : 'Keine Herzen mehr!', 200, 215, 24, '#fff', 'center', BRAND.ink);
+      txt(c, 'Versuch es gleich nochmal.', 200, 245, 17, '#fbf8f2', 'center', BRAND.ink);
     }
     c.restore();
     rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.lineWidth = 5 / this.s; c.strokeStyle = OL; c.stroke();
@@ -174,28 +178,28 @@ const HELP_TEXT = {
   connect: 'Zieh mit dem Finger eine Linie von jedem Bild links zum gleichen Bild rechts.',
   pop: 'Tippe auf die Luftballons, damit sie platzen. Oben siehst du, wie viele es sein müssen.',
   puzzle: 'Zieh die Puzzleteile an die richtige Stelle im Rahmen.',
-  stack: 'Bau einen Turm: Zieh zuerst den größten Klotz nach unten, dann immer den nächstkleineren.',
+  stack: 'Bau eine Torte: Zieh zuerst das größte Stockwerk nach unten, dann immer das nächstkleinere.',
   shadow: 'Zieh jedes Bild auf seinen passenden Schatten.',
   sort: 'Zieh jeden Ball in den Korb mit der gleichen Farbe und dem gleichen Zeichen.',
   findall: 'Oben im Kasten siehst du ein Ding. Finde es überall im Bild und tippe es an.',
-  trace: 'Leg den Finger auf den Drachen und fahr den Weg bis zum Stern nach.',
+  trace: 'Leg den Finger auf das Tablett und bring den Eisclown auf dem Weg bis zum Tisch mit dem Sonnenschirm.',
   count_easy: 'Zähl die Dinge im Bild. Tippe dann auf den Würfel mit genauso vielen Punkten.',
   color: 'Wähle unten eine Farbe. Tippe dann auf die Felder mit dem gleichen Zeichen.',
   rope: 'Tippe, wenn das Seil unten bei deinen Füßen ist. Dann springst du drüber.',
   size_row: 'Leg die Dinge der Größe nach in die Reihe: links das kleinste, rechts das größte.',
-  cups: 'Merk dir, unter welchem Eimer der Ball liegt. Wenn die Eimer still stehen, tippe auf den richtigen.',
-  shell: 'Merk dir, unter welchem Eimer der Ball liegt. Wenn die Eimer still stehen, tippe auf den richtigen.',
-  maze: 'Zieh dein Tier mit dem Finger durch das Labyrinth bis zum Gegenstand.',
-  maze_easy: 'Zieh dein Tier mit dem Finger durch das Labyrinth bis zum Gegenstand.',
+  cups: 'Merk dir, unter welcher Servierglocke der Eisclown steht. Wenn die Glocken still stehen, tippe auf die richtige.',
+  shell: 'Merk dir, unter welcher Servierglocke der Eisclown steht. Wenn die Glocken still stehen, tippe auf die richtige.',
+  maze: 'Zieh dein Tier mit dem Finger durch das Labyrinth bis zur Leckerei.',
+  maze_easy: 'Zieh dein Tier mit dem Finger durch das Labyrinth bis zur Leckerei.',
   dots: 'Tippe die Zahlen der Reihe nach an. Oben siehst du, wie gezählt wird (z. B. 2, 4, 6 ...).',
   dots_easy: 'Tippe die Zahlen der Reihe nach an: 1, 2, 3 ...',
   sequence: 'Schau genau hin, welche Felder nacheinander aufleuchten. Tippe sie danach in der gleichen Reihenfolge an.',
   dials: 'Tippe auf die Räder, um sie zu drehen. Oben am Rad (beim gelben Pfeil) muss das Zeichen aus der Kiste stehen.',
-  pipes: 'Tippe auf die Rohrteile, um sie zu drehen. Verbinde das Wasser links mit dem Eimer rechts.',
+  pipes: 'Tippe auf die Rohrteile, um sie zu drehen. Leite die hausgemachte Limo von der Zitrone links bis ins Glas rechts.',
   pattern: 'Tippe auf die Felder, bis dein Muster genauso aussieht wie die kleine Vorlage oben.',
   balance: 'Zieh Klötze auf die Wippe, bis sie gerade ist. Je weiter außen ein Klotz liegt, desto schwerer drückt er.',
   lights: 'Mach alle Windlichter an. Ein Tipp schaltet das Licht und seine direkten Nachbarn um.',
-  hanoi: 'Bring alle Reifen auf die Stange mit dem Stern. Tippe eine Stange an, um den oberen Reifen zu nehmen, und dann eine andere zum Ablegen. Ein großer Reifen darf nie auf einen kleineren.',
+  hanoi: 'Bring den ganzen Teller-Stapel auf das Tablett mit dem Stern. Tippe einen Stapel an, um den oberen Teller zu nehmen, und dann ein anderes Tablett zum Ablegen. Ein großer Teller darf nie auf einen kleineren.',
   diff: 'Oben und unten sind fast gleiche Bilder. Finde die Unterschiede und tippe sie an.',
   oddone: 'Ein Bild ist gespiegelt und schaut in die andere Richtung. Finde es und tippe es an.',
   nextrow: 'Wie geht die Reihe weiter? Schau dir das Muster an und tippe unten auf das passende Zeichen.',
@@ -206,7 +210,7 @@ const HELP_TEXT = {
   run: 'Dein Tier läuft von allein. Tippe links oder rechts, um die Spur zu wechseln und Hindernissen auszuweichen.',
   balance_walk: 'Tippe genau dann, wenn der Zeiger im grünen Bereich ist. So machst du einen sicheren Schritt über den Balken.',
   jump: 'Dein Tier läuft von allein. Tippe, um über Hindernisse und Löcher zu springen.',
-  collect: 'Beweg dein Tier mit dem Finger nach links und rechts. Fang nur das Ding aus dem Kasten oben und weich allem anderen aus.',
+  collect: 'Die Küche schickt Essen raus! Beweg dein Tier mit dem Finger nach links und rechts. Fang nur die Bestellung aus dem Kasten oben.',
   slide: 'Du rutschst nach unten. Beweg dich mit dem Finger nach links und rechts und weich allem auf der Rutsche aus.',
   swing: 'Tippe, um zum nächsten Platz zu laufen. Warte, bis die Schaukel weit weg ist, sonst wirst du getroffen.',
   platform: 'Lauf mit den Pfeil-Knöpfen, spring mit dem großen Knopf (lange drücken = hoch springen). Spring auf Bälle und Wespen, um sie zu besiegen. Erreiche die rote Fahne!',
@@ -458,9 +462,13 @@ GAMES.stack = { make(env) {
       rrPath(c, 50, 470, 300, 20, 8); fs(c, '#8d5a3b', 4);
       if (placed < widths.length) { const w = widths[placed]; c.setLineDash([8, 7]); rrPath(c, 200 - w / 2, slotY(placed) - 22, w, 44, 8); fs(c, 'rgba(255,255,255,.5)', 3, 'rgba(0,0,0,.35)'); c.setLineDash([]); }
       for (const b of kit.sorted()) {
-        rrPath(c, b.x - b.w / 2, b.y - 22, b.w, 44, 8); fs(c, b.col, 4);
-        rrPath(c, b.x - b.w / 2 + 6, b.y - 16, b.w - 12, 9, 5); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill();
-        drawSym(c, b.i, b.x, b.y + 2, 10, 2.5);
+        const CAKE = ['#f6d7a7', '#ffc2d1', '#a0522d', '#fff1c1', '#bde0fe'][b.i];
+        rrPath(c, b.x - b.w / 2, b.y - 22, b.w, 44, 8); fs(c, CAKE, 4);
+        rrPath(c, b.x - b.w / 2 + 3, b.y + 4, b.w - 6, 6, 3); c.fillStyle = 'rgba(255,255,255,.65)'; c.fill();
+        c.beginPath(); c.moveTo(b.x - b.w / 2 + 2, b.y - 20);
+        for (let k = 0; k <= b.w - 4; k += 12) c.quadraticCurveTo(b.x - b.w / 2 + 2 + k + 6, b.y - 6, b.x - b.w / 2 + 2 + Math.min(k + 12, b.w - 4), b.y - 20);
+        c.lineTo(b.x + b.w / 2 - 2, b.y - 22); c.lineTo(b.x - b.w / 2 + 2, b.y - 22); c.closePath(); fs(c, '#fffaf0', 2);
+        if (b.i === 4) { ell(c, b.x, b.y - 32, 8, 8); fs(c, '#e63946', 2.5); line(c, b.x + 2, b.y - 39, b.x + 6, b.y - 46, 2, '#52b788', false); }
       }
     },
     down: (x, y) => kit.down(x, y), move: (x, y) => kit.move(x, y), up: () => kit.up(),
@@ -835,8 +843,11 @@ GAMES.hanoi = { make(env) {
   const P = [[...Array(n).keys()].map(i => n - i), [], []];
   let sel = -1, shake = 0, moves = 0; const fin = finisher(env);
   const ring = (c, x, y, size, lift) => {
-    const w = 20 + size * 10; ell(c, x, y - lift, w, 11); c.lineWidth = 13; c.strokeStyle = OL; c.stroke(); c.lineWidth = 8; c.strokeStyle = FILLS[size - 1]; c.stroke();
-    c.setLineDash([6, 8]); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 3; c.stroke(); c.setLineDash([]);
+    const w = 24 + size * 11, yy = y - lift;
+    ell(c, x, yy + 5, w * 0.7, 6); fs(c, '#e9ecef', 3);
+    ell(c, x, yy, w, 11); fs(c, '#ffffff', 3.5);
+    ell(c, x, yy, w - 7, 7); c.lineWidth = 3; c.strokeStyle = FILLS[size - 1]; c.stroke();
+    ell(c, x, yy, w * 0.55, 5); c.fillStyle = 'rgba(0,0,0,.05)'; c.fill();
   };
   return {
     hint: { type: 'tap', x: px[0], y: 360 },
@@ -846,8 +857,7 @@ GAMES.hanoi = { make(env) {
       txt(c, String(moves), 40, 40, 28, '#fff');
       px.forEach((x, i) => {
         rrPath(c, x - 58, base, 116, 14, 7); fs(c, i === 2 ? '#80ed99' : '#a0673a', 3); if (i === 2) icon(c, 'star', x, base + 40, 30);
-        rrPath(c, x - 6, base - 210, 12, 210, 6); fs(c, '#8d5a3b', 3);
-        P[i].forEach((s, k) => { const isSel = sel === i && k === P[i].length - 1; ring(c, x + (isSel ? shakeX(shake) : 0), base - 12 - k * 30, s, isSel ? 230 - k * 30 : 0); });
+        P[i].forEach((s, k) => { const isSel = sel === i && k === P[i].length - 1; ring(c, x + (isSel ? shakeX(shake) : 0), base - 10 - k * 15, s, isSel ? 190 - k * 15 : 0); });
       });
     },
     down(x) {
