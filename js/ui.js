@@ -48,6 +48,7 @@ function accountChip(c, x, y, a, onTap) {
   drawCritter(c, AVATARS[a.avatar % 6], x + 26, y + 42, 0.62, 0, { noShadow: true });
   txt(c, a.name, x + 52, y + 19, 17, '#3d2c1f', 'left', null);
   icon(c, 'hanger', x + 60, y + 38, 16); txt(c, totalSkins(a) + '/108', x + 72, y + 39, 13, '#8d5a3b', 'left', null);
+  ell(c, x + w - 14, y + 14, 5, 5); c.fillStyle = Net.status(a).col; c.fill();
   if (onTap) UI.btn(x, y, w, 52, onTap);
   return w;
 }
@@ -61,7 +62,7 @@ class Menu {
     const a = ACC(); if (!a) return;
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
     logo(c, W / 2, Math.max(132, H * 0.15), ls);
-    accountChip(c, 12, 14, a, () => { Save.data.current = null; Save.write(); setScene(new Accounts()); });
+    accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     const wide = W > H * 0.95;
@@ -130,6 +131,7 @@ class CodePad {
   down() {} move() {} up() {}
 }
 
+// Konto-Kärtchen auf dem Gerät (zuletzt benutzte Konten)
 class Accounts {
   constructor() { this.t = 0; }
   enter() { FX.clear(); nameInput.style.display = 'none'; }
@@ -140,38 +142,172 @@ class Accounts {
     logo(c, W / 2, 96 * ls, ls);
     const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
-    const all = list.concat([['new', null]]);
+    const all = list.concat([['new', null], ['login', null]]);
     const x0 = W / 2 - (cols * (cw + 12) - 12) / 2, y0 = 170 * ls;
     all.forEach(([id, a], i) => {
       const x = x0 + (i % cols) * (cw + 12), y = y0 + Math.floor(i / cols) * (ch + 12);
       if (y > H - 40) return;
-      panel(c, x, y, cw, ch, a ? '#fff7e6' : '#caffbf', 22);
+      panel(c, x, y, cw, ch, a ? '#fff7e6' : id === 'new' ? '#caffbf' : '#bde0fe', 22);
       if (a) {
         ell(c, x + cw / 2, y + 52, 36, 36); fs(c, '#d8f3dc', 3);
         drawCritter(c, AVATARS[a.avatar % 6], x + cw / 2, y + 82, 1.1, this.t + i, { noShadow: true });
         txt(c, a.name, x + cw / 2, y + 112, 17, '#3d2c1f', 'center', null);
         icon(c, 'hanger', x + cw / 2 - 22, y + 134, 16); txt(c, totalSkins(a) + '/108', x + cw / 2 + 8, y + 135, 14, '#8d5a3b', 'center', null);
-        UI.btn(x, y, cw, ch, () => { overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: () => { Save.data.current = id; Save.write(); Sfx.play('win'); setScene(new Menu()); } }); });
-      } else {
-        txt(c, '+', x + cw / 2, y + ch / 2 - 6, 70, '#fff');
+        UI.btn(x, y, cw, ch, () => { overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: () => { Save.data.current = id; Save.write(); Sfx.play('win'); Net.refresh(); setScene(new Menu()); } }); });
+        roundBtn(c, x + cw - 18, y + 18, 15, '#fff', 'trash', () => askDelete(id, a));
+      } else if (id === 'new') {
+        txt(c, '+', x + cw / 2, y + ch / 2 - 16, 64, '#fff');
+        txt(c, 'Neues Konto', x + cw / 2, y + ch - 30, 16, '#2d6a4f', 'center', null);
         UI.btn(x, y, cw, ch, () => setScene(new NewAccount()));
         if (!list.length) drawHand(c, x + cw / 2 + 10, y + ch / 2 + 30 + Math.abs(Math.sin(this.t * 4)) * 10, 1.5);
+      } else {
+        icon(c, 'lock', x + cw / 2, y + ch / 2 - 18, 46);
+        txt(c, 'Ich habe schon', x + cw / 2, y + ch - 46, 15, '#1d4e89', 'center', null);
+        txt(c, 'ein Konto', x + cw / 2, y + ch - 26, 15, '#1d4e89', 'center', null);
+        UI.btn(x, y, cw, ch, () => setScene(new LoginScene()));
       }
     });
   }
 }
+// Konto löschen: Geheim-Code, nochmal bestätigen, dann auch auf dem Server löschen
+function askDelete(id, a) {
+  overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: () => {
+    overlay = new ConfirmDialog({ text: 'Konto „' + a.name + '“ wirklich löschen? Alle Skins und der ganze Fortschritt sind dann für immer weg – auch auf anderen Geräten.', onYes: async () => {
+      if (a.token) {
+        overlay = new MsgDialog({ text: 'Konto wird gelöscht …', wait: true });
+        const r = await Net.call({ action: 'delete', login: a.login, token: a.token });
+        if (!r || (r.status !== 200 && r.status !== 401)) { overlay = new MsgDialog({ text: 'Keine Verbindung zum Server. Das Konto wurde nicht gelöscht. Bitte später nochmal versuchen.' }); return; }
+      }
+      delete Save.data.accounts[id]; if (Save.data.current === id) Save.data.current = null; Save.write(); Sfx.play('bad');
+      if (!(scene instanceof Accounts)) setScene(new Accounts());
+      overlay = new MsgDialog({ text: 'Das Konto wurde gelöscht.' });
+    } });
+  } });
+}
 
-class NewAccount {
-  constructor() { this.t = 0; this.step = 'name'; this.avatar = Math.floor(rnd() * 6); }
+class ConfirmDialog {
+  constructor(o) { this.o = o; this.t = 0; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; }
+  draw(c) {
+    const lines = wrapLines(c, this.o.text, Math.min(W - 30, 380) - 48, 18);
+    const w = Math.min(W - 30, 380), h = 150 + lines.length * 25, x = (W - w) / 2, y = (H - h) / 2;
+    c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
+    panel(c, x, y, w, h, '#fff7e6', 24);
+    icon(c, 'trash', W / 2, y + 40, 40);
+    lines.forEach((l, i) => txt(c, l, W / 2, y + 86 + i * 25, 18, '#3d2c1f', 'center', null));
+    roundBtn(c, W / 2 - 60, y + h - 10, 28, '#ced4da', 'cross', () => this.close());
+    roundBtn(c, W / 2 + 60, y + h - 10, 28, '#ef476f', 'check', () => { this.close(); this.o.onYes(); });
+  }
+  down() {} move() {} up() {}
+}
+class MsgDialog {
+  constructor(o) { this.o = o; this.t = 0; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; if (this.o.onClose) this.o.onClose(); }
+  draw(c) {
+    const lines = wrapLines(c, this.o.text, Math.min(W - 30, 380) - 48, 18);
+    const w = Math.min(W - 30, 380), h = 90 + lines.length * 25, x = (W - w) / 2, y = (H - h) / 2;
+    c.fillStyle = 'rgba(16,28,18,.6)'; c.fillRect(0, 0, W, H);
+    panel(c, x, y, w, h, '#fff7e6', 24);
+    lines.forEach((l, i) => txt(c, l, W / 2, y + 40 + i * 25, 18, '#3d2c1f', 'center', null));
+    if (this.o.wait) { for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + h - 28, 6, 6); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); } }
+    else roundBtn(c, W / 2, y + h - 6, 26, '#06d6a0', 'check', () => this.close());
+    UI.btn(0, 0, W, H, () => {}); UI.next.push(UI.next.splice(UI.next.length - 2, 1)[0]);
+  }
+  down() {} move() {} up() {}
+}
+
+// Konto-Seite: Login-Code anzeigen, Geheim-Code anzeigen, abmelden, löschen
+class AccountPanel {
+  constructor() { this.t = 0; this.showCode = false; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; }
+  draw(c) {
+    const a = ACC(); if (!a) { this.close(); return; }
+    const w = Math.min(W - 24, 400), h = 470, x = (W - w) / 2, y = (H - h) / 2;
+    c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
+    panel(c, x, y, w, h, '#fff7e6', 26);
+    roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
+    ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
+    txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
+    const st = Net.status(a); ell(c, W / 2 - 70, y + 160, 6, 6); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - 58, y + 161, 13, '#8d5a3b', 'left', null);
+    txt(c, 'Dein Login-Code:', W / 2, y + 196, 15, '#8d5a3b', 'center', null);
+    rrPath(c, W / 2 - 110, y + 210, 220, 44, 12); fs(c, '#fff', 3); txt(c, a.login || '–', W / 2, y + 233, 24, '#118ab2', 'center', null);
+    txt(c, 'Dein Geheim-Code:', W / 2, y + 282, 15, '#8d5a3b', 'center', null);
+    if (this.showCode) a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 56; rrPath(c, cx - 23, y + 296, 46, 46, 12); fs(c, '#fff', 3); drawSym(c, k, cx, y + 319, 15); });
+    else { rrPath(c, W / 2 - 110, y + 296, 220, 46, 12); fs(c, '#e9ecef', 3); txt(c, 'antippen zum Zeigen', W / 2, y + 320, 15, '#495057', 'center', null); UI.btn(W / 2 - 110, y + 296, 220, 46, () => { this.showCode = true; }); }
+    const by = y + h - 56;
+    rrPath(c, x + 20, by - 26, w / 2 - 30, 52, 18); fs(c, '#ffd166', 3); txt(c, 'Abmelden', x + 20 + (w / 2 - 30) / 2, by, 17, '#3d2c1f', 'center', null);
+    UI.btn(x + 20, by - 26, w / 2 - 30, 52, () => { Net.syncNow(); Save.data.current = null; Save.write(); this.close(); setScene(new Accounts()); });
+    rrPath(c, x + w / 2 + 10, by - 26, w / 2 - 30, 52, 18); fs(c, '#ffc8c8', 3); txt(c, 'Konto löschen', x + w / 2 + 10 + (w / 2 - 30) / 2, by, 17, '#9d0208', 'center', null);
+    UI.btn(x + w / 2 + 10, by - 26, w / 2 - 30, 52, () => askDelete(Save.data.current, a));
+  }
+  down() {} move() {} up() {}
+}
+
+// Anmelden mit bestehendem Konto: Name + Geheim-Code ODER Login-Code
+class LoginScene {
+  constructor() { this.t = 0; this.mode = 'choose'; this.err = ''; this.busy = false; }
   enter() { FX.clear(); nameInput.value = ''; }
   update(dt) { this.t += dt; }
   leave(to) { nameInput.style.display = 'none'; nameInput.blur(); setScene(to); }
+  setMode(m) { this.mode = m; this.err = ''; nameInput.value = ''; nameInput.placeholder = m === 'code' ? 'z. B. K7P2-9QXA' : 'Dein Fantasiename'; nameInput.maxLength = m === 'code' ? 9 : 14; }
+  async done(r) {
+    this.busy = false;
+    if (r && r.status === 200) { adoptAccount(r.data); Sfx.play('win'); this.leave(new Menu()); return; }
+    const e = r && r.data && r.data.error;
+    this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen.' : e === 'not_found' ? (this.mode === 'code' ? 'Diesen Login-Code gibt es nicht.' : 'Ein Konto mit diesem Namen gibt es nicht.') : e === 'wrong_code' ? 'Der Geheim-Code stimmt nicht.' : e === 'locked' ? 'Zu oft falsch. Bitte in ' + r.data.wait + ' Minuten nochmal versuchen.' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
+    Sfx.play('bad');
+  }
+  draw(c) {
+    skyBg(c);
+    roundBtn(c, 44, 44, 28, '#fff', 'back', () => (this.mode === 'choose' ? this.leave(new Accounts()) : this.setMode('choose')), '#ffd166');
+    const w = Math.min(W - 28, 420), x = (W - w) / 2, y = 110;
+    if (this.mode === 'choose') {
+      nameInput.style.display = 'none';
+      panel(c, x, y, w, 300, '#fff7e6', 26);
+      icon(c, 'lock', W / 2, y + 46, 46);
+      txt(c, 'Wie möchtest du dich anmelden?', W / 2, y + 96, 17, '#3d2c1f', 'center', null);
+      const btn = (yy, label, col, fn) => { rrPath(c, x + 24, yy, w - 48, 58, 18); fs(c, col, 3); txt(c, label, W / 2, yy + 30, 18, '#3d2c1f', 'center', null); UI.btn(x + 24, yy, w - 48, 58, fn); };
+      btn(y + 124, 'Mit Name + Geheim-Code', '#caffbf', () => this.setMode('name'));
+      btn(y + 196, 'Mit Login-Code', '#bde0fe', () => this.setMode('code'));
+      return;
+    }
+    panel(c, x, y, w, 300, '#fff7e6', 26);
+    txt(c, this.mode === 'code' ? 'Gib deinen Login-Code ein' : 'Wie heißt dein Konto?', W / 2, y + 44, 18, '#3d2c1f', 'center', null);
+    Object.assign(nameInput.style, { display: this.busy || overlay ? 'none' : 'block', left: (x + 24) + 'px', top: (y + 70) + 'px', width: (w - 48) + 'px', height: '56px' });
+    if (this.mode === 'code') nameInput.value = nameInput.value.toUpperCase();
+    if (this.err) { const L = wrapLines(c, this.err, w - 48, 15); L.forEach((l, i) => txt(c, l, W / 2, y + 150 + i * 20, 15, '#c1121f', 'center', null)); }
+    const ok = nameInput.value.trim().length >= (this.mode === 'code' ? 8 : 2) && !this.busy;
+    if (this.busy) for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 240, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
+    else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 240, 32, '#06d6a0', 'check', ok ? () => {
+      const v = nameInput.value.trim(); nameInput.blur();
+      if (this.mode === 'code') { this.busy = true; Net.call({ action: 'login', login: v }).then(r => this.done(r)); }
+      else overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r => this.done(r)); } });
+    } : null); c.restore(); }
+  }
+}
+
+class NewAccount {
+  constructor() { this.t = 0; this.step = 'name'; this.avatar = Math.floor(rnd() * 6); this.err = ''; }
+  enter() { FX.clear(); nameInput.value = ''; nameInput.placeholder = 'Fantasiename'; nameInput.maxLength = 14; }
+  update(dt) { this.t += dt; }
+  leave(to) { nameInput.style.display = 'none'; nameInput.blur(); setScene(to); }
+  async register(code) {
+    this.step = 'wait';
+    const r = await Net.call({ action: 'register', name: this.name, code, avatar: this.avatar });
+    if (r && r.status === 200) { adoptAccount(r.data); this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return; }
+    const e = r && r.data && r.data.error;
+    this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen und nochmal versuchen.' : e === 'name_taken' ? 'Diesen Namen gibt es schon. Denk dir einen anderen aus!' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
+    this.step = 'name'; Sfx.play('bad');
+  }
   draw(c) {
     skyBg(c);
     roundBtn(c, 44, 44, 28, '#fff', 'back', () => this.leave(new Accounts()), '#ffd166');
     const w = Math.min(W - 28, 420), x = (W - w) / 2, y = 100;
     if (this.step === 'name') {
-      panel(c, x, y, w, 330, '#fff7e6', 26);
+      panel(c, x, y, w, 350, '#fff7e6', 26);
       ell(c, W / 2, y + 60, 40, 40); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[this.avatar], W / 2, y + 96, 1.3, this.t, { noShadow: true });
       UI.btn(W / 2 - 44, y + 16, 88, 88, () => { this.avatar = (this.avatar + 1) % 6; Sfx.play('tap'); });
       icon(c, 'retry', W / 2 + 44, y + 30, 22);
@@ -180,12 +316,17 @@ class NewAccount {
       const iw = w - 110;
       Object.assign(nameInput.style, { display: 'block', left: (x + 20) + 'px', top: (y + 172) + 'px', width: iw + 'px', height: '54px' });
       roundBtn(c, x + w - 46, y + 199, 26, '#ffd166', 'retry', () => { nameInput.value = pick(NAME_A) + ' ' + pick(NAME_B) + ' ' + ri(1, 99); Sfx.play('tap'); });
+      if (this.err) wrapLines(c, this.err, w - 40, 14).forEach((l, i) => txt(c, l, W / 2, y + 246 + i * 18, 14, '#c1121f', 'center', null));
       const ok = nameInput.value.trim().length >= 2;
-      c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 280, 32, '#06d6a0', 'check', ok ? () => {
-        this.name = nameInput.value.trim().slice(0, 14); nameInput.style.display = 'none'; nameInput.blur();
+      c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 300, 32, '#06d6a0', 'check', ok ? () => {
+        this.name = nameInput.value.trim().slice(0, 14); nameInput.style.display = 'none'; nameInput.blur(); this.err = '';
         this.step = 'code';
-        overlay = new CodePad({ onDone: code => { this.code = code; createAccount(this.name, code); ACC().avatar = this.avatar; Save.write(); this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); }, onCancel: () => { this.step = 'name'; } });
+        overlay = new CodePad({ onDone: code => this.register(code), onCancel: () => { this.step = 'name'; } });
       } : null); c.restore();
+    } else if (this.step === 'wait') {
+      panel(c, x, y, w, 160, '#fff7e6', 26);
+      txt(c, 'Konto wird angelegt …', W / 2, y + 60, 18, '#3d2c1f', 'center', null);
+      for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 110, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
     } else if (this.step === 'done' && ACC()) {
       const a = ACC();
       panel(c, x, y, w, 380, '#fff7e6', 26);
@@ -193,8 +334,8 @@ class NewAccount {
       txt(c, a.name, W / 2, y + 140, 24, '#3d2c1f', 'center', null);
       txt(c, 'Merk dir deinen Geheim-Code:', W / 2, y + 180, 15, '#8d5a3b', 'center', null);
       a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 58; rrPath(c, cx - 24, y + 196, 48, 48, 12); fs(c, '#fff', 3); drawSym(c, k, cx, y + 220, 16); });
-      txt(c, 'Login-Code für andere Geräte:', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
-      rrPath(c, W / 2 - 100, y + 286, 200, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null);
+      txt(c, 'Dein Login-Code (für andere Geräte):', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
+      rrPath(c, W / 2 - 110, y + 286, 220, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null);
       roundBtn(c, W / 2, y + 380, 34, '#06d6a0', 'play', () => this.leave(new Menu()));
     }
   }
@@ -466,7 +607,7 @@ function resize() {
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
 }
-function setScene(s) { scene = s; overlay = null; if (s.constructor.name !== 'NewAccount') nameInput.style.display = 'none'; if (s.enter) s.enter(); }
+function setScene(s) { scene = s; overlay = null; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); UI.next = [];
@@ -500,7 +641,7 @@ cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
 cv.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('resize', resize);
-document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) Save.write(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });
 
 Save.load();
 resize();

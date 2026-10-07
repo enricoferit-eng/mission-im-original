@@ -1,0 +1,8 @@
+{
+  "name": "mission-im-original",
+  "private": true,
+  "description": "Mission: Im Original – Kinder-Abenteuer mit Konten-Server",
+  "dependencies": {
+    "@vercel/blob": "2.8.1"
+  }
+}

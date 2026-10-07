@@ -43,8 +43,57 @@ const Save = {
     this.data = d && d.v === 2 ? Object.assign(this.defaults(), d) : this.defaults();
     if (this.data.current && !this.data.accounts[this.data.current]) this.data.current = null;
   },
-  write() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.data)); } catch (e) { /* privater Modus */ } },
+  write(dirty = true) {
+    const acc = ACC();
+    if (dirty && acc && acc.token) { acc.changed = Date.now(); Net.soon(); }
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.data)); } catch (e) { /* privater Modus */ }
+  },
 };
+// ---------- Server-Anbindung: Konten zentral speichern, auf jedem Gerät anmelden ----------
+const API_URL = 'https://mission-im-original.vercel.app/api/konto';
+const Net = {
+  st: 'idle', tm: null,
+  async call(body, keep) {
+    try {
+      const r = await fetch(API_URL, { method: 'POST', keepalive: !!keep, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      let data = {}; try { data = await r.json(); } catch (e) { /* leer */ }
+      return { status: r.status, data };
+    } catch (e) { return null; }
+  },
+  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound }; },
+  soon() { clearTimeout(this.tm); this.tm = setTimeout(() => this.syncNow(), 4000); },
+  async syncNow(keep) {
+    const a = ACC(); if (!a || !a.token) return;
+    clearTimeout(this.tm); this.st = 'saving';
+    const sent = Date.now();
+    const r = await this.call({ action: 'save', login: a.login, token: a.token, avatar: a.avatar, data: this.dataOf(a) }, keep);
+    if (r && r.status === 200) { a.synced = sent; this.st = 'ok'; Save.write(false); } else this.st = 'off';
+  },
+  // Beim Betreten eines Kontos: neuesten Stand vom Server holen (oder eigenen ungespeicherten Stand hochladen)
+  async refresh() {
+    const a = ACC(); if (!a || !a.token) return;
+    if ((a.changed || 0) > (a.synced || 0)) { this.syncNow(); return; }
+    const r = await this.call({ action: 'login', login: a.login });
+    if (r && r.status === 200 && ACC() === a) { Object.assign(a, accFromServer(r.data), { synced: Date.now(), changed: 0 }); this.st = 'ok'; Save.write(false); }
+    else if (!r) this.st = 'off';
+  },
+  status(a) {
+    if (!a || !a.token) return { col: '#adb5bd', text: 'nur auf diesem Gerät' };
+    if (this.st === 'off') return { col: '#ef476f', text: 'offline – wird später gespeichert' };
+    if (this.st === 'saving' || (a.changed || 0) > (a.synced || 0)) return { col: '#ffd166', text: 'wird gespeichert …' };
+    return { col: '#06d6a0', text: 'auf dem Server gespeichert' };
+  },
+};
+setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.synced || 0)) Net.syncNow(); }, 30000);
+function accFromServer(p) {
+  const d = p.data || {}, diff = d.diff || {};
+  ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
+  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: !!d.sound, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff };
+}
+function adoptAccount(p) {
+  Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });
+  Save.data.current = p.login; Save.write(false); Net.st = 'ok';
+}
 function ACC() { return Save.data && Save.data.current ? Save.data.accounts[Save.data.current] : null; }
 function loginCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 8; i++) s += A[Math.floor(rnd() * A.length)] + (i === 3 ? '-' : ''); return s; }
 function createAccount(name, code) {
@@ -219,6 +268,9 @@ function icon(c, name, x, y, s, col) {
     case 'hanger': c.beginPath(); c.moveTo(0, -6); c.lineTo(-17, 8); c.lineTo(17, 8); c.closePath(); c.lineWidth = 8; c.strokeStyle = OL; c.stroke(); c.lineWidth = 4; c.strokeStyle = '#e9ecef'; c.stroke();
       c.beginPath(); c.arc(0, -11, 5, Math.PI, Math.PI * 2.4); c.lineWidth = 3; c.strokeStyle = OL; c.stroke(); break;
     case 'hand': drawHand(c, 0, 0, 1); break;
+    case 'trash':
+      rrPath(c, -12, -10, 24, 26, 4); fs(c, col || '#ef476f', 3); rrPath(c, -16, -16, 32, 7, 3); fs(c, col || '#ef476f', 3); rrPath(c, -5, -20, 10, 5, 2); fs(c, col || '#ef476f', 2.5);
+      line(c, -5, -4, -5, 10, 2.5, '#fff', false); line(c, 5, -4, 5, 10, 2.5, '#fff', false); break;
     case 'puff': for (let i = 0; i < 5; i++) { ell(c, Math.cos(i * 1.3) * 10, Math.sin(i * 1.3) * 7, 8, 8); fs(c, '#dee2e6', 2.5); } break;
   }
   c.restore();
