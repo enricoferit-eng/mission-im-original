@@ -14,7 +14,8 @@ const CLAIMS = {
 // Original-Logo (Datei von im-original.de). Bis es geladen ist, zeichnen wir eine Ersatz-Schrift.
 const LOGO = new Image();
 let LOGO_OK = false;
-LOGO.onload = () => { LOGO_OK = true; if (typeof GROUND !== 'undefined') GROUND = null; };
+LOGO.onload = () => { LOGO_OK = true; if (typeof GROUND !== 'undefined') GROUND = null; clearSprites(); LOGO_CACHE.clear(); };
+const LOGO_CACHE = new Map();
 LOGO.src = 'assets/logo.png';
 const LOGO_RATIO = 1280 / 529;
 // Logo in Breite w, Mitte bei (x,y). halo = heller Rand für dunkle/bunte Hintergründe
@@ -22,9 +23,17 @@ function drawLogo(c, x, y, w, halo = true) {
   const h = w / LOGO_RATIO;
   if (LOGO_OK) {
     if (halo) {
-      c.save(); c.shadowColor = 'rgba(255,255,255,.95)'; c.shadowBlur = Math.max(6, w * 0.04);
-      for (let i = 0; i < 2; i++) c.drawImage(LOGO, x - w / 2, y - h / 2, w, h);
-      c.restore();
+      // Leuchtrand nur einmal pro Größe berechnen (shadowBlur ist teuer)
+      const key = Math.round(w), pad = Math.ceil(Math.max(6, w * 0.04) * 2);
+      let cv = LOGO_CACHE.get(key);
+      if (!cv) {
+        cv = document.createElement('canvas'); const q = 2; cv.width = (key + pad * 2) * q; cv.height = (Math.ceil(h) + pad * 2) * q;
+        const g = cv.getContext('2d'); g.scale(q, q); g.shadowColor = 'rgba(255,255,255,.95)'; g.shadowBlur = Math.max(6, w * 0.04);
+        for (let i = 0; i < 2; i++) g.drawImage(LOGO, pad, pad, key, h);
+        g.shadowBlur = 0; g.drawImage(LOGO, pad, pad, key, h); LOGO_CACHE.set(key, cv);
+      }
+      c.drawImage(cv, x - w / 2 - pad, y - h / 2 - pad, key + pad * 2, Math.ceil(h) + pad * 2);
+      return;
     }
     c.drawImage(LOGO, x - w / 2, y - h / 2, w, h);
   } else {

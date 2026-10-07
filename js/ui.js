@@ -66,14 +66,15 @@ class Menu {
   draw(c) {
     skyBg(c);
     const a = ACC(); if (!a) return;
-    const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
-    logo(c, W / 2, Math.max(132, H * 0.15), ls);
-    claimBand(c, CLAIMS.urlaub, W / 2, Math.max(132, H * 0.15) + 76 * ls, 15 * Math.min(1.2, ls));
+    const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.2) : clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
+    const LY = land ? 70 * ls + 18 : Math.max(132, H * 0.15);
+    logo(c, W / 2, LY, ls);
+    claimBand(c, CLAIMS.urlaub, W / 2, LY + 76 * ls, 15 * Math.min(1.2, Math.max(0.8, ls)));
     accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     const wide = W > H * 0.95;
-    const top = Math.max(132, H * 0.15) + 102 * ls, bottom = H - 24;
+    const top = LY + 102 * ls, bottom = H - (land ? 14 : 24);
     DIFFS.forEach((d, i) => {
       let x, y, w, h;
       if (wide) { w = Math.min(240, (W - 80) / 3); h = Math.min(bottom - top, w * 1.35); x = W / 2 + (i - 1) * (w + 20) - w / 2; y = top + (bottom - top - h) / 2; }
@@ -114,6 +115,7 @@ class CodePad {
   draw(c) {
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
     const w = Math.min(W - 24, 380), h = 470, x = (W - w) / 2, y = (H - h) / 2, sx = shakeX(this.shake);
+    fitBegin(c, w, h);
     panel(c, x + sx, y, w, h, '#fff7e6', 26);
     if (this.o.acc) { ell(c, W / 2, y + 46, 30, 30); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[this.o.acc.avatar % 6], W / 2, y + 70, 0.95, this.t, { noShadow: true }); txt(c, this.o.acc.name, W / 2, y + 96, 18, '#3d2c1f', 'center', null); }
     else { icon(c, 'lock', W / 2, y + 50, 46); txt(c, 'Dein Geheim-Code', W / 2, y + 92, 18, '#3d2c1f', 'center', null); }
@@ -125,6 +127,7 @@ class CodePad {
     }
     roundBtn(c, x + 46, y + h - 44, 26, '#ced4da', 'cross', () => { this.close(); if (this.o.onCancel) this.o.onCancel(); });
     roundBtn(c, x + w - 46, y + h - 44, 26, '#ffd166', 'back', () => { this.code.pop(); }, '#fff');
+    c.restore();
   }
   add(k) {
     if (this.code.length >= 4) return;
@@ -201,11 +204,13 @@ class ConfirmDialog {
     const lines = wrapLines(c, this.o.text, Math.min(W - 30, 380) - 48, 18);
     const w = Math.min(W - 30, 380), h = 150 + lines.length * 25, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
+    fitBegin(c, w, h + 40);
     panel(c, x, y, w, h, '#fff7e6', 24);
     icon(c, 'trash', W / 2, y + 40, 40);
     lines.forEach((l, i) => txt(c, l, W / 2, y + 86 + i * 25, 18, '#3d2c1f', 'center', null));
     roundBtn(c, W / 2 - 60, y + h - 10, 28, '#ced4da', 'cross', () => this.close());
     roundBtn(c, W / 2 + 60, y + h - 10, 28, '#ef476f', 'check', () => { this.close(); this.o.onYes(); });
+    c.restore();
   }
   down() {} move() {} up() {}
 }
@@ -217,10 +222,12 @@ class MsgDialog {
     const lines = wrapLines(c, this.o.text, Math.min(W - 30, 380) - 48, 18);
     const w = Math.min(W - 30, 380), h = 90 + lines.length * 25, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.6)'; c.fillRect(0, 0, W, H);
+    fitBegin(c, w, h + 40);
     panel(c, x, y, w, h, '#fff7e6', 24);
     lines.forEach((l, i) => txt(c, l, W / 2, y + 40 + i * 25, 18, '#3d2c1f', 'center', null));
     if (this.o.wait) { for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + h - 28, 6, 6); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); } }
     else roundBtn(c, W / 2, y + h - 6, 26, '#06d6a0', 'check', () => this.close());
+    c.restore();
     UI.btn(0, 0, W, H, () => {}); UI.next.push(UI.next.splice(UI.next.length - 2, 1)[0]);
   }
   down() {} move() {} up() {}
@@ -235,6 +242,7 @@ class AccountPanel {
     const a = ACC(); if (!a) { this.close(); return; }
     const w = Math.min(W - 24, 400), h = 470, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
+    fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
@@ -250,6 +258,7 @@ class AccountPanel {
     UI.btn(x + 20, by - 26, w / 2 - 30, 52, () => { Net.syncNow(); Save.data.current = null; Save.write(); this.close(); setScene(new Accounts()); });
     rrPath(c, x + w / 2 + 10, by - 26, w / 2 - 30, 52, 18); fs(c, '#ffc8c8', 3); txt(c, 'Konto löschen', x + w / 2 + 10 + (w / 2 - 30) / 2, by, 17, '#9d0208', 'center', null);
     UI.btn(x + w / 2 + 10, by - 26, w / 2 - 30, 52, () => askDelete(Save.data.current, a));
+    c.restore();
   }
   down() {} move() {} up() {}
 }
@@ -271,7 +280,7 @@ class LoginScene {
   draw(c) {
     skyBg(c);
     roundBtn(c, 44, 44, 28, '#fff', 'back', () => (this.mode === 'choose' ? this.leave(new Accounts()) : this.setMode('choose')), '#ffd166');
-    const w = Math.min(W - 28, 420), x = (W - w) / 2, y = 110;
+    const w = Math.min(W - 28, 420), x = (W - w) / 2, y = H < 560 ? 12 : 110;
     if (this.mode === 'choose') {
       nameInput.style.display = 'none';
       panel(c, x, y, w, 300, '#fff7e6', 26);
@@ -313,7 +322,7 @@ class NewAccount {
   draw(c) {
     skyBg(c);
     roundBtn(c, 44, 44, 28, '#fff', 'back', () => this.leave(new Accounts()), '#ffd166');
-    const w = Math.min(W - 28, 420), x = (W - w) / 2, y = 100;
+    const w = Math.min(W - 28, 420), x = (W - w) / 2, y = H < 560 ? 8 : 100;
     if (this.step === 'name') {
       panel(c, x, y, w, 350, '#fff7e6', 26);
       ell(c, W / 2, y + 60, 40, 40); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[this.avatar], W / 2, y + 96, 1.3, this.t, { noShadow: true });
@@ -344,7 +353,7 @@ class NewAccount {
       a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 58; rrPath(c, cx - 24, y + 196, 48, 48, 12); fs(c, '#fff', 3); drawSym(c, k, cx, y + 220, 16); });
       txt(c, 'Dein Login-Code (für andere Geräte):', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
       rrPath(c, W / 2 - 110, y + 286, 220, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null);
-      roundBtn(c, W / 2, y + 380, 34, '#06d6a0', 'play', () => this.leave(new Menu()));
+      roundBtn(c, H < 560 ? x + w + 40 : W / 2, H < 560 ? y + 190 : y + 380, 34, '#06d6a0', 'play', () => this.leave(new Menu()));
     }
   }
 }
@@ -493,9 +502,9 @@ class StageMap {
     for (let s = 0; s < d.stars; s++) icon(c, 'star', 96 + s * 30, 44, 28);
     drawLogo(c, W / 2 + 30, 44, Math.min(120, W - 290), true);
     // Karten-Raster: Handy 1 Spalte, breit 2 Spalten
-    const cols = W >= 760 ? 2 : 1, top = 86, bottom = H - 92, gap = 10;
-    const cw = cols === 1 ? Math.min(W - 24, 520) : Math.min((W - 36) / 2, 460), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
-    const ch = Math.min(cols === 2 ? 190 : 150, (bottom - top - gap * (6 / cols - 1)) / (6 / cols));
+    const cols = W > H ? 3 : W >= 760 ? 2 : 1, top = H < 560 ? 72 : 86, bottom = H - (H < 560 ? 80 : 92), gap = 10;
+    const cw = cols === 1 ? Math.min(W - 24, 520) : Math.min((W - 24 - gap * (cols - 1)) / cols, 460), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
+    const ch = Math.min(cols > 1 ? 190 : 150, (bottom - top - gap * (6 / cols - 1)) / (6 / cols));
     STAGE_ORDER.forEach((id, i) => {
       const col = i % cols, row = Math.floor(i / cols), x = x0 + col * (cw + gap), y = top + row * (ch + gap);
       const open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
@@ -508,7 +517,7 @@ class StageMap {
       // Nummer der Geschichte
       ell(c, x + 18, y + 18, 13, 13); fs(c, open ? BRAND.lime : '#adb5bd', 2.5); txt(c, String(i + 1), x + 18, y + 19, 15, '#fff', 'center', null);
       const tx = x + aw + 20, tw = cw - aw - 30;
-      const nameSize = Math.min(24, ch * 0.2);
+      let nameSize = Math.min(24, ch * 0.2); c.font = `900 ${nameSize}px ${FONT}`; { const nw = c.measureText(info.name).width; if (nw > tw - 56) nameSize *= (tw - 56) / nw; }
       txt(c, info.name, tx, y + ch * 0.24, nameSize, open ? BRAND.olive : '#6c757d', 'left', null);
       wrapLines(c, info.sub, tw - 46, Math.min(15, ch * 0.11)).slice(0, 2).forEach((l, k) => txt(c, l, tx, y + ch * 0.42 + k * 17, Math.min(14, ch * 0.105), '#6b5a48', 'left', null));
       // Ausrüstungsteil dieses Bereichs
@@ -634,7 +643,7 @@ class Wardrobe {
   close() { if (overlay === this) overlay = null; }
   draw(c) {
     c.fillStyle = 'rgba(16,28,18,.72)'; c.fillRect(0, 0, W, H);
-    const w = Math.min(W - 20, 560), h = Math.min(H - 30, 660), x = (W - w) / 2, y = (H - h) / 2;
+    const land = W > H, w = Math.min(W - 20, land ? 860 : 560), h = Math.min(H - 20, 660), x = (W - w) / 2, y = (H - h) / 2;
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
     icon(c, 'hanger', x + 34, y + 32, 34);
@@ -650,7 +659,7 @@ class Wardrobe {
       UI.btn(tx, y + 64, tw, 52, () => { this.stage = id; Sfx.play('tap'); });
     });
     const sp = SP(this.diff, this.stage), ids = stageSkins(this.stage, this.diff);
-    const cols = 3, cw = (w - 30 - 2 * 10) / cols, ch = Math.min(170, (h - 200 - 10) / 2);
+    const cols = land ? 6 : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     ids.forEach((sid, i) => {
       const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10);
       const own = sp.skins.includes(sid), eq = d.equip === sid;
@@ -679,7 +688,10 @@ class ClearOverlay {
   draw(c) {
     const o = this.o, t = this.t;
     c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
-    const cx = W / 2, cy = H * 0.38, R = Math.min(W, H) * 0.42;
+    // im flachen Querformat: auf eine virtuelle Höhe von 700 skalieren
+    const HH = Math.max(H, 700), sk = H / HH;
+    c.save(); c.translate(W / 2, 0); c.scale(sk, sk); c.translate(-W / 2, 0);
+    const cx = W / 2, cy = HH * 0.38, R = Math.min(W, HH) * 0.42;
     c.save(); c.translate(cx, cy); c.rotate(t * 0.3);
     for (let i = 0; i < 12; i++) { c.rotate(TAU / 12); polyPath(c, [[0, 0], [R, -R * 0.12], [R, R * 0.12]]); c.fillStyle = 'rgba(255,214,10,.16)'; c.fill(); }
     c.restore();
@@ -700,9 +712,10 @@ class ClearOverlay {
     for (let i = 0; i < 6; i++) { ell(c, 0 + i * 22, 4, 8, 8); fs(c, i < o.have ? '#06d6a0' : '#dee2e6', 2); }
     c.restore();
     if (t > 1.4) {
-      roundBtn(c, cx - 60, H - 80, 34, '#06d6a0', 'retry', () => this.close(true));
-      roundBtn(c, cx + 60, H - 80, 34, '#ffd166', 'home', () => this.close(false));
+      roundBtn(c, cx - 60, HH - 80, 34, '#06d6a0', 'retry', () => this.close(true));
+      roundBtn(c, cx + 60, HH - 80, 34, '#ffd166', 'home', () => this.close(false));
     }
+    c.restore();
   }
   down() {} move() {} up() {}
 }
@@ -710,18 +723,64 @@ class ClearOverlay {
 // ---------- Start, Spielschleife, Eingabe ----------
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1, scene = null, overlay = null, last = performance.now();
+// Leistung: Auflösung max. 2x, bei ruckelnden Geräten automatisch etwas niedriger
+const Perf = { cap: 2, acc: 0, n: 0, slow: 0 };
+const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+let frozen = null, frozenFor = null;
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  DPR = Math.min(window.devicePixelRatio || 1, Perf.cap);
+  frozenFor = null;
   W = window.innerWidth; H = window.innerHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
 }
 function setScene(s) { scene = s; overlay = null; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
+// Hochformat auf dem Handy: bitte drehen (das Spiel ist fürs Querformat gemacht)
+function drawRotate(c, t) {
+  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  drawLogo(c, W / 2, H * 0.2, Math.min(240, W * 0.6), true);
+  const a = (Math.sin(t * 1.6) * 0.5 + 0.5) * Math.PI / 2;
+  c.save(); c.translate(W / 2, H * 0.48); c.rotate(-a);
+  rrPath(c, -40, -70, 80, 140, 14); fs(c, '#fbf8f2', 5, BRAND.ink); rrPath(c, -30, -56, 60, 104, 6); fs(c, '#9fd3e6', 2, BRAND.ink);
+  drawAnimal(c, 'dog', 0, 34, 1.1, { t, noShadow: true }); c.restore();
+  c.beginPath(); c.arc(W / 2, H * 0.48, 105, -2.6, -1.2); c.lineWidth = 6; c.strokeStyle = BRAND.lime; c.stroke();
+  polyPath(c, [[W / 2 + 40, H * 0.48 - 110], [W / 2 + 58, H * 0.48 - 92], [W / 2 + 28, H * 0.48 - 88]]); c.fillStyle = BRAND.lime; c.fill();
+  txt(c, 'Bitte dreh dein Handy', W / 2, H * 0.72, 24, '#fff', 'center', BRAND.ink);
+  txt(c, 'ins Querformat', W / 2, H * 0.72 + 32, 24, '#fff', 'center', BRAND.ink);
+}
+// Auf Android: Vollbild + Querformat festhalten (iPhone erlaubt das nicht, dort hilft der Hinweis)
+let triedLock = false;
+function tryLandscape() {
+  if (triedLock || !TOUCH) return; triedLock = true;
+  const el = document.documentElement, rq = el.requestFullscreen || el.webkitRequestFullscreen;
+  try {
+    const pr = rq ? rq.call(el, { navigationUI: 'hide' }) : null;
+    const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* egal */ } };
+    if (pr && pr.then) pr.then(lock).catch(() => {}); else lock();
+  } catch (e) { /* egal */ }
+}
+let rotT = 0;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); UI.next = [];
+  // Leistung messen: dauerhaft unter ~45 Bildern/s -> Auflösung senken
+  Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
+  if (Perf.acc > 2) { const avg = Perf.acc / Perf.n; if (avg > 0.022 && Perf.cap > 1.01 && document.visibilityState === 'visible') { Perf.cap = Math.max(1, Perf.cap - 0.25); resize(); } Perf.acc = 0; Perf.n = 0; }
+  if (TOUCH && H > W) { rotT += dt; try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
   try {
-    scene.update(dt); scene.draw(ctx);
+    // Während Minispielen/Dialogen: Hintergrund einfrieren statt ständig neu zu zeichnen
+    const freeze = overlay && overlay.freezeBg;
+    if (freeze && frozenFor === overlay) {
+      scene.update(dt);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(frozen, 0, 0); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    } else {
+      scene.update(dt); scene.draw(ctx);
+      if (freeze) {
+        if (!frozen) frozen = document.createElement('canvas');
+        if (frozen.width !== cv.width || frozen.height !== cv.height) { frozen.width = cv.width; frozen.height = cv.height; }
+        const fc = frozen.getContext('2d'); fc.setTransform(1, 0, 0, 1, 0, 0); fc.clearRect(0, 0, frozen.width, frozen.height); fc.drawImage(cv, 0, 0); frozenFor = overlay;
+      }
+    }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     if (overlay) { UI.next = []; overlay.update(dt); if (overlay) overlay.draw(ctx); }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -733,6 +792,8 @@ function frame(now) {
 const swallowed = new Set();
 cv.addEventListener('pointerdown', e => {
   e.preventDefault();
+  tryLandscape();
+  if (TOUCH && H > W) return;
   try { cv.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
   const b = UI.hit(e.clientX, e.clientY);
   if (b) { swallowed.add(e.pointerId); Sfx.play('tap'); b.fn(); return; }
@@ -751,6 +812,9 @@ cv.addEventListener('pointercancel', endPtr);
 cv.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('resize', resize);
 document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });
+
+// Diese Fenster decken das Spiel ab: Hintergrund einfrieren spart viel Rechenzeit
+[GameOverlay, QuestDialog, Wardrobe, ClearOverlay, CodePad, AccountPanel, ConfirmDialog, MsgDialog].forEach(K => { K.prototype.freezeBg = true; });
 
 Save.load();
 resize();

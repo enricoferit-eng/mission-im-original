@@ -43,6 +43,14 @@ class GameOverlay {
   }
   lose() { if (this.state === 'play') { this.state = 'lost'; this.endT = 0; Sfx.play('bad'); buzz(250); } }
   layout() {
+    // Querformat: Knöpfe/Herzen/Zeit an die Seiten, Spielfeld bekommt die volle Höhe
+    this.side = W > H * 1.1;
+    if (this.side) {
+      const left = 92, right = this.timed ? 154 : 92, aw = W - left - right - 16, ah = H - 16;
+      this.s = Math.min(aw / GAME_W, ah / GAME_H);
+      this.ox = left + 8 + (aw - GAME_W * this.s) / 2; this.oy = 8 + (ah - GAME_H * this.s) / 2;
+      return;
+    }
     const top = this.timed ? 156 : 84, pad = 10;
     const aw = W - pad * 2, ah = H - top - pad - 6;
     this.s = Math.min(aw / GAME_W, ah / GAME_H);
@@ -71,23 +79,23 @@ class GameOverlay {
   drawStatus(c) {
     // Große, eindeutige Leiste: Leben links, Zeit rechts
     const low = this.timeLeft / this.timeMax < 0.25, pulse = low ? 0.5 + 0.5 * Math.sin(this.t * 12) : 0;
-    const x = 10, y = 80, w = W - 20, h = 68;
+    const side = this.side, x = side ? W - 148 : 10, y = side ? 84 : 80, w = side ? 140 : W - 20, h = side ? 168 : 68;
     panel(c, x, y, w, h, '#3d2c1f', 20);
     if (low) { rrPath(c, x, y, w, h, 20); c.lineWidth = 5; c.strokeStyle = `rgba(239,71,111,${0.4 + pulse * 0.6})`; c.stroke(); }
     for (let i = 0; i < 3; i++) {
-      const hx = x + 34 + i * 46, hy = y + h / 2;
+      const hx = side ? x + 28 + i * 42 : x + 34 + i * 46, hy = side ? y + 36 : y + h / 2;
       const alive = i < this.lives, beat = alive && this.lives === 1 ? 1 + Math.sin(this.t * 10) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(beat, beat); icon(c, alive ? 'heart' : 'heartE', 0, 0, 40); c.restore();
     }
     for (const a of this.lostAnim) {
-      const hx = x + 34 + a.i * 46, hy = y + h / 2, k = a.t;
+      const hx = side ? x + 28 + a.i * 42 : x + 34 + a.i * 46, hy = side ? y + 36 : y + h / 2, k = a.t;
       c.save(); c.globalAlpha = 1 - k;
       c.translate(hx - 10 - k * 20, hy - k * 30); c.rotate(-k * 1.2); c.beginPath(); c.rect(-30, -30, 30, 60); c.clip(); icon(c, 'heart', 10 + k * 20, k * 30, 40 + k * 20); c.restore();
       c.save(); c.globalAlpha = 1 - k;
       c.translate(hx + 10 + k * 20, hy - k * 30); c.rotate(k * 1.2); c.beginPath(); c.rect(0, -30, 30, 60); c.clip(); icon(c, 'heart', -10 - k * 20, k * 30, 40 + k * 20); c.restore();
     }
-    const bx = x + 168, bw = w - 168 - 62, by = y + h / 2 - 14;
-    icon(c, 'clock', bx - 8, y + h / 2, 34);
+    const bx = side ? x - 2 : x + 168, bw = side ? w - 8 : w - 168 - 62, by = side ? y + 122 : y + h / 2 - 14;
+    icon(c, 'clock', side ? x + 26 : bx - 8, side ? y + 88 : y + h / 2, 34);
     rrPath(c, bx + 14, by, bw - 14, 28, 14); fs(c, '#1f150e', 3, '#000');
     const f = clamp(this.timeLeft / this.timeMax, 0, 1);
     if (f > 0) {
@@ -96,7 +104,7 @@ class GameOverlay {
       rrPath(c, bx + 21, by + 5, Math.max(0, (bw - 28) * f), 6, 3); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill();
     }
     const ss = low ? 1 + pulse * 0.15 : 1;
-    c.save(); c.translate(x + w - 32, y + h / 2 + 1); c.scale(ss, ss);
+    c.save(); c.translate(side ? x + w - 40 : x + w - 32, side ? y + 89 : y + h / 2 + 1); c.scale(ss, ss);
     txt(c, String(Math.ceil(this.timeLeft)), 0, 0, 28, low ? '#ff4d6d' : '#fff'); c.restore();
   }
   draw(c) {
@@ -105,15 +113,16 @@ class GameOverlay {
     roundBtn(c, 46, 44, 30, '#fff', 'stop', () => { if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
     const o = this.opts;
     if (o.kind === 'easy' && o.steps) {
-      const n = o.steps.n, w = Math.min(28, (W - 200) / n);
+      const n = o.steps.n, w = Math.min(28, this.side ? (H - 140) / n : (W - 200) / n);
       for (let i = 0; i < n; i++) {
-        const x = W / 2 + (i - (n - 1) / 2) * w, done = i < o.steps.i || (i === o.steps.i && this.state === 'won');
-        ell(c, x, 44, w * 0.32, w * 0.32); fs(c, done ? '#ffd23f' : i === o.steps.i ? '#fff' : 'rgba(255,255,255,.3)', 3);
-        if (done) icon(c, 'star', x, 44, w * 0.5);
+        const x = this.side ? 46 : W / 2 + (i - (n - 1) / 2) * w, yy = this.side ? 110 + i * w : 44, done = i < o.steps.i || (i === o.steps.i && this.state === 'won');
+        ell(c, x, yy, w * 0.32, w * 0.32); fs(c, done ? '#ffd23f' : i === o.steps.i ? '#fff' : 'rgba(255,255,255,.3)', 3);
+        if (done) icon(c, 'star', x, yy, w * 0.5);
       }
     } else if (o.item) {
-      ell(c, W / 2, 44, 30, 30); fs(c, '#fff7e6', 4);
-      drawItem(c, o.item, W / 2, 44, 42);
+      const ix = this.side ? 46 : W / 2, iy = this.side ? 120 : 44;
+      ell(c, ix, iy, 30, 30); fs(c, '#fff7e6', 4);
+      drawItem(c, o.item, ix, iy, 42);
     }
     if (this.timed) this.drawStatus(c);
     c.save();
@@ -221,14 +230,16 @@ function wrapLines(c, text, maxW, size) {
   return out;
 }
 function helpPanel(c, paras, onClose) {
-  const w = Math.min(W - 30, 420), size = 18, lh = 25;
+  const w = Math.min(W - 30, W > H ? 600 : 420), size = 18, lh = 25;
   const lines = []; paras.forEach((p, i) => { if (i) lines.push(''); lines.push(...wrapLines(c, p, w - 48, size)); });
-  const h = 100 + lines.length * lh, x = (W - w) / 2, y = Math.max(20, (H - h) / 2);
+  const h = 100 + lines.length * lh, x = (W - w) / 2, y = (H - h) / 2;
   c.fillStyle = 'rgba(16,28,18,.55)'; c.fillRect(0, 0, W, H);
+  fitBegin(c, w, h + 60);
   panel(c, x, y, w, h, '#fff7e6', 24);
   ell(c, x + 34, y + 34, 20, 20); fs(c, '#bde0fe', 3); icon(c, 'question', x + 34, y + 35, 26, '#118ab2');
   lines.forEach((l, i) => txt(c, l, x + 24, y + 74 + i * lh, size, '#3d2c1f', 'left', null));
   roundBtn(c, x + w / 2, y + h, 26, '#06d6a0', 'check', onClose);
+  c.restore();
   UI.btn(0, 0, W, H, () => {}); UI.next.push(UI.next.splice(UI.next.length - 2, 1)[0]);
 }
 
@@ -909,7 +920,7 @@ function shellMake(env, P) {
       rrPath(c, 30, 370, 340, 24, 10); fs(c, '#a0673a', 3);
       roundDots(c, rounds, round, 40);
       const bc = cups[ball];
-      drawFood(c, 'eisclown', bc.x, 350, 46);
+      if ((lift[ball] || 0) > 0.02) drawFood(c, 'eisclown', bc.x, 344, 36);   // nur sichtbar, wenn die Glocke angehoben ist
       [...cups].sort((a, b) => a.y - b.y).forEach((cp, i) => {
         const ci = cups.indexOf(cp), up = (lift[ci] || 0) * 70, sx = state === 'pick' ? 0 : 0;
         c.save(); c.translate(cp.x + sx + (shake > 0 && state === 'reveal' ? shakeX(shake) : 0), cp.y - up);

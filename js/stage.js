@@ -206,6 +206,16 @@ function buildGround() {
   const yuccaFlat = (x, y, s) => { for (let k = 0; k < 9; k++) { const a = (k / 9) * TAU; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * s, y + Math.sin(a) * s * 0.7); g.lineWidth = 4; g.strokeStyle = '#7fa65a'; g.stroke(); } };
   for (let x = 40; x < WORLD_W; x += 95) if (Math.abs(x - GATE.x) > 70) yuccaFlat(x + R() * 20, 1196, 18);
   for (let y = 240; y < 1160; y += 120) yuccaFlat(30, y + R() * 30, 17);
+  // feste Schatten (Licht von oben links)
+  {
+    const c = g;
+    c.fillStyle = 'rgba(60,35,15,.17)';
+    polyPath(c, [[HOUSE.x + 10, HOUSE.y + HOUSE.h], [HOUSE.x + HOUSE.w, HOUSE.y + HOUSE.h], [HOUSE.x + HOUSE.w + 95, HOUSE.y + HOUSE.h + 55], [HOUSE.x + 70, HOUSE.y + HOUSE.h + 55]]); c.fill();
+    polyPath(c, [[HOUSE.x + HOUSE.w, HOUSE.y], [HOUSE.x + HOUSE.w + 95, HOUSE.y + 55], [HOUSE.x + HOUSE.w + 95, HOUSE.y + HOUSE.h + 55], [HOUSE.x + HOUSE.w, HOUSE.y + HOUSE.h]]); c.fill();
+    polyPath(c, [[SWING.x0, SWING.y + 4], [SWING.x1, SWING.y + 4], [SWING.x1 + 50, SWING.y + 34], [SWING.x0 + 50, SWING.y + 34]]); c.fill();
+    polyPath(c, [[SLIDE.x0, SLIDE.y1], [SLIDE.x1, SLIDE.y1], [SLIDE.x1 + 10, SLIDE.y1 + 14], [SLIDE.x0 + 40, SLIDE.y1 + 40]]); c.fill();
+    for (const d of DECOR) if (d.t === 'cypress') { ell(c, d.x - 10, d.y + 30, 18, 70, -0.6); c.fill(); }
+  }
   GROUND = cv2;
 }
 
@@ -329,7 +339,7 @@ class Play {
   stop() { overlay = null; Save.write(); setScene(new Menu()); }
   update(dt) {
     this.t += dt;
-    this.zoom = clamp(Math.min(W / 560, H / 780), 0.5, 1.6);
+    this.zoom = W > H ? clamp(H / 560, 0.55, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6);
     const p = this.p; p.t += dt;
     if (this.pending) { this.pending.t -= dt; if (this.pending.t <= 0) { const f = this.pending.fn; this.pending = null; f(); } }
     for (const k in this.shake) this.shake[k] = Math.max(0, this.shake[k] - dt);
@@ -673,12 +683,6 @@ class Play {
       }
     }
     if (this.tapMark) { const m = this.tapMark; m.t += 1 / 60; if (m.t < 0.6) { ell(c, m.x, m.y - (m.l ? HOUSE.fz : 0), 14 + m.t * 20, (14 + m.t * 20) * 0.45); c.lineWidth = 3; c.strokeStyle = `rgba(255,255,255,${0.8 - m.t})`; c.stroke(); } }
-    c.fillStyle = 'rgba(60,35,15,.17)';
-    polyPath(c, [[HOUSE.x + 10, HOUSE.y + HOUSE.h], [HOUSE.x + HOUSE.w, HOUSE.y + HOUSE.h], [HOUSE.x + HOUSE.w + 95, HOUSE.y + HOUSE.h + 55], [HOUSE.x + 70, HOUSE.y + HOUSE.h + 55]]); c.fill();
-    polyPath(c, [[HOUSE.x + HOUSE.w, HOUSE.y], [HOUSE.x + HOUSE.w + 95, HOUSE.y + 55], [HOUSE.x + HOUSE.w + 95, HOUSE.y + HOUSE.h + 55], [HOUSE.x + HOUSE.w, HOUSE.y + HOUSE.h]]); c.fill();
-    polyPath(c, [[SWING.x0, SWING.y + 4], [SWING.x1, SWING.y + 4], [SWING.x1 + 50, SWING.y + 34], [SWING.x0 + 50, SWING.y + 34]]); c.fill();
-    polyPath(c, [[SLIDE.x0, SLIDE.y1], [SLIDE.x1, SLIDE.y1], [SLIDE.x1 + 10, SLIDE.y1 + 14], [SLIDE.x0 + 40, SLIDE.y1 + 40]]); c.fill();
-    for (const d of DECOR) if (d.t === 'cypress') { ell(c, d.x - 10, d.y + 30, 18, 70, -0.6); c.fill(); }
     const onSt = this.onStairs();
     const behind = p.level === 0 && !onSt && p.y < HOUSE.y + 5 && p.y > HOUSE.y - 170 && p.x > HOUSE.x - 30 && p.x < HOUSE.x + HOUSE.w + 30;
     const L = [];
@@ -702,20 +706,26 @@ class Play {
     }
     const dig = this.searching ? Math.abs(Math.sin(this.searching.t * 18)) * 0.25 : 0;
     const drawPlayer = () => drawAnimal(c, this.kind, p.x, p.y - pz, 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir });
+    // nur zeichnen, was im Bild ist
+    const vx0 = this.camX - W / 2 / z - 120, vx1 = this.camX + W / 2 / z + 120, vy0 = this.camY - H / 2 / z - 40, vy1 = this.camY + H / 2 / z + 260;
+    const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
+    const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
+    const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
     for (const d of DECOR) {
-      const sh = this.shake[d.id] || 0;
-      if (d.t === 'yucca') L.push({ y: d.y, f: () => drawYucca(c, d.x, d.y, 1, t, sh) });
-      else if (d.t === 'rock') L.push({ y: d.y, f: () => drawRock(c, d.x, d.y, d.r, sh) });
-      else if (d.t === 'potpalm') L.push({ y: d.y, f: () => drawPotPalm(c, d.x, d.y, 0.85, t) });
-      else if (d.t === 'board') L.push({ y: d.y, f: () => drawChalkboard(c, d.x, d.y, t) });
-      else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawCypress(c, d.x, d.y) });
-      else if (d.t === 'planter') L.push({ y: d.y, f: () => drawPlanter(c, d.x, d.y, t, sh) });
-      else if (d.t === 'lamp') L.push({ y: d.y, f: () => { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y, 12, 4); c.fill(); line(c, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(c, d.x - 4, d.y - 182, 30, 10, 4); fs(c, '#6c757d', 3); } });
-      else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => { const sx = sh > 0 ? Math.sin(sh * 60) * 2 : 0; c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 12, 48, 8); c.fill(); rrPath(c, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(c, '#a0673a', 3); rrPath(c, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(c, '#8d5a3b', 3); rrPath(c, d.x - 38, d.y + 8, 8, 10, 2); fs(c, '#495057', 2); rrPath(c, d.x + 30, d.y + 8, 8, 10, 2); fs(c, '#495057', 2); } });
+      if (!vis(d.x, d.y)) continue;
+      const sh = this.shake[d.id] || 0, k = 'd_' + d.id;
+      if (d.t === 'yucca') L.push({ y: d.y, f: () => sh > 0 ? drawYucca(c, d.x, d.y, 1, t, sh) : drawSprite(c, sprite(k, d.x - 48, d.y - 62, 96, 76, g => drawYucca(g, d.x, d.y, 1, 0, 0))) });
+      else if (d.t === 'rock') L.push({ y: d.y, f: () => sh > 0 ? drawRock(c, d.x, d.y, d.r, sh) : drawSprite(c, sprite(k, d.x - d.r - 8, d.y - d.r * 1.25 - 6, d.r * 2 + 16, d.r * 1.25 + 16, g => drawRock(g, d.x, d.y, d.r, 0))) });
+      else if (d.t === 'potpalm') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 46, d.y - 92, 92, 102, g => drawPotPalm(g, d.x, d.y, 0.85, 0))) });
+      else if (d.t === 'board') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 102, 84, 116, g => drawChalkboard(g, d.x, d.y, 0))) });
+      else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 232, 84, 246, g => drawCypress(g, d.x, d.y))) });
+      else if (d.t === 'planter') L.push({ y: d.y, f: () => sh > 0 ? drawPlanter(c, d.x, d.y, t, sh) : drawSprite(c, sprite(k, d.x - 52, d.y - 72, 104, 90, g => drawPlanter(g, d.x, d.y, 0, 0))) });
+      else if (d.t === 'lamp') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 16, d.y - 190, 54, 200, g => lampRaw(g, d))) });
+      else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => sh > 0 ? benchRaw(c, d, Math.sin(sh * 60) * 2) : drawSprite(c, sprite(k, d.x - 52, d.y - 26, 104, 52, g => benchRaw(g, d, 0))) });
     }
-    for (const n of this.npcs) if (!n.l && n.swing === undefined) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
+    for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
     if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
-    for (const b of this.pigeons) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
+    for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) });
     SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); });
     L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
@@ -739,7 +749,8 @@ class Play {
     const zz = n.l ? HOUSE.fz : 0;
     drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
   }
-  drawSwingFrame(c) {
+  drawSwingFrame(c) { drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
+  drawSwingFrameRaw(c) {
     const bY = SWING.y - SWING.top;
     line(c, SWING.x0 - 22, SWING.y - 18, SWING.x0, bY, 11, '#7a4f2a'); line(c, SWING.x0 + 20, SWING.y + 22, SWING.x0, bY, 11, '#8d5a3b');
     line(c, SWING.x0 - 10, SWING.y - 2, SWING.x0 + 12, SWING.y + 6, 7, '#8d5a3b');
@@ -755,7 +766,8 @@ class Play {
     rrPath(c, sx - 19, sy - zz - 4, 38, 9, 3); fs(c, '#343a40', 3);
     line(c, sx + 14, bY + 4, sx + 15, sy - zz, 2, '#ced4da');
   }
-  drawSlide(c) {
+  drawSlide(c) { drawSprite(c, sprite('slide', 735, 522, 200, 142, g => this.drawSlideRaw(g))); }
+  drawSlideRaw(c) {
     const { x0, x1, y0, y1 } = SLIDE, fz = HOUSE.fz;
     line(c, x1 - 30, y1 + 2, x1 - 30, y1 - 14, 6, '#adb5bd');
     const g = c.createLinearGradient(0, y0 - fz, 0, y1); g.addColorStop(0, '#f1f3f5'); g.addColorStop(1, '#adb5bd');
@@ -763,15 +775,26 @@ class Play {
     c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0 + 10, y0 - fz + 25); c.lineTo(x1 - 5, y0 + 26); c.stroke();
     line(c, x0, y0 - fz - 6, x1, y0 - 6, 5, '#dee2e6'); line(c, x0, y1 - fz - 2, x1, y1 - 2, 5, '#dee2e6');
   }
-  drawStairs(c) {
+  drawStairs(c) { drawSprite(c, sprite('stairs', 605, 600, 90, 240, g => this.drawStairsRaw(g))); }
+  drawStairsRaw(c) {
     const { x, y, w, h } = STAIRS, fz = HOUSE.fz, top = y - fz, bot = y + h;
     line(c, x - 4, bot, x - 4, top, 8, '#8d5a3b'); line(c, x + w + 4, bot, x + w + 4, top, 8, '#8d5a3b');
     for (let k = 0; k <= 9; k++) { const yy = lerp(top + 8, bot - 6, k / 9); rrPath(c, x - 2, yy - 5, w + 4, 11, 5); fs(c, k % 2 ? '#b07a45' : '#a06a38', 2.5); }
     c.beginPath(); c.moveTo(x - 6, bot - 30); c.quadraticCurveTo(x - 14, (top + bot) / 2 - 30, x - 4, top - 30); c.lineWidth = 3; c.strokeStyle = '#d4a373'; c.stroke();
   }
   drawHouse(c, ghost, drawPlayer) {
-    const { x, y, w, h, fz } = HOUSE, p = this.p;
-    c.save(); if (ghost) c.globalAlpha = 0.5;
+    const p = this.p;
+    drawSprite(c, sprite('houseBack', 530, 338, 240, 372, g => this.houseBack(g)), ghost ? 0.5 : 1);
+    // Was oben im Haus ist
+    const up = [];
+    for (const n of this.npcs) if (n.l) up.push({ y: n.y, f: () => this.drawNpc(c, n) });
+    for (const pk of this.peeksUp || []) up.push(pk);
+    if (p.level === 1 && !this.onStairs() && !p.slide) up.push({ y: p.y, f: drawPlayer });
+    up.sort((a, b) => a.y - b.y).forEach(d => d.f());
+    drawSprite(c, sprite('houseFront', 530, 548, 240, 162, g => this.houseFront(g)), ghost ? 0.5 : 1);
+  }
+  houseBack(c) {
+    const { x, y, w, h, fz } = HOUSE;
     c.fillStyle = '#2e2117'; c.fillRect(x, y + h - fz, w, fz);
     for (let k = 0; k < 11; k++) {
       const px = x + 4 + k * 18, ph = fz * (0.62 + ((k * 37) % 5) * 0.07);
@@ -788,14 +811,9 @@ class Play {
     }
     line(c, x - 2, y - fz - 30, x - 2, y + h - fz - 30, 6, '#c08b55'); line(c, x + w + 2, y - fz - 30, x + w + 2, y + h - fz - 30, 6, '#c08b55');
     line(c, x - 2, y - fz - 140, x - 2, y - fz, 9, '#7a4f2a'); line(c, x + w + 2, y - fz - 140, x + w + 2, y - fz, 9, '#7a4f2a');
-    c.restore();
-    // Was oben im Haus ist
-    const up = [];
-    for (const n of this.npcs) if (n.l) up.push({ y: n.y, f: () => this.drawNpc(c, n) });
-    for (const pk of this.peeksUp || []) up.push(pk);
-    if (p.level === 1 && !this.onStairs() && !p.slide) up.push({ y: p.y, f: drawPlayer });
-    up.sort((a, b) => a.y - b.y).forEach(d => d.f());
-    c.save(); if (ghost) c.globalAlpha = 0.5;
+  }
+  houseFront(c) {
+    const { x, y, w, h, fz } = HOUSE;
     for (let k = 0; k < 11; k++) {
       const px = x + 2 + k * 18; if (px + 14 > STAIRS.x - 2 && px < STAIRS.x + STAIRS.w + 2) continue;
       const ph = 30 + ((k * 29) % 4) * 3;
@@ -803,9 +821,9 @@ class Play {
       fs(c, k % 2 ? '#d9a873' : '#c99560', 2);
     }
     line(c, x - 2, y + h, x - 2, y + h - 140, 10, '#8d5a3b'); line(c, x + w + 2, y + h, x + w + 2, y + h - 140, 10, '#8d5a3b');
-    c.restore();
   }
-  drawRoof(c, alpha) {
+  drawRoof(c, alpha) { drawSprite(c, sprite('roof', 505, 370, 310, 200, g => this.drawRoofRaw(g, 1)), alpha); }
+  drawRoofRaw(c, alpha) {
     const { x, y, w, h } = HOUSE, eF = y + h - 140, ridge = y + h / 2 - 195, eB = y - 140;
     c.save(); c.globalAlpha = alpha;
     polyPath(c, [[x - 18, ridge], [x + w + 18, ridge], [x + w + 28, eB - 4], [x - 28, eB - 4]]); fs(c, '#7d2e25', 3.5);
@@ -1005,8 +1023,10 @@ class QuestDialog {
     const o = this.o, k = ease.back(clamp(this.t * 4, 0, 1));
     c.fillStyle = `rgba(16,28,18,${0.55 * clamp(this.t * 5, 0, 1)})`; c.fillRect(0, 0, W, H);
     const older = scene && scene.diff && scene.diff !== 'easy';
-    const lines = older ? wrapLines(c, questText(o), Math.min(W - 28, 460) - 48, 16) : [];
-    const w = Math.min(W - 28, 460), h = 300 + (older ? 34 + lines.length * 22 : 0), x = (W - w) / 2, y = (H - h) / 2;
+    const PW = Math.min(W - 28, W > H ? 600 : 460);
+    const lines = older ? wrapLines(c, questText(o), PW - 48, 16) : [];
+    const w = PW, h = 300 + (older ? 34 + lines.length * 22 : 0), x = (W - w) / 2, y = (H - h) / 2;
+    fitBegin(c, w, h + 20);
     c.save(); c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
     panel(c, x, y, w, h, '#fff7e6', 26);
     ell(c, x + 70, y + 110, 52, 52); fs(c, '#d8f3dc', 3);
@@ -1040,6 +1060,7 @@ class QuestDialog {
         roundBtn(c, W / 2 - 50, yb, 26, '#ced4da', 'cross', () => this.close());
       } else roundBtn(c, W / 2, yb, 30, '#06d6a0', 'check', () => this.close());
     }
+    c.restore();
   }
   items(c, x, y, w, h, items, got) {
     const n = items.length, cols = Math.min(n, n > 4 ? Math.ceil(n / 2) : n), rows = Math.ceil(n / cols);

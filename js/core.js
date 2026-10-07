@@ -289,7 +289,11 @@ function drawHand(c, x, y, s) {
 // ---------- Sofort-UI: Knöpfe werden jedes Bild neu registriert ----------
 const UI = {
   btns: [], next: [],
-  btn(x, y, w, h, fn) { this.next.push({ x, y, w, h, fn }); },
+  // Knopf-Fläche: berücksichtigt die aktuelle Skalierung (z. B. verkleinerte Dialoge im Querformat)
+  btn(x, y, w, h, fn) {
+    const m = ctx.getTransform(), d = DPR || 1;
+    this.next.push({ x: (m.a * x + m.e) / d, y: (m.d * y + m.f) / d, w: (w * m.a) / d, h: (h * m.d) / d, fn });
+  },
   flip() { this.btns = this.next; this.next = []; },
   hit(px, py) {
     for (let i = this.btns.length - 1; i >= 0; i--) {
@@ -319,6 +323,29 @@ function coinPill(c, x, y, n, h = 44) {
   icon(c, 'coin', x - w + h * 0.5, y + h / 2, h * 0.75);
   txt(c, s, x - h * 0.35, y + h / 2 + 1, h * 0.5, '#ffd60a', 'right');
   return w;
+}
+
+// ---------- Vorgezeichnete Bilder (Sprites) für alles, was sich nicht bewegt ----------
+const SPR = {};
+function sprite(key, x0, y0, w, h, draw, q = 2) {
+  let s = SPR[key];
+  if (!s) {
+    const cv = document.createElement('canvas'); cv.width = Math.ceil(w * q); cv.height = Math.ceil(h * q);
+    const g = cv.getContext('2d'); g.scale(q, q); g.translate(-x0, -y0); g.lineJoin = 'round'; g.lineCap = 'round';
+    draw(g); s = SPR[key] = { cv, x0, y0, w, h };
+  }
+  return s;
+}
+function drawSprite(c, s, alpha = 1) {
+  if (alpha < 1) { const a = c.globalAlpha; c.globalAlpha = a * alpha; c.drawImage(s.cv, s.x0, s.y0, s.w, s.h); c.globalAlpha = a; }
+  else c.drawImage(s.cv, s.x0, s.y0, s.w, s.h);
+}
+function clearSprites(prefix = '') { for (const k in SPR) if (k.startsWith(prefix)) delete SPR[k]; }
+// Dialoge im Querformat passend verkleinern
+function fitBegin(c, w, h) {
+  const k = Math.min(1, (H - 12) / h, (W - 12) / w);
+  c.save(); c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
+  return k;
 }
 
 // ---------- Partikel und Effekte (Bildschirmkoordinaten) ----------
