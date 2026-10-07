@@ -152,6 +152,8 @@ class GameOverlay {
       ell(c, 0, 0, 80, 80); fs(c, '#06d6a0', 6);
       if (o.item && o.kind !== 'easy') drawItem(c, o.item, 0, -4, 96); else icon(c, 'check', 0, 0, 110);
       c.restore();
+      if (!this.praise) this.praise = pick(PRAISE);
+      txt(c, this.praise, 200, 370, 30 * k, '#fff', 'center', BRAND.olive);
     }
     if (this.state === 'lost') {
       c.fillStyle = 'rgba(30,20,20,.6)'; c.fillRect(0, 0, GAME_W, GAME_H);

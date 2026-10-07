@@ -9,7 +9,21 @@ const CLAIMS = {
   ankommen: 'Reinkommen, hinsetzen, ankommen.',
   rest: 'Der Rest ist unsere Sache.',
   feiern: 'Feiere das Leben im Original',
+  fruehstueck: 'Frühstück ohne Eile',
+  versprochen: 'Wir haben dir Urlaub versprochen – hier kommt er!',
+  herz: 'Alles, was dein Herz begehrt',
 };
+// wechselnde Mottos (Stage-Auswahl, Danke-Banner)
+const MOTTOS = [CLAIMS.urlaub, CLAIMS.da, CLAIMS.ankommen + ' ' + CLAIMS.rest, CLAIMS.feiern + '!', CLAIMS.fruehstueck, CLAIMS.versprochen, CLAIMS.herz];
+const PRAISE = ['Ganz Original!', 'Wie im Original!', 'Original gemacht!', 'Ein echtes Original!', 'Original-Klasse!'];
+// Schild am Ausgang
+function drawGateSign(c, x, y) {
+  c.fillStyle = 'rgba(0,0,0,.22)'; ell(c, x, y + 3, 30, 7); c.fill();
+  line(c, x - 24, y, x - 24, y - 70, 5, '#6c757d'); line(c, x + 24, y, x + 24, y - 70, 5, '#6c757d');
+  rrPath(c, x - 52, y - 112, 104, 54, 10); fs(c, BRAND.cream, 3);
+  drawLogo(c, x, y - 94, 74, false);
+  txt(c, 'Danke für deinen Besuch!', x, y - 70, 8.5, BRAND.olive, 'center', null);
+}
 
 // Original-Logo (Datei von im-original.de). Bis es geladen ist, zeichnen wir eine Ersatz-Schrift.
 const LOGO = new Image();

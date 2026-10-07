@@ -33,7 +33,8 @@ const DECOR = [
   { id: 'r4', t: 'rock', x: 560, y: 1060, r: 26 }, { id: 'r5', t: 'rock', x: 330, y: 940, r: 26 },
   { id: 'pl', t: 'planter', x: 390, y: 1110 }, { id: 'bench', t: 'bench', x: 690, y: 1020, w: 86, h: 26 },
   { id: 'lamp', t: 'lamp', x: 205, y: 215, r: 9 },
-  { id: 'board', t: 'board', x: 588, y: 242, r: 16 },                                   // Kreidetafel "Willkommen" am Eingang
+  { id: 'board', t: 'board', x: 588, y: 242, r: 16 },
+  { id: 'gsign', t: 'gatesign', x: 640, y: 1188, r: 0 },                                // Schild am Ausgang                                   // Kreidetafel "Willkommen" am Eingang
   { id: 'pp1', t: 'potpalm', x: 432, y: 166, r: 0 }, { id: 'pp2', t: 'potpalm', x: 568, y: 166, r: 0 },
   { id: 'pp3', t: 'potpalm', x: 30, y: 166, r: 0 }, { id: 'pp4', t: 'potpalm', x: 975, y: 166, r: 0 },
 ];
@@ -345,6 +346,7 @@ class Play {
     for (const k in this.shake) this.shake[k] = Math.max(0, this.shake[k] - dt);
     for (const id in this.npcAnim) { const a = this.npcAnim[id]; a.wave = Math.max(0, a.wave - dt); a.jump = Math.max(0, a.jump - dt); }
     if (this.toast) { this.toast.t += dt; if (this.toast.t > 2.2) this.toast = null; }
+    if (this.banner) { this.banner.t += dt; if (this.banner.t > 3.2) this.banner = null; }
     this.gateA = lerp(this.gateA, this.st.done.gate ? 1 : 0, Math.min(1, dt * 3));
     const hase = this.npcs.find(n => n.swing !== undefined);
     if (hase) { const off = this.seatOff(hase.swing); hase.y = SWING.y + off; hase.z = 24 + Math.abs(off) * 0.35; }
@@ -581,6 +583,7 @@ class Play {
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5;
+    this.banner = { text: (id === 'gate' ? 'Geschafft! ' : 'Danke! ') + pick(MOTTOS), t: 0 };
     if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
   }
@@ -620,6 +623,7 @@ class Play {
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5;
+    this.banner = { text: 'Danke! ' + pick(MOTTOS), t: 0 };
     if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
   }
   // Tor geht auf, Figur läuft hinaus zum Parkplatz
@@ -717,6 +721,7 @@ class Play {
       if (d.t === 'yucca') L.push({ y: d.y, f: () => sh > 0 ? drawYucca(c, d.x, d.y, 1, t, sh) : drawSprite(c, sprite(k, d.x - 48, d.y - 62, 96, 76, g => drawYucca(g, d.x, d.y, 1, 0, 0))) });
       else if (d.t === 'rock') L.push({ y: d.y, f: () => sh > 0 ? drawRock(c, d.x, d.y, d.r, sh) : drawSprite(c, sprite(k, d.x - d.r - 8, d.y - d.r * 1.25 - 6, d.r * 2 + 16, d.r * 1.25 + 16, g => drawRock(g, d.x, d.y, d.r, 0))) });
       else if (d.t === 'potpalm') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 46, d.y - 92, 92, 102, g => drawPotPalm(g, d.x, d.y, 0.85, 0))) });
+      else if (d.t === 'gatesign') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 56, d.y - 116, 112, 126, g => drawGateSign(g, d.x, d.y))) });
       else if (d.t === 'board') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 102, 84, 116, g => drawChalkboard(g, d.x, d.y, 0))) });
       else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 232, 84, 246, g => drawCypress(g, d.x, d.y))) });
       else if (d.t === 'planter') L.push({ y: d.y, f: () => sh > 0 ? drawPlanter(c, d.x, d.y, t, sh) : drawSprite(c, sprite(k, d.x - 52, d.y - 72, 104, 90, g => drawPlanter(g, d.x, d.y, 0, 0))) });
@@ -971,6 +976,12 @@ class Play {
         const cols = ['#4dabf7', '#74c0fc', '#ffd166', '#f78c6b', '#ef476f'];
         for (let i = 0; i < 5; i++) { rrPath(c, px + 6 + i * 11, py + 50 - (i + 1) * 4, 8, (i + 1) * 4, 2); c.fillStyle = i < h ? cols[h - 1] : 'rgba(255,255,255,.2)'; c.fill(); }
       }
+    }
+    if (this.banner) {
+      const bk = ease.back(clamp(this.banner.t * 3, 0, 1)), ba = 1 - clamp((this.banner.t - 2.6) / 0.6, 0, 1);
+      c.save(); c.globalAlpha = ba; c.translate(W / 2, H * 0.3); c.scale(bk, bk);
+      const L2 = wrapLines(c, this.banner.text, Math.min(W - 60, 560), 18); L2.forEach((l, i) => claimBand(c, l, 0, (i - (L2.length - 1) / 2) * 40, 18));
+      c.restore();
     }
     if (this.helpOpen) {
       const T = this.diff === 'easy' ? [

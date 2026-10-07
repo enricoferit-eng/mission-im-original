@@ -545,6 +545,9 @@ class StageMap {
       ell(c, x, oy, 18, 18); fs(c, got ? '#ffd166' : '#e9ecef', 2.5); drawOutfitIcon(c, OUTFIT_OF[id], x, oy, 26, !got);
     });
     roundBtn(c, W - 44, oy, 28, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
+    // wechselnde Original-Mottos
+    const free = W - (ox + ow) - 90;
+    if (free > 230) { const m = MOTTOS[Math.floor(this.t / 5) % MOTTOS.length]; c.save(); c.globalAlpha = clamp(Math.min(this.t % 5, 5 - (this.t % 5)) * 2, 0, 1); const L3 = wrapLines(c, m, free - 40, 14); L3.forEach((l, i) => claimBand(c, l, ox + ow + 10 + free / 2, oy + (i - (L3.length - 1) / 2) * 30, 14)); c.restore(); }
   }
 }
 
