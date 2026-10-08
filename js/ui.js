@@ -122,7 +122,6 @@ document.body.appendChild(nameInput);
 const passInput = document.createElement('input');
 passInput.style.cssText = nameInput.style.cssText; passInput.type = 'password'; passInput.placeholder = 'Passwort'; passInput.autocomplete = 'off'; passInput.maxLength = 64;
 document.body.appendChild(passInput);
-let ADMIN_CRED = null;   // nur im Speicher, nie auf dem Gerät gespeichert
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
 const NAME_A = ['Flinke', 'Mutige', 'Schlaue', 'Wilde', 'Lustige', 'Schnelle', 'Kleine', 'Starke'];
 const NAME_B = ['Rakete', 'Wolke', 'Pfote', 'Banane', 'Socke', 'Kugel', 'Brezel', 'Feder'];
@@ -184,7 +183,7 @@ class Accounts {
         drawCritter(c, AVATARS[a.avatar % 6], x + cw / 2, y + 82, 1.1, this.t + i, { noShadow: true });
         txt(c, a.name, x + cw / 2, y + 112, 17, '#3d2c1f', 'center', null);
         icon(c, 'hanger', x + cw / 2 - 22, y + 134, 16); txt(c, totalSkins(a) + '/108', x + cw / 2 + 8, y + 135, 14, '#8d5a3b', 'center', null);
-        if (a.admin) UI.btn(x, y, cw, ch, () => setScene(new LoginScene('admin')));
+        if (a.admin) UI.btn(x, y, cw, ch, () => { if (a.device) { Save.data.current = id; Save.write(false); Sfx.play('win'); setScene(new Menu()); } else setScene(new LoginScene('admin')); });
         else UI.btn(x, y, cw, ch, () => { overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: () => { Save.data.current = id; Save.write(); Sfx.play('win'); Net.refresh(); setScene(new Menu()); } }); });
         roundBtn(c, x + cw - 18, y + 18, 15, '#fff', 'trash', () => askDelete(id, a));
       } else if (id === 'new') {
@@ -300,11 +299,13 @@ class AccountPanel {
 // ---------- Admin im Spiel: Statistik (vom Server) + Test-Werkzeuge ----------
 let ADMIN_STATS = null;
 class AdminPanel {
-  constructor() { this.t = 0; this.busy = false; this.msg = ''; if (ADMIN_CRED && !ADMIN_STATS) this.load(); }
+  constructor() { this.t = 0; this.busy = false; this.msg = ''; if (!ADMIN_STATS) this.load(); }
   async load() {
-    if (!ADMIN_CRED) { this.msg = 'Für die Statistik bitte neu als Admin anmelden.'; return; }
-    this.busy = true; const r = await Net.call({ action: 'admin', user: ADMIN_CRED.user, pass: ADMIN_CRED.pass }); this.busy = false;
-    if (r && r.status === 200) { ADMIN_STATS = r.data; this.msg = ''; } else this.msg = r ? 'Anmeldung abgelaufen – bitte neu anmelden.' : 'Keine Verbindung zum Server.';
+    const a = Save.data.accounts.admin; if (!a || !a.device) { this.msg = 'Bitte einmal neu als Admin anmelden.'; return; }
+    this.busy = true; const r = await Net.call({ action: 'admin', device: a.device }); this.busy = false;
+    if (r && r.status === 200) { ADMIN_STATS = r.data; this.msg = ''; }
+    else if (r && r.status === 401) { delete a.device; Save.write(false); this.msg = 'Passwort wurde geändert – bitte neu anmelden.'; }
+    else this.msg = 'Keine Verbindung zum Server.';
   }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
@@ -348,8 +349,9 @@ class LoginScene {
     const user = nameInput.value.trim(), pass = passInput.value; nameInput.blur(); passInput.blur(); this.busy = true;
     const r = await Net.call({ action: 'admin', user, pass }); this.busy = false;
     if (r && r.status === 200) {
-      ADMIN_CRED = { user, pass }; ADMIN_STATS = r.data;
+      ADMIN_STATS = r.data;
       if (!Save.data.accounts.admin) Save.data.accounts.admin = { name: 'Admin', admin: true, code: [0, 0, 0, 0], login: 'ADMIN', avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
+      Save.data.accounts.admin.device = r.data.device;   // Gerät merken (kein Passwort gespeichert)
       Save.data.current = 'admin'; Save.write(false); Sfx.play('win'); passInput.value = ''; this.leave(new Menu()); setTimeout(() => { overlay = new AdminPanel(); }, 50); return;
     }
     this.err = !r ? 'Keine Verbindung zum Server.' : 'Benutzer oder Passwort stimmt nicht.'; Sfx.play('bad');

@@ -80,13 +80,17 @@ const API = 'https://mission-im-original.vercel.app/api/konto';
 const $ = id => document.getElementById(id);
 const LABEL = { easy: 'Leicht (Katze, 6–8)', medium: 'Mittel (Hund, 9–11)', hard: 'Schwer (Löwe, 12–14)' };
 let cred = null;
+const DEV_KEY = 'mio_admin_geraet';   // gemerktes Gerät: nur ein Schlüssel vom Server, nie das Passwort
+const devGet = () => { try { return localStorage.getItem(DEV_KEY); } catch (e) { return null; } };
+const devSet = v => { try { v ? localStorage.setItem(DEV_KEY, v) : localStorage.removeItem(DEV_KEY); } catch (e) { /* egal */ } };
 async function load() {
   $('go').disabled = true; $('err').textContent = '';
   try {
-    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'admin', user: cred.user, pass: cred.pass }) });
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cred.device ? { action: 'admin', device: cred.device } : { action: 'admin', user: cred.user, pass: cred.pass }) });
     const d = await r.json();
-    if (r.status === 401) { $('err').textContent = 'Benutzer oder Passwort stimmt nicht.'; cred = null; return; }
+    if (r.status === 401) { $('err').textContent = cred.device ? 'Bitte neu anmelden (Passwort wurde geändert).' : 'Benutzer oder Passwort stimmt nicht.'; if (cred.device) devSet(null); cred = null; $('login').hidden = false; $('stats').hidden = true; return; }
     if (!r.ok) { $('err').textContent = 'Server-Fehler. Bitte später nochmal versuchen.'; return; }
+    if (d.device) { devSet(d.device); cred = { device: d.device }; $('pass').value = ''; }
     $('login').hidden = true; $('stats').hidden = false;
     $('s-acc').textContent = d.accounts; $('s-new').textContent = d.new7; $('s-a7').textContent = d.active7; $('s-a30').textContent = d.active30; $('s-skins').textContent = d.skins;
     $('tbody').innerHTML = ['easy', 'medium', 'hard'].map(k => { const p = d.perDiff[k]; return `<tr><td>${LABEL[k]}</td><td>${p.players}</td><td>${p.playersCleared}</td><td>${p.stageClears}</td><td>${p.questsDone}</td><td>${p.skins}</td></tr>`; }).join('');
@@ -96,7 +100,8 @@ async function load() {
 }
 $('login').addEventListener('submit', e => { e.preventDefault(); cred = { user: $('user').value.trim(), pass: $('pass').value }; load(); });
 $('reload').addEventListener('click', () => cred && load());
-$('logout').addEventListener('click', () => { cred = null; $('pass').value = ''; $('stats').hidden = true; $('login').hidden = false; });
+$('logout').addEventListener('click', () => { cred = null; devSet(null); $('pass').value = ''; $('stats').hidden = true; $('login').hidden = false; });
+if (devGet()) { cred = { device: devGet() }; load(); }
 </script>
 </body>
 </html>

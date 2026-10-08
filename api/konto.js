@@ -93,9 +93,14 @@ async function remove(b) {
 }
 
 // Besitzer-Statistik: nur zusammengefasste, anonyme Zahlen – keine einzelnen Konten
+// Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig
+const adminDeviceToken = (U, P) => crypto.createHmac('sha256', SECRET).update('admin-geraet:' + U + ':' + crypto.createHash('sha256').update(P).digest('hex')).digest('hex');
 async function admin(b) {
   const U = process.env.ADMIN_USER || '', P = process.env.ADMIN_PASS || '';
-  if (!U || !P || !sameStr(String(b.user || ''), U) || !sameStr(String(b.pass || ''), P)) return [401, { error: 'auth' }];
+  if (!U || !P) return [401, { error: 'auth' }];
+  const byPass = sameStr(String(b.user || ''), U) && sameStr(String(b.pass || ''), P);
+  const byDevice = !!b.device && sameStr(String(b.device), adminDeviceToken(U, P));
+  if (!byPass && !byDevice) return [401, { error: 'auth' }];
   const files = []; let cursor;
   do { const r = await list({ prefix: 'accounts/', cursor, limit: 1000 }); files.push(...r.blobs); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
   const now = Date.now(), DAY = 86400000;
@@ -123,6 +128,7 @@ async function admin(b) {
       if (cleared) P2.playersCleared++;
     }
   }
+  st.device = adminDeviceToken(U, P);
   return [200, st];
 }
 
