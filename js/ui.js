@@ -402,6 +402,7 @@ class LoginScene {
     else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 240, 32, '#06d6a0', 'check', ok ? () => {
       const v = nameInput.value.trim(); nameInput.blur();
       if (this.mode === 'code') { this.busy = true; Net.call({ action: 'login', login: v }).then(r => this.done(r)); }
+      else if (v.toLowerCase() === 'admin') { this.setMode('admin'); nameInput.value = 'admin'; }   // Admin hat keinen Bilder-Code, sondern ein Passwort
       else overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r => this.done(r)); } });
     } : null); c.restore(); }
   }
