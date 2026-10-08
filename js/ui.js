@@ -62,14 +62,15 @@ function accountChip(c, x, y, a, onTap) {
 class Menu {
   constructor() { this.t = 0; }
   enter() {
-    FX.clear(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
+    FX.clear(); ensureProfile(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
     if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
-    if (!(a.tut && a.tut.guide)) { setScene(new Tutorial()); return; }
   }
   update(dt) { this.t += dt; }
   draw(c) {
     skyBg(c);
+    // schwebende Leckereien im Hintergrund
+    for (let i = 0; i < 9; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
     const a = ACC(); if (!a) return;
     const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.2) : clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
     const LY = land ? 70 * ls + 18 : Math.max(132, H * 0.15);
@@ -79,6 +80,7 @@ class Menu {
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
+    if (!(a.tut && a.tut.guide)) { const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 14 : 24);
     DIFFS.forEach((d, i) => {
@@ -100,11 +102,18 @@ class Menu {
         icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
       }
       if (sp.clears > 0) icon(c, 'crown', x + w - 26, y + bob + 24, 30);
-      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); setScene(new StageMap(d.id)); });
+      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); setScene(!sp0.clears && !sp0.run ? new Play(d.id) : new StageMap(d.id)); });
     });
   }
 }
 
+// Erster Start: sofort spielen – ein Spielstand auf diesem Gerät wird automatisch angelegt.
+// Ein Konto (Name + Geheim-Code, auf dem Server) kann man später über „Spielstand sichern“ machen.
+function ensureProfile() {
+  if (ACC() || Object.keys(Save.data.accounts).length) return;
+  createAccount(pick(NAME_A) + ' ' + pick(NAME_B), [0, 1, 2, 3].map(() => ri(0, 5)));
+  ACC().guest = true; Save.write();
+}
 // ---------- Konten: jedes Kind hat sein eigenes (Fantasiename + Bilder-Code, keine E-Mail) ----------
 const nameInput = document.createElement('input');
 Object.assign(nameInput.style, { position: 'fixed', display: 'none', font: `900 22px ${FONT}`, textAlign: 'center', border: '4px solid #2b1d14', borderRadius: '16px', padding: '8px', background: '#fff', color: '#2b1d14', outline: 'none', zIndex: 5, boxSizing: 'border-box', touchAction: 'manipulation' });
@@ -258,8 +267,14 @@ class AccountPanel {
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
     txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
     const st = Net.status(a); ell(c, W / 2 - 70, y + 160, 6, 6); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - 58, y + 161, 13, '#8d5a3b', 'left', null);
-    txt(c, 'Dein Login-Code:', W / 2, y + 196, 15, '#8d5a3b', 'center', null);
-    rrPath(c, W / 2 - 110, y + 210, 220, 44, 12); fs(c, '#fff', 3); txt(c, a.login || '–', W / 2, y + 233, 24, '#118ab2', 'center', null);
+    if (!a.token) {
+      const pu = 1 + Math.sin(this.t * 5) * 0.04;
+      c.save(); c.translate(W / 2, y + 225); c.scale(pu, pu); rrPath(c, -130, -30, 260, 60, 20); fs(c, '#06d6a0', 3.5); txt(c, 'Spielstand sichern', 0, -6, 19, '#fff', 'center', BRAND.ink); txt(c, 'mit Namen + Geheim-Code', 0, 15, 12, '#fff', 'center', null); c.restore();
+      UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); setScene(new NewAccount({ migrate: Save.data.current })); });
+    } else {
+      txt(c, 'Dein Login-Code:', W / 2, y + 196, 15, '#8d5a3b', 'center', null);
+      rrPath(c, W / 2 - 110, y + 210, 220, 44, 12); fs(c, '#fff', 3); txt(c, a.login || '–', W / 2, y + 233, 24, '#118ab2', 'center', null);
+    }
     txt(c, 'Dein Geheim-Code:', W / 2, y + 282, 15, '#8d5a3b', 'center', null);
     if (this.showCode) a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 56; rrPath(c, cx - 23, y + 296, 46, 46, 12); fs(c, '#fff', 3); drawSym(c, k, cx, y + 319, 15); });
     else { rrPath(c, W / 2 - 110, y + 296, 220, 46, 12); fs(c, '#e9ecef', 3); txt(c, 'antippen zum Zeigen', W / 2, y + 320, 15, '#495057', 'center', null); UI.btn(W / 2 - 110, y + 296, 220, 46, () => { this.showCode = true; }); }
@@ -338,21 +353,29 @@ class CharSelect {
 }
 
 class NewAccount {
-  constructor() { this.t = 0; this.step = 'name'; this.avatar = Math.floor(rnd() * 6); this.err = ''; }
+  constructor(o = {}) { this.t = 0; this.step = 'name'; this.avatar = Math.floor(rnd() * 6); this.err = ''; this.migrate = o.migrate || null; }
   enter() { FX.clear(); nameInput.value = ''; nameInput.placeholder = 'Fantasiename'; nameInput.maxLength = 14; }
   update(dt) { this.t += dt; }
   leave(to) { nameInput.style.display = 'none'; nameInput.blur(); setScene(to); }
   async register(code) {
     this.step = 'wait';
     const r = await Net.call({ action: 'register', name: this.name, code, avatar: this.avatar });
-    if (r && r.status === 200) { adoptAccount(r.data); this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return; }
+    if (r && r.status === 200) {
+      const old = this.migrate && Save.data.accounts[this.migrate];
+      adoptAccount(r.data);
+      if (old) {   // bisherigen Spielstand vom Gerät ins neue Konto übernehmen
+        const a = ACC(); ['diff', 'tut', 'char', 'recent', 'recentEasy', 'sound'].forEach(k => { if (old[k] !== undefined) a[k] = old[k]; });
+        delete Save.data.accounts[this.migrate]; a.changed = Date.now(); Save.write(false); Net.syncNow();
+      }
+      this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return;
+    }
     const e = r && r.data && r.data.error;
     this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen und nochmal versuchen.' : e === 'name_taken' ? 'Diesen Namen gibt es schon. Denk dir einen anderen aus!' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
     this.step = 'name'; Sfx.play('bad');
   }
   draw(c) {
     skyBg(c);
-    roundBtn(c, 44, 44, 28, '#fff', 'back', () => this.leave(new Accounts()), '#ffd166');
+    roundBtn(c, 44, 44, 28, '#fff', 'back', () => this.leave(this.migrate ? new Menu() : new Accounts()), '#ffd166');
     const w = Math.min(W - 28, 420), x = (W - w) / 2, y = H < 560 ? 8 : 100;
     if (this.step === 'name') {
       panel(c, x, y, w, 350, '#fff7e6', 26);
@@ -522,78 +545,139 @@ function stageArt(c, id, x, y, w, h, t) {
   rrPath(c, x, y, w, h, 14); c.lineWidth = 3; c.strokeStyle = OL; c.stroke();
 }
 
+// Weltkarte wie bei Super Mario: ein Weg, die Figur läuft hüpfend von Bereich zu Bereich
 class StageMap {
-  constructor(diff) { this.diff = diff; this.t = 0; }
-  enter() { FX.clear(); }
-  update(dt) { this.t += dt; }
-  draw(c) {
-    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-    const d = DIFFS.find(q => q.id === this.diff), kind = ANIMAL_OF[this.diff];
-    topBar(c, () => setScene(new Menu()));
-    for (let s = 0; s < d.stars; s++) icon(c, 'star', 96 + s * 30, 44, 28);
-    drawLogo(c, W / 2 + 30, 44, Math.min(120, W - 290), true);
-    // Karten-Raster: Handy 1 Spalte, breit 2 Spalten
-    const cols = W > H ? 3 : W >= 760 ? 2 : 1, top = H < 560 ? 72 : 86, bottom = H - (H < 560 ? 80 : 92), gap = 10;
-    const cw = cols === 1 ? Math.min(W - 24, 520) : Math.min((W - 24 - gap * (cols - 1)) / cols, 460), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
-    const ch = Math.min(cols > 1 ? 190 : 150, (bottom - top - gap * (6 / cols - 1)) / (6 / cols));
-    STAGE_ORDER.forEach((id, i) => {
-      const col = i % cols, row = Math.floor(i / cols), x = x0 + col * (cw + gap), y = top + row * (ch + gap);
-      const open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
-      const pulse = open ? 1 + Math.sin(this.t * 3) * 0.01 : 1;
-      c.save(); c.translate(x + cw / 2, y + ch / 2); c.scale(pulse, pulse); c.translate(-(x + cw / 2), -(y + ch / 2));
-      panel(c, x, y, cw, ch, open ? '#fbf8f2' : '#d9d4c7', 18);
-      const aw = Math.min(ch * 1.35, cw * 0.36);
-      stageArt(c, id, x + 8, y + 8, aw, ch - 16, this.t + i);
-      if (!open) { rrPath(c, x + 8, y + 8, aw, ch - 16, 14); c.fillStyle = 'rgba(40,40,40,.45)'; c.fill(); }
-      // Nummer der Geschichte
-      ell(c, x + 18, y + 18, 13, 13); fs(c, open ? BRAND.lime : '#adb5bd', 2.5); txt(c, String(i + 1), x + 18, y + 19, 15, '#fff', 'center', null);
-      const tx = x + aw + 20, tw = cw - aw - 30;
-      let nameSize = Math.min(24, ch * 0.2); c.font = `900 ${nameSize}px ${FONT}`; { const nw = c.measureText(info.name).width; if (nw > tw - 56) nameSize *= (tw - 56) / nw; }
-      txt(c, info.name, tx, y + ch * 0.24, nameSize, open ? BRAND.olive : '#6c757d', 'left', null);
-      wrapLines(c, info.sub, tw - 46, Math.min(15, ch * 0.11)).slice(0, 2).forEach((l, k) => txt(c, l, tx, y + ch * 0.42 + k * 17, Math.min(14, ch * 0.105), '#6b5a48', 'left', null));
-      // Ausrüstungsteil dieses Bereichs
-      const got = id === 'spielplatz' && hasCap(kind);
-      ell(c, x + cw - 26, y + 24, 16, 16); fs(c, got ? '#ffd166' : '#fff', 2.5); drawOutfitIcon(c, OUTFIT_OF[id], x + cw - 26, y + 24, 22, !got);
-      if (open) {
-        const by = y + ch * 0.78;
-        const done = ALL_IDS.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
-        for (let k = 0; k < 6; k++) { ell(c, tx + 6 + k * 15, by, 5.5, 5.5); fs(c, k < done ? '#06d6a0' : '#e9ecef', 2); }
-        icon(c, 'hanger', tx + 108, by, 18); txt(c, sp.skins.length + '/6', tx + 120, by + 1, 13, '#6b5a48', 'left', null);
-        if (sp.clears) icon(c, 'crown', tx + 160, by - 2, 20);
-        roundBtn(c, x + cw - 32, y + ch - 30, 22, '#06d6a0', 'play', null);
-        UI.btn(x, y, cw, ch, () => { Sfx.play('good'); setScene(new Play(this.diff)); });
-      } else {
-        rrPath(c, tx, y + ch * 0.68, 112, 28, 14); fs(c, '#efe9dc', 2); icon(c, 'hourglass', tx + 16, y + ch * 0.68 + 14, 18); txt(c, 'kommt bald', tx + 30, y + ch * 0.68 + 15, 13, '#6c757d', 'left', null);
-      }
-      c.restore();
-    });
-    // Unten: Helfer mit Ausrüstung + Kleiderschrank
-    const ow = Math.min(W - 110, 330), ox = 16, oy = H - 46;
-    panel(c, ox, oy - 30, ow, 60, '#fbf8f2', 22);
-    drawAnimal(c, kind, ox + 30, oy + 24, 0.95, { t: this.t, cap: hasCap(kind), noShadow: true });
-    STAGE_ORDER.forEach((id, i) => {
-      const x = ox + 64 + (i + 0.5) * ((ow - 70) / 6), got = id === 'spielplatz' && hasCap(kind);
-      ell(c, x, oy, 18, 18); fs(c, got ? '#ffd166' : '#e9ecef', 2.5); drawOutfitIcon(c, OUTFIT_OF[id], x, oy, 26, !got);
-    });
-    roundBtn(c, W - 44, oy, 28, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
+  constructor(diff) {
+    this.diff = diff; this.t = 0; this.camX = null; this.drag = null;
+    this.cur = Math.max(0, STAGE_ORDER.indexOf('spielplatz')); this.sel = this.cur; this.walk = null; this.card = 0;
   }
+  enter() { FX.clear(); }
+  geo() {
+    const top = 78, bot = H - 150, mid = (top + bot) / 2, amp = Math.max(30, (bot - top) * 0.3), gap = clamp(W * 0.32, 220, 300);
+    const N = STAGE_ORDER.length, mapW = Math.max(W, 140 + gap * (N - 1) + 140);
+    const nodes = STAGE_ORDER.map((id, i) => ({ id, x: 140 + i * gap, y: mid + (i % 2 ? amp : -amp) * (i % 4 < 2 ? 1 : 0.6) }));
+    if (!this.pts || this.pts.mapW !== mapW || this.pts.H !== H) {
+      const pts = [], at = [];
+      for (let i = 0; i < N - 1; i++) {
+        const a = nodes[i], b = nodes[i + 1], c1 = { x: a.x + gap * 0.5, y: a.y }, c2 = { x: b.x - gap * 0.5, y: b.y };
+        at[i] = pts.length;
+        for (let k = 0; k < 40; k++) { const u = k / 40, v = 1 - u; pts.push({ x: v * v * v * a.x + 3 * v * v * u * c1.x + 3 * v * u * u * c2.x + u * u * u * b.x, y: v * v * v * a.y + 3 * v * v * u * c1.y + 3 * v * u * u * c2.y + u * u * u * b.y }); }
+      }
+      at[N - 1] = pts.length; pts.push({ x: nodes[N - 1].x, y: nodes[N - 1].y });
+      this.pts = { list: pts, at, mapW, H };
+      if (this.pos === undefined) this.pos = at[this.cur];
+    }
+    return { nodes, mapW, top, bot };
+  }
+  update(dt) {
+    this.t += dt; this.card = Math.min(1, this.card + dt * 4);
+    const G = this.geo(), P = this.pts;
+    if (this.walk) {
+      const dir = Math.sign(this.walk.to - this.pos), step = dt * 9;   // Punkte pro Bild
+      this.pos += dir * Math.min(Math.abs(this.walk.to - this.pos), step * 6);
+      if (Math.floor(this.pos / 8) !== Math.floor((this.pos - dir * step * 6) / 8)) Sfx.note(700 + rnd() * 200, 0.05, 'sine', 0.03);
+      if (Math.abs(this.walk.to - this.pos) < 0.01) { this.pos = this.walk.to; this.cur = this.walk.node; this.walk = null; this.card = 0; Sfx.play('good'); const p = this.scr(P.list[Math.round(this.pos)]); FX.sparkle(p.x, p.y - 30, 14, '#ffd23f'); }
+    }
+    const me = P.list[Math.round(this.pos)], want = clamp(me.x - W / 2, 0, G.mapW - W);
+    if (this.camX === null) this.camX = want;
+    if (!this.drag) this.camX = lerp(this.camX, want + (this.panOff || 0), Math.min(1, dt * 4));
+    if (!this.drag && this.panOff) this.panOff *= Math.pow(0.2, dt);
+  }
+  scr(p) { return { x: p.x - this.camX, y: p.y }; }
+  goTo(i) {
+    if (this.walk) return;
+    this.sel = i; this.panOff = 0;
+    if (i === this.cur) { this.card = 0; return; }
+    this.walk = { to: this.pts.at[i], node: i }; Sfx.play('jump');
+  }
+  play() { const id = STAGE_ORDER[this.cur]; if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); return; } Sfx.play('win'); setScene(new Play(this.diff)); }
+  draw(c) {
+    const G = this.geo(), P = this.pts, t = this.t, kind = ANIMAL_OF[this.diff], d = DIFFS.find(q => q.id === this.diff);
+    // Himmel + Hügel mit Parallaxe
+    const sky = c.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#8fd3f4'); sky.addColorStop(0.55, '#d6f2fb'); sky.addColorStop(1, '#bfe3a5'); c.fillStyle = sky; c.fillRect(0, 0, W, H);
+    ell(c, W - 90, 110, 34, 34); fs(c, '#ffd166', 0);
+    for (let i = 0; i < 6; i++) { const cx = ((i * 260 - this.camX * 0.2 + t * 12) % (W + 300) + W + 300) % (W + 300) - 150, cy = 90 + (i % 3) * 34; c.fillStyle = 'rgba(255,255,255,.85)'; ell(c, cx, cy, 46, 16); c.fill(); ell(c, cx + 26, cy - 10, 28, 16); c.fill(); }
+    [[0.35, '#a3d483', 0.55], [0.6, '#8cc46a', 0.7]].forEach(([sp, col, hy]) => { c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W + 20; x += 20) { const wx = x + this.camX * sp; c.lineTo(x, H * hy + Math.sin(wx / 160) * 26 + Math.sin(wx / 63) * 9); } c.lineTo(W, H); c.closePath(); c.fillStyle = col; c.fill(); });
+    c.fillStyle = '#7cb95a'; c.fillRect(0, G.bot - 10, W, H);
+    c.save(); c.translate(-this.camX, 0);
+    // Deko entlang des Wegs
+    for (let i = 0; i < G.mapW / 90; i++) {
+      const x = i * 90 + 30, yy = (i % 2 ? H * 0.64 : G.bot - 4) + ((i * 37) % 19);
+      if (x < this.camX - 80 || x > this.camX + W + 80) continue;
+      if (i % 3 === 0) cypress(c, x, yy, 70); else if (i % 3 === 1) { drawPotPalm(c, x, yy, 0.5, t + i); } else { ell(c, x, yy - 8, 18, 12); fs(c, '#52b788', 3); ell(c, x + 4, yy - 12, 5, 4); c.fillStyle = ['#ef476f', '#ffd166', '#fff'][i % 3]; c.fill(); }
+    }
+    // Weg: breiter Kiesweg + Punkte; schon gelaufener Teil leuchtet
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath(); P.list.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.lineWidth = 30; c.strokeStyle = '#6b4f2a'; c.stroke(); c.lineWidth = 24; c.strokeStyle = '#e9dfcc'; c.stroke();
+    for (let i = 0; i < P.list.length; i += 6) { const p = P.list[i], open = i <= P.at[OPEN_STAGES.map(o => STAGE_ORDER.indexOf(o)).reduce((a, b) => Math.max(a, b), 0)]; ell(c, p.x, p.y, 4, 4); c.fillStyle = open ? '#c9a46b' : 'rgba(150,130,100,.45)'; c.fill(); }
+    // Knoten
+    G.nodes.forEach((n, i) => {
+      const open = OPEN_STAGES.includes(n.id), sp = SP(this.diff, n.id), here = i === this.cur, R = 40;
+      const bob = open ? Math.sin(t * 3 + i) * 3 : 0, pu = here && !this.walk ? 1 + Math.sin(t * 5) * 0.05 : 1;
+      c.save(); c.translate(n.x, n.y + bob); c.scale(pu, pu);
+      ell(c, 0, 10, R + 6, (R + 6) * 0.45); c.fillStyle = 'rgba(0,0,0,.2)'; c.fill();
+      ell(c, 0, 4, R, R * 0.55); fs(c, open ? '#b5651d' : '#868e96', 4);
+      ell(c, 0, 0, R, R * 0.55); fs(c, open ? (here ? BRAND.lime : '#ffd166') : '#ced4da', 4);
+      c.restore();
+      // Bereichs-Symbol als Schild über dem Knoten
+      const sx = n.x, sy = n.y - 78 + bob;
+      line(c, sx, sy + 20, sx, n.y - 8 + bob, 5, '#8d5a3b');
+      c.save(); if (!open) c.globalAlpha = 0.65; ell(c, sx, sy, 30, 30); fs(c, '#fff7e6', 4); stageIcon(c, n.id, sx, sy, 36); c.restore();
+      ell(c, sx - 26, sy - 22, 12, 12); fs(c, open ? BRAND.lime : '#adb5bd', 2.5); txt(c, String(i + 1), sx - 26, sy - 21, 13, '#fff', 'center', null);
+      if (!open) { ell(c, sx + 26, sy - 22, 13, 13); fs(c, '#fff', 2.5); icon(c, 'hourglass', sx + 26, sy - 22, 16); }
+      if (sp.clears) icon(c, 'crown', sx + 26, sy - 24, 24);
+      txt(c, STAGE_INFO[n.id].name, n.x, n.y + 40, 15, '#fff', 'center', BRAND.ink);
+      UI.btn(n.x - 50, n.y - 115, 100, 170, () => this.goTo(i));   // UI.btn rechnet die Verschiebung selbst um
+    });
+    // Figur auf dem Weg
+    const fp = Math.round(this.pos), me = P.list[fp], nxt = P.list[Math.min(P.list.length - 1, fp + 1)], hop = this.walk ? Math.abs(Math.sin(t * 12)) * 16 : 0;
+    const dir = this.walk ? Math.sign(this.walk.to - this.pos) || 1 : 1;
+    drawAnimal(c, kind, me.x, me.y - 14 - hop, 1.25, { t, moving: !!this.walk, dir, cap: hasCap(kind) });
+    if (this.walk && Math.floor(t * 10) % 2) { FX.puff && FX.puff(me.x - this.camX, me.y - 6, 1); }
+    c.restore();
+    // Kopfleiste
+    topBar(c, () => setScene(new Menu()));
+    for (let s2 = 0; s2 < d.stars; s2++) icon(c, 'star', 96 + s2 * 30, 44, 28);
+    // Info-Karte zum gewählten Bereich
+    const id = STAGE_ORDER[this.cur], open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
+    const cw = Math.min(W - 120, 560), ch = 104, cx = 16 + (W - 120 - cw) / 2, k = ease.back(this.card), cy = H - ch - 12 + (1 - k) * 140;
+    if (!this.walk) {
+      panel(c, cx, cy, cw, ch, open ? '#fbf8f2' : '#e9e4d8', 20);
+      stageArt(c, id, cx + 8, cy + 8, ch * 1.3, ch - 16, t);
+      const tx = cx + ch * 1.3 + 20;
+      txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null);
+      txt(c, info.sub, tx, cy + 52, 13, '#6b5a48', 'left', null);
+      if (open) {
+        const done = ALL_IDS.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
+        for (let q = 0; q < 6; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); }
+        icon(c, 'hanger', tx + 110, cy + 78, 18); txt(c, sp.skins.length + '/6', tx + 122, cy + 79, 13, '#6b5a48', 'left', null);
+        const pu = 1 + Math.sin(t * 6) * 0.07;
+        c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 34, '#06d6a0', 'play', null); c.restore();
+        UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
+      } else { rrPath(c, tx, cy + 64, 120, 28, 14); fs(c, '#fff', 2); icon(c, 'hourglass', tx + 16, cy + 78, 18); txt(c, 'kommt bald', tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
+    }
+    roundBtn(c, W - 50, H - 60, 30, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
+  }
+  down(x, y) { this.drag = { x0: x, cam0: this.camX, moved: false }; }
+  move(x) { const d = this.drag; if (!d) return; if (Math.abs(x - d.x0) > 10) d.moved = true; if (d.moved) { const G = this.geo(); this.camX = clamp(d.cam0 - (x - d.x0), 0, G.mapW - W); } }
+  up() { const d = this.drag; this.drag = null; if (d && d.moved) { const me = this.pts.list[Math.round(this.pos)], G = this.geo(); this.panOff = this.camX - clamp(me.x - W / 2, 0, G.mapW - W); } }
 }
 
 // ---------- Trailer: die Geschichte "Der neue Helfer" ohne Worte ----------
 const STORY_SAY = [
-  'Das ist das Original in Teningen – ein Restaurant mit Glashaus, Biergarten, Eis und einem großen Spielplatz. Heute kommen drei neue Helfer!',
-  'Der Chefkoch Bruno begrüßt euch und schenkt jedem ein grünes Helfer-Halstuch. Ab jetzt gehört ihr zum Team!',
-  'Das Gelände hat sechs Bereiche. In jedem Bereich wartet ein neues Teil deiner Uniform. Mit allen sechs Teilen bist du ein echter Chef-Helfer.',
-  'Im Spielplatz arbeiten Hoppel, Fridolin, Ida, Willi und Emma. Ihnen ist einiges verloren gegangen. Such die Sachen und hilf dem Team!',
-  'Ist allen geholfen, öffnet sich das Tor zum nächsten Bereich. Bist du bereit für deine Mission?',
+  'Willkommen im Original in Teningen!',
+  'Chefkoch Bruno macht dich zum neuen Helfer.',
+  'Sechs Bereiche, sechs Uniform-Teile – sammle sie alle!',
+  'Das Team hat Sachen verloren. Finde sie!',
+  'Hilf allen, dann geht das Tor auf. Los geht’s!',
 ];
 class Trailer {
   constructor() { this.t = 0; this.cuts = [0, 7, 15.5, 23.5, 33, 41]; this.said = -1; }
   enter() { FX.clear(); }
-  end() { Voice.stop(); Save.data.seenTrailer = true; Save.write(); setScene(ACC() ? new Menu() : new Accounts()); }
+  end() { Voice.stop(); Save.data.seenTrailer = true; Save.write(); ensureProfile(); setScene(ACC() ? new Menu() : new Accounts()); }
   scene() { let i = 0; while (i < this.cuts.length - 1 && this.t >= this.cuts[i + 1]) i++; return i; }
   update(dt) {
-    this.t += dt; const s1 = this.scene(), lt = this.t - this.cuts[s1], at = v => lt > v && lt - dt <= v;
+    dt *= 2; this.t += dt; const s1 = this.scene(), lt = this.t - this.cuts[s1], at = v => lt > v && lt - dt <= v;   // läuft doppelt so schnell: ~20 s
     if (this.t >= this.cuts[this.cuts.length - 1]) { this.end(); return; }
     if (this.said !== s1) { this.said = s1; Voice.say(STORY_SAY[s1], true); }
     if (s1 === 1 && at(3.6)) { const k = this.k(); FX.sparkle(W / 2 - 60 * k, H * 0.62, 24, '#80ed99'); Sfx.play('good'); }
@@ -670,7 +754,7 @@ class Trailer {
     // Fortschritt + Überspringen
     for (let i = 0; i < 5; i++) { ell(c, cx + (i - 2) * 18, H - 24, 5, 5); fs(c, i <= s ? '#fff' : 'rgba(255,255,255,.35)', 2); }
     roundBtn(c, W - 40, 40, 26, '#fff', 'play', () => this.end(), '#06d6a0');
-    icon(c, 'play', W - 32, 40, 22, '#06d6a0');
+    icon(c, 'play', W - 32, 40, 22, '#06d6a0'); txt(c, 'Überspringen', W - 40, 80, 13, '#fff', 'center', BRAND.ink);
   }
   down() { const s = this.scene(); if (s < this.cuts.length - 2) this.t = this.cuts[s + 1]; else this.end(); }
 }
@@ -839,7 +923,7 @@ function resize() {
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
 }
-function setScene(s) { Voice.stop(); scene = s; overlay = null; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
+function setScene(s) { Voice.stop(); Music.stop(); scene = s; overlay = null; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
 // Hochformat auf dem Handy: bitte drehen (das Spiel ist fürs Querformat gemacht)
 function drawRotate(c, t) {
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -868,6 +952,7 @@ let rotT = 0;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); UI.next = [];
+  if (Music.on && !(overlay instanceof GameOverlay)) Music.stop();
   // Leistung messen: dauerhaft unter ~45 Bildern/s -> Auflösung senken
   Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
   if (Perf.acc > 2) { const avg = Perf.acc / Perf.n; if (avg > 0.022 && Perf.cap > 1.01 && document.visibilityState === 'visible') { Perf.cap = Math.max(1, Perf.cap - 0.25); resize(); } Perf.acc = 0; Perf.n = 0; }
@@ -890,13 +975,15 @@ function frame(now) {
     if (overlay) { UI.next = []; overlay.update(dt); if (overlay) overlay.draw(ctx); }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     FX.update(dt); FX.draw(ctx);
+    // Jeder Fingertipp bekommt sofort einen Ring (Rückmeldung unter 0,1 s)
+    for (let i = TAPS.length - 1; i >= 0; i--) { const q = TAPS[i]; q.t += dt; if (q.t > 0.35) { TAPS.splice(i, 1); continue; } const k = q.t / 0.35; ell(ctx, q.x, q.y, 10 + k * 26, 10 + k * 26); ctx.lineWidth = 4 * (1 - k); ctx.strokeStyle = `rgba(255,255,255,${0.85 * (1 - k)})`; ctx.stroke(); }
   } catch (e) { console.error(e); }
   UI.flip();
   requestAnimationFrame(frame);
 }
-const swallowed = new Set();
+const swallowed = new Set(), TAPS = [];
 cv.addEventListener('pointerdown', e => {
-  e.preventDefault();
+  e.preventDefault(); TAPS.push({ x: e.clientX, y: e.clientY, t: 0 });
   tryLandscape();
   if (TOUCH && H > W) return;
   try { cv.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
@@ -923,5 +1010,6 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && Sav
 
 Save.load();
 resize();
+if (Save.data.seenTrailer) ensureProfile();
 setScene(!Save.data.seenTrailer ? new Trailer() : ACC() ? new Menu() : new Accounts());
 requestAnimationFrame(frame);

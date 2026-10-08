@@ -149,7 +149,21 @@ try { if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {
 
 const Sfx = {
   ac: null,
+  hook: null,
+  on() { const acc = ACC(); return !(acc && acc.sound === false); },
+  ctx() { if (!this.ac) this.ac = new (window.AudioContext || window.webkitAudioContext)(); if (this.ac.state === 'suspended') this.ac.resume(); return this.ac; },
+  // einzelner Ton (für Combos, Countdown, Ticken)
+  note(freq, dur = 0.12, type = 'triangle', vol = 0.08, slide = 1) {
+    if (!this.on()) return;
+    try {
+      const c = this.ctx(), t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t); if (slide !== 1) o.frequency.exponentialRampToValueAtTime(freq * slide, t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) { /* kein Audio */ }
+  },
   play(type) {
+    if (this.hook) this.hook(type);
     const acc = ACC(); if (acc && acc.sound === false) return;
     try {
       if (!this.ac) this.ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -159,16 +173,40 @@ const Sfx = {
         coin: [1250, 0.12, 'square', 1.3], win: [520, 0.5, 'triangle', 2], open: [380, 0.14, 'sine', 1.4],
         hit: [140, 0.25, 'sawtooth', 0.6], pop: [900, 0.08, 'sine', 0.5], jump: [400, 0.15, 'sine', 1.8],
       }[type] || [500, 0.1, 'sine', 1];
-      const o = c.createOscillator(), g = c.createGain();
+      const o = c.createOscillator(), g = c.createGain(), vary = type === 'win' ? 1 : 0.94 + Math.random() * 0.12;   // nie zweimal exakt gleich
       o.type = P[2];
-      o.frequency.setValueAtTime(P[0], t);
-      o.frequency.exponentialRampToValueAtTime(P[0] * P[3], t + P[1]);
+      o.frequency.setValueAtTime(P[0] * vary, t);
+      o.frequency.exponentialRampToValueAtTime(P[0] * P[3] * vary, t + P[1]);
       g.gain.setValueAtTime(0.09, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + P[1]);
       o.connect(g).connect(c.destination);
       o.start(t); o.stop(t + P[1] + 0.02);
       if (type === 'win') setTimeout(() => this.play('good'), 180);
     } catch (e) { /* kein Audio */ }
+  },
+};
+// Spannungs-Musik in den Aufgaben: Bass + Klick, das Tempo zieht an, wenn es eng wird
+const Music = {
+  on: false, bpm: 110, next: 0, step: 0, timer: null,
+  start(bpm = 110) {
+    this.bpm = bpm; if (this.on || !Sfx.on()) return;
+    try { const c = Sfx.ctx(); this.on = true; this.next = c.currentTime + 0.05; this.step = 0; this.timer = setInterval(() => this.tick(), 50); } catch (e) { this.on = false; }
+  },
+  stop() { this.on = false; if (this.timer) clearInterval(this.timer); this.timer = null; },
+  tempo(bpm) { this.bpm = clamp(bpm, 80, 190); },
+  tick() {
+    if (!this.on) return; if (!Sfx.on()) { this.stop(); return; }
+    const c = Sfx.ac; if (!c) return;
+    const PATS = [[110, 110, 131, 110, 98, 98, 147, 131], [131, 131, 165, 147, 110, 110, 98, 123], [98, 147, 131, 110, 123, 123, 165, 147]];
+    const BASS = PATS[Math.floor(this.step / 64) % PATS.length];   // alle paar Takte eine neue Basslinie
+    while (this.next < c.currentTime + 0.15) {
+      const t = this.next, st = this.step % 16, beat = st % 2 === 0;
+      const env = (o, g, vol, dur) => { g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02); };
+      if (beat) { const o = c.createOscillator(), g = c.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(BASS[(st / 2) | 0], t); env(o, g, 0.07, 0.16); }
+      if (st % 4 === 0) { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12); env(o, g, 0.12, 0.13); }
+      { const o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.setValueAtTime(beat ? 5200 : 6400, t); env(o, g, beat ? 0.012 : 0.007, 0.03); }
+      this.next += 60 / this.bpm / 2; this.step++;
+    }
   },
 };
 function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* egal */ } }

@@ -128,8 +128,38 @@ const TUT_CHAPTERS = [
     start(S) { S.balloons = [{ x: 150, y: 170, col: '#ef476f' }, { x: 300, y: 130, col: '#ffd166' }, { x: 450, y: 190, col: '#06d6a0' }]; },
     tap(S, x, y) { for (const b of S.balloons || []) if (!b.pop && dist(x, y, b.x, b.y) < 45) { b.pop = true; Sfx.play('pop'); FX.sparkle(TUT_REF.toS(b.x, b.y).x, TUT_REF.toS(b.x, b.y).y, 12); } },
     check(S) { return (S.balloons || []).every(b => b.pop); } },
+  { title: 'Schnell sein!', dur: 10,
+    say: 'Vor jeder Aufgabe zählt es: 3, 2, 1, los! Oben brennt eine Zündschnur. Erreicht die Flamme einen Stern, fällt er herunter. Wer schnell ist, behält alle drei Sterne. Schaffst du mehrere Treffer schnell hintereinander, gibt es eine Combo – dann wird die Zündschnur wieder länger.',
+    try: 'Jetzt du: Tippe schnell die 5 Eisclowns an – mach eine Combo!',
+    draw(c, t, S) {
+      c.fillStyle = '#e9f5db'; c.fillRect(0, 0, TV.w, TV.h);
+      // Sterne + Zündschnur
+      const fuse = S.trying ? clamp(1 - (S.tt || 0) / 12 + (S.bonus || 0), 0, 1) : clamp(1 - (t - 3) / 6, 0, 1), lost = !S.trying && t > 8.4;
+      for (let i = 0; i < 3; i++) { if (lost && i === 2) { c.save(); const k = t - 8.4; c.translate(150 + k * 40, 40 + 300 * k * k); c.rotate(k * 6); icon(c, 'star', 0, 0, 34); c.restore(); continue; } icon(c, 'star', 70 + i * 40, 40, 34); }
+      line(c, 200, 40, 560, 40, 9, '#3d2c1f'); const ex = lerp(200, 560, fuse); line(c, 200, 40, ex, 40, 6, '#f4a261', false);
+      for (let k = 0; k < 3; k++) { const a = t * 17 + k * 2.1; ell(c, ex + Math.cos(a) * 6, 40 + Math.sin(a) * 6, 4, 4); c.fillStyle = ['#fff3b0', '#ffd166', '#ef476f'][k]; c.fill(); }
+      if (!S.trying && t < 3) { const n = 3 - Math.floor(t), fr = t % 1, k = ease.back(clamp(fr * 3, 0, 1)); c.save(); c.translate(300, 200); c.scale(k * 1.4, k * 1.4); ell(c, 0, 0, 50, 50); fs(c, ['#06d6a0', '#ffd166', '#ef476f'][n - 1], 5); txt(c, String(n), 0, 3, 60, '#fff', 'center', OL); c.restore(); }
+      if (!S.trying && t >= 3 && t < 3.8) { const k = ease.back(clamp((t - 3) * 4, 0, 1)); c.save(); c.translate(300, 200); c.scale(k * 1.3, k * 1.3); rrPath(c, -90, -36, 180, 72, 36); fs(c, BRAND.lime, 5); txt(c, 'LOS!', 0, 3, 50, '#fff', 'center', OL); c.restore(); }
+      if (!S.trying && t > 5 && t < 8) { const k = ease.back(clamp((t - 5) * 4, 0, 1)); c.save(); c.translate(300, 190 - (t - 5) * 15); c.scale(k, k); txt(c, 'Combo x3', 0, 0, 34, '#ffd23f', 'center', OL); txt(c, '+1.5 s', 0, 40, 24, '#80ed99', 'center', OL); c.restore(); }
+      if (S.trying) {
+        (S.tg || []).forEach(g => { if (g.hit) return; drawFood(c, 'eisclown', g.x, g.y, 54); });
+        if (S.combo >= 2) txt(c, 'Combo x' + S.combo, 300, 330, 26, '#ffd23f', 'center', OL);
+      }
+    },
+    start(S) { S.tt = 0; S.combo = 0; S.last = -9; S.bonus = 0; S.tg = [...Array(5)].map((_, i) => ({ x: 90 + i * 105, y: 150 + (i % 2) * 90, vx: (i % 2 ? 1 : -1) * (70 + i * 12), vy: (i % 3 - 1) * 50, hit: false })); },
+    tick(S, dt) {
+      if (!S.trying) return; S.tt += dt;
+      (S.tg || []).forEach(g => { g.x += g.vx * dt; g.y += g.vy * dt; if (g.x < 40 || g.x > 560) g.vx *= -1; if (g.y < 90 || g.y > 320) g.vy *= -1; });
+      if (S.done) return; if (S.tg.every(g => g.hit)) S.ok = true;
+    },
+    tap(S, x, y) {
+      const g = (S.tg || []).find(q => !q.hit && dist(x, y, q.x, q.y) < 46); if (!g) return;
+      g.hit = true; S.combo = S.tt - S.last < 2.6 ? S.combo + 1 : 1; S.last = S.tt; if (S.combo >= 2) S.bonus += 0.04;
+      Sfx.note(523 * Math.pow(2, Math.min(S.combo - 1, 12) / 6), 0.14, 'triangle', 0.07, 1.5); const p = TUT_REF.toS(g.x, g.y); FX.sparkle(p.x, p.y, 12, '#ffd23f');
+    },
+    check(S) { return S.ok; } },
   { title: 'Der Joker', dur: 10,
-    say: 'Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast.',
+    say: 'Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast. Extra-Joker gibt es, wenn du einem Mitarbeiter hilfst, bevor die Bonus-Uhr abläuft – und wenn du alle 8 Original-Blätter findest.',
     try: 'Jetzt du: Tippe auf den Joker!',
     draw(c, t, S) {
       c.fillStyle = '#cfe8ef'; c.fillRect(0, 0, TV.w, TV.h);

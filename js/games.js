@@ -3,6 +3,12 @@
 // Alle Spiele zeichnen in einem festen Raster von 400 x 520 und werden auf den Bildschirm skaliert.
 const GAME_W = 400, GAME_H = 520;
 
+// ---------- Druck & Tempo: Countdown, Tempo-Sterne mit Zündschnur, Combos, Musik ----------
+let GAME_MOTION = 1;                       // wie stark sich Dinge in den Aufgaben bewegen (Stufe)
+const PAR_LONG = { hanoi: 1.6, pipes: 1.5, rotimg: 1.5, mirror: 1.5, diff: 1.4, lights: 1.4, puzzle: 1.3, balance: 1.3, dials: 1.3, sequence: 1.3, pattern: 1.3, platform: 2 };
+function parTime(id, diff, kind) { return Math.round((kind === 'easy' ? 22 : diff === 'hard' ? 38 : 32) * (PAR_LONG[id] || 1)); }
+try { document.addEventListener('visibilitychange', () => { if (document.hidden) Music.stop(); }); } catch (e) { /* egal */ }
+
 class GameOverlay {
   // opts: { diff, kind:'easy'|'puzzle'|'challenge', item, steps:{i,n}, slow, seed, onStop }
   constructor(id, opts, done) {
@@ -35,9 +41,17 @@ class GameOverlay {
       burst(x, y, n = 14) { const p = self.toScreen(x, y); FX.sparkle(p.x, p.y, n); },
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
+    GAME_MOTION = o.diff === 'easy' ? 0.7 : o.diff === 'hard' ? 1.3 : 1;
+    this.cd = 3; this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
+    this.par = parTime(this.id, o.diff, o.kind); this.thr = [this.par, Math.round(this.par * 1.7)];
+    const burst0 = this.env.burst; this.env.burst = (x, y, n) => { burst0(x, y, n); self.good(x, y); };
+    Sfx.hook = type => { if (overlay === self && type === 'bad') self.miss(); };
     this.g = GAMES[this.id].make(this.env, o);
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
-    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.help = true; ACC().tut['h_' + this.id] = true; Save.write(); }
+    // Beim ersten Mal: kurzer Hinweis über dem Spielfeld (vorgelesen) + Zeigehand – kein Textfenster, das Spiel startet sofort
+    this.tip = null; this.lastTouch = 0;
+    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); Voice.say(this.tip.text, true); }
+    this.cdWait = this.tip ? 2.4 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + (ability('zeitplus') ? 6 : 0) : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
@@ -79,6 +93,95 @@ class GameOverlay {
       txt(c, msg, x + r + 20, y, Math.min(15, 15 * (W - x - r - 40) / c.measureText(msg).width), '#fff', 'left', null); c.globalAlpha = 1;
     }
   }
+  starsOn() { return !this.timed; }
+  good(x, y) {
+    if (this.state !== 'play') return;
+    this.combo = this.t - this.lastGood < 2.6 ? this.combo + 1 : 1; this.lastGood = this.t;
+    const p = this.toScreen(x, y);
+    if (this.combo >= 2) {
+      const bonus = Math.min(2.5, 0.5 * this.combo), floor = this.stars < 3 ? this.thr[2 - this.stars] : 0;
+      if (this.starsOn()) this.fuse = Math.max(floor, this.fuse - bonus);
+      this.pops.push({ x: p.x, y: p.y - 30, t: 0, text: 'Combo x' + this.combo, col: '#ffd23f', big: true });
+      if (this.starsOn()) this.pops.push({ x: p.x, y: p.y + 4, t: -0.1, text: '+' + bonus.toFixed(1).replace('.0', '') + ' s', col: '#80ed99' });
+    } else this.pops.push({ x: p.x, y: p.y - 26, t: 0, text: '+1', col: '#fff' });
+    Sfx.note(523 * Math.pow(2, Math.min(this.combo - 1, 12) / 12 * 2), 0.14, 'triangle', 0.07, 1.5);
+  }
+  miss() { this.combo = 0; this.shk = 0.3; }
+  stopFx() { Music.stop(); if (Sfx.hook && overlay !== this) Sfx.hook = null; }
+  // Zündschnur + Sterne (Druck ohne weniger Zeit: wer schnell ist, bekommt mehr Sterne)
+  tickPressure(dt) {
+    if (this.cdWait > 0) { this.cdWait -= dt; return false; }
+    if (this.cd > -0.6) {
+      const before = Math.ceil(this.cd); this.cd -= dt; const after = Math.ceil(this.cd);
+      if (after !== before && before > 0) { if (after > 0) Sfx.note(660, 0.12, 'square', 0.05); else { Sfx.note(990, 0.35, 'square', 0.06, 1.2); buzz(40); } }
+      if (this.cd > 0) return false;
+    }
+    Music.start(); this.fuse += dt;
+    if (this.starsOn() && this.stars > 1) {
+      const thr = this.thr[3 - this.stars], rem = thr - this.fuse;
+      Music.tempo(110 + clamp((8 - rem) / 8, 0, 1) * 70);
+      if (rem < 3.5) { this.tickAcc += dt; const iv = rem < 1.5 ? 0.18 : 0.4; if (this.tickAcc > iv) { this.tickAcc = 0; Sfx.note(rem < 1.5 ? 1500 : 1200, 0.04, 'square', 0.035); } }
+      if (rem <= 0) { this.stars--; this.falling.push({ i: this.stars, t: 0 }); Sfx.play('hit'); this.shk = 0.4; buzz(90); }
+    } else Music.tempo(this.timed ? 120 + clamp(1 - this.timeLeft / this.timeMax, 0, 1) * 60 : 115);
+    return true;
+  }
+  danger() { if (!this.starsOn() || this.stars <= 1 || this.state !== 'play' || this.cd > 0) return 0; const rem = this.thr[3 - this.stars] - this.fuse; return rem < 3.5 ? 1 - rem / 3.5 : 0; }
+  starSlot(i) {
+    if (this.side) return { x: W - 46, y: 102 + i * 40, s: 36 };
+    return { x: W / 2 + (i - 1) * 44 - 70, y: 100, s: 36 };
+  }
+  drawStars(c) {
+    if (!this.starsOn()) return;
+    const side = this.side, dz = this.danger();
+    // Zündschnur
+    let fx0, fy0, fx1, fy1;
+    if (side) { fx0 = W - 46; fy0 = 214; fx1 = W - 46; fy1 = Math.max(fy0 + 80, H - 28); }
+    else { fx0 = W / 2 + 10; fy0 = 100; fx1 = Math.min(W - 24, W / 2 + 170); fy1 = 100; }
+    const nextThr = this.stars > 1 ? this.thr[3 - this.stars] : 0, prevThr = this.stars === 3 ? 0 : this.thr[2 - this.stars];
+    const f = this.stars > 1 ? clamp(1 - (this.fuse - prevThr) / (nextThr - prevThr), 0, 1) : 0;
+    line(c, fx0, fy0, fx1, fy1, 9, '#3d2c1f');
+    if (f > 0) {
+      const ex = lerp(fx0, fx1, f), ey = lerp(fy0, fy1, f);
+      line(c, fx0, fy0, ex, ey, 6, dz > 0 ? (Math.sin(this.t * 20) > 0 ? '#ef476f' : '#ffd166') : '#f4a261', false);
+      if (this.state === 'play' && this.cd <= 0) { for (let k = 0; k < 3; k++) { const a = this.t * 17 + k * 2.1; ell(c, ex + Math.cos(a) * 6, ey + Math.sin(a) * 6, 4 + Math.sin(a * 3) * 2, 4 + Math.sin(a * 3) * 2); c.fillStyle = ['#fff3b0', '#ffd166', '#ef476f'][k]; c.fill(); } }
+    }
+    for (let i = 0; i < 3; i++) {
+      const sl = this.starSlot(i), alive = i < this.stars;
+      ell(c, sl.x, sl.y, sl.s * 0.62, sl.s * 0.62); fs(c, 'rgba(0,0,0,.35)', 0);
+      if (!alive) { c.globalAlpha = 0.35; icon(c, 'star', sl.x, sl.y, sl.s, '#adb5bd'); c.globalAlpha = 1; continue; }
+      const next = i === this.stars - 1 && dz > 0, sh = next ? Math.sin(this.t * 40) * 4 * dz : 0, sc = next ? 1 + dz * 0.25 * Math.abs(Math.sin(this.t * 10)) : 1;
+      c.save(); c.translate(sl.x + sh, sl.y); c.scale(sc, sc); if (next) { ell(c, 0, 0, sl.s * 0.75, sl.s * 0.75); c.fillStyle = `rgba(239,71,111,${0.5 * dz})`; c.fill(); } icon(c, 'star', 0, 0, sl.s); c.restore();
+    }
+    for (const fa of this.falling) {
+      const sl = this.starSlot(fa.i), k = fa.t;
+      c.save(); c.globalAlpha = clamp(1 - k / 1.1, 0, 1); c.translate(sl.x + k * 60, sl.y - 40 * k + 500 * k * k); c.rotate(k * 7); icon(c, 'star', 0, 0, sl.s * (1 + k * 0.4)); c.restore();
+    }
+  }
+  drawCountdown(c) {
+    if (this.cd <= -0.6 || this.help || this.state !== 'play' || this.cdWait > 0) return;
+    const p = this.toScreen(200, 250), n = Math.ceil(this.cd), fr = this.cd > 0 ? this.cd - Math.floor(this.cd) : 0;
+    const k = this.cd > 0 ? ease.back(clamp((1 - fr) * 3, 0, 1)) : ease.back(clamp((-this.cd) * 4, 0, 1));
+    if (this.cd > 0) { c.fillStyle = 'rgba(16,28,18,.45)'; c.fillRect(0, 0, W, H); }
+    c.save(); c.translate(p.x, p.y); c.scale(k * 1.6, k * 1.6); c.rotate(this.cd > 0 ? (fr - 0.5) * 0.3 : 0);
+    if (this.cd > 0) { ell(c, 0, 0, 58, 58); fs(c, ['#06d6a0', '#ffd166', '#ef476f'][n - 1] || '#ef476f', 6); txt(c, String(n), 0, 3, 72, '#fff', 'center', OL); }
+    else { c.globalAlpha = clamp(1 + this.cd * 1.6, 0, 1); rrPath(c, -100, -42, 200, 84, 42); fs(c, BRAND.lime, 6); txt(c, 'LOS!', 0, 3, 60, '#fff', 'center', OL); }
+    c.restore();
+  }
+  drawPops(c) {
+    for (const q of this.pops) {
+      if (q.t < 0) continue;
+      const k = ease.back(clamp(q.t * 5, 0, 1)), a = clamp(1.2 - q.t, 0, 1);
+      c.save(); c.globalAlpha = a; c.translate(q.x, q.y - q.t * 50); c.scale(k, k); c.rotate(Math.sin(q.t * 9) * 0.06);
+      txt(c, q.text, 0, 0, q.big ? 30 : 22, q.col, 'center', OL); c.restore();
+    }
+  }
+  drawRays(c) {
+    const p = this.toScreen(200, 260), R = Math.max(W, H);
+    c.save(); c.translate(p.x, p.y); c.rotate(this.t * 0.25);
+    c.fillStyle = 'rgba(149,193,31,.08)';
+    for (let i = 0; i < 12; i++) { c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, (i / 12) * TAU, (i / 12 + 1 / 24) * TAU); c.closePath(); c.fill(); }
+    c.restore();
+  }
   lose() { if (this.state === 'play') { this.state = 'lost'; this.endT = 0; Sfx.play('bad'); buzz(250); } }
   layout() {
     // Querformat: Knöpfe/Herzen/Zeit an die Seiten, Spielfeld bekommt die volle Höhe
@@ -89,7 +192,7 @@ class GameOverlay {
       this.ox = left + 8 + (aw - GAME_W * this.s) / 2; this.oy = 8 + (ah - GAME_H * this.s) / 2;
       return;
     }
-    const top = this.timed ? 156 : 84, pad = 10;
+    const top = this.timed ? 156 : 124, pad = 10;
     const aw = W - pad * 2, ah = H - top - pad - 6;
     this.s = Math.min(aw / GAME_W, ah / GAME_H);
     this.ox = (W - GAME_W * this.s) / 2;
@@ -102,7 +205,12 @@ class GameOverlay {
     this.t += dt; this.flash = Math.max(0, this.flash - dt); this.timeBonus = Math.max(0, this.timeBonus - dt);
     this.lostAnim.forEach(a => (a.t += dt)); this.lostAnim = this.lostAnim.filter(a => a.t < 1);
     if (this.jokerReady()) this.jokerT += dt;
-    if (this.state === 'play' && this.help) return;   // Spiel pausiert, solange die Erklärung offen ist
+    this.shk = Math.max(0, this.shk - dt); if (this.tip) { this.tip.t += dt; if (this.tip.t > 9 || (this.touched && this.tip.t > 2.5)) this.tip = null; }
+    this.pops.forEach(q => (q.t += dt)); this.pops = this.pops.filter(q => q.t < 1.3);
+    this.falling.forEach(q => (q.t += dt)); this.falling = this.falling.filter(q => q.t < 1.2);
+    if (this.state === 'play' && this.help) { Music.stop(); return; }   // Spiel pausiert, solange die Erklärung offen ist
+    if (this.state === 'play' && !this.tickPressure(dt)) return;        // Countdown läuft
+    if (this.state !== 'play') Music.stop();
     if (this.state === 'play') {
       this.g.update(dt);
       if (this.timed && this.state === 'play') {
@@ -111,10 +219,14 @@ class GameOverlay {
         if (sec <= 5 && sec !== this.lastTick && sec > 0) { this.lastTick = sec; buzz(25); Sfx.play('tap'); }
         if (this.timeLeft <= 0) { this.timeLeft = 0; this.lose(); }
       }
-    } else if (this.state === 'won') { this.endT += dt; if (this.endT > 1.25) this.finish(true); }
+    } else if (this.state === 'won') {
+      this.endT += dt;
+      if (this.starsOn()) for (let i = 0; i < this.stars; i++) if (this.endT > 0.35 + i * 0.28 && this.won3 <= i) { this.won3 = i + 1; Sfx.note([523, 659, 784][i], 0.25, 'triangle', 0.09, 1.02); const sp = this.toScreen(200 + (i - 1) * 74, 380); FX.sparkle(sp.x, sp.y, 14, '#ffd23f'); }
+      if (this.endT > (this.starsOn() ? 2.1 : 1.25)) this.finish(true);
+    }
     else this.endT += dt;
   }
-  finish(ok) { if (overlay === this) overlay = null; if (this.done) this.done(ok); }
+  finish(ok) { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.done) this.done(ok); }
   drawStatus(c) {
     // Große, eindeutige Leiste: Leben links, Zeit rechts
     const low = this.timeLeft / this.timeMax < 0.25, pulse = low ? 0.5 + 0.5 * Math.sin(this.t * 12) : 0;
@@ -149,7 +261,10 @@ class GameOverlay {
   draw(c) {
     this.layout();
     c.fillStyle = 'rgba(16,28,18,.78)'; c.fillRect(0, 0, W, H);
-    roundBtn(c, 46, 44, 30, '#fff', 'stop', () => { if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
+    this.drawRays(c);
+    const dz = this.danger();
+    if (dz > 0) { const a = dz * (0.25 + 0.25 * Math.sin(this.t * 14)); const gr = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.7); gr.addColorStop(0, 'rgba(239,71,111,0)'); gr.addColorStop(1, `rgba(239,71,111,${a})`); c.fillStyle = gr; c.fillRect(0, 0, W, H); }
+    roundBtn(c, 46, 44, 30, '#fff', 'stop', () => { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
     const o = this.opts;
     if (o.kind === 'easy' && o.steps) {
       const n = o.steps.n, w = Math.min(28, this.side ? (H - 140) / n : (W - 200) / n);
@@ -164,8 +279,10 @@ class GameOverlay {
       drawItem(c, o.item, ix, iy, 42);
     }
     if (this.timed) this.drawStatus(c);
+    this.drawStars(c);
     c.save();
-    c.translate(this.ox, this.oy); c.scale(this.s, this.s);
+    const sk = this.shk > 0 ? Math.sin(this.shk * 70) * this.shk * 22 : 0;
+    c.translate(this.ox + sk, this.oy + (this.shk > 0 ? Math.cos(this.shk * 55) * this.shk * 10 : 0)); c.scale(this.s, this.s);
     rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.save(); c.clip();
     this.g.draw(c);
     const av = c.createRadialGradient(200, 230, 150, 200, 260, 380); av.addColorStop(0, 'rgba(0,0,0,0)'); av.addColorStop(1, 'rgba(40,25,10,.18)');
@@ -175,7 +292,7 @@ class GameOverlay {
       if (this.timed) { const k = 1 - this.flash / 0.4; c.save(); c.globalAlpha = 1 - k; c.translate(200, 260); c.scale(1 + k, 1 + k); icon(c, 'heartE', 0, 0, 120); c.restore(); }
     }
     const h = this.g.hint;
-    if (h && !this.touched && this.state === 'play' && this.t > 0.4) {
+    if (h && (!this.touched || this.t - this.lastTouch > 6) && this.state === 'play' && this.t > 0.4) {
       const k = (this.t * 0.8) % 1;
       let hx = h.x, hy = h.y, press = 0;
       if (h.type === 'drag') { const e = ease.inout(clamp(k * 1.4, 0, 1)); hx = lerp(h.x, h.x2, e); hy = lerp(h.y, h.y2, e); }
@@ -191,6 +308,11 @@ class GameOverlay {
       ell(c, 0, 0, 80, 80); fs(c, '#06d6a0', 6);
       if (o.item && o.kind !== 'easy') drawItem(c, o.item, 0, -4, 96); else icon(c, 'check', 0, 0, 110);
       c.restore();
+      if (this.starsOn()) for (let i = 0; i < 3; i++) {
+        const got = i < this.won3, kk = got ? ease.back(clamp((this.endT - 0.35 - i * 0.28) * 4, 0, 1)) : 1;
+        c.save(); c.translate(200 + (i - 1) * 74, 380 - (i === 1 ? 16 : 0)); c.scale(kk, kk); c.rotate(got ? 0 : 0.2);
+        ell(c, 0, 0, 34, 34); fs(c, 'rgba(0,0,0,.25)', 0); c.globalAlpha = got ? 1 : 0.35; icon(c, 'star', 0, 0, 60, got ? undefined : '#adb5bd'); c.globalAlpha = 1; c.restore();
+      }
     }
     if (this.state === 'lost') {
       c.fillStyle = 'rgba(30,20,20,.6)'; c.fillRect(0, 0, GAME_W, GAME_H);
@@ -208,17 +330,27 @@ class GameOverlay {
       roundBtn(c, p.x + r * 1.3, p.y, r * 0.8, '#adb5bd', 'cross', () => this.finish(false));
     }
     this.drawJoker(c);
+    this.drawPops(c);
+    this.drawCountdown(c);
+    if (this.tip && this.state === 'play' && !this.help) {
+      const a = clamp(Math.min(this.tip.t * 4, (9 - this.tip.t) * 2), 0, 1), tw = Math.min(W - 40, this.side ? W - 260 : W - 40, 560);
+      const lines = wrapLines(c, this.tip.text, tw - 30, 17), th = lines.length * 22 + 18, p = this.toScreen(200, 0), ty = this.side ? H - th - 12 : Math.max(8, p.y - th - 10);
+      c.globalAlpha = a; rrPath(c, W / 2 - tw / 2, ty, tw, th, 18); c.fillStyle = 'rgba(32,44,30,.93)'; c.fill(); c.lineWidth = 3; c.strokeStyle = BRAND.lime; c.stroke();
+      lines.forEach((l, i) => txt(c, l, W / 2, ty + 20 + i * 22, 17, '#fff', 'center', null)); c.globalAlpha = 1;
+    }
     // Erklär-Knopf (?) + Erklärung mit Text
     if (this.state === 'play') roundBtn(c, W - 46, 44, 26, '#bde0fe', 'question', () => { this.help = !this.help; }, '#118ab2');
     if (this.help) {
       const lines = [HELP_TEXT[this.id] || 'Probier es einfach aus!'];
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
+      if (this.starsOn()) lines.push('Sei schnell: Die Zündschnur oben brennt. Erreicht die Flamme einen Stern, fällt er herunter. Mehrere Treffer schnell hintereinander geben eine Combo – dann wird die Zündschnur wieder länger.');
       if (this.opts.joker) lines.push('Kommst du nicht weiter, erscheint nach einer Weile unten links der Joker. Damit ist die Aufgabe sofort geschafft. Du hast 3 Joker pro Bereich.');
       helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); });
     }
   }
-  down(x, y, id) { if (this.state !== 'play' || this.help) return; this.touched = true; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
-  move(x, y, id) { if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
+  down(x, y, id) { if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
+    if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
+  move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
   up(x, y, id) { if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.up) this.g.up(p.x, p.y, id); }
 }
 
@@ -287,9 +419,13 @@ function helpPanel(c, paras, onClose, speak = true) {
 }
 
 // ---------- Helfer ----------
-function dragKit(objs, onDrop) {
+function dragKit(objs, onDrop, opt = {}) {
+  // opt.float: lose Teile schweben sanft hin und her (mehr Bewegung, man muss sie "erwischen")
+  const amp = (opt.float === undefined ? 9 : opt.float) * GAME_MOTION;
+  objs.forEach((o, i) => { o.fph = i * 1.7 + 0.5; });
   const k = {
-    objs, drag: null, ox: 0, oy: 0,
+    objs, drag: null, ox: 0, oy: 0, T: 0,
+    off(o) { return amp && !o.locked ? { x: Math.sin(k.T * 1.3 + o.fph) * amp, y: Math.cos(k.T * 1.05 + o.fph * 1.7) * amp * 0.7 } : { x: 0, y: 0 }; },
     down(x, y) {
       for (let i = objs.length - 1; i >= 0; i--) {
         const o = objs[i];
@@ -304,12 +440,15 @@ function dragKit(objs, onDrop) {
     move(x, y) { if (k.drag) { k.drag.x = x + k.ox; k.drag.y = y + k.oy; } },
     up() { const o = k.drag; if (!o) return; k.drag = null; onDrop(o); o.back = true; },
     update(dt) {
+      k.T += dt;
       for (const o of objs) {
-        if (o.back && k.drag !== o) {
+        if (k.drag === o) continue;
+        const f = k.off(o), tx = o.hx + f.x, ty = o.hy + f.y;
+        if (o.back) {
           const a = Math.min(1, dt * 14);
-          o.x = lerp(o.x, o.hx, a); o.y = lerp(o.y, o.hy, a);
-          if (Math.abs(o.x - o.hx) < 0.5 && Math.abs(o.y - o.hy) < 0.5) { o.x = o.hx; o.y = o.hy; o.back = false; }
-        }
+          o.x = lerp(o.x, tx, a); o.y = lerp(o.y, ty, a);
+          if (Math.abs(o.x - tx) < 0.5 && Math.abs(o.y - ty) < 0.5) o.back = false;
+        } else if (amp && !o.locked) { o.x = tx; o.y = ty; }
       }
     },
     sorted() { return objs.filter(o => o.locked).concat(objs.filter(o => !o.locked)); },
@@ -367,19 +506,31 @@ function memoryMake(env, easy) {
   const faces = shuffle(FOOD_IDS, r).slice(0, n);
   const cw = 86, ch = Math.min(140, 470 / rows - 12);
   const deck = shuffle([...Array(n).keys(), ...Array(n).keys()], r).map((k, i) => ({ k, f: 0, open: false, done: false, x: ((i % cols) + 0.5) * 100, y: 40 + (Math.floor(i / cols) + 0.5) * (470 / rows) }));
-  let sel = [], wait = 0, tries = 0; const fin = finisher(env);
+  let sel = [], wait = 0, tries = 0, T = 0, matches = 0; const fin = finisher(env);
+  deck.forEach(d => { d.tx = d.x; d.ty = d.y; d.arc = 0; });
+  // Nach einem Paar tauschen zwei verdeckte Karten im Bogen die Plätze – gut hinschauen!
+  const swap = () => {
+    const free = deck.filter(d => !d.done && !d.open); if (free.length < 4) return;
+    const a = pick(free, env.r); let b = pick(free.filter(q => q !== a), env.r);
+    [a.tx, b.tx] = [b.tx, a.tx]; [a.ty, b.ty] = [b.ty, a.ty]; a.arc = b.arc = 1; Sfx.note(330, 0.25, 'sine', 0.06, 2);
+  };
   return {
     hint: { type: 'tap', x: deck[0].x, y: deck[0].y },
     update(dt) {
-      deck.forEach(d => { d.f = lerp(d.f, d.open || d.done ? 1 : 0, Math.min(1, dt * 12)); });
+      T += dt;
+      deck.forEach(d => {
+        d.f = lerp(d.f, d.open || d.done ? 1 : 0, Math.min(1, dt * 12));
+        const sp = Math.min(1, dt * (easy ? 3.2 : 4.5)); d.x = lerp(d.x, d.tx, sp); d.y = lerp(d.y, d.ty, sp); d.arc = Math.max(0, d.arc - dt * 1.6);
+      });
       if (wait > 0) { wait -= dt; if (wait <= 0) { sel.forEach(d => (d.open = false)); sel = []; } }
       fin.tick(dt);
     },
     draw(c) {
       if (easy) bgEasy(c); else bgWood(c);
       deck.forEach(d => {
-        const sx = Math.abs(Math.cos(d.f * Math.PI)), front = d.f > 0.5;
-        c.save(); c.translate(d.x, d.y); c.scale(Math.max(0.04, sx), 1);
+        const sx = Math.abs(Math.cos(d.f * Math.PI)), front = d.f > 0.5, ix = deck.indexOf(d);
+        const bob = d.done ? 0 : Math.sin(T * 2.4 + ix * 0.7) * 3 * GAME_MOTION, lift = Math.sin(d.arc * Math.PI) * 26;
+        c.save(); c.translate(d.x, d.y + bob - lift); c.rotate(d.done ? 0 : Math.sin(T * 1.7 + ix) * 0.035 * GAME_MOTION + (d.arc ? Math.sin(d.arc * TAU) * 0.2 : 0)); c.scale(Math.max(0.04, sx) * (1 + lift / 200), 1 + lift / 200);
         rrPath(c, -cw / 2, -ch / 2, cw, ch, 14); fs(c, front ? '#fffdf7' : easy ? '#6bb544' : '#2d6a4f', 4);
         const s = Math.min(cw, ch) * 0.75;
         if (front) drawAny(c, faces[d.k], 0, 0, s * 1.05);
@@ -394,7 +545,7 @@ function memoryMake(env, easy) {
           d.open = true; sel.push(d); Sfx.play('tap');
           if (sel.length === 2) {
             tries++;
-            if (sel[0].k === sel[1].k) { sel.forEach(s => { s.done = true; env.burst(s.x, s.y); }); Sfx.play('good'); buzz(30); sel = []; if (deck.every(q => q.done)) fin.set(); }
+            if (sel[0].k === sel[1].k) { sel.forEach(s => { s.done = true; env.burst(s.x, s.y); }); Sfx.play('good'); buzz(30); sel = []; matches++; if (deck.every(q => q.done)) fin.set(); else if (!easy || matches % 2 === 0) setTimeout(swap, 450); }
             else wait = easy ? 0.9 : 0.7;
           }
           return;
@@ -410,17 +561,17 @@ GAMES.pairs = { make: env => memoryMake(env, false) };
 GAMES.connect = { make(env) {
   const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 5);
   const L = ids.map((id, i) => ({ id, x: 80, y: 60 + i * 100, con: false }));
-  const R = shuffle(ids, r).map((id, i) => ({ id, x: 320, y: 60 + i * 100, con: false }));
-  const links = []; let drag = null, px = 0, py = 0; const fin = finisher(env);
+  const R = shuffle(ids, r).map((id, i) => ({ id, x: 320, y: 60 + i * 100, by: 60 + i * 100, con: false }));
+  const links = []; let drag = null, px = 0, py = 0, T = 0; const fin = finisher(env);
   const target = R.find(q => q.id === L[0].id);
   return {
     hint: { type: 'drag', x: L[0].x, y: L[0].y, x2: target.x, y2: target.y },
-    update(dt) { fin.tick(dt); },
+    update(dt) { T += dt; R.forEach((q, i) => { q.y = q.by + Math.sin(T * 1.6 + i * 1.3) * 22 * GAME_MOTION; q.x = 320 + Math.cos(T * 1.1 + i) * 14 * GAME_MOTION; }); L.forEach((q, i) => { if (!q.con) q.s = 1 + Math.sin(T * 3 + i) * 0.06; }); fin.tick(dt); },
     draw(c) {
       bgEasy(c);
       links.forEach((l, i) => line(c, l[0].x, l[0].y, l[1].x, l[1].y, 9, FILLS[i]));
       if (drag) line(c, drag.x, drag.y, px, py, 9, '#ffd166');
-      [...L, ...R].forEach(q => { ell(c, q.x, q.y, 40, 40); fs(c, q.con ? '#d8f5e3' : '#fff', 4, q.con ? '#2b9348' : OL); drawAny(c, q.id, q.x, q.y, 64); });
+      [...L, ...R].forEach(q => { const k = q.s || 1; ell(c, q.x, q.y, 40 * k, 40 * k); fs(c, q.con ? '#d8f5e3' : '#fff', 4, q.con ? '#2b9348' : OL); drawAny(c, q.id, q.x, q.y, 64 * k); });
     },
     down(x, y) { for (const q of [...L, ...R]) if (!q.con && dist(x, y, q.x, q.y) < 54) { drag = q; px = x; py = y; Sfx.play('tap'); return; } },
     move(x, y) { px = x; py = y; },
@@ -787,7 +938,7 @@ GAMES.balance = { make(env) {
     let best = 0, bd = 50;
     for (let d = 1; d <= D; d++) { if (slots[d]) continue; const p = beamPt(d, o.sz / 2 + 4); const dd = dist(o.x, o.y, p.x, p.y); if (dd < bd) { bd = dd; best = d; } }
     if (best) { o.slot = best; slots[best] = 1; Sfx.play('tap'); } else { o.hx = trayX[ws.indexOf(o)]; o.hy = 470; }
-  });
+  }, { float: 0 });
   const cube = (c, x, y, w, sz, a) => {
     c.save(); c.translate(x, y); c.rotate(a);
     rrPath(c, -sz / 2, -sz / 2, sz, sz, 6); fs(c, ['#ffd166', '#f78c6b', '#ef476f', '#9b5de5'][w - 1], 4);
@@ -1083,7 +1234,7 @@ GAMES.maze = { make: env => mazeMake(env, env.hard ? 10 : 7, env.hard) };
 // Was passt nicht? (ein Bild ist gespiegelt)
 GAMES.oddone = { make(env) {
   const r = env.r, N = env.hard ? 4 : 3, rounds = env.hard ? 4 : 3, P = 330 / N, ox = 35, oy = 130;
-  let round = 0, cells, odd, shake = 0; const fin = finisher(env);
+  let round = 0, cells, odd, shake = 0, T = 0; const fin = finisher(env);
   const setup = () => {
     const id = pick(['kuchen', 'eisclown', 'limo', 'flammkuchen', 'roller', 'wasserpistole'], r); odd = ri(0, N * N - 1, r);
     cells = [...Array(N * N).keys()].map(i => ({ id, rot: 0, flip: i === odd ? -1 : 1 }));
@@ -1091,14 +1242,15 @@ GAMES.oddone = { make(env) {
   setup();
   return {
     hint: null,
-    update(dt) { shake = Math.max(0, shake - dt); fin.tick(dt); },
+    update(dt) { T += dt; shake = Math.max(0, shake - dt); fin.tick(dt); },
     draw(c) {
       bgEasy(c, '#edf6f9');
       roundDots(c, rounds, round, 60);
       cells.forEach((q, i) => {
         const x = ox + (i % N) * P + P / 2 + (shake > 0 ? shakeX(shake) * 0.5 : 0), y = oy + Math.floor(i / N) * P + P / 2;
         rrPath(c, x - P / 2 + 4, y - P / 2 + 4, P - 8, P - 8, 14); fs(c, '#fff', 3);
-        c.save(); c.translate(x, y); c.rotate(q.rot); c.scale(q.flip, 1); drawAny(c, q.id, 0, 0, P * 0.7); c.restore();
+        const sw = Math.sin(T * 2 + i * 0.9) * 0.5 * GAME_MOTION, hop = Math.abs(Math.sin(T * 3 + i * 1.3)) * 6 * GAME_MOTION;
+        c.save(); c.translate(x, y - hop); c.rotate(q.rot + sw); c.scale(q.flip, 1); drawAny(c, q.id, 0, 0, P * 0.7); c.restore();
       });
     },
     down(x, y) {
@@ -1113,7 +1265,7 @@ GAMES.oddone = { make(env) {
 // Reihe fortsetzen
 GAMES.nextrow = { make(env) {
   const r = env.r, rounds = env.hard ? 4 : 3, len = env.hard ? 7 : 6;
-  let round = 0, seq, opts, shake = 0; const fin = finisher(env);
+  let round = 0, seq, opts, shake = 0, T = 0; const fin = finisher(env);
   const setup = () => {
     const shapes = shuffle([0, 1, 2, 3, 4, 5], r), cols = shuffle(FILLS, r);
     let f;
@@ -1134,18 +1286,18 @@ GAMES.nextrow = { make(env) {
   const sw = 380 / (len + 1);
   return {
     hint: null,
-    update(dt) { shake = Math.max(0, shake - dt); fin.tick(dt); },
+    update(dt) { T += dt; shake = Math.max(0, shake - dt); fin.tick(dt); },
     draw(c) {
       bgWood(c);
       roundDots(c, rounds, round, 50);
       rrPath(c, 8, 110, 384, 110, 18); fs(c, '#fff7e6', 4);
-      seq.forEach((q, i) => symTile(c, q.s, 10 + sw * (i + 0.5), 165, sw * 0.86, q.c));
+      seq.forEach((q, i) => symTile(c, q.s, 10 + sw * (i + 0.5), 165 - Math.max(0, Math.sin(T * 4 - i * 0.6)) * 10 * GAME_MOTION, sw * 0.86, q.c));
       const qx = 10 + sw * (len + 0.5);
       rrPath(c, qx - sw * 0.42, 130, sw * 0.84, 70, 10); fs(c, '#ffd166', 3); txt(c, '?', qx, 166, 30, '#fff');
       opts.forEach((o, i) => {
-        const x = 55 + i * 97 + (shake > 0 ? shakeX(shake) * 0.5 : 0), y = 380;
-        rrPath(c, x - 40, y - 46, 80, 92, 16); fs(c, '#fff', 4);
-        symTile(c, o.s, x, y, 64, o.c);
+        const x = 55 + i * 97 + (shake > 0 ? shakeX(shake) * 0.5 : 0), y = 380 + Math.sin(T * 2.5 + i * 1.6) * 7 * GAME_MOTION;
+        c.save(); c.translate(x, y); c.rotate(Math.sin(T * 1.8 + i) * 0.06 * GAME_MOTION); rrPath(c, -40, -46, 80, 92, 16); fs(c, '#fff', 4);
+        symTile(c, o.s, 0, 0, 64, o.c); c.restore();
       });
     },
     down(x, y) {
@@ -1166,7 +1318,7 @@ GAMES.count = { make(env) {
     const n = env.hard ? ri(7, 11, r) : ri(4, 8, r), m = env.hard ? 16 : 9;
     const others = shuffle(FOOD_IDS.filter(q => q !== target), r).slice(0, 5);
     its = [];
-    for (let i = 0; i < n + m; i++) its.push({ id: i < n ? target : pick(others, r), x: 30 + r() * 340, y: 110 + r() * 230, vx: env.hard ? (r() - 0.5) * 70 : 0, vy: env.hard ? (r() - 0.5) * 50 : 0, s: 34 + r() * 10 });
+    for (let i = 0; i < n + m; i++) its.push({ id: i < n ? target : pick(others, r), x: 30 + r() * 340, y: 110 + r() * 230, vx: (r() - 0.5) * (env.hard ? 70 : 36), vy: (r() - 0.5) * (env.hard ? 50 : 26), s: 34 + r() * 10 });
     const vals = shuffle([n - 2, n - 1, n, n + 1, n + 2].filter(v => v > 0), r).slice(0, 3);
     if (!vals.includes(n)) vals[0] = n;
     opts = shuffle([...new Set(vals.concat([n + (r() < 0.5 ? 3 : -3)]))].filter(v => v > 0), r).slice(0, 4).map(v => ({ v, ok: v === n }));
@@ -1618,19 +1770,22 @@ GAMES.findall = { make(env) {
   const like = (LOOKALIKE.find(g2 => g2.includes(target)) || [target]);
   const list = shuffle([...Array(n).fill(target), ...shuffle(FOOD_IDS.concat(ITEM_IDS).filter(i => !like.includes(i) && i !== target), r).slice(0, 11)], r);
   const its = []; let g = 0;
-  for (const id of list) { let p; do { p = { x: 50 + r() * 300, y: 130 + r() * 350 }; g++; } while (g < 3000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 64)); its.push({ id, x: p.x, y: p.y, found: false, wob: 0 }); }
+  for (const id of list) { let p; do { p = { x: 50 + r() * 300, y: 130 + r() * 350 }; g++; } while (g < 3000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 64)); its.push({ id, x: p.x, y: p.y, found: false, wob: 0, vx: (r() - 0.5) * 36 * GAME_MOTION, vy: (r() - 0.5) * 28 * GAME_MOTION, ph: r() * 6 }); }
   let got = 0; const fin = finisher(env);
   const first = its.find(o => o.id === target);
   return {
     hint: { type: 'tap', x: first.x, y: first.y },
-    update(dt) { its.forEach(o => (o.wob = Math.max(0, o.wob - dt))); fin.tick(dt); },
+    update(dt) {
+      its.forEach(o => { o.wob = Math.max(0, o.wob - dt); o.ph += dt; if (o.found) return; o.x += o.vx * dt; o.y += o.vy * dt; if (o.x < 40 || o.x > 360) o.vx *= -1; if (o.y < 125 || o.y > 485) o.vy *= -1; o.x = clamp(o.x, 40, 360); o.y = clamp(o.y, 125, 485); });
+      fin.tick(dt);
+    },
     draw(c) {
       bgEasy(c, '#e9f5db');
       rrPath(c, 100, 16, 200, 80, 22); fs(c, '#fff', 4); drawAny(c, target, 150, 56, 56);
       for (let i = 0; i < n; i++) { ell(c, 210 + i * 24, 56, 9, 9); fs(c, i < got ? '#06d6a0' : '#dee2e6', 2.5); }
       its.forEach(o => {
         if (o.found) { ell(c, o.x, o.y, 38, 38); fs(c, 'rgba(6,214,160,.25)', 4, '#06d6a0'); }
-        c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.wob * 30) * 0.2); drawAny(c, o.id, 0, 0, 54); c.restore();
+        c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.wob * 30) * 0.2 + (o.found ? 0 : Math.sin(o.ph * 1.5) * 0.15)); drawAny(c, o.id, 0, 0, 54); c.restore();
       });
     },
     down(x, y) {
@@ -1689,7 +1844,11 @@ GAMES.count_easy = { make(env) {
   };
   return {
     hint: null,
-    update(dt) { shake = Math.max(0, shake - dt); fin.tick(dt); },
+    update(dt) {
+      shake = Math.max(0, shake - dt);
+      its.forEach(p => { if (p.vx === undefined) { p.vx = (env.r() - 0.5) * 30; p.vy = (env.r() - 0.5) * 22; } p.x += p.vx * dt; p.y += p.vy * dt; if (p.x < 64 || p.x > 336) p.vx *= -1; if (p.y < 104 || p.y > 318) p.vy *= -1; });
+      fin.tick(dt);
+    },
     draw(c) {
       bgEasy(c);
       roundDots(c, rounds, round, 40);
@@ -1730,7 +1889,7 @@ GAMES.color = { make(env) {
     ],
   ], r).map(q => ({ ...q, done: false }));
   const centers = regions.map(q => { let sx = 0, sy = 0, n = 0; for (let x = 0; x < 400; x += 8) for (let y = 0; y < 520; y += 8) if (HITC.isPointInPath(q.p, x, y)) { sx += x; sy += y; n++; } return [sx / n, sy / n]; });
-  let sel = -1, shake = 0, shakeI = -1; const fin = finisher(env);
+  let sel = -1, shake = 0, shakeI = -1, T = 0; const fin = finisher(env);
   return {
     hint: { type: 'tap', x: 80, y: 490 },
     update(dt) { shake = Math.max(0, shake - dt); fin.tick(dt); },
@@ -1742,7 +1901,8 @@ GAMES.color = { make(env) {
         if (!q.done) { c.globalAlpha = 0.55; drawSym(c, q.s, centers[i][0], centers[i][1], 13, 2); c.globalAlpha = 1; }
         c.restore();
       });
-      [0, 1, 2, 3].forEach(s => { const x = 80 + s * 80, y = 490; if (sel === s) { ell(c, x, y, 34, 34); fs(c, '#fff7ae', 0); } ell(c, x, y, 26, 26); fs(c, SYMS[s].col, 4); ell(c, x, y, 19, 19); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); drawSym(c, s, x, y, 11); });
+      T += 1 / 60;
+      [0, 1, 2, 3].forEach(s => { const x = 80 + s * 80, y = 490 - (sel === s ? 6 + Math.abs(Math.sin(T * 6)) * 6 : Math.abs(Math.sin(T * 2 + s)) * 3); if (sel === s) { ell(c, x, y, 34, 34); fs(c, '#fff7ae', 0); } ell(c, x, y, 26, 26); fs(c, SYMS[s].col, 4); ell(c, x, y, 19, 19); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); drawSym(c, s, x, y, 11); });
     },
     down(x, y) {
       if (fin.on()) return;

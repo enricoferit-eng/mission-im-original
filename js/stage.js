@@ -307,13 +307,76 @@ class Play {
     this.camX = START.x; this.camY = START.y; this.zoom = 1;
     this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null;
     this.gateA = this.st.done.gate ? 1 : 0;
-    if (diff !== 'easy' && ACC() && !ACC().tut['intro_' + diff]) { this.helpOpen = true; ACC().tut['intro_' + diff] = true; Save.write(); }
+    this.idleT = 0; this.coachSaid = {};
+    this.leafPop = 0; this.justDone = null;
+    if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
+      const r = mulberry32((Date.now() ^ 0x2545f491) >>> 0), L = []; let g = 0;
+      while (L.length < LEAVES_PER_RUN && g++ < 4000) { const x = 60 + r() * 880, y = 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
+      this.st.leaves = L; Save.write();
+    }
     this.shake = {};
     this.npcAnim = {}; ALL_IDS.forEach((id, i) => (this.npcAnim[id] = { ph: i * 1.7, wave: 0, jump: 0 }));
     this.pigeons = [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i }));
     if (!GROUND) buildGround();
   }
   enter() { FX.clear(); }
+  // ---- Original-Blätter einsammeln ----
+  updateLeaves() {
+    const p = this.p; if (p.level !== 0 || p.slide) return;
+    for (const lf of this.st.leaves) {
+      if (lf.got || dist(lf.x, lf.y, p.x, p.y) > 34) continue;
+      lf.got = true; const n = this.st.leaves.filter(o => o.got).length, s = this.w2s(lf.x, lf.y, 20);
+      FX.sparkle(s.x, s.y, 18, '#c7f464'); Sfx.note(587 * Math.pow(2, n / 12), 0.18, 'triangle', 0.08, 1.6); buzz(25); this.leafPop = 1;
+      if (n === this.st.leaves.length) {
+        this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
+        FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); this.banner = { text: 'Alle Blätter gefunden: +1 Joker!', t: 0 };
+      }
+      Save.write();
+    }
+  }
+  // Zeit-Bonus: laufender Auftrag + verbleibende Sekunden bis zum Extra-Joker
+  bonusQuest() {
+    if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
+    return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
+  }
+  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 60 : 0); }
+  checkBonus(q, npc) {
+    if (!q || (q.tt || 0) > this.bonusLimit(npc)) return;
+    this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
+    this.bonusPop = { t: 0 }; Sfx.note(880, 0.3, 'triangle', 0.08, 1.5); buzz([30, 40, 30]);
+  }
+  // Wohin soll das Kind als Nächstes? (für die Zeigehand)
+  coachTarget() {
+    if (this.exiting || overlay) return null;
+    const q = this.st.active, ready = q && this.diff !== 'easy' && q.got.every(Boolean);
+    if (ready) return { npc: q.npc };
+    if (q && this.diff !== 'easy') return { search: true };
+    let best = null, bd = 1e9;
+    for (const n of this.npcs) { const s = this.npcState(n.id); if (s !== 'open' && s !== 'boss') continue; const d = dist(n.x, n.y, this.p.x, this.p.y); if (d < bd) { bd = d; best = n.id; } }
+    if (!best && this.npcState('gate') === 'boss') best = 'gate';
+    return best ? { npc: best } : null;
+  }
+  drawCoach(c) {
+    const T = this.coachTarget(); if (!T) return;
+    const a = ACC(), first = a && !a.tut.coach;
+    if (T.search) {
+      if (this.idleT > 9 && !this.coachSaid.search) { this.coachSaid.search = true; this.banner = { text: 'Schau hinter Steine und Büsche – dann tippe auf die Lupe!', t: 0 }; Voice.say(this.banner.text, true); }
+      return;
+    }
+    if (!first && this.idleT < 7) return;
+    const P = T.npc === 'gate' ? { x: GATE.x, y: GATE.y, l: 0 } : this.npcs.find(n => n.id === T.npc); if (!P) return;
+    const z = P.l ? HOUSE.fz : 0, sp = this.w2s(P.x, P.y - 40, z);
+    if (sp.x > 30 && sp.x < W - 30 && sp.y > 100 && sp.y < H - 80) {
+      const b = Math.abs(Math.sin(this.t * 4)) * 14; drawHand(c, sp.x + 6, sp.y + 30 + b, 1.6);
+    } else {
+      const ax = clamp(sp.x, 60, W - 60), ay = clamp(sp.y, 130, H - 100), ang = Math.atan2(sp.y - H / 2, sp.x - W / 2), pu = 1 + Math.sin(this.t * 6) * 0.12;
+      c.save(); c.translate(ax, ay); c.rotate(ang); c.scale(pu, pu); polyPath(c, [[30, 0], [-14, -24], [-4, 0], [-14, 24]]); fs(c, '#ffd23f', 4); c.restore();
+    }
+    const msg = T.npc === 'gate' ? 'Lauf zum Tor und tippe es an!' : (this.st.active ? 'Bring die Sachen zurück – tippe den Mitarbeiter an!' : 'Tippe einen Mitarbeiter mit ! an.');
+    const key = 'c_' + msg; if (!this.coachSaid[key]) { this.coachSaid[key] = true; Voice.say(msg, true); }
+    c.font = `900 17px ${FONT}`; const mw = c.measureText(msg).width + 30, by = H - 86;
+    rrPath(c, W / 2 - mw / 2, by - 20, mw, 40, 20); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, by, 17, '#fff', 'center', null);
+  }
   // ---- Hilfsfunktionen ----
   z() { const p = this.p; if (p.slide) return p.slideZ; const i = cellIdx(p.x, p.y); if (i >= 0 && ST[i]) return stairsZ(p.y); return p.level ? HOUSE.fz : 0; }
   w2s(x, y, z = 0) { return { x: (x - this.camX) * this.zoom + W / 2, y: (y - z - this.camY) * this.zoom + H / 2 }; }
@@ -350,9 +413,13 @@ class Play {
     this.gateA = lerp(this.gateA, this.st.done.gate ? 1 : 0, Math.min(1, dt * 3));
     const hase = this.npcs.find(n => n.swing !== undefined);
     if (hase) { const off = this.seatOff(hase.swing); hase.y = SWING.y + off; hase.z = 24 + Math.abs(off) * 0.35; }
+    { const bq = this.bonusQuest(); if (bq && !this.exiting && scene === this) bq.q.tt = (bq.q.tt || 0) + dt; }
+    if (this.bonusPop) { this.bonusPop.t += dt; if (this.bonusPop.t > 2.6) this.bonusPop = null; }
+    this.leafPop = Math.max(0, this.leafPop - dt * 2.5); if (this.justDone) { this.justDone.t += dt; if (this.justDone.t > 1.6) this.justDone = null; }
     if (this.exiting) this.updateExit(dt);
     else if (!overlay) {
-      if (this.searching) this.updateSearch(dt); else this.updatePlayer(dt);
+      this.idleT += dt; if (this.p.moving || this.joy) this.idleT = 0;
+      if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); }
       // Hilfe-Uhr: läuft nur, solange gesucht wird
       const hq = this.st.active;
       if (this.canSearch() && hq) {
@@ -503,6 +570,7 @@ class Play {
     else if (T.k === 'spot') this.startSearch();
   }
   talk(id) {
+    { const a = ACC(); if (a && !a.tut.coach) { a.tut.coach = true; Save.write(); } }
     const st = this.st, s = this.npcState(id), a = this.npcAnim[id];
     a.wave = 1; Sfx.play('tap');
     if (!ACC().tut.symbol) { ACC().tut.symbol = true; Save.write(); }
@@ -581,12 +649,12 @@ class Play {
     });
   }
   deliver(id) {
-    const st = this.st, q = st.active;
+    const st = this.st, q = st.active; this.checkBonus(q, id);
     st.done[id] = true; st.active = null;
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
-    this.npcAnim[id].jump = 1.5;
+    this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
@@ -620,11 +688,11 @@ class Play {
     });
   }
   finishEasy(id) {
-    const st = this.st; st.done[id] = true; delete st.easy[id];
+    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id];
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
-    this.npcAnim[id].jump = 1.5;
+    this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
   }
@@ -671,7 +739,7 @@ class Play {
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
   jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; return { left: () => st.jokers, use: () => { st.jokers = Math.max(0, st.jokers - 1); Save.write(); } }; }
-  down(x, y, id) { if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
+  down(x, y, id) { this.idleT = 0; if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
   move(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; j.x = x; j.y = y; if (!j.moved && dist(x, y, j.x0, j.y0) > 14) j.moved = true; }
   up(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; if (!j.moved && this.t - j.t < 0.4 && !this.searching) this.tap(x, y); this.joy = null; }
   // ---- Zeichnen ----
@@ -735,6 +803,12 @@ class Play {
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
     if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
+    for (const lf of this.st.leaves) if (!lf.got && vis(lf.x, lf.y)) L.push({ y: lf.y, f: () => {
+      const b = Math.sin(t * 3 + lf.x) * 5, gl = 0.5 + 0.5 * Math.sin(t * 4 + lf.y);
+      c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, lf.x, lf.y + 2, 12, 4); c.fill();
+      ell(c, lf.x, lf.y - 18 + b, 16 + gl * 4, 16 + gl * 4); c.fillStyle = `rgba(199,244,100,${0.25 + gl * 0.25})`; c.fill();
+      leaf(c, lf.x, lf.y - 18 + b, 2.6, BRAND.lime, -0.5 + Math.sin(t * 2 + lf.x) * 0.3);
+    } });
     L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) });
     SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); });
     L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
@@ -927,6 +1001,10 @@ class Play {
     roundBtn(c, 46, 46, 30, '#fff', 'stop', () => this.stop());
     roundBtn(c, 112, 46, 24, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
     soundBtn(c, W - 40, 46);
+    { const n = this.st.leaves.filter(o => o.got).length, k = 1 + this.leafPop * 0.35;
+      rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
+      c.save(); c.translate(174, 46); c.scale(k, k); leaf(c, 0, 0, 2.2, BRAND.lime, -0.5); c.restore();
+      txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
     const q = this.st.active;
     if (q && this.diff !== 'easy') {
       const n = q.items.length, iw = Math.min(48, (W - 40) / (n + 1.6)), w = iw * (n + 1.4) + 16, x0 = W / 2 - w / 2, y0 = 82;
@@ -938,16 +1016,29 @@ class Play {
         if (q.got[k]) icon(c, 'check', x + iw * 0.3, y + iw * 0.3, iw * 0.42, '#06d6a0');
       });
     }
+    // Bonus-Uhr: Mitarbeiter schnell geschafft = Extra-Joker
+    { const bq = this.bonusQuest(), left = bq ? this.bonusLimit(bq.npc) - (bq.q.tt || 0) : -1;
+      if (left > 0) {
+        const low = left < 20, pu = low ? 1 + Math.abs(Math.sin(this.t * 6)) * 0.08 : 1, by = this.diff === 'easy' ? 92 : 168, txtT = Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0');
+        c.save(); c.translate(W / 2, by); c.scale(pu, pu);
+        rrPath(c, -78, -18, 156, 36, 18); c.fillStyle = low ? 'rgba(239,71,111,.92)' : 'rgba(30,20,10,.6)'; c.fill();
+        icon(c, 'clock', -58, 0, 24); txt(c, txtT, -18, 1, 18, '#fff', 'center', null); txt(c, '→', 18, 1, 16, '#fff', 'center', null); icon(c, 'joker', 52, 0, 26);
+        c.restore();
+      }
+      if (this.bonusPop) { const k = ease.back(clamp(this.bonusPop.t * 3, 0, 1)), a = clamp(2.6 - this.bonusPop.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.32 - this.bonusPop.t * 12); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -70, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
+    }
     // Fortschritt: 5 Tiere + Ausgang
     const fw = 40, ids = ALL_IDS, fx = W / 2 - (ids.length - 1) * fw / 2, fy = H - 30;
     rrPath(c, fx - 30, fy - 26, (ids.length - 1) * fw + 60, 46, 23); c.fillStyle = 'rgba(30,20,10,.45)'; c.fill();
     ids.forEach((id, i) => {
-      const x = fx + i * fw, done = this.st.done[id];
+      const x = fx + i * fw, done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
       c.save(); if (!done) c.globalAlpha = 0.55;
+      if (jd >= 0) { const k = 1 + Math.sin(Math.min(1, jd / 0.8) * Math.PI) * 1.2; c.translate(x, fy + 14); c.scale(k, k); c.translate(-x, -(fy + 14)); }
       if (id === 'gate') drawGate(c, x, fy + 14, 0.26, done ? 1 : 0, !this.bossOpen(), 0); else drawCritter(c, id, x, fy + 14, 0.55, 0, { noShadow: true, staff: true });
       c.restore();
       if (done) icon(c, 'check', x + 10, fy + 6, 16, '#06d6a0');
     });
+    this.drawCoach(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
     if (this.canSearch() && hq) {
@@ -999,6 +1090,8 @@ class Play {
       const T = this.diff === 'easy' ? [
         'Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich.',
         'Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe.',
+        'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
+        'Die Bonus-Uhr oben läuft: Hilfst du einem Mitarbeiter, bevor sie abläuft, bekommst du einen Extra-Joker.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
       ] : [
@@ -1009,6 +1102,8 @@ class Play {
         'Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
         'Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
+        'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
+        'Die Bonus-Uhr oben läuft: Hilfst du einem Mitarbeiter, bevor sie abläuft, bekommst du einen Extra-Joker.',
         'Die ganze Anleitung findest du im Menü unter dem Buch.',
       ];
       if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }
@@ -1025,7 +1120,8 @@ class Play {
 
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
-const JOKERS_PER_RUN = 3;
+const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
+const BONUS_TIME = { easy: 90, medium: 150, hard: 180 };   // Mitarbeiter so schnell geschafft = +1 Joker (Tor: +60 s)
 const NPC_NAMES = { hase: 'Hoppel vom Service', fuchs: 'Fridolin aus der Küche', igel: 'Ida von der Eistheke', waschbaer: 'Willi, der Hausmeister', eule: 'Emma vom Empfang', gate: 'Das Tor' };
 const NPC_LINES = {
   hase: 'Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden!',
