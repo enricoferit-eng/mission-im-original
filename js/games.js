@@ -70,6 +70,16 @@ class GameOverlay {
     const p = this.toScreen(200, 250); FX.confetti(p.x, p.y, 70, 1.2); FX.sparkle(p.x, p.y, 30, '#ffd23f');
     this.state = 'play'; this.usedJoker = true; this.env.win();
   }
+  // Bonus-Uhr des Auftrags läuft auch in der Aufgabe weiter – sichtbar, damit man sich beeilt
+  drawBonus(c) {
+    const b = this.opts.bonus && this.opts.bonus(); if (!b || b.left <= 0 || this.state === 'won') return;
+    const low = b.left < 10, mid = b.left < 30, col = low ? '#ef476f' : mid ? '#ffb703' : '#06d6a0', T = Math.floor(b.left / 60) + ':' + String(Math.floor(b.left % 60)).padStart(2, '0');
+    const x = this.side ? 46 : W - 150, y = this.side ? H - 152 : 44, pu = low ? 1 + Math.abs(Math.sin(this.t * 8)) * 0.1 : 1;
+    c.save(); c.translate(x, y); c.scale(pu, pu);
+    if (this.side) { rrPath(c, -38, -34, 76, 68, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke(); icon(c, 'joker', 0, -14, 24); txt(c, T, 0, 16, 18, low ? '#ff8fa3' : '#fff', 'center', null); }
+    else { rrPath(c, -52, -18, 104, 36, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke(); icon(c, 'joker', -32, 0, 24); txt(c, T, 14, 1, 18, low ? '#ff8fa3' : '#fff', 'center', null); }
+    c.restore();
+  }
   drawJoker(c) {
     if (!this.jokerReady()) return;
     const lost = this.state === 'lost';
@@ -330,6 +340,7 @@ class GameOverlay {
       roundBtn(c, p.x + r * 1.3, p.y, r * 0.8, '#adb5bd', 'cross', () => this.finish(false));
     }
     this.drawJoker(c);
+    this.drawBonus(c);
     this.drawPops(c);
     this.drawCountdown(c);
     if (this.tip && this.state === 'play' && !this.help) {

@@ -159,7 +159,7 @@ const TUT_CHAPTERS = [
     },
     check(S) { return S.ok; } },
   { title: 'Der Joker', dur: 10,
-    say: 'Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast. Extra-Joker gibt es, wenn du einem Mitarbeiter hilfst, bevor die Bonus-Uhr abläuft – und wenn du alle 8 Original-Blätter findest.',
+    say: 'Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast. Einen Extra-Joker gibt es auch, wenn du alle 8 Original-Blätter findest.',
     try: 'Jetzt du: Tippe auf den Joker!',
     draw(c, t, S) {
       c.fillStyle = '#cfe8ef'; c.fillRect(0, 0, TV.w, TV.h);
@@ -185,6 +185,54 @@ const TUT_CHAPTERS = [
     tap(S, x, y) { if (!S.ok && dist(x, y, 70, 300) < 50) { S.ok = true; S.okT = 0; S.left = 2; Sfx.play('win'); } },
     tick(S, dt) { if (S.ok) S.okT += dt; },
     check(S) { return S.ok && S.okT > 1; } },
+  { title: 'Bonus-Jagd!', dur: 11,
+    say: 'Sobald du einen Auftrag annimmst, startet die Bonus-Jagd. Oben läuft die Bonus-Uhr – auch während der Rätsel und Aufgaben! Bringst du alles zurück, bevor sie abläuft, bekommst du einen Extra-Joker. Bei Grün hast du noch Zeit, bei Gelb wird es knapp, bei Rot musst du dich richtig beeilen!',
+    try: 'Jetzt du: Tippe schnell die 3 Bälle an und dann Hoppel – bevor die Uhr abläuft!',
+    draw(c, t, S) {
+      tvGround(c);
+      const LIM = S.trying ? 8 : 9, el = S.trying ? (S.tt || 0) : clamp(t - 2.2, 0, 99), left = Math.max(0, LIM - el), f = left / LIM;
+      const col = f < 0.3 ? '#ef476f' : f < 0.6 ? '#ffb703' : '#06d6a0';
+      drawCritter(c, 'hase', 90, 250, 1.6, t, { staff: true, wave: true });
+      // Uhr oben
+      if (S.trying || t > 2.2) {
+        const pu = f < 0.3 ? 1 + Math.abs(Math.sin(t * 8)) * 0.12 : 1;
+        c.save(); c.translate(300, 34); c.scale(pu, pu); rrPath(c, -110, -24, 220, 48, 24); c.fillStyle = 'rgba(30,20,10,.8)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke();
+        txt(c, 'BONUS', -72, -9, 11, col, 'center', null); icon(c, 'clock', -72, 8, 20); txt(c, '0:0' + Math.ceil(left), -14, -2, 24, '#fff', 'center', null);
+        rrPath(c, -46, 12, 64, 6, 3); c.fillStyle = 'rgba(255,255,255,.2)'; c.fill(); rrPath(c, -46, 12, 64 * f, 6, 3); c.fillStyle = col; c.fill();
+        txt(c, '→', 34, 1, 18, '#fff', 'center', null); icon(c, 'joker', 74, 0, 32); c.restore();
+      }
+      if (!S.trying && t < 2.4) { const k = ease.back(clamp(t * 3, 0, 1)); c.save(); c.translate(300, 170); c.scale(k, k); rrPath(c, -170, -50, 340, 100, 26); fs(c, '#ffd23f', 5); txt(c, 'BONUS-JAGD!', 0, -14, 34, '#fff', 'center', OL); txt(c, 'Schaffe es in 0:09 → +1 Joker!', 0, 24, 17, BRAND.ink, 'center', null); c.restore(); }
+      // Vorführung: Tier sammelt 3 Bälle und bringt sie zurück
+      const balls = S.trying ? S.balls : [{ x: 300, y: 260 }, { x: 420, y: 170 }, { x: 520, y: 290 }];
+      if (!S.trying) {
+        const path = [[200, 270], [300, 260], [420, 170], [520, 290], [130, 250]], seg = clamp((t - 2.6) / 1.4, 0, 4), si = Math.min(3, Math.floor(seg)), u = seg - si;
+        const ax = lerp(path[si][0], path[si + 1][0], u), ay = lerp(path[si][1], path[si + 1][1], u);
+        balls.forEach((bl, i) => { if (seg < i + 1) drawItem(c, 'ball', bl.x, bl.y, 40); });
+        drawAnimal(c, S.kind, ax, ay, 1.4, { t, moving: seg > 0 && seg < 4, dir: path[si + 1][0] > path[si][0] ? 1 : -1 });
+        if (t > 8.4) { const k = ease.back(clamp((t - 8.4) * 3, 0, 1)); c.save(); c.translate(300, 150 - (t - 8.4) * 10); c.scale(k * 1.2, k * 1.2); icon(c, 'joker', -80, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 26, '#ffd23f', 'center', OL); c.restore(); }
+      } else {
+        balls.forEach(bl => { if (!bl.got) { const b = Math.abs(Math.sin(t * 5 + bl.x)) * 8; drawItem(c, 'ball', bl.x, bl.y - b, 44); } });
+        const n = balls.filter(b => b.got).length; txt(c, n + '/3', 90, 150, 20, '#fff', 'center', BRAND.olive);
+        if (S.ok) { const k = ease.back(clamp(S.okT * 3, 0, 1)); c.save(); c.translate(300, 160); c.scale(k * 1.2, k * 1.2); icon(c, 'joker', -80, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 26, '#ffd23f', 'center', OL); c.restore(); }
+        if (S.miss > 0) txt(c, 'Zu langsam – nochmal!', 300, 170, 26, '#ff8fa3', 'center', OL);
+      }
+    },
+    start(S) { S.tt = 0; S.ok = false; S.okT = 0; S.miss = 0; S.balls = [{ x: 260 + Math.random() * 60, y: 150 + Math.random() * 40 }, { x: 400 + Math.random() * 60, y: 260 + Math.random() * 40 }, { x: 520 + Math.random() * 40, y: 140 + Math.random() * 60 }]; },
+    tick(S, dt) {
+      if (!S.trying || S.done) return;
+      if (S.ok) { S.okT += dt; return; }
+      if (S.miss > 0) { S.miss -= dt; if (S.miss <= 0) { const keep = S.trying; TUT_CHAPTERS.find(ch => ch.title === 'Bonus-Jagd!').start(S); S.trying = keep; } return; }
+      const before = 8 - S.tt; S.tt += dt; const after = 8 - S.tt;
+      if (Math.ceil(after) !== Math.ceil(before) && after > 0 && after <= 5) Sfx.note(1400, 0.05, 'square', 0.04);
+      if (after <= 0) { S.miss = 1.4; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
+    },
+    tap(S, x, y) {
+      if (S.ok || S.miss > 0) return;
+      const b = S.balls.find(q => !q.got && dist(x, y, q.x, q.y) < 46);
+      if (b) { b.got = true; Sfx.note(660 + S.balls.filter(q => q.got).length * 120, 0.12, 'triangle', 0.07, 1.4); const p = TUT_REF.toS(b.x, b.y); FX.sparkle(p.x, p.y, 10, '#ffd23f'); return; }
+      if (dist(x, y, 90, 220) < 60 && S.balls.every(q => q.got)) { S.ok = true; S.okT = 0; Sfx.play('win'); }
+    },
+    check(S) { return S.ok && S.okT > 1.2; } },
   { title: 'Zurückbringen und das Tor', dur: 9,
     say: 'Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
     draw(c, t, S) {

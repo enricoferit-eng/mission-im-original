@@ -339,7 +339,15 @@ class Play {
     if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
     return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
   }
-  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 60 : 0); }
+  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0); }
+  bonusLeft() { const bq = this.bonusQuest(); return bq ? { left: this.bonusLimit(bq.npc) - (bq.q.tt || 0), limit: this.bonusLimit(bq.npc) } : null; }
+  // Große Ankündigung, sobald ein Auftrag startet: jetzt zählt jede Sekunde
+  bonusStart(npc) {
+    const lim = this.bonusLimit(npc), mm = Math.floor(lim / 60) + ':' + String(lim % 60).padStart(2, '0');
+    this.bonusIntro = { t: 0, text: 'Schaffe es in ' + mm + ' → +1 Joker!' };
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => Sfx.note(f, 0.16, 'square', 0.05), i * 110)); buzz([20, 30, 20]);
+    Voice.say('Bonus-Jagd! Schaffe den Auftrag in ' + (lim >= 60 ? Math.floor(lim / 60) + ' Minute' + (lim % 60 ? ' ' + (lim % 60) + ' Sekunden' : '') : lim + ' Sekunden') + ', dann bekommst du einen Extra-Joker.', true);
+  }
   checkBonus(q, npc) {
     if (!q || (q.tt || 0) > this.bonusLimit(npc)) return;
     this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
@@ -413,7 +421,17 @@ class Play {
     this.gateA = lerp(this.gateA, this.st.done.gate ? 1 : 0, Math.min(1, dt * 3));
     const hase = this.npcs.find(n => n.swing !== undefined);
     if (hase) { const off = this.seatOff(hase.swing); hase.y = SWING.y + off; hase.z = 24 + Math.abs(off) * 0.35; }
-    { const bq = this.bonusQuest(); if (bq && !this.exiting && scene === this) bq.q.tt = (bq.q.tt || 0) + dt; }
+    { const bq = this.bonusQuest();
+      if (bq && !this.exiting && scene === this && !this.bonusIntro) {
+        const lim = this.bonusLimit(bq.npc), before = lim - (bq.q.tt || 0); bq.q.tt = (bq.q.tt || 0) + dt; const after = lim - bq.q.tt;
+        if (before > 0) {
+          if (Math.ceil(after) !== Math.ceil(before) && after <= 10 && after > 0) { Sfx.note(after <= 5 ? 1500 : 1200, 0.05, 'square', 0.04); if (after <= 5) buzz(15); }
+          if ((before > 30 && after <= 30) || (before > 10 && after <= 10)) this.bonusWarn = { t: 0, text: 'Noch ' + Math.round(after) + ' s für den Joker!' };
+          if (after <= 0) { this.bonusWarn = { t: 0, text: 'Bonus verpasst', miss: true }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
+        }
+      } }
+    if (this.bonusIntro) { this.bonusIntro.t += dt; if (this.bonusIntro.t > 2.4) this.bonusIntro = null; }
+    if (this.bonusWarn) { this.bonusWarn.t += dt; if (this.bonusWarn.t > 1.8) this.bonusWarn = null; }
     if (this.bonusPop) { this.bonusPop.t += dt; if (this.bonusPop.t > 2.6) this.bonusPop = null; }
     this.leafPop = Math.max(0, this.leafPop - dt * 2.5); if (this.justDone) { this.justDone.t += dt; if (this.justDone.t > 1.6) this.justDone = null; }
     if (this.exiting) this.updateExit(dt);
@@ -583,7 +601,7 @@ class Play {
     if (s === 'active') { overlay = new QuestDialog({ mode: 'progress', npc: id, items: q.items, got: q.got, boss: q.boss }); return; }
     if (s === 'ready') { this.deliver(id); return; }
     const nq = this.genQuest(id);
-    overlay = new QuestDialog({ mode: 'offer', npc: id, items: nq.items, got: nq.got, boss: nq.boss, onYes: () => { st.active = nq; Save.write(); Sfx.play('good'); } });
+    overlay = new QuestDialog({ mode: 'offer', npc: id, items: nq.items, got: nq.got, boss: nq.boss, onYes: () => { st.active = nq; Save.write(); Sfx.play('good'); this.bonusStart(id); } });
   }
   genQuest(id) {
     const seed = (Date.now() ^ (id.length * 7919) ^ ((this.st.clears + 1) * 104729)) >>> 0, r = mulberry32(seed);
@@ -637,7 +655,7 @@ class Play {
     const gid = q.games[k], ch = !!GAMES[gid].challenge;
     const slow = ch && !ACC().tut.challenge;
     const h = q.hidden[k];
-    overlay = new GameOverlay(gid, { diff: this.diff, kind: ch ? 'challenge' : 'puzzle', item: q.items[k], slow, seed: (q.seed + k * 7919) >>> 0, onStop: () => this.stop(), joker: this.jokerApi() }, ok => {
+    overlay = new GameOverlay(gid, { diff: this.diff, kind: ch ? 'challenge' : 'puzzle', item: q.items[k], slow, seed: (q.seed + k * 7919) >>> 0, onStop: () => this.stop(), joker: this.jokerApi(), bonus: () => this.bonusLeft() }, ok => {
       if (!ok) return;
       if (ch && !ACC().tut.challenge) ACC().tut.challenge = true;
       ACC().recent = (ACC().recent || []).concat([gid]).slice(-8);
@@ -671,7 +689,7 @@ class Play {
       // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
       if (!st.easyPlan || st.easyPlan.length < 24) st.easyPlan = shuffle(EASY_GAMES, mulberry32((Date.now() ^ 0x9e3779b9) >>> 0)).slice(0, 24);
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
-      e = st.easy[id] = { steps, idx: 0, seed }; Save.write();
+      e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
     }
     this.runEasyStep(id);
   }
@@ -679,7 +697,7 @@ class Play {
     const e = this.st.easy[id];
     if (!e) return;
     if (e.idx >= e.steps.length) { this.finishEasy(id); return; }
-    overlay = new GameOverlay(e.steps[e.idx], { diff: 'easy', kind: 'easy', steps: { i: e.idx, n: e.steps.length }, seed: (e.seed + e.idx * 101) >>> 0, onStop: () => this.stop(), joker: this.jokerApi() }, ok => {
+    overlay = new GameOverlay(e.steps[e.idx], { diff: 'easy', kind: 'easy', steps: { i: e.idx, n: e.steps.length }, seed: (e.seed + e.idx * 101) >>> 0, onStop: () => this.stop(), joker: this.jokerApi(), bonus: () => this.bonusLeft() }, ok => {
       if (!ok) return;
       ACC().recentEasy = (ACC().recentEasy || []).concat([e.steps[e.idx]]).slice(-8);
       e.idx++; Save.write();
@@ -1018,12 +1036,31 @@ class Play {
     }
     // Bonus-Uhr: Mitarbeiter schnell geschafft = Extra-Joker
     { const bq = this.bonusQuest(), left = bq ? this.bonusLimit(bq.npc) - (bq.q.tt || 0) : -1;
-      if (left > 0) {
-        const low = left < 20, pu = low ? 1 + Math.abs(Math.sin(this.t * 6)) * 0.08 : 1, by = this.diff === 'easy' ? 92 : 168, txtT = Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0');
-        c.save(); c.translate(W / 2, by); c.scale(pu, pu);
-        rrPath(c, -78, -18, 156, 36, 18); c.fillStyle = low ? 'rgba(239,71,111,.92)' : 'rgba(30,20,10,.6)'; c.fill();
-        icon(c, 'clock', -58, 0, 24); txt(c, txtT, -18, 1, 18, '#fff', 'center', null); txt(c, '→', 18, 1, 16, '#fff', 'center', null); icon(c, 'joker', 52, 0, 26);
+      if (left > 0 && !this.bonusIntro) {
+        const lim = this.bonusLimit(bq.npc), f = clamp(left / lim, 0, 1), low = left < 10, mid = left < 30;
+        const pu = low ? 1 + Math.abs(Math.sin(this.t * 8)) * 0.12 : mid ? 1 + Math.abs(Math.sin(this.t * 4)) * 0.05 : 1, by = this.diff === 'easy' ? 96 : 172, txtT = Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0');
+        const col = low ? '#ef476f' : mid ? '#ffb703' : '#06d6a0';
+        c.save(); c.translate(W / 2 + (low ? Math.sin(this.t * 40) * 2 : 0), by); c.scale(pu, pu);
+        rrPath(c, -110, -24, 220, 48, 24); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke();
+        txt(c, 'BONUS', -72, -9, 11, col, 'center', null); icon(c, 'clock', -72, 8, 20);
+        txt(c, txtT, -14, -2, 24, low ? '#ff8fa3' : '#fff', 'center', null);
+        rrPath(c, -46, 12, 64, 6, 3); c.fillStyle = 'rgba(255,255,255,.2)'; c.fill(); rrPath(c, -46, 12, 64 * f, 6, 3); c.fillStyle = col; c.fill();
+        txt(c, '→', 34, 1, 18, '#fff', 'center', null); icon(c, 'joker', 74, 0, 32);
         c.restore();
+      }
+      if (this.bonusIntro) {
+        const t2 = this.bonusIntro.t, k = ease.back(clamp(t2 * 3, 0, 1)), a = clamp((2.4 - t2) * 3, 0, 1);
+        c.save(); c.globalAlpha = a; c.fillStyle = 'rgba(16,28,18,.35)'; c.fillRect(0, 0, W, H);
+        c.translate(W / 2, H * 0.4); c.scale(k, k); c.rotate(Math.sin(t2 * 10) * 0.03);
+        rrPath(c, -190, -62, 380, 124, 30); fs(c, '#ffd23f', 5);
+        txt(c, 'BONUS-JAGD!', 0, -22, 38, '#fff', 'center', OL); icon(c, 'joker', 150, -40, 50); icon(c, 'clock', -150, -40, 44);
+        txt(c, this.bonusIntro.text, 0, 26, 20, BRAND.ink, 'center', null);
+        c.restore();
+      }
+      if (this.bonusWarn) {
+        const t2 = this.bonusWarn.t, k = ease.back(clamp(t2 * 4, 0, 1)), a = clamp((1.8 - t2) * 3, 0, 1);
+        c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.36 - t2 * 10); c.scale(k * 1.2, k * 1.2);
+        txt(c, this.bonusWarn.text, 0, 0, 26, this.bonusWarn.miss ? '#ced4da' : '#ff8fa3', 'center', OL); c.restore();
       }
       if (this.bonusPop) { const k = ease.back(clamp(this.bonusPop.t * 3, 0, 1)), a = clamp(2.6 - this.bonusPop.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.32 - this.bonusPop.t * 12); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -70, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
     }
@@ -1091,7 +1128,7 @@ class Play {
         'Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich.',
         'Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe.',
         'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
-        'Die Bonus-Uhr oben läuft: Hilfst du einem Mitarbeiter, bevor sie abläuft, bekommst du einen Extra-Joker.',
+        'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
       ] : [
@@ -1103,7 +1140,7 @@ class Play {
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
         'Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
         'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
-        'Die Bonus-Uhr oben läuft: Hilfst du einem Mitarbeiter, bevor sie abläuft, bekommst du einen Extra-Joker.',
+        'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Die ganze Anleitung findest du im Menü unter dem Buch.',
       ];
       if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }
@@ -1121,7 +1158,7 @@ class Play {
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
 const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
-const BONUS_TIME = { easy: 90, medium: 150, hard: 180 };   // Mitarbeiter so schnell geschafft = +1 Joker (Tor: +60 s)
+const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // Mitarbeiter so schnell geschafft = +1 Joker (Tor: +30 s)
 const NPC_NAMES = { hase: 'Hoppel vom Service', fuchs: 'Fridolin aus der Küche', igel: 'Ida von der Eistheke', waschbaer: 'Willi, der Hausmeister', eule: 'Emma vom Empfang', gate: 'Das Tor' };
 const NPC_LINES = {
   hase: 'Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden!',
