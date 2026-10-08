@@ -738,7 +738,7 @@ class Play {
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
-  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; return { left: () => st.jokers, use: () => { st.jokers = Math.max(0, st.jokers - 1); Save.write(); } }; }
+  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; if (ACC() && ACC().admin) return { left: () => 99, use: () => {} }; return { left: () => st.jokers, use: () => { st.jokers = Math.max(0, st.jokers - 1); Save.write(); } }; }
   down(x, y, id) { this.idleT = 0; if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
   move(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; j.x = x; j.y = y; if (!j.moved && dist(x, y, j.x0, j.y0) > 14) j.moved = true; }
   up(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; if (!j.moved && this.t - j.t < 0.4 && !this.searching) this.tap(x, y); this.joy = null; }
