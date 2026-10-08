@@ -184,7 +184,7 @@ class Accounts {
         txt(c, a.name, x + cw / 2, y + 112, 17, '#3d2c1f', 'center', null);
         icon(c, 'hanger', x + cw / 2 - 22, y + 134, 16); txt(c, totalSkins(a) + '/108', x + cw / 2 + 8, y + 135, 14, '#8d5a3b', 'center', null);
         if (a.admin) UI.btn(x, y, cw, ch, () => { if (a.device) { Save.data.current = id; Save.write(false); Sfx.play('win'); setScene(new Menu()); } else setScene(new LoginScene('admin')); });
-        else UI.btn(x, y, cw, ch, () => { overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: () => { Save.data.current = id; Save.write(); Sfx.play('win'); Net.refresh(); setScene(new Menu()); } }); });
+        else UI.btn(x, y, cw, ch, () => { Save.data.current = id; Save.write(); Sfx.play('win'); Net.refresh(); setScene(new Menu()); });   // Gerät ist gemerkt: kein Code nötig
         roundBtn(c, x + cw - 18, y + 18, 15, '#fff', 'trash', () => askDelete(id, a));
       } else if (id === 'new') {
         txt(c, '+', x + cw / 2, y + ch / 2 - 16, 64, '#fff');
