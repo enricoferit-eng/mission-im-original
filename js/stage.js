@@ -569,7 +569,7 @@ class Play {
     const gid = q.games[k], ch = !!GAMES[gid].challenge;
     const slow = ch && !ACC().tut.challenge;
     const h = q.hidden[k];
-    overlay = new GameOverlay(gid, { diff: this.diff, kind: ch ? 'challenge' : 'puzzle', item: q.items[k], slow, seed: (q.seed + k * 7919) >>> 0, onStop: () => this.stop() }, ok => {
+    overlay = new GameOverlay(gid, { diff: this.diff, kind: ch ? 'challenge' : 'puzzle', item: q.items[k], slow, seed: (q.seed + k * 7919) >>> 0, onStop: () => this.stop(), joker: this.jokerApi() }, ok => {
       if (!ok) return;
       if (ch && !ACC().tut.challenge) ACC().tut.challenge = true;
       ACC().recent = (ACC().recent || []).concat([gid]).slice(-8);
@@ -611,7 +611,7 @@ class Play {
     const e = this.st.easy[id];
     if (!e) return;
     if (e.idx >= e.steps.length) { this.finishEasy(id); return; }
-    overlay = new GameOverlay(e.steps[e.idx], { diff: 'easy', kind: 'easy', steps: { i: e.idx, n: e.steps.length }, seed: (e.seed + e.idx * 101) >>> 0, onStop: () => this.stop() }, ok => {
+    overlay = new GameOverlay(e.steps[e.idx], { diff: 'easy', kind: 'easy', steps: { i: e.idx, n: e.steps.length }, seed: (e.seed + e.idx * 101) >>> 0, onStop: () => this.stop(), joker: this.jokerApi() }, ok => {
       if (!ok) return;
       ACC().recentEasy = (ACC().recentEasy || []).concat([e.steps[e.idx]]).slice(-8);
       e.idx++; Save.write();
@@ -670,6 +670,7 @@ class Play {
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
+  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; return { left: () => st.jokers, use: () => { st.jokers = Math.max(0, st.jokers - 1); Save.write(); } }; }
   down(x, y, id) { if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
   move(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; j.x = x; j.y = y; if (!j.moved && dist(x, y, j.x0, j.y0) > 14) j.moved = true; }
   up(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; if (!j.moved && this.t - j.t < 0.4 && !this.searching) this.tap(x, y); this.joy = null; }
@@ -999,12 +1000,14 @@ class Play {
         'Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich.',
         'Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
+        'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
       ] : [
         'Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.',
         'Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen!',
         'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
         this.diff === 'medium' ? 'Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah.' : 'Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau.',
         'Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
+        'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
         'Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
         'Die ganze Anleitung findest du im Menü unter dem Buch.',
       ];
@@ -1022,6 +1025,7 @@ class Play {
 
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
+const JOKERS_PER_RUN = 3;
 const NPC_NAMES = { hase: 'Hoppel vom Service', fuchs: 'Fridolin aus der Küche', igel: 'Ida von der Eistheke', waschbaer: 'Willi, der Hausmeister', eule: 'Emma vom Empfang', gate: 'Das Tor' };
 const NPC_LINES = {
   hase: 'Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden!',

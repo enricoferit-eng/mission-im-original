@@ -141,6 +141,7 @@ const Voice = {
   // für Texte, die in draw() stehen: nur einmal vorlesen, bis das Fenster zu ist (Voice.stop)
   once(text) { if (this.onceKey === text) return; this.onceKey = text; this.say(text, true); },
   gen: 0, onceKey: '',
+  busy() { try { return this.on() && 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending); } catch (e) { return false; } },
   cancelT: 0,
   stop() { this.last = ''; this.onceKey = ''; this.gen++; this.cancelT = performance.now(); try { speechSynthesis.cancel(); } catch (e) { /* egal */ } },
 };
@@ -291,6 +292,11 @@ function icon(c, name, x, y, s, col) {
       c.lineWidth = 5.5; c.strokeStyle = col || '#fff'; c.stroke();
       polyPath(c, [[9, -16], [17, -2], [3, -3]]); fs(c, col || '#fff', 2.5); break;
     case 'play': polyPath(c, [[-10, -15], [16, 0], [-10, 15]]); fs(c, col || '#fff', 3); break;
+    case 'joker': // Joker-Karte mit Narrenkappe
+      c.save(); c.rotate(-0.12); rrPath(c, -15, -20, 30, 40, 6); fs(c, '#ffd23f', 3); rrPath(c, -11, -16, 22, 32, 4); c.lineWidth = 1.5; c.strokeStyle = '#e09f00'; c.stroke();
+      polyPath(c, [[-10, 6], [-12, -10], [-3, -2], [0, -14], [3, -2], [12, -10], [10, 6]]); fs(c, '#ef476f', 2.5);
+      [[-12, -10, '#118ab2'], [0, -14, '#06d6a0'], [12, -10, '#118ab2']].forEach(([bx, by, bc]) => { ell(c, bx, by, 3, 3); fs(c, bc, 1.5); });
+      rrPath(c, -10, 5, 20, 5, 2); fs(c, '#fff', 1.5); c.restore(); break;
     case 'pause': rrPath(c, -12, -15, 9, 30, 3); fs(c, col || '#fff', 3); rrPath(c, 3, -15, 9, 30, 3); fs(c, col || '#fff', 3); break;
     case 'book':
       polyPath(c, [[0, -10], [-18, -15], [-18, 13], [0, 17]]); fs(c, '#fff', 3); polyPath(c, [[0, -10], [18, -15], [18, 13], [0, 17]]); fs(c, '#f1e3c8', 3);

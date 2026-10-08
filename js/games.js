@@ -38,8 +38,46 @@ class GameOverlay {
     this.g = GAMES[this.id].make(this.env, o);
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
     if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.help = true; ACC().tut['h_' + this.id] = true; Save.write(); }
+    this.jokerT = 0; this.jokerSaid = false;
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + (ability('zeitplus') ? 6 : 0) : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
+  }
+  // Joker: wer nicht weiterkommt, darf die Aufgabe überspringen (nur wenige pro Bereich)
+  jokerLeft() { const j = this.opts.joker; return j ? j.left() : 0; }
+  jokerReady() {
+    if (this.state === 'won' || this.help || this.jokerLeft() <= 0) return false;
+    if (this.state === 'lost') return true;
+    const wait = this.opts.diff === 'easy' ? 40 : this.opts.diff === 'medium' ? 60 : 75;
+    return this.retries >= 2 || this.t > wait;
+  }
+  useJoker() {
+    if (!this.jokerReady()) return;
+    this.opts.joker.use(); Voice.stop();
+    const p = this.toScreen(200, 250); FX.confetti(p.x, p.y, 70, 1.2); FX.sparkle(p.x, p.y, 30, '#ffd23f');
+    this.state = 'play'; this.usedJoker = true; this.env.win();
+  }
+  drawJoker(c) {
+    if (!this.jokerReady()) return;
+    const lost = this.state === 'lost';
+    if (!this.jokerSaid && !lost) { this.jokerSaid = true; Voice.say('Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft.', true); }
+    let x, y;
+    if (lost) { const p = this.toScreen(200, 432); x = p.x; y = p.y; }
+    else if (this.side) { x = 46; y = H - 56; } else { x = 46; y = H - 52; }
+    const pop = ease.back(clamp(this.jokerT * 3, 0, 1)), pu = 1 + Math.sin(this.t * 6) * 0.07, r = lost ? 34 : 32;
+    c.save(); c.translate(x, y); c.scale(pop * pu, pop * pu);
+    ell(c, 0, 0, r + 8, r + 8); c.fillStyle = 'rgba(255,210,63,.35)'; c.fill();
+    roundBtn(c, 0, 0, r, '#fff7e6', 'joker', null);
+    ell(c, r * 0.75, -r * 0.75, 12, 12); fs(c, '#ef476f', 2.5); txt(c, String(this.jokerLeft()), r * 0.75, -r * 0.75 + 1, 14, '#fff', 'center', null);
+    c.restore();
+    UI.btn(x - r - 6, y - r - 6, (r + 6) * 2, (r + 6) * 2, () => this.useJoker());
+    // Anweisung auch als Text
+    const label = 'Joker: Aufgabe überspringen';
+    if (lost) txt(c, label, x, y + r + 16, 15, '#fff', 'center', BRAND.ink);
+    else if (this.jokerT < 7) {
+      const msg = 'Kommst du nicht weiter? Tippe auf den Joker!'; c.font = `900 15px ${FONT}`; const mw = Math.min(c.measureText(msg).width, W - x - r - 40);
+      c.globalAlpha = clamp(7 - this.jokerT, 0, 1); rrPath(c, x + r + 8, y - 17, mw + 24, 34, 17); c.fillStyle = 'rgba(32,44,30,.92)'; c.fill();
+      txt(c, msg, x + r + 20, y, Math.min(15, 15 * (W - x - r - 40) / c.measureText(msg).width), '#fff', 'left', null); c.globalAlpha = 1;
+    }
   }
   lose() { if (this.state === 'play') { this.state = 'lost'; this.endT = 0; Sfx.play('bad'); buzz(250); } }
   layout() {
@@ -63,6 +101,7 @@ class GameOverlay {
     this.layout();
     this.t += dt; this.flash = Math.max(0, this.flash - dt); this.timeBonus = Math.max(0, this.timeBonus - dt);
     this.lostAnim.forEach(a => (a.t += dt)); this.lostAnim = this.lostAnim.filter(a => a.t < 1);
+    if (this.jokerReady()) this.jokerT += dt;
     if (this.state === 'play' && this.help) return;   // Spiel pausiert, solange die Erklärung offen ist
     if (this.state === 'play') {
       this.g.update(dt);
@@ -164,15 +203,17 @@ class GameOverlay {
     rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.lineWidth = 5 / this.s; c.strokeStyle = OL; c.stroke();
     c.restore();
     if (this.state === 'lost') {
-      const p = this.toScreen(200, 300), r = 44 * Math.min(1.3, this.s * 1.3);
+      const p = this.toScreen(200, 318), r = 44 * Math.min(1.3, this.s * 1.3);
       roundBtn(c, p.x - r * 1.3, p.y, r, '#06d6a0', 'retry', () => { this.retries++; this.start(); });
       roundBtn(c, p.x + r * 1.3, p.y, r * 0.8, '#adb5bd', 'cross', () => this.finish(false));
     }
+    this.drawJoker(c);
     // Erklär-Knopf (?) + Erklärung mit Text
     if (this.state === 'play') roundBtn(c, W - 46, 44, 26, '#bde0fe', 'question', () => { this.help = !this.help; }, '#118ab2');
     if (this.help) {
       const lines = [HELP_TEXT[this.id] || 'Probier es einfach aus!'];
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
+      if (this.opts.joker) lines.push('Kommst du nicht weiter, erscheint nach einer Weile unten links der Joker. Damit ist die Aufgabe sofort geschafft. Du hast 3 Joker pro Bereich.');
       helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); });
     }
   }

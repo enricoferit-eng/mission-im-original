@@ -128,6 +128,33 @@ const TUT_CHAPTERS = [
     start(S) { S.balloons = [{ x: 150, y: 170, col: '#ef476f' }, { x: 300, y: 130, col: '#ffd166' }, { x: 450, y: 190, col: '#06d6a0' }]; },
     tap(S, x, y) { for (const b of S.balloons || []) if (!b.pop && dist(x, y, b.x, b.y) < 45) { b.pop = true; Sfx.play('pop'); FX.sparkle(TUT_REF.toS(b.x, b.y).x, TUT_REF.toS(b.x, b.y).y, 12); } },
     check(S) { return (S.balloons || []).every(b => b.pop); } },
+  { title: 'Der Joker', dur: 10,
+    say: 'Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast.',
+    try: 'Jetzt du: Tippe auf den Joker!',
+    draw(c, t, S) {
+      c.fillStyle = '#cfe8ef'; c.fillRect(0, 0, TV.w, TV.h);
+      // Rätsel, bei dem man nicht weiterkommt
+      for (let k = 0; k < 9; k++) { const x = 230 + (k % 3) * 60, y = 90 + Math.floor(k / 3) * 60; c.save(); c.translate(x, y); c.rotate(((k * 7) % 4) * Math.PI / 2); rrPath(c, -26, -26, 52, 52, 8); fs(c, '#f8f9fa', 2.5); line(c, 0, 0, 26, 0, 10, '#ced4da'); line(c, 0, 0, 0, -26, 10, '#ced4da'); c.restore(); }
+      const done = S.trying ? S.ok : t > 7;
+      const show = S.trying || t > 2.5, jx = 70, jy = 300;
+      if (!S.trying && !done) { const sec = Math.floor(t * 9); txt(c, 'Zeit: ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'), 520, 30, 18, '#3d2c1f', 'center', null); if (t < 2.5) txt(c, '?', 400 + Math.sin(t * 3) * 6, 70, 40, '#ef476f', 'center', OL); }
+      if (show && !done) {
+        const pop = ease.back(clamp((S.trying ? 1 : t - 2.5) * 3, 0, 1)), pu = 1 + Math.sin(t * 6) * 0.07;
+        c.save(); c.translate(jx, jy); c.scale(pop * pu, pop * pu); ell(c, 0, 0, 42, 42); c.fillStyle = 'rgba(255,210,63,.4)'; c.fill(); roundBtn(c, 0, 0, 34, '#fff7e6', 'joker', null);
+        ell(c, 26, -26, 13, 13); fs(c, '#ef476f', 2.5); txt(c, String(S.left || 3), 26, -25, 15, '#fff', 'center', null); c.restore();
+        txt(c, 'Kommst du nicht weiter? Tippe auf den Joker!', jx + 50, jy, 15, '#3d2c1f', 'left', null);
+        if (!S.trying && t > 5.6 && t < 7) tvHand(c, jx, jy, t > 6.2);
+      }
+      if (done) {
+        c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(0, 0, TV.w, TV.h);
+        const k = ease.back(clamp(((S.trying ? S.okT : t - 7)) * 3, 0, 1)); c.save(); c.translate(290, 150); c.scale(k, k); ell(c, 0, 0, 60, 60); fs(c, '#06d6a0', 5); icon(c, 'check', 0, 0, 80); c.restore();
+        txt(c, 'Aufgabe geschafft – noch 2 Joker', 290, 250, 18, '#fff', 'center', BRAND.olive);
+      }
+    },
+    start(S) { S.left = 3; S.ok = false; S.okT = 0; },
+    tap(S, x, y) { if (!S.ok && dist(x, y, 70, 300) < 50) { S.ok = true; S.okT = 0; S.left = 2; Sfx.play('win'); } },
+    tick(S, dt) { if (S.ok) S.okT += dt; },
+    check(S) { return S.ok && S.okT > 1; } },
   { title: 'Zurückbringen und das Tor', dur: 9,
     say: 'Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
     draw(c, t, S) {
@@ -201,7 +228,9 @@ class Tutorial {
     if (this.paused) return;
     this.t += dt; const ch = this.ch(), S = this.S;
     if (ch.tick) ch.tick(S, dt);
-    if (!S.trying && this.t >= ch.dur) { if (ch.try) { S.trying = true; S.tt = 0; if (ch.start) ch.start(S); S.trying = true; Voice.say(ch.try, true); } else S.done = true; }
+    // weiter erst, wenn die Animation durch ist UND der Erzähler fertig gesprochen hat
+    const est = ch.say.split(' ').length / 2.1 + 1;   // geschätzte Vorlesezeit, falls das Handy nie "fertig" meldet
+    if (!S.trying && this.t >= ch.dur && (!Voice.busy() || this.t > Math.max(ch.dur, est) + 2)) { if (ch.try) { S.trying = true; S.tt = 0; if (ch.start) ch.start(S); S.trying = true; Voice.say(ch.try, true); } else S.done = true; }
     if (S.done) { S.doneT = (S.doneT || 0) + dt; if (S.doneT > (ch.try ? 2 : 1.2)) { if (this.i < TUT_CHAPTERS.length - 1) this.begin(this.i + 1); else this.finish(); } }
     if (S.trying && !S.done && ch.check && ch.check(S)) { S.done = true; Sfx.play('win'); const p = this.toS(300, 160); FX.confetti(p.x, p.y, 40); }
   }
@@ -235,7 +264,7 @@ class Tutorial {
     roundBtn(c, tx + 34, by, 26, '#fff', 'retry', () => this.begin(this.i), BRAND.olive);
     roundBtn(c, tx + 98, by, 26, '#fff', this.paused ? 'play' : 'pause', () => { this.paused = !this.paused; if (this.paused) Voice.stop(); else Voice.say(ch.say, true); }, BRAND.olive);
     roundBtn(c, tx + 162, by, 22, '#d0ebff', 'sound', () => Voice.say(S.trying ? ch.try : ch.say, true));
-    const canNext = S.done || (!ch.try && this.t >= ch.dur);
+    const canNext = S.done;
     const nx = tx + tw - 40, pu = canNext ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
     c.save(); c.translate(nx, by); c.scale(pu, pu); roundBtn(c, 0, 0, 32, canNext ? '#06d6a0' : '#adb5bd', 'play', null); c.restore();
     UI.btn(nx - 38, by - 38, 76, 76, () => { if (this.i < n - 1) this.begin(this.i + 1); else this.finish(); });
