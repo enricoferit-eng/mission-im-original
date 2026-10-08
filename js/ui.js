@@ -107,6 +107,60 @@ class Menu {
   }
 }
 
+// ---------- Zum Home-Bildschirm hinzufügen (Handy/Tablet im Browser) ----------
+// Im Browser stören Adressleiste und Knöpfe – als App vom Home-Bildschirm läuft das Spiel im Vollbild.
+let INSTALL_PROMPT = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL_PROMPT = e; });
+function isStandalone() { try { return matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } }
+const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+class InstallGuide {
+  constructor(next) { this.next = next; this.t = 0; this.portraitOk = true; }
+  enter() { FX.clear(); Voice.say('Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt.', true); }
+  update(dt) { this.t += dt; if (isStandalone()) this.next(); }
+  draw(c) {
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const w = Math.min(W - 24, 620), land = W > H, h = land ? Math.min(H - 20, 400) : Math.min(H - 40, 620), x = (W - w) / 2, y = (H - h) / 2;
+    fitBegin(c, w, h);
+    panel(c, x, y, w, h, '#fbf8f2', 26);
+    const narrow = w < 520, title = 'Zuerst: Spiel zum Home-Bildschirm hinzufügen';
+    let hy;
+    if (narrow) { drawLogo(c, x + w / 2, y + 34, 120, false); const T = wrapLines(c, title, w - 40, 18); T.forEach((l, i) => txt(c, l, x + w / 2, y + 74 + i * 22, 18, BRAND.olive, 'center', null)); hy = y + 74 + T.length * 22; }
+    else { drawLogo(c, x + 80, y + 40, 120, false); txt(c, title, x + w / 2 + 50, y + 34, Math.min(19, w / 30), BRAND.olive, 'center', null); hy = y + 62; }
+    const warn = 'Sonst stören die Leisten vom Browser und das Spielerlebnis ist eingeschränkt. Als App läuft es im Vollbild.';
+    const WL = wrapLines(c, warn, w - 60, 14); WL.forEach((l, i) => txt(c, l, x + w / 2, hy + 8 + i * 18, 14, '#9d0208', 'center', null));
+    const steps = IS_IOS
+      ? [['share', 'Tippe unten (oder oben) auf „Teilen“'], ['plus', 'Wähle „Zum Home-Bildschirm“ (evtl. etwas nach unten wischen)'], ['ok', 'Tippe oben rechts auf „Hinzufügen“'], ['app', 'Starte das Spiel über das neue Symbol']]
+      : [['dots', 'Tippe oben rechts auf ⋮ (die drei Punkte)'], ['plus', 'Wähle „Zum Startbildschirm hinzufügen“ oder „App installieren“'], ['ok', 'Bestätige mit „Hinzufügen“ / „Installieren“'], ['app', 'Starte das Spiel über das neue Symbol']];
+    const sy = hy + 8 + WL.length * 18 + 4, rowH = (y + h - 86 - sy) / 4;
+    steps.forEach(([ic, label], i) => {
+      const yy = sy + i * rowH + rowH / 2, hl = Math.floor(this.t / 1.6) % 4 === i;
+      rrPath(c, x + 18, yy - rowH / 2 + 3, w - 36, rowH - 6, 14); fs(c, hl ? '#e8f5d0' : '#fff', 2);
+      ell(c, x + 42, yy, 14, 14); fs(c, BRAND.lime, 2.5); txt(c, String(i + 1), x + 42, yy + 1, 15, '#fff', 'center', null);
+      this.stepIcon(c, ic, x + 82, yy, Math.min(30, rowH * 0.6));
+      const L = wrapLines(c, label, w - 150, 15); L.forEach((l, k) => txt(c, l, x + 108, yy + (k - (L.length - 1) / 2) * 18, 15, '#3d2c1f', 'left', null));
+    });
+    const by = y + h - 44;
+    if (INSTALL_PROMPT) {
+      const pu = 1 + Math.sin(this.t * 5) * 0.04;
+      c.save(); c.translate(x + w / 2 - 60, by); c.scale(pu, pu); rrPath(c, -120, -26, 240, 52, 20); fs(c, '#06d6a0', 3.5); txt(c, 'Jetzt hinzufügen', 0, 1, 19, '#fff', 'center', BRAND.ink); c.restore();
+      UI.btn(x + w / 2 - 180, by - 26, 240, 52, async () => { const p = INSTALL_PROMPT; INSTALL_PROMPT = null; try { p.prompt(); await p.userChoice; } catch (e) { /* egal */ } });
+    }
+    const sx = INSTALL_PROMPT ? x + w - 110 : x + w / 2;
+    rrPath(c, sx - 96, by - 20, 192, 40, 16); fs(c, '#e9ecef', 2.5); txt(c, 'Trotzdem im Browser spielen', sx, by + 1, 13, '#495057', 'center', null);
+    UI.btn(sx - 96, by - 22, 192, 44, () => { Voice.stop(); this.next(); });
+    c.restore();
+  }
+  stepIcon(c, ic, x, y, s) {
+    c.save(); c.translate(x, y); c.scale(s / 30, s / 30); c.lineCap = 'round'; c.lineJoin = 'round';
+    if (ic === 'share') { rrPath(c, -10, -4, 20, 18, 3); c.lineWidth = 2.5; c.strokeStyle = '#118ab2'; c.stroke(); c.fillStyle = '#fbf8f2'; c.fillRect(-4, -6, 8, 4); line(c, 0, 4, 0, -14, 2.5, '#118ab2', false); polyPath(c, [[-6, -8], [0, -15], [6, -8]]); c.stroke(); }
+    else if (ic === 'plus') { rrPath(c, -12, -12, 24, 24, 5); c.lineWidth = 2.5; c.strokeStyle = '#3d2c1f'; c.stroke(); line(c, 0, -6, 0, 6, 2.5, '#3d2c1f', false); line(c, -6, 0, 6, 0, 2.5, '#3d2c1f', false); }
+    else if (ic === 'dots') { for (let i = 0; i < 3; i++) { ell(c, 0, -9 + i * 9, 3, 3); c.fillStyle = '#3d2c1f'; c.fill(); } }
+    else if (ic === 'ok') icon(c, 'check', 0, 0, 28, '#06d6a0');
+    else { rrPath(c, -13, -13, 26, 26, 6); fs(c, BRAND.olive, 2); ell(c, 0, 0, 10, 10); c.fillStyle = '#fbf8f2'; c.fill(); leaf(c, 0, 0, 1.1, BRAND.lime, -0.5); }
+    c.restore();
+  }
+}
+function needsInstallGuide() { return TOUCH && !isStandalone(); }
 // Erster Start: sofort spielen – ein Spielstand auf diesem Gerät wird automatisch angelegt.
 // Ein Konto (Name + Geheim-Code, auf dem Server) kann man später über „Spielstand sichern“ machen.
 function ensureProfile() {
@@ -1033,7 +1087,7 @@ function frame(now) {
   // Leistung messen: dauerhaft unter ~45 Bildern/s -> Auflösung senken
   Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
   if (Perf.acc > 2) { const avg = Perf.acc / Perf.n; if (avg > 0.022 && Perf.cap > 1.01 && document.visibilityState === 'visible') { Perf.cap = Math.max(1, Perf.cap - 0.25); resize(); } Perf.acc = 0; Perf.n = 0; }
-  if (TOUCH && H > W) { rotT += dt; try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
+  if (TOUCH && H > W && !(scene && scene.portraitOk)) { rotT += dt; try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
   try {
     // Während Minispielen/Dialogen: Hintergrund einfrieren statt ständig neu zu zeichnen
     const freeze = overlay && overlay.freezeBg;
@@ -1062,7 +1116,7 @@ const swallowed = new Set(), TAPS = [];
 cv.addEventListener('pointerdown', e => {
   e.preventDefault(); TAPS.push({ x: e.clientX, y: e.clientY, t: 0 });
   tryLandscape();
-  if (TOUCH && H > W) return;
+  if (TOUCH && H > W && !(scene && scene.portraitOk)) return;
   try { cv.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
   const b = UI.hit(e.clientX, e.clientY);
   if (b) { swallowed.add(e.pointerId); Sfx.play('tap'); b.fn(); return; }
@@ -1088,5 +1142,6 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && Sav
 Save.load();
 resize();
 if (Save.data.seenTrailer) ensureProfile();
-setScene(!Save.data.seenTrailer ? new Trailer() : ACC() ? new Menu() : new Accounts());
+const firstScene = () => (!Save.data.seenTrailer ? new Trailer() : ACC() ? new Menu() : new Accounts());
+setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene());
 requestAnimationFrame(frame);
