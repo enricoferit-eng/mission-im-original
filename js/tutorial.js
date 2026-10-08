@@ -53,7 +53,7 @@ const TUT_CHAPTERS = [
     press(S, x, y) { S.joy = { x0: x, y0: y }; }, drag(S, x, y) { if (S.joy) { S.joy.x = x; S.joy.y = y; } }, release(S) { S.joy = null; },
     check(S) { return dist(S.cx, S.cy, 110, 120) < 45; } },
   { title: 'Treppe und Rutsche', dur: 6,
-    say: 'Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen.',
+    say: 'Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen. Und auf der freien Schaukel darfst du schaukeln: Tippe immer, wenn sie ganz außen ist, dann wird sie höher – und spring weit ab!',
     draw(c, t, S) {
       tvGround(c);
       rrPath(c, 220, 150, 140, 110, 6); fs(c, '#2e2117', 3); rrPath(c, 214, 100, 152, 60, 6); fs(c, '#a06a38', 3);

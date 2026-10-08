@@ -113,39 +113,62 @@ function SP(diff, stage = 'spielplatz') {
 
 // ---------- Sound (standardmäßig stumm) ----------
 // ---------- Vorlesen (für Kinder, die noch nicht lesen können) ----------
+// Stimmen: jeder Text am Stück (flüssig), jede Figur mit eigener Stimme/Tonhöhe/Tempo
+const VOICE_OF = {
+  erzaehler: { pitch: 1.0, rate: 1.0, pick: 0 },
+  hase: { pitch: 1.45, rate: 1.1, pick: 1 },      // Hoppel: hell und flink
+  fuchs: { pitch: 1.15, rate: 1.05, pick: 2 },    // Fridolin: frech, etwas schneller
+  igel: { pitch: 1.3, rate: 0.97, pick: 3 },      // Ida: freundlich, sanft
+  waschbaer: { pitch: 0.72, rate: 0.93, pick: 4 },// Willi: tief und gemütlich
+  eule: { pitch: 0.92, rate: 0.9, pick: 5 },      // Emma: ruhig
+  baer: { pitch: 0.6, rate: 0.92, pick: 6 },      // Chefkoch Bruno: ganz tief
+  gate: { pitch: 0.85, rate: 0.95, pick: 0 },
+};
 const Voice = {
-  last: '', _v: undefined,
+  last: '', list: null, gen: 0, onceKey: '', cancelT: 0, keep: null,
   on() { const a = ACC(); return !a || a.sound !== false; },
-  voice() {
-    if (this._v !== undefined) return this._v;
-    try { const vs = speechSynthesis.getVoices(); if (!vs.length) return null; this._v = vs.find(v => /^de(-|_)DE/i.test(v.lang) && /Anna|Petra|Helena|Google/i.test(v.name)) || vs.find(v => /^de/i.test(v.lang)) || null; } catch (e) { this._v = null; }
-    return this._v;
+  // deutsche Stimmen, die besten zuerst (Premium/Enhanced/Natural klingen viel flüssiger)
+  voices() {
+    if (this.list && this.list.length) return this.list;
+    try {
+      const vs = speechSynthesis.getVoices().filter(v => /^de/i.test(v.lang));
+      const score = v => (/Premium|Enhanced|Natural|Neural|Online/i.test(v.name) ? 0 : /Google|Anna|Petra|Helena|Katja|Markus|Yannick|Viktor|Martin/i.test(v.name) ? 1 : 2) + (/^de(-|_)DE/i.test(v.lang) ? 0 : 0.5);
+      this.list = vs.sort((a, b) => score(a) - score(b));
+    } catch (e) { this.list = []; }
+    return this.list;
   },
-  // Nur Anweisungen werden vorgelesen. Satzweise, weil Chrome lange Texte sonst nach ~15 s abschneidet.
-  say(text, force) {
+  clean(t) { return t.replace(/\s*[–—]\s*/g, ', ').replace(/→/g, ' ').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); },
+  say(text, force, who = 'erzaehler') {
     if (!text || !this.on() || !('speechSynthesis' in window)) return;
     if (!force && text === this.last) return;
     this.last = text; const gen = ++this.gen;
     try {
       const busy = speechSynthesis.speaking || speechSynthesis.pending || performance.now() - this.cancelT < 200;
-      speechSynthesis.cancel();
-      const parts = text.replace(/\s*[–—]\s*/g, ', ').replace(/\(.*?\)/g, '').match(/[^.!?:]+[.!?:]*/g) || [text];
-      // direkt nach cancel() verschluckt Chrome das neue Sprechen – kurz warten
-      setTimeout(() => {
+      if (busy) speechSynthesis.cancel();
+      const go = () => {
         if (gen !== this.gen) return;
-        parts.forEach(p => { p = p.trim(); if (!p) return; const u = new SpeechSynthesisUtterance(p); u.lang = 'de-DE'; u.rate = 0.95; u.pitch = 1.05; const v = this.voice(); if (v) u.voice = v; speechSynthesis.speak(u); });
-        try { speechSynthesis.resume(); } catch (e) { /* egal */ }
-      }, busy ? 120 : 0);
+        const P = VOICE_OF[who] || VOICE_OF.erzaehler, L = this.voices();
+        const u = new SpeechSynthesisUtterance(this.clean(text));
+        u.lang = 'de-DE'; u.pitch = P.pitch; u.rate = P.rate;
+        // gibt es mehrere gute deutsche Stimmen, bekommen die Figuren verschiedene
+        if (L.length) try { const good = L.filter(v => !/^(Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley)/i.test(v.name)); const pool = good.length ? good : L; u.voice = pool[P.pick % Math.min(pool.length, 3)] || pool[0]; } catch (e) { /* Standardstimme */ }
+        speechSynthesis.speak(u);
+        this.keepAlive();
+      };
+      busy ? setTimeout(go, 150) : go();   // direkt nach cancel() verschluckt Chrome sonst das neue Sprechen
     } catch (e) { /* kein Vorlesen möglich */ }
   },
+  // Chrome (Computer) bricht lange Texte nach ~15 s ab – kurzes Pause/Weiter hält die Stimme wach, ohne hörbare Lücke
+  keepAlive() {
+    if (this.keep || !/Chrome/.test(navigator.userAgent) || /Android|Mobile/.test(navigator.userAgent)) return;
+    this.keep = setInterval(() => { try { if (!speechSynthesis.speaking) { clearInterval(this.keep); this.keep = null; return; } speechSynthesis.pause(); speechSynthesis.resume(); } catch (e) { /* egal */ } }, 9000);
+  },
   // für Texte, die in draw() stehen: nur einmal vorlesen, bis das Fenster zu ist (Voice.stop)
-  once(text) { if (this.onceKey === text) return; this.onceKey = text; this.say(text, true); },
-  gen: 0, onceKey: '',
+  once(text, who) { if (this.onceKey === text) return; this.onceKey = text; this.say(text, true, who); },
   busy() { try { return this.on() && 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending); } catch (e) { return false; } },
-  cancelT: 0,
   stop() { this.last = ''; this.onceKey = ''; this.gen++; this.cancelT = performance.now(); try { speechSynthesis.cancel(); } catch (e) { /* egal */ } },
 };
-try { if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { Voice._v = undefined; }; } catch (e) { /* egal */ }
+try { if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { Voice.list = null; }; } catch (e) { /* egal */ }
 
 const Sfx = {
   ac: null,
@@ -335,6 +358,9 @@ function icon(c, name, x, y, s, col) {
       polyPath(c, [[-10, 6], [-12, -10], [-3, -2], [0, -14], [3, -2], [12, -10], [10, 6]]); fs(c, '#ef476f', 2.5);
       [[-12, -10, '#118ab2'], [0, -14, '#06d6a0'], [12, -10, '#118ab2']].forEach(([bx, by, bc]) => { ell(c, bx, by, 3, 3); fs(c, bc, 1.5); });
       rrPath(c, -10, 5, 20, 5, 2); fs(c, '#fff', 1.5); c.restore(); break;
+    case 'jump': // Bogen-Pfeil nach oben
+      c.beginPath(); c.moveTo(-14, 14); c.quadraticCurveTo(-12, -10, 8, -10); c.lineWidth = 7; c.strokeStyle = OL; c.stroke(); c.lineWidth = 4; c.strokeStyle = col || '#118ab2'; c.stroke();
+      polyPath(c, [[4, -20], [18, -10], [4, 0]]); fs(c, col || '#118ab2', 2.5); break;
     case 'pause': rrPath(c, -12, -15, 9, 30, 3); fs(c, col || '#fff', 3); rrPath(c, 3, -15, 9, 30, 3); fs(c, col || '#fff', 3); break;
     case 'book':
       polyPath(c, [[0, -10], [-18, -15], [-18, 13], [0, 17]]); fs(c, '#fff', 3); polyPath(c, [[0, -10], [18, -15], [18, 13], [0, 17]]); fs(c, '#f1e3c8', 3);

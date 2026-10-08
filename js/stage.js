@@ -389,7 +389,79 @@ class Play {
   z() { const p = this.p; if (p.slide) return p.slideZ; const i = cellIdx(p.x, p.y); if (i >= 0 && ST[i]) return stairsZ(p.y); return p.level ? HOUSE.fz : 0; }
   w2s(x, y, z = 0) { return { x: (x - this.camX) * this.zoom + W / 2, y: (y - z - this.camY) * this.zoom + H / 2 }; }
   s2w(sx, sy) { return { x: (sx - W / 2) / this.zoom + this.camX, y: (sy - H / 2) / this.zoom + this.camY }; }
-  seatOff(k) { return 30 * Math.sin(this.t * 1.6 + k * 2.1); }
+  seatOff(k) { if (this.swinging && this.swinging.k === k) return this.swinging.off; return k === this.freeSeat() ? 6 * Math.sin(this.t * 1.6 + k * 2.1) : 30 * Math.sin(this.t * 1.6 + k * 2.1); }
+  freeSeat() { return 1 - this.st.layout.seat; }
+  // ---- Schaukeln (Extra): im richtigen Moment tippen = Schwung holen, dann weit abspringen ----
+  startSwing() {
+    if (this.swinging || this.p.slide) return;
+    const k = this.freeSeat(), p = this.p;
+    p.path = null; p.target = null; p.moving = false; p.level = 0;
+    this.swinging = { k, ph: 0, amp: 0.12, off: 0, lastHalf: -1, flash: 0, good: 0, jump: null };
+    Sfx.play('jump'); buzz(20);
+    const a = ACC(); if (a && !a.tut.swing) { a.tut.swing = true; Save.write(); }
+    this.banner = { text: 'Tippe, wenn die Schaukel ganz außen ist – so holst du Schwung!', t: 0 }; Voice.say(this.banner.text, true);
+  }
+  pump() {
+    const S = this.swinging; if (!S || S.jump) return;
+    const half = Math.floor(S.ph / Math.PI), edge = Math.abs(Math.sin(S.ph));
+    if (edge > 0.82 && half !== S.lastHalf) {
+      S.lastHalf = half; S.amp = Math.min(1, S.amp + 0.12); S.flash = 0.4; S.good++;
+      Sfx.note(380 + S.amp * 500, 0.22, 'sine', 0.07, 1.6); buzz(15);
+      const sp = this.w2s(SWING.seats[S.k], SWING.y + S.off, 40); FX.sparkle(sp.x, sp.y, 6 + Math.round(S.amp * 10), '#ffd23f');
+    } else if (edge < 0.5) { S.amp = Math.max(0.08, S.amp - 0.04); Sfx.note(220, 0.12, 'triangle', 0.04, 0.8); }   // nur Tippen in der Mitte bremst
+  }
+  jumpOff() {
+    const S = this.swinging; if (!S || S.jump) return;
+    const vel = Math.cos(S.ph);   // vorwärts schwingen = weiter
+    const far = Math.max(0.15, S.amp * (0.55 + 0.45 * Math.max(0, vel)));
+    const sx = SWING.seats[S.k], sy = SWING.y + S.off;
+    let tx = sx + (rnd() - 0.5) * 30, ty = sy + 40 + far * 330;
+    while (ty > sy + 30 && !canStand(0, tx, ty)) ty -= 10;
+    S.jump = { t: 0, dur: 0.5 + far * 0.6, sx, sy, tx, ty, h: 40 + far * 160, m: Math.round(dist(sx, sy, tx, ty) / 50 * 10) / 10 };
+    Sfx.play('jump'); buzz(30);
+  }
+  updateSwing(dt) {
+    const S = this.swinging; this.idleT = 0;
+    if (S.jump) {
+      const J = S.jump; J.t += dt; const k = Math.min(1, J.t / J.dur), p = this.p;
+      p.x = lerp(J.sx, J.tx, k); p.y = lerp(J.sy, J.ty, k); this.swingZ = Math.sin(k * Math.PI) * J.h + (1 - k) * 30; p.moving = false;
+      S.amp = Math.max(0, S.amp - dt * 0.6); S.ph += dt * 2.7; S.off = S.amp * 72 * Math.sin(S.ph);
+      if (k >= 1) {
+        this.swingZ = 0; const s2 = this.w2s(p.x, p.y); FX.puff(s2.x, s2.y, 14); buzz(40);
+        const a = ACC(), best = (a && a.swingBest) || 0, rec = J.m > best;
+        if (rec && a) { a.swingBest = J.m; Save.write(); FX.confetti(s2.x, s2.y - 40, 50); Sfx.play('win'); } else Sfx.play('good');
+        this.swingPop = { t: 0, text: 'Weite: ' + J.m.toFixed(1).replace('.', ',') + ' m', rec };
+        this.swinging = null;
+      }
+      return;
+    }
+    S.ph += dt * 2.7; S.amp = Math.max(0.06, S.amp - dt * 0.035); S.flash = Math.max(0, S.flash - dt);
+    S.off = S.amp * 72 * Math.sin(S.ph);
+    const p = this.p; p.x = SWING.seats[S.k]; p.y = SWING.y + S.off + 1; p.moving = false;
+  }
+  drawSwingHud(c) {
+    const S = this.swinging;
+    if (this.swingPop) {
+      const q = this.swingPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.4 - q.t, 0, 1);
+      c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.34 - q.t * 8); c.scale(k * 1.2, k * 1.2);
+      txt(c, q.text, 0, 0, 30, '#fff', 'center', OL); if (q.rec) txt(c, 'Neuer Rekord!', 0, 34, 20, '#ffd23f', 'center', OL); c.restore();
+    }
+    if (!S || S.jump) return;
+    // Höhenmesser + Takt-Ring + Knöpfe
+    const hx = 40, hy = H - 250, hh = 150, edge = Math.abs(Math.sin(S.ph)), m = (S.amp * 2.6).toFixed(1).replace('.', ',');
+    rrPath(c, hx - 16, hy, 32, hh, 14); c.fillStyle = 'rgba(30,20,10,.6)'; c.fill();
+    rrPath(c, hx - 10, hy + hh - 6 - (hh - 12) * S.amp, 20, (hh - 12) * S.amp, 8); c.fillStyle = S.amp > 0.75 ? '#ef476f' : S.amp > 0.4 ? '#ffd166' : '#06d6a0'; c.fill();
+    txt(c, m + ' m', hx, hy - 14, 15, '#fff', 'center', BRAND.ink);
+    const a = ACC(); if (a && a.swingBest) txt(c, 'Rekord ' + a.swingBest.toFixed(1).replace('.', ',') + ' m', hx + 30, hy + hh + 16, 12, '#fff', 'center', BRAND.ink);
+    const sp = this.w2s(SWING.seats[S.k], SWING.y + S.off, 40), ready = edge > 0.82 && Math.floor(S.ph / Math.PI) !== S.lastHalf;
+    ell(c, sp.x, sp.y, 40 + S.flash * 30, 40 + S.flash * 30); c.lineWidth = ready ? 6 : 3; c.strokeStyle = ready ? 'rgba(6,214,160,.95)' : 'rgba(255,255,255,.45)'; c.stroke();
+    const bx = W - 70, by = H - 120, pu = S.amp > 0.3 ? 1 + Math.sin(this.t * 6) * 0.06 : 1;
+    c.save(); c.translate(bx, by); c.scale(pu, pu); ell(c, 0, 0, 44, 44); fs(c, S.amp > 0.3 ? '#ffd166' : '#e9ecef', 4); icon(c, 'jump', 0, -6, 36); txt(c, 'Abspringen', 0, 30, 11, '#3d2c1f', 'center', null); c.restore();
+    UI.btn(bx - 48, by - 48, 96, 96, () => this.jumpOff());
+    roundBtn(c, bx - 100, by + 20, 24, '#fff', 'cross', () => { this.swinging = null; this.p.y = SWING.y + 70; Sfx.play('tap'); });
+    c.font = `900 15px ${FONT}`; const msg = 'Tippe, wenn der Ring grün ist!', mw = c.measureText(msg).width + 28;
+    rrPath(c, W / 2 - mw / 2, H - 106, mw, 34, 17); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, H - 89, 15, '#fff', 'center', null);
+  }
   bossOpen() { return NPC_DEFS.every(n => this.st.done[n.id]); }
   npcState(id) {
     const st = this.st;
@@ -430,6 +502,7 @@ class Play {
           if (after <= 0) { this.bonusWarn = { t: 0, text: 'Bonus verpasst', miss: true }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
         }
       } }
+    if (this.swingPop) { this.swingPop.t += dt; if (this.swingPop.t > 2.4) this.swingPop = null; }
     if (this.bonusIntro) { this.bonusIntro.t += dt; if (this.bonusIntro.t > 2.4) this.bonusIntro = null; }
     if (this.bonusWarn) { this.bonusWarn.t += dt; if (this.bonusWarn.t > 1.8) this.bonusWarn = null; }
     if (this.bonusPop) { this.bonusPop.t += dt; if (this.bonusPop.t > 2.6) this.bonusPop = null; }
@@ -437,7 +510,8 @@ class Play {
     if (this.exiting) this.updateExit(dt);
     else if (!overlay) {
       this.idleT += dt; if (this.p.moving || this.joy) this.idleT = 0;
-      if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); }
+      if (this.swinging) this.updateSwing(dt);
+      else if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); }
       // Hilfe-Uhr: läuft nur, solange gesucht wird
       const hq = this.st.active;
       if (this.canSearch() && hq) {
@@ -549,6 +623,7 @@ class Play {
       q.hidden.forEach((h, i) => { if (q.got[i]) return; const pk = peekOf(h); out.push({ k: 'spot', x: pk.x, y: pk.y, l: h.l, r: 40, sx: pk.x, sy: pk.y - (h.l ? HOUSE.fz : 0) - 8 }); });
       (q.decoys || []).forEach(d => { if (!d.done) out.push({ k: 'spot', x: d.x, y: d.y, l: 0, r: 40, sx: d.x, sy: d.y - 8 }); });
     }
+    { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
     out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
   }
@@ -560,6 +635,7 @@ class Play {
   }
   tap(sx, sy) {
     if (this.exiting) return;
+    if (this.swinging) { this.pump(); return; }
     const w = this.s2w(sx, sy);
     let best = null, bd = 44;
     for (const T of this.interactables()) {
@@ -584,6 +660,7 @@ class Play {
     if (path) { p.path = path; p.target = null; this.tapMark = { x: tx, y: ty, l: tl, t: 0 }; }
   }
   interact(T) {
+    if (T.k === 'swing') { this.startSwing(); return; }
     if (T.k === 'npc' || T.k === 'gate') this.talk(T.id);
     else if (T.k === 'spot') this.startSearch();
   }
@@ -799,7 +876,7 @@ class Play {
       (q.decoys || []).forEach(d => { if (!d.done) L.push({ y: d.y + 0.5, f: () => drawJunk(c, d.x, d.y, d.kind, hard ? 1.25 : 1.4) }); });
     }
     const dig = this.searching ? Math.abs(Math.sin(this.searching.t * 18)) * 0.25 : 0;
-    const drawPlayer = () => drawAnimal(c, this.kind, p.x, p.y - pz, 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir });
+    const drawPlayer = () => drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir });
     // nur zeichnen, was im Bild ist
     const vx0 = this.camX - W / 2 / z - 120, vx1 = this.camX + W / 2 / z + 120, vy0 = this.camY - H / 2 / z - 40, vy1 = this.camY + H / 2 / z + 260;
     const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
@@ -834,6 +911,7 @@ class Play {
     L.push({ y: HOUSE.y + HOUSE.h + 0.5, f: () => this.drawStairs(c) });
     L.push({ y: GATE.y, f: () => drawGate(c, GATE.x, GATE.y, 1, this.gateA, this.npcState('gate') === 'locked', t) });
     if (p.slide) L.push({ y: SLIDE.y1 + 1, f: drawPlayer });
+    else if (this.swinging && !this.swinging.jump) { /* sitzt auf der Schaukel: wird mit dem Sitz gezeichnet */ }
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
     this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
@@ -861,6 +939,7 @@ class Play {
   drawSeat(c, sx, off, k) {
     const bY = SWING.y - SWING.top, sy = SWING.y + off, zz = 24 + Math.abs(off) * 0.35;
     const rider = this.npcs.find(n => n.swing === k);
+    if (this.swinging && !this.swinging.jump && this.swinging.k === k) drawAnimal(c, this.kind, sx, sy - zz + 6, 1.0, { t: this.t, dir: 1, cap: hasCap(this.kind), noShadow: true, tilt: Math.cos(this.swinging.ph) * this.swinging.amp * 0.35 });
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, sx, sy, 20, 6); c.fill();
     line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
     if (rider) { const a = this.npcAnim[rider.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, sy - zz + 4 - j, 1.0, this.t, { staff: true, ph: a.ph, noShadow: true, wave: a.wave > 0 || this.npcState(rider.id) === 'ready' }); }
@@ -1075,10 +1154,11 @@ class Play {
       c.restore();
       if (done) icon(c, 'check', x + 10, fy + 6, 16, '#06d6a0');
     });
-    this.drawCoach(c);
+    if (!this.swinging) this.drawCoach(c);
+    this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
-    if (this.canSearch() && hq) {
+    if (this.canSearch() && hq && !this.swinging) {
       const HELP = ability('glueck') ? 60 : 150, f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
       const pu = ready ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(pu, pu);
@@ -1102,7 +1182,7 @@ class Play {
       }
     }
     // Lupe zum Suchen + Spürnase (Mittel)
-    if (this.canSearch()) {
+    if (this.canSearch() && !this.swinging) {
       const bx = W - 58, by = H - 112, pulse = !ACC().tut.search ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(bx, by); c.scale(pulse, pulse);
       roundBtn(c, 0, 0, 38, this.searching ? '#ffd166' : '#fff', 'search', null);
@@ -1177,7 +1257,7 @@ function questText(o) {
 }
 
 class QuestDialog {
-  constructor(o) { this.o = o; this.t = 0; Voice.say(questText(o), true); }
+  constructor(o) { this.o = o; this.t = 0; Voice.say(questText(o), true, o.npc); }   // jeder Mitarbeiter spricht mit eigener Stimme
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; Voice.stop(); }
   draw(c) {
