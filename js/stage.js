@@ -346,7 +346,7 @@ class Play {
     const lim = this.bonusLimit(npc), mm = Math.floor(lim / 60) + ':' + String(lim % 60).padStart(2, '0');
     this.bonusIntro = { t: 0, text: 'Schaffe es in ' + mm + ' → +1 Joker!' };
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => Sfx.note(f, 0.16, 'square', 0.05), i * 110)); buzz([20, 30, 20]);
-    Voice.say('Bonus-Jagd! Schaffe den Auftrag in ' + (lim >= 60 ? Math.floor(lim / 60) + ' Minute' + (lim % 60 ? ' ' + (lim % 60) + ' Sekunden' : '') : lim + ' Sekunden') + ', dann bekommst du einen Extra-Joker.', true);
+    Voice.say(bonusSay(lim), true);
   }
   checkBonus(q, npc) {
     if (!q || (q.tt || 0) > this.bonusLimit(npc)) return;
@@ -1238,6 +1238,7 @@ class Play {
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
 const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
+function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
 const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // Mitarbeiter so schnell geschafft = +1 Joker (Tor: +30 s)
 const NPC_NAMES = { hase: 'Hoppel vom Service', fuchs: 'Fridolin aus der Küche', igel: 'Ida von der Eistheke', waschbaer: 'Willi, der Hausmeister', eule: 'Emma vom Empfang', gate: 'Das Tor' };
 const NPC_LINES = {
@@ -1247,13 +1248,14 @@ const NPC_LINES = {
   waschbaer: 'Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas!',
   eule: 'Vom Spielhaus aus habe ich alles im Blick – nur die vergessenen Sachen nicht!',
 };
-function itemList(ids) { const n = ids.map(i => (ITEMS[i] || FOOD[i] || { n: i }).n); return n.length > 1 ? n.slice(0, -1).join(', ') + ' und ' + n[n.length - 1] : n[0] || ''; }
+// Feste Sätze (ohne wechselnde Gegenstands-Listen – die stehen als Bilder im Dialog), damit jeder Satz als echte Aufnahme abgespielt werden kann
+const NPC_SHORT = { hase: 'Hoppel', fuchs: 'Fridolin', igel: 'Ida', waschbaer: 'Willi', eule: 'Emma', gate: 'dem Tor' };
 function questText(o) {
-  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn alle 5 Mitarbeiter zufrieden sind. Geschafft: ' + o.done + ' von 5.';
-  if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_NAMES[o.other] + ' – danach bin ich dran!';
-  if (o.mode === 'progress') { const miss = o.items.filter((_, i) => !o.got[i]); return 'Dir fehlen noch: ' + itemList(miss) + '. Schau hinter Steinen und Büschen und im Hackschnitzel!'; }
-  if (o.npc === 'gate') return 'Das Tor klemmt! Bring mir ' + itemList(o.items) + ', dann geht es auf und du kommst zum Parkplatz.';
-  return (NPC_LINES[o.npc] || '') + ' Kannst du ' + itemList(o.items) + ' für mich finden?';
+  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn alle fünf Mitarbeiter zufrieden sind.';
+  if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_SHORT[o.other] + ', danach bin ich dran!';
+  if (o.mode === 'progress') return 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!';
+  if (o.npc === 'gate') return 'Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.';
+  return (NPC_LINES[o.npc] || '') + ' Kannst du diese Sachen für mich finden?';
 }
 
 class QuestDialog {

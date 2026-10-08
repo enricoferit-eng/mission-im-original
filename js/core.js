@@ -124,8 +124,25 @@ const VOICE_OF = {
   baer: { pitch: 0.6, rate: 0.92, pick: 6 },      // Chefkoch Bruno: ganz tief
   gate: { pitch: 0.85, rate: 0.95, pick: 0 },
 };
+// Vorlesen: zuerst echte Aufnahmen (assets/voice/<key>.mp3, siehe js/voiceclips.js) – lückenlos und mit eigener Stimme je Figur.
+// Nur Texte ohne Aufnahme (z. B. mit Kontonamen) fallen auf die Browser-Stimme zurück.
 const Voice = {
-  last: '', list: null, gen: 0, onceKey: '', cancelT: 0, keep: null,
+  last: '', list: null, gen: 0, onceKey: '', cancelT: 0, keep: null, src: null, loading: 0, bufs: new Map(),
+  key(text, who = 'erzaehler') {   // FNV-1a über UTF-8 – gleiche Rechnung wie im Aufnahme-Werkzeug
+    const b = new TextEncoder().encode(who + '|' + this.clean(text)); let h = 0x811c9dc5;
+    for (const x of b) { h ^= x; h = Math.imul(h, 0x01000193) >>> 0; }
+    return h.toString(16).padStart(8, '0');
+  },
+  async clip(k, gen) {
+    try {
+      const ctx = Sfx.ctx(); let buf = this.bufs.get(k);
+      if (!buf) { this.loading++; const r = await fetch('assets/voice/' + k + '.mp3'); buf = await ctx.decodeAudioData(await r.arrayBuffer()); this.loading--; this.bufs.set(k, buf); if (this.bufs.size > 60) this.bufs.delete(this.bufs.keys().next().value); }
+      if (gen !== this.gen) return;
+      const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = 1; s.buffer = buf; s.connect(g).connect(ctx.destination);
+      s.onended = () => { if (this.src === s) this.src = null; };
+      this.src = s; s.start();
+    } catch (e) { this.loading = Math.max(0, this.loading - 1); }
+  },
   on() { const a = ACC(); return !a || a.sound !== false; },
   // deutsche Stimmen, die besten zuerst (Premium/Enhanced/Natural klingen viel flüssiger)
   voices() {
@@ -139,9 +156,13 @@ const Voice = {
   },
   clean(t) { return t.replace(/\s*[–—]\s*/g, ', ').replace(/→/g, ' ').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); },
   say(text, force, who = 'erzaehler') {
-    if (!text || !this.on() || !('speechSynthesis' in window)) return;
+    if (!text || !this.on()) return;
     if (!force && text === this.last) return;
     this.last = text; const gen = ++this.gen;
+    if (this.src) { try { this.src.stop(); } catch (e) { /* egal */ } this.src = null; }
+    const k = this.key(text, who);
+    if (typeof VOICE_CLIPS !== 'undefined' && VOICE_CLIPS.has(k)) { try { speechSynthesis.cancel(); } catch (e) { /* egal */ } this.clip(k, gen); return; }
+    if (!('speechSynthesis' in window)) return;
     try {
       const busy = speechSynthesis.speaking || speechSynthesis.pending || performance.now() - this.cancelT < 200;
       if (busy) speechSynthesis.cancel();
@@ -165,8 +186,8 @@ const Voice = {
   },
   // für Texte, die in draw() stehen: nur einmal vorlesen, bis das Fenster zu ist (Voice.stop)
   once(text, who) { if (this.onceKey === text) return; this.onceKey = text; this.say(text, true, who); },
-  busy() { try { return this.on() && 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending); } catch (e) { return false; } },
-  stop() { this.last = ''; this.onceKey = ''; this.gen++; this.cancelT = performance.now(); try { speechSynthesis.cancel(); } catch (e) { /* egal */ } },
+  busy() { if (!this.on()) return false; if (this.src || this.loading) return true; try { return 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending); } catch (e) { return false; } },
+  stop() { this.last = ''; this.onceKey = ''; this.gen++; this.cancelT = performance.now(); if (this.src) { try { this.src.stop(); } catch (e) { /* egal */ } this.src = null; } try { speechSynthesis.cancel(); } catch (e) { /* egal */ } },
 };
 try { if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { Voice.list = null; }; } catch (e) { /* egal */ }
 

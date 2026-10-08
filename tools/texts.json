@@ -1,0 +1,800 @@
+[
+ {
+  "who": "erzaehler",
+  "text": "Willkommen im Original in Teningen!",
+  "key": "4d422b95",
+  "clean": "Willkommen im Original in Teningen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Chefkoch Bruno macht dich zum neuen Helfer.",
+  "key": "20bf920c",
+  "clean": "Chefkoch Bruno macht dich zum neuen Helfer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sechs Bereiche, sechs Uniform-Teile – sammle sie alle!",
+  "key": "54b3811b",
+  "clean": "Sechs Bereiche, sechs Uniform-Teile, sammle sie alle!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Das Team hat Sachen verloren. Finde sie!",
+  "key": "e0504a24",
+  "clean": "Das Team hat Sachen verloren. Finde sie!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Hilf allen, dann geht das Tor auf. Los geht’s!",
+  "key": "030f63c7",
+  "clean": "Hilf allen, dann geht das Tor auf. Los geht’s!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Hallo, neuer Helfer! In dieser Anleitung lernst du alles, was du zum Spielen brauchst. Schau zu, und dann probierst du es selbst aus.",
+  "key": "92c36fcf",
+  "clean": "Hallo, neuer Helfer! In dieser Anleitung lernst du alles, was du zum Spielen brauchst. Schau zu, und dann probierst du es selbst aus."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe einfach auf eine Stelle auf dem Boden. Dein Tier läuft dann genau dorthin.",
+  "key": "188269d2",
+  "clean": "Tippe einfach auf eine Stelle auf dem Boden. Dein Tier läuft dann genau dorthin."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Tippe auf den grünen Kreis!",
+  "key": "37e51a28",
+  "clean": "Jetzt du: Tippe auf den grünen Kreis!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du kannst auch den Finger auf den Bildschirm legen und ihn in eine Richtung schieben – wie mit einem Joystick. Dein Tier läuft, solange du schiebst.",
+  "key": "0075fe96",
+  "clean": "Du kannst auch den Finger auf den Bildschirm legen und ihn in eine Richtung schieben, wie mit einem Joystick. Dein Tier läuft, solange du schiebst."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Leg den Finger hin und schieb dein Tier zum grünen Kreis!",
+  "key": "b9653e57",
+  "clean": "Jetzt du: Leg den Finger hin und schieb dein Tier zum grünen Kreis!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen. Und auf der freien Schaukel darfst du schaukeln: Tippe immer, wenn sie ganz außen ist, dann wird sie höher – und spring weit ab!",
+  "key": "64883001",
+  "clean": "Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen. Und auf der freien Schaukel darfst du schaukeln: Tippe immer, wenn sie ganz außen ist, dann wird sie höher, und spring weit ab!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Im Original arbeitet ein nettes Team. Wer ein gelbes Ausrufezeichen hat, hat einen Auftrag für dich. Eine blaue Lupe heißt: Du suchst gerade für ihn. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.",
+  "key": "8ab07f36",
+  "clean": "Im Original arbeitet ein nettes Team. Wer ein gelbes Ausrufezeichen hat, hat einen Auftrag für dich. Eine blaue Lupe heißt: Du suchst gerade für ihn. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen, da starten die Aufgaben sofort."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Tippe den Mitarbeiter mit dem gelben Ausrufezeichen an!",
+  "key": "9f5a6e64",
+  "clean": "Jetzt du: Tippe den Mitarbeiter mit dem gelben Ausrufezeichen an!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Sachen liegen hinter Steinen und Büschen oder gucken aus den Hackschnitzeln. Geh nah heran und tippe auf die Lupe. Aber Vorsicht: Manchmal ist es nur ein Stöckchen, ein Blatt oder ein Kronkorken!",
+  "key": "38f094b4",
+  "clean": "Die Sachen liegen hinter Steinen und Büschen oder gucken aus den Hackschnitzeln. Geh nah heran und tippe auf die Lupe. Aber Vorsicht: Manchmal ist es nur ein Stöckchen, ein Blatt oder ein Kronkorken!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Dein Tier steht am Stein. Tippe auf die Lupe!",
+  "key": "755e0f11",
+  "clean": "Jetzt du: Dein Tier steht am Stein. Tippe auf die Lupe!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bei zwei Sternen zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei drei Sternen glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck.",
+  "key": "c8513b7f",
+  "clean": "Bei zwei Sternen zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei drei Sternen glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei drei Sternen hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste – sammle Uhren für mehr Zeit.",
+  "key": "05a045b2",
+  "clean": "Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei drei Sternen hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste, sammle Uhren für mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Lass die 3 Luftballons platzen!",
+  "key": "cce30e06",
+  "clean": "Jetzt du: Lass die 3 Luftballons platzen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Vor jeder Aufgabe zählt es: 3, 2, 1, los! Oben brennt eine Zündschnur. Erreicht die Flamme einen Stern, fällt er herunter. Wer schnell ist, behält alle drei Sterne. Schaffst du mehrere Treffer schnell hintereinander, gibt es eine Combo – dann wird die Zündschnur wieder länger.",
+  "key": "0508b56a",
+  "clean": "Vor jeder Aufgabe zählt es: 3, 2, 1, los! Oben brennt eine Zündschnur. Erreicht die Flamme einen Stern, fällt er herunter. Wer schnell ist, behält alle drei Sterne. Schaffst du mehrere Treffer schnell hintereinander, gibt es eine Combo, dann wird die Zündschnur wieder länger."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Tippe schnell die 5 Eisclowns an – mach eine Combo!",
+  "key": "fd18b344",
+  "clean": "Jetzt du: Tippe schnell die 5 Eisclowns an, mach eine Combo!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast. Einen Extra-Joker gibt es auch, wenn du alle 8 Original-Blätter findest.",
+  "key": "f8492917",
+  "clean": "Kommst du bei einer Aufgabe gar nicht weiter? Dann hilft dir der Joker. Er erscheint unten links, wenn du lange brauchst oder verloren hast. Tippe ihn an, dann ist die Aufgabe sofort geschafft. Aber Achtung: Du hast nur 3 Joker pro Bereich. Die rote Zahl zeigt, wie viele du noch hast. Einen Extra-Joker gibt es auch, wenn du alle 8 Original-Blätter findest."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Tippe auf den Joker!",
+  "key": "1a35ebb4",
+  "clean": "Jetzt du: Tippe auf den Joker!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sobald du einen Auftrag annimmst, startet die Bonus-Jagd. Oben läuft die Bonus-Uhr – auch während der Rätsel und Aufgaben! Bringst du alles zurück, bevor sie abläuft, bekommst du einen Extra-Joker. Bei Grün hast du noch Zeit, bei Gelb wird es knapp, bei Rot musst du dich richtig beeilen!",
+  "key": "d0c5760d",
+  "clean": "Sobald du einen Auftrag annimmst, startet die Bonus-Jagd. Oben läuft die Bonus-Uhr, auch während der Rätsel und Aufgaben! Bringst du alles zurück, bevor sie abläuft, bekommst du einen Extra-Joker. Bei Grün hast du noch Zeit, bei Gelb wird es knapp, bei Rot musst du dich richtig beeilen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Tippe schnell die 3 Bälle an und dann Hoppel – bevor die Uhr abläuft!",
+  "key": "6f68777b",
+  "clean": "Jetzt du: Tippe schnell die 3 Bälle an und dann Hoppel, bevor die Uhr abläuft!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!",
+  "key": "de48a1a1",
+  "clean": "Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf, und du hast den Bereich geschafft!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform. Und das Glücksrad dreht sich: Du gewinnst einen Skin – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank.",
+  "key": "839ddbdb",
+  "clean": "Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform. Und das Glücksrad dreht sich: Du gewinnst einen Skin, manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Der rote Stopp-Knopf beendet das Spiel sofort – alles ist gespeichert. Das Fragezeichen erklärt dir alles. Mit dem Lautsprecher schaltest du Ton und Vorlesen an oder aus. Das Buch im Menü öffnet diese Anleitung, und der Bügel ist dein Kleiderschrank.",
+  "key": "1ab9774b",
+  "clean": "Der rote Stopp-Knopf beendet das Spiel sofort, alles ist gespeichert. Das Fragezeichen erklärt dir alles. Mit dem Lautsprecher schaltest du Ton und Vorlesen an oder aus. Das Buch im Menü öffnet diese Anleitung, und der Bügel ist dein Kleiderschrank."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jetzt du: Tippe auf den Lautsprecher!",
+  "key": "68d3b581",
+  "clean": "Jetzt du: Tippe auf den Lautsprecher!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Super! Jetzt weißt du alles. Viel Spaß im Original!",
+  "key": "913a44e9",
+  "clean": "Super! Jetzt weißt du alles. Viel Spaß im Original!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dreh immer zwei Karten um. Finde alle Paare, die gleich aussehen.",
+  "key": "e515a6ab",
+  "clean": "Dreh immer zwei Karten um. Finde alle Paare, die gleich aussehen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh mit dem Finger eine Linie von jedem Bild links zum gleichen Bild rechts.",
+  "key": "e5333f69",
+  "clean": "Zieh mit dem Finger eine Linie von jedem Bild links zum gleichen Bild rechts."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Luftballons, damit sie platzen. Oben siehst du, wie viele es sein müssen.",
+  "key": "1cd16d3a",
+  "clean": "Tippe auf die Luftballons, damit sie platzen. Oben siehst du, wie viele es sein müssen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh die Puzzleteile an die richtige Stelle im Rahmen.",
+  "key": "c3a995b2",
+  "clean": "Zieh die Puzzleteile an die richtige Stelle im Rahmen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bau eine Torte: Zieh zuerst das größte Stockwerk nach unten, dann immer das nächstkleinere.",
+  "key": "a5cca8ae",
+  "clean": "Bau eine Torte: Zieh zuerst das größte Stockwerk nach unten, dann immer das nächstkleinere."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh jedes Bild auf seinen passenden Schatten.",
+  "key": "8b76c2ce",
+  "clean": "Zieh jedes Bild auf seinen passenden Schatten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh jeden Ball in den Korb mit der gleichen Farbe und dem gleichen Zeichen.",
+  "key": "29ce9a26",
+  "clean": "Zieh jeden Ball in den Korb mit der gleichen Farbe und dem gleichen Zeichen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben im Kasten siehst du ein Ding. Finde es überall im Bild und tippe es an.",
+  "key": "194c6878",
+  "clean": "Oben im Kasten siehst du ein Ding. Finde es überall im Bild und tippe es an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Leg den Finger auf das Tablett und bring den Eisclown auf dem Weg bis zum Tisch mit dem Sonnenschirm.",
+  "key": "95a44098",
+  "clean": "Leg den Finger auf das Tablett und bring den Eisclown auf dem Weg bis zum Tisch mit dem Sonnenschirm."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zähl die Dinge im Bild. Tippe dann auf den Würfel mit genauso vielen Punkten.",
+  "key": "915f00c3",
+  "clean": "Zähl die Dinge im Bild. Tippe dann auf den Würfel mit genauso vielen Punkten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wähle unten eine Farbe. Tippe dann auf die Felder mit dem gleichen Zeichen.",
+  "key": "80a30349",
+  "clean": "Wähle unten eine Farbe. Tippe dann auf die Felder mit dem gleichen Zeichen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, wenn das Seil unten bei deinen Füßen ist. Dann springst du drüber.",
+  "key": "c48df39b",
+  "clean": "Tippe, wenn das Seil unten bei deinen Füßen ist. Dann springst du drüber."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Leg die Dinge der Größe nach in die Reihe: links das kleinste, rechts das größte.",
+  "key": "0c3d97dc",
+  "clean": "Leg die Dinge der Größe nach in die Reihe: links das kleinste, rechts das größte."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Merk dir, unter welcher Servierglocke der Eisclown steht. Wenn die Glocken still stehen, tippe auf die richtige.",
+  "key": "6c3554ca",
+  "clean": "Merk dir, unter welcher Servierglocke der Eisclown steht. Wenn die Glocken still stehen, tippe auf die richtige."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh dein Tier mit dem Finger durch das Labyrinth bis zur Leckerei.",
+  "key": "24ba1326",
+  "clean": "Zieh dein Tier mit dem Finger durch das Labyrinth bis zur Leckerei."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe die Zahlen der Reihe nach an. Oben siehst du, wie gezählt wird (z. B. 2, 4, 6 ...).",
+  "key": "b042b671",
+  "clean": "Tippe die Zahlen der Reihe nach an. Oben siehst du, wie gezählt wird ."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe die Zahlen der Reihe nach an: 1, 2, 3 ...",
+  "key": "d5569dbc",
+  "clean": "Tippe die Zahlen der Reihe nach an: 1, 2, 3 ..."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau genau hin, welche Felder nacheinander aufleuchten. Tippe sie danach in der gleichen Reihenfolge an.",
+  "key": "d47d81dc",
+  "clean": "Schau genau hin, welche Felder nacheinander aufleuchten. Tippe sie danach in der gleichen Reihenfolge an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Räder, um sie zu drehen. Oben am Rad (beim gelben Pfeil) muss das Zeichen aus der Kiste stehen.",
+  "key": "822a2591",
+  "clean": "Tippe auf die Räder, um sie zu drehen. Oben am Rad muss das Zeichen aus der Kiste stehen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Rohrteile, um sie zu drehen. Leite die hausgemachte Limo von der Zitrone links bis ins Glas rechts.",
+  "key": "3960bf60",
+  "clean": "Tippe auf die Rohrteile, um sie zu drehen. Leite die hausgemachte Limo von der Zitrone links bis ins Glas rechts."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Felder, bis dein Muster genauso aussieht wie die kleine Vorlage oben.",
+  "key": "82d93d40",
+  "clean": "Tippe auf die Felder, bis dein Muster genauso aussieht wie die kleine Vorlage oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh Klötze auf die Wippe, bis sie gerade ist. Je weiter außen ein Klotz liegt, desto schwerer drückt er.",
+  "key": "33f4d25b",
+  "clean": "Zieh Klötze auf die Wippe, bis sie gerade ist. Je weiter außen ein Klotz liegt, desto schwerer drückt er."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Mach alle Windlichter an. Ein Tipp schaltet das Licht und seine direkten Nachbarn um.",
+  "key": "04e13ba9",
+  "clean": "Mach alle Windlichter an. Ein Tipp schaltet das Licht und seine direkten Nachbarn um."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring den ganzen Teller-Stapel auf das Tablett mit dem Stern. Tippe einen Stapel an, um den oberen Teller zu nehmen, und dann ein anderes Tablett zum Ablegen. Ein großer Teller darf nie auf einen kleineren.",
+  "key": "3e723bc2",
+  "clean": "Bring den ganzen Teller-Stapel auf das Tablett mit dem Stern. Tippe einen Stapel an, um den oberen Teller zu nehmen, und dann ein anderes Tablett zum Ablegen. Ein großer Teller darf nie auf einen kleineren."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben und unten sind fast gleiche Bilder. Finde die Unterschiede und tippe sie an.",
+  "key": "bf51f73f",
+  "clean": "Oben und unten sind fast gleiche Bilder. Finde die Unterschiede und tippe sie an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Ein Bild ist gespiegelt und schaut in die andere Richtung. Finde es und tippe es an.",
+  "key": "a84c8ab0",
+  "clean": "Ein Bild ist gespiegelt und schaut in die andere Richtung. Finde es und tippe es an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wie geht die Reihe weiter? Schau dir das Muster an und tippe unten auf das passende Zeichen.",
+  "key": "7da0bb7a",
+  "clean": "Wie geht die Reihe weiter? Schau dir das Muster an und tippe unten auf das passende Zeichen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zähl, wie oft das Ding aus dem Kasten im Bild vorkommt, und tippe auf die richtige Zahl.",
+  "key": "47449cde",
+  "clean": "Zähl, wie oft das Ding aus dem Kasten im Bild vorkommt, und tippe auf die richtige Zahl."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Mal die rechte Seite so an, dass sie wie ein Spiegelbild der linken Seite aussieht.",
+  "key": "e41751ce",
+  "clean": "Mal die rechte Seite so an, dass sie wie ein Spiegelbild der linken Seite aussieht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Bildteile, um sie zu drehen, bis das Bild wieder aussieht wie oben rechts.",
+  "key": "612ce2ce",
+  "clean": "Tippe auf die Bildteile, um sie zu drehen, bis das Bild wieder aussieht wie oben rechts."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schieb die Teile in die leere Lücke, bis das Bild stimmt.",
+  "key": "642497e5",
+  "clean": "Schieb die Teile in die leere Lücke, bis das Bild stimmt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dein Tier läuft von allein. Tippe links oder rechts, um die Spur zu wechseln und Hindernissen auszuweichen.",
+  "key": "0ea6c273",
+  "clean": "Dein Tier läuft von allein. Tippe links oder rechts, um die Spur zu wechseln und Hindernissen auszuweichen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe genau dann, wenn der Zeiger im grünen Bereich ist. So machst du einen sicheren Schritt über den Balken.",
+  "key": "0c5aa8e8",
+  "clean": "Tippe genau dann, wenn der Zeiger im grünen Bereich ist. So machst du einen sicheren Schritt über den Balken."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dein Tier läuft von allein. Tippe, um über Hindernisse und Löcher zu springen.",
+  "key": "1ad41ee2",
+  "clean": "Dein Tier läuft von allein. Tippe, um über Hindernisse und Löcher zu springen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Küche schickt Essen raus! Beweg dein Tier mit dem Finger nach links und rechts. Fang nur die Bestellung aus dem Kasten oben.",
+  "key": "f85d4929",
+  "clean": "Die Küche schickt Essen raus! Beweg dein Tier mit dem Finger nach links und rechts. Fang nur die Bestellung aus dem Kasten oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du rutschst nach unten. Beweg dich mit dem Finger nach links und rechts und weich allem auf der Rutsche aus.",
+  "key": "9c57c4c8",
+  "clean": "Du rutschst nach unten. Beweg dich mit dem Finger nach links und rechts und weich allem auf der Rutsche aus."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, um zum nächsten Platz zu laufen. Warte, bis die Schaukel weit weg ist, sonst wirst du getroffen.",
+  "key": "93f88d00",
+  "clean": "Tippe, um zum nächsten Platz zu laufen. Warte, bis die Schaukel weit weg ist, sonst wirst du getroffen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Lauf mit den Pfeil-Knöpfen, spring mit dem großen Knopf (lange drücken = hoch springen). Spring auf Bälle und Wespen, um sie zu besiegen. Erreiche die rote Fahne!",
+  "key": "3c7fed6a",
+  "clean": "Lauf mit den Pfeil-Knöpfen, spring mit dem großen Knopf . Spring auf Bälle und Wespen, um sie zu besiegen. Erreiche die rote Fahne!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Deck den Tisch für die Gäste! Zieh Teller, Besteck, Glas und Serviette genau auf die hellen Umrisse auf dem Tisch.",
+  "key": "8b20a0fd",
+  "clean": "Deck den Tisch für die Gäste! Zieh Teller, Besteck, Glas und Serviette genau auf die hellen Umrisse auf dem Tisch."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei 3 Sternen verschwindet das Rezept nach ein paar Sekunden – merk es dir gut!",
+  "key": "91862836",
+  "clean": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei 3 Sternen verschwindet das Rezept nach ein paar Sekunden, merk es dir gut!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben. Bei 3 Sternen musst du dir die Bestellung merken.",
+  "key": "116d96c2",
+  "clean": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an, von unten nach oben. Bei 3 Sternen musst du dir die Bestellung merken."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept. Zu viel geht nicht!",
+  "key": "dd469047",
+  "clean": "Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept. Zu viel geht nicht!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Spül das Geschirr: Wisch mit dem Finger so lange über die Flecken, bis jeder Teller sauber ist.",
+  "key": "d324cad2",
+  "clean": "Spül das Geschirr: Wisch mit dem Finger so lange über die Flecken, bis jeder Teller sauber ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei 2 und 3 Sternen trocknen sie langsam wieder aus – alle müssen gleichzeitig voll sein!",
+  "key": "ba480795",
+  "clean": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei 2 und 3 Sternen trocknen sie langsam wieder aus, alle müssen gleichzeitig voll sein!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei 3 Sternen verschwinden die Bestellungen nach ein paar Sekunden.",
+  "key": "39f57b27",
+  "clean": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei 3 Sternen verschwinden die Bestellungen nach ein paar Sekunden."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei 3 Sternen weht der Wind neue Blätter herein!",
+  "key": "38472a16",
+  "clean": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei 3 Sternen weht der Wind neue Blätter herein!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Probier es einfach aus!",
+  "key": "8c9aba00",
+  "clean": "Probier es einfach aus!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Zeit ist abgelaufen! Versuch es gleich nochmal.",
+  "key": "07a6c2d2",
+  "clean": "Die Zeit ist abgelaufen! Versuch es gleich nochmal."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Keine Herzen mehr! Versuch es gleich nochmal.",
+  "key": "a1c4e436",
+  "clean": "Keine Herzen mehr! Versuch es gleich nochmal."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft.",
+  "key": "9429df11",
+  "clean": "Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt.",
+  "key": "0807d119",
+  "clean": "Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wähle deine Figur.",
+  "key": "e667e856",
+  "clean": "Wähle deine Figur."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau hinter Steine und Büsche – dann tippe auf die Lupe!",
+  "key": "9813c3ce",
+  "clean": "Schau hinter Steine und Büsche, dann tippe auf die Lupe!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, wenn die Schaukel ganz außen ist – so holst du Schwung!",
+  "key": "9d4f2d93",
+  "clean": "Tippe, wenn die Schaukel ganz außen ist, so holst du Schwung!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Lauf zum Tor und tippe es an!",
+  "key": "a74a9ccd",
+  "clean": "Lauf zum Tor und tippe es an!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring die Sachen zurück – tippe den Mitarbeiter an!",
+  "key": "4d16c706",
+  "clean": "Bring die Sachen zurück, tippe den Mitarbeiter an!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe einen Mitarbeiter mit ! an.",
+  "key": "fd016884",
+  "clean": "Tippe einen Mitarbeiter mit ! an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Jagd! Schaffe den Auftrag in 50 Sekunden, dann bekommst du einen Extra-Joker.",
+  "key": "fca819b1",
+  "clean": "Bonus-Jagd! Schaffe den Auftrag in 50 Sekunden, dann bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Jagd! Schaffe den Auftrag in einer Minute und 20 Sekunden, dann bekommst du einen Extra-Joker.",
+  "key": "428a35d6",
+  "clean": "Bonus-Jagd! Schaffe den Auftrag in einer Minute und 20 Sekunden, dann bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Jagd! Schaffe den Auftrag in einer Minute und 30 Sekunden, dann bekommst du einen Extra-Joker.",
+  "key": "16b0278b",
+  "clean": "Bonus-Jagd! Schaffe den Auftrag in einer Minute und 30 Sekunden, dann bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Jagd! Schaffe den Auftrag in 2 Minuten, dann bekommst du einen Extra-Joker.",
+  "key": "2c079827",
+  "clean": "Bonus-Jagd! Schaffe den Auftrag in 2 Minuten, dann bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Jagd! Schaffe den Auftrag in einer Minute und 50 Sekunden, dann bekommst du einen Extra-Joker.",
+  "key": "23ad1c39",
+  "clean": "Bonus-Jagd! Schaffe den Auftrag in einer Minute und 50 Sekunden, dann bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Jagd! Schaffe den Auftrag in 2 Minuten und 20 Sekunden, dann bekommst du einen Extra-Joker.",
+  "key": "e5b70d3d",
+  "clean": "Bonus-Jagd! Schaffe den Auftrag in 2 Minuten und 20 Sekunden, dann bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "7c284d96",
+  "clean": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "54bb6c88",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "7edeefab",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+ },
+ {
+  "who": "hase",
+  "text": "Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden! Kannst du diese Sachen für mich finden?",
+  "key": "e5aa8e58",
+  "clean": "Nach dem Kinderfest räume ich den Spielplatz auf, aber einiges ist verschwunden! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "hase",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "1e594894",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "hase",
+  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
+  "key": "01fba4a1",
+  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+ },
+ {
+  "who": "hase",
+  "text": "Hilf zuerst Ida, danach bin ich dran!",
+  "key": "1f8f8fc8",
+  "clean": "Hilf zuerst Ida, danach bin ich dran!"
+ },
+ {
+  "who": "hase",
+  "text": "Hilf zuerst Willi, danach bin ich dran!",
+  "key": "4010832b",
+  "clean": "Hilf zuerst Willi, danach bin ich dran!"
+ },
+ {
+  "who": "hase",
+  "text": "Hilf zuerst Emma, danach bin ich dran!",
+  "key": "75fb7394",
+  "clean": "Hilf zuerst Emma, danach bin ich dran!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Ich habe für die Kinder Spielsachen bereitgelegt, und jetzt sind sie weg! Kannst du diese Sachen für mich finden?",
+  "key": "883dd270",
+  "clean": "Ich habe für die Kinder Spielsachen bereitgelegt, und jetzt sind sie weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "fuchs",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "693600ea",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
+  "key": "b37d8f5e",
+  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Hilf zuerst Ida, danach bin ich dran!",
+  "key": "f6bc04ce",
+  "clean": "Hilf zuerst Ida, danach bin ich dran!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Hilf zuerst Willi, danach bin ich dran!",
+  "key": "08183015",
+  "clean": "Hilf zuerst Willi, danach bin ich dran!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Hilf zuerst Emma, danach bin ich dran!",
+  "key": "c3f1f006",
+  "clean": "Hilf zuerst Emma, danach bin ich dran!"
+ },
+ {
+  "who": "igel",
+  "text": "Die Kinder haben ihre Sachen bei mir an der Eistheke liegen lassen – und dann irgendwo versteckt! Kannst du diese Sachen für mich finden?",
+  "key": "c3e18089",
+  "clean": "Die Kinder haben ihre Sachen bei mir an der Eistheke liegen lassen, und dann irgendwo versteckt! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "igel",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "1d5b6a0e",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "igel",
+  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
+  "key": "d35f58ea",
+  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+ },
+ {
+  "who": "igel",
+  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
+  "key": "d0f44087",
+  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+ },
+ {
+  "who": "igel",
+  "text": "Hilf zuerst Willi, danach bin ich dran!",
+  "key": "7e13aad9",
+  "clean": "Hilf zuerst Willi, danach bin ich dran!"
+ },
+ {
+  "who": "igel",
+  "text": "Hilf zuerst Emma, danach bin ich dran!",
+  "key": "6cb77df2",
+  "clean": "Hilf zuerst Emma, danach bin ich dran!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas! Kannst du diese Sachen für mich finden?",
+  "key": "50dd8c22",
+  "clean": "Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "fa86ece9",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
+  "key": "11262923",
+  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
+  "key": "7503dd7e",
+  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Hilf zuerst Ida, danach bin ich dran!",
+  "key": "375c25e9",
+  "clean": "Hilf zuerst Ida, danach bin ich dran!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Hilf zuerst Emma, danach bin ich dran!",
+  "key": "5e749ce3",
+  "clean": "Hilf zuerst Emma, danach bin ich dran!"
+ },
+ {
+  "who": "eule",
+  "text": "Vom Spielhaus aus habe ich alles im Blick – nur die vergessenen Sachen nicht! Kannst du diese Sachen für mich finden?",
+  "key": "6dc11df3",
+  "clean": "Vom Spielhaus aus habe ich alles im Blick, nur die vergessenen Sachen nicht! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "eule",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "f9b204c2",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "eule",
+  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
+  "key": "d3c5aa16",
+  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+ },
+ {
+  "who": "eule",
+  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
+  "key": "7442fc33",
+  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+ },
+ {
+  "who": "eule",
+  "text": "Hilf zuerst Ida, danach bin ich dran!",
+  "key": "db6ef6f6",
+  "clean": "Hilf zuerst Ida, danach bin ich dran!"
+ },
+ {
+  "who": "eule",
+  "text": "Hilf zuerst Willi, danach bin ich dran!",
+  "key": "038ecb6d",
+  "clean": "Hilf zuerst Willi, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.",
+  "key": "0217f95f",
+  "clean": "Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz."
+ },
+ {
+  "who": "gate",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "4f581974",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "gate",
+  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
+  "key": "8ff2b990",
+  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
+  "key": "9d3447c1",
+  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Hilf zuerst Ida, danach bin ich dran!",
+  "key": "e03311e8",
+  "clean": "Hilf zuerst Ida, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Hilf zuerst Willi, danach bin ich dran!",
+  "key": "b8b4f3cb",
+  "clean": "Hilf zuerst Willi, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Hilf zuerst Emma, danach bin ich dran!",
+  "key": "2e11c234",
+  "clean": "Hilf zuerst Emma, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Das Tor zum Parkplatz geht erst auf, wenn alle fünf Mitarbeiter zufrieden sind.",
+  "key": "bbfa8e95",
+  "clean": "Das Tor zum Parkplatz geht erst auf, wenn alle fünf Mitarbeiter zufrieden sind."
+ }
+]

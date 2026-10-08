@@ -1115,6 +1115,7 @@ function frame(now) {
 const swallowed = new Set(), TAPS = [];
 cv.addEventListener('pointerdown', e => {
   e.preventDefault(); TAPS.push({ x: e.clientX, y: e.clientY, t: 0 });
+  try { if (Sfx.on()) Sfx.ctx(); } catch (err) { /* Audio erst nach einer Berührung erlaubt (iPhone) */ }
   tryLandscape();
   if (TOUCH && H > W && !(scene && scene.portraitOk)) return;
   try { cv.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }

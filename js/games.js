@@ -356,7 +356,8 @@ class GameOverlay {
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
       if (this.starsOn()) lines.push('Sei schnell: Die Zündschnur oben brennt. Erreicht die Flamme einen Stern, fällt er herunter. Mehrere Treffer schnell hintereinander geben eine Combo – dann wird die Zündschnur wieder länger.');
       if (this.opts.joker) lines.push('Kommst du nicht weiter, erscheint nach einer Weile unten links der Joker. Damit ist die Aufgabe sofort geschafft. Du hast 3 Joker pro Bereich.');
-      helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); });
+      Voice.once(lines[0]);   // vorgelesen wird die Erklärung der Aufgabe (als Aufnahme)
+      helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); }, false);
     }
   }
   down(x, y, id) { if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
