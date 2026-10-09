@@ -150,15 +150,20 @@ async function lobby_join(b) {
   return [200, lob];
 }
 async function lobby_poll(b) {
-  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  const code = String(b.code || '').toUpperCase(), lob = await readJSON(lobbyFile(code));
+  // schnell: nur Schlüssel prüfen (kein Konto lesen), Schreiben + Lesen gleichzeitig
+  const l = cleanLogin(b.login); if (l.length !== 8 || !b.token || !sameStr(b.token, tokenOf(l))) return [401, { error: 'auth' }];
+  const code = String(b.code || '').toUpperCase().replace(/[^A-Z]/g, ''); if (code.length !== 4) return [404, { error: 'not_found' }];
+  const writeP = b.progress && typeof b.progress === 'object' ? writeJSON(progFile(code, l), { ...b.progress, at: Date.now() }) : null;
+  let lob = await readJSON(lobbyFile(code));
   if (!lob) return [404, { error: 'not_found' }];
-  const isHost = cleanLogin(lob.host.login) === a.l, isGuest = lob.guest && cleanLogin(lob.guest.login) === a.l;
+  const isHost = cleanLogin(lob.host.login) === l, isGuest = lob.guest && cleanLogin(lob.guest.login) === l;
   if (!isHost && !isGuest) return [403, { error: 'not_member' }];
-  if (b.start && isHost && lob.guest && lob.status === 'ready') { lob.status = 'run'; lob.started = Date.now(); await writeJSON(lobbyFile(code), lob); const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.matches++; await writeJSON('stats/mp.json', st); }
-  if (b.leave) { lob.status = 'closed'; lob.left = a.l; await writeJSON(lobbyFile(code), lob); }
-  if (b.progress && typeof b.progress === 'object') await writeJSON(progFile(code, a.l), { ...b.progress, at: Date.now() });
-  const other = isHost ? lob.guest : lob.host, op = other ? await readJSON(progFile(code, cleanLogin(other.login))) : null;
+  const other = isHost ? lob.guest : lob.host;
+  const tasks = [other ? readJSON(progFile(code, cleanLogin(other.login))).catch(() => null) : null];
+  if (b.start && isHost && lob.guest && lob.status === 'ready') { lob.status = 'run'; lob.started = Date.now(); tasks.push(writeJSON(lobbyFile(code), lob), (async () => { const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.matches++; await writeJSON('stats/mp.json', st); })()); }
+  if (b.leave) { lob.status = 'closed'; lob.left = l; tasks.push(writeJSON(lobbyFile(code), lob)); }
+  if (writeP) tasks.push(writeP);
+  const [op] = await Promise.all(tasks);
   return [200, { lobby: lob, me: isHost ? 'host' : 'guest', other: op, now: Date.now() }];
 }
 // Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig

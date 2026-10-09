@@ -324,7 +324,9 @@ class LobbyScene {
 
 // ---------- Laufendes Mehrspieler-Spiel: Fortschritt senden/abholen ----------
 class Match {
-  constructor(lob, me) { this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts; this.mode = lob.opts.mode || 'duell'; this.other = null; this.otherName = (me === 'host' ? lob.guest : lob.host).name; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.timer = setInterval(() => this.sync(), 1200); }
+  constructor(lob, me) { this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts; this.mode = lob.opts.mode || 'duell'; this.other = null; this.otherName = (me === 'host' ? lob.guest : lob.host).name; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop(); }
+  // Abgleich ohne Pause: nach jeder Antwort sofort (0,3 s) die nächste Abfrage
+  async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 300)); } }
   set(p) { Object.assign(this.prog, p); }
   async sync() {
     if (this.busy || this.over === 'done') return; this.busy = true;
@@ -335,7 +337,7 @@ class Match {
     }
     if (!this.over && Date.now() - this.lastOther > 45000) this.over = 'lost';   // Verbindung zum anderen weg
   }
-  stop() { clearInterval(this.timer); this.over = this.over || 'done'; }
+  stop() { this.over = 'done'; }
   leave() { api({ action: 'lobby_poll', code: this.code, leave: true }); this.stop(); }
 }
 const cleanL = l => String(l || '').toUpperCase().replace(/[^A-Z0-9]/g, '');

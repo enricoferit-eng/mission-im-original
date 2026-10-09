@@ -335,6 +335,8 @@ class Play {
     if (this.mp) this.mpSetup();
   }
   // Mehrspieler: gleicher Zufall, aber der zweite Spieler bekommt die nächste Aufgabe in der Liste -> andere Aufgaben als der Gegner
+  get role() { return this.mp && this.mp.me === 'guest' ? 1 : 0; }   // Spieler 1 = Gastgeber, Spieler 2 = Gast
+  off(q, i) { return q.got[i] || !!(q.team && q.owner && q.owner[i] !== this.role); }   // auf meiner Karte nicht (mehr) da
   pickRole(arr, r) { const i = Math.floor(r() * arr.length); return arr[(i + (this.mp && this.mp.me === 'guest' && arr.length > 1 ? 1 : 0)) % arr.length]; }
   seedFor(tag) { let h = 2166136261; for (const ch of String(tag)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return ((this.mp ? this.mp.seed : Date.now()) ^ h) >>> 0; }
   // ---------- Mehrspieler ----------
@@ -344,9 +346,12 @@ class Play {
     ACC().tut.coach = true;
     this.activeIds = M.mode === 'team' ? ['hase'] : shuffle(NPC_DEFS.map(n => n.id), mulberry32(this.seedFor('kids'))).slice(0, M.opts.kids);
     this.npcs = this.npcs.filter(n => this.activeIds.includes(n.id));   // nicht gewählte Kinder sind gar nicht da
+    this.racer.state = 'off';   // Leo ist im Mehrspieler nicht da – nur die Kinder mit Aufträgen
     if (M.mode === 'team') {
       // Ein großer gemeinsamer Auftrag von Mia + zwei Teile, die man nur zu zweit schafft
-      const q = this.genQuest('hase', { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chest: false, roof: false };
+      const q = this.genQuest('hase', { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chestOpen: false, chest: false, roof: false };
+      q.owner = q.items.map((_, i) => i % 2);   // klar aufgeteilt: jeder sucht nur seine eigenen Sachen
+      const extra = ITEM_IDS.filter(i => !q.items.includes(i)); q.coopItems = { chest: extra[0] || ITEM_IDS[0], roof: extra[1] || ITEM_IDS[1] };
       st.active = q;
       const find = (cands) => cands.find(([x, y]) => canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70)) || cands[0];
       const r = mulberry32(this.seedFor('coop')), spots = [];
@@ -354,7 +359,9 @@ class Play {
       while (spots.length < 3) spots.push(find([[200, 500], [800, 1150], [500, 1000]]));
       this.coop = { chest: { x: spots[0][0], y: spots[0][1] }, sw: [{ x: spots[1][0], y: spots[1][1] }, { x: spots[2][0], y: spots[2][1] }], ladder: { x: HOUSE.x - 26, y: HOUSE.y + HOUSE.h - 30 } };
       if (!canStand(0, this.coop.ladder.x, this.coop.ladder.y)) this.coop.ladder = { x: HOUSE.x + HOUSE.w + 26, y: HOUSE.y + 40 };
-      this.banner = { text: 'Mia braucht ganz viele Sachen – sucht sie zusammen!', t: 0 };
+      { const L = this.coop.ladder, side = L.x < HOUSE.x ? -1 : 1, cand = [[L.x + side * 44, L.y + 8], [L.x, L.y + 46], [L.x + side * 30, L.y + 40]]; const h = cand.find(([x, y]) => canStand(0, x, y)) || cand[1]; this.coop.hold = { x: h[0], y: h[1] }; this.coop.side = side; }
+      this.swBoth = 0; this.climb = null;
+      this.banner = { text: 'Mia braucht ganz viele Sachen! Grüner Punkt = deine, blauer Punkt = die von ' + M.otherName + '.', t: 0 };
     } else {
       // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
       this.pre = {}; if (this.diff !== 'easy') this.activeIds.concat(['gate']).forEach(id => { this.pre[id] = this.genQuest(id); });
@@ -367,19 +374,28 @@ class Play {
     const M = this.mp; if (!M || this.mpOver) return;
     this.mpT += dt;
     const p = this.p, q = this.st.active;
-    const sw = this.coop ? this.coop.sw.findIndex(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34) : -1, lad = this.coop && p.level === 0 && dist(p.x, p.y, this.coop.ladder.x, this.coop.ladder.y) < 34;
-    M.set({ pos: { x: Math.round(p.x), y: Math.round(p.y), l: p.level, z: Math.round(this.z()), k: this.kind }, done: this.mpKidsDone(), got: q && q.team ? q.got.map((g, i) => (g ? i : -1)).filter(i => i >= 0) : [], sw: sw + 1, ladder: !!lad, chest: !!(q && q.coop && q.coop.chest), roof: !!(q && q.coop && q.coop.roof) });
+    const sw = this.coop && !this.climb ? this.coop.sw.findIndex(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34) : -1, hold = !!(this.coop && this.role === 1 && p.level === 0 && dist(p.x, p.y, this.coop.hold.x, this.coop.hold.y) < 30);
+    const cq = q && q.coop;
+    M.set({ pos: { x: Math.round(p.x), y: Math.round(p.y), l: p.level, z: Math.round(this.z() + (this.swingZ || 0)), k: this.kind }, done: this.mpKidsDone(), got: q && q.team ? q.got.map((g, i) => (g ? i : -1)).filter(i => i >= 0) : [], sw: sw + 1, hold, chestOpen: !!(cq && cq.chestOpen), chest: !!(cq && cq.chest), roof: !!(cq && cq.roof) });
     const o = M.other, fresh = o && Date.now() - M.lastOther < 3500;
     if (o && o.pos) { const g = this.ghost || (this.ghost = { x: o.pos.x, y: o.pos.y, z: 0 }); g.tx = o.pos.x; g.ty = o.pos.y; g.l = o.pos.l; g.tz = o.pos.z || 0; g.k = o.pos.k; g.x = lerp(g.x, g.tx, Math.min(1, dt * 4)); g.y = lerp(g.y, g.ty, Math.min(1, dt * 4)); g.z = lerp(g.z, g.tz, Math.min(1, dt * 4)); g.moving = dist(g.x, g.y, g.tx, g.ty) > 4; }
     if (q && q.team) {
       // Funde des Partners zählen mit
       (o && o.got || []).forEach(i => { if (q.got[i] === false) { q.got[i] = true; this.toastTeam = { t: 0, text: M.otherName + ' hat etwas gefunden!' }; Sfx.note(880, 0.15, 'triangle', 0.06, 1.3); } });
-      if (o && o.chest && !q.coop.chest) { q.coop.chest = true; this.toastTeam = { t: 0, text: 'Die Schatzkiste ist offen!' }; }
-      if (o && o.roof && !q.coop.roof) { q.coop.roof = true; this.toastTeam = { t: 0, text: 'Das Teil vom Dach ist geholt!' }; }
-      // Schatzkiste: beide gleichzeitig auf verschiedenen Schaltern
-      if (!q.coop.chest && sw >= 0 && fresh && o.sw && o.sw - 1 !== sw) { q.coop.chest = true; Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 50); this.toastTeam = { t: 0, text: 'Geschafft! Die Schatzkiste ist offen!' }; }
-      // Dach: einer hält unten die Leiter, der andere ist oben auf dem Spielhaus
-      if (!q.coop.roof && p.level === 1 && !p.slide && fresh && o.ladder) { q.coop.roof = true; Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 50); this.toastTeam = { t: 0, text: 'Super! Du hast das Teil vom Dach geholt!' }; }
+      if (o && o.chestOpen && !q.coop.chestOpen) { q.coop.chestOpen = true; this.toastTeam = { t: 0, text: 'Die Schatzkiste ist offen – holt den Schatz!' }; }
+      if (o && o.chest && !q.coop.chest) { q.coop.chest = true; this.toastTeam = { t: 0, text: M.otherName + ' hat den Schatz geholt!' }; }
+      if (o && o.roof && !q.coop.roof) { q.coop.roof = true; this.toastTeam = { t: 0, text: M.otherName + ' hat das Teil vom Dach geholt!' }; }
+      // Schatzkiste: beide müssen gut eine Sekunde gleichzeitig auf Schalter 1 und 2 stehen
+      if (!q.coop.chestOpen && sw === this.role && fresh && o.sw === 2 - this.role) { this.swBoth += dt; if (this.swBoth >= 1.2) { q.coop.chestOpen = true; Sfx.play('win'); const cs = this.w2s(this.coop.chest.x, this.coop.chest.y, 40); FX.confetti(cs.x, cs.y, 50); this.toastTeam = { t: 0, text: 'Die Schatzkiste ist offen – holt den Schatz!' }; } } else this.swBoth = 0;
+      // Schatz aufheben: liegt neben der offenen Kiste
+      if (q.coop.chestOpen && !q.coop.chest && this.role === 1 && p.level === 0 && dist(p.x, p.y, this.coop.chest.x + 46, this.coop.chest.y + 8) < 36) { q.coop.chest = true; Sfx.play('win'); const s2 = this.w2s(this.coop.chest.x + 46, this.coop.chest.y, 20); FX.flyTo(s2.x, s2.y, W - 120, 46, (cc, x, y, sc) => drawItem(cc, q.coopItems.chest, x, y, 40 * sc)); this.toastTeam = { t: 0, text: 'Schatz geholt!' }; }
+      // Klettern auf der Leiter (nur wenn der Partner unten hält)
+      if (this.climb) {
+        const K = this.climb, top = HOUSE.fz + 96; K.t += dt; p.moving = false;
+        if (K.phase === 'up') { this.swingZ = Math.min(1, K.t / 1.3) * top; p.moving = true; if (K.t >= 1.3) { /* geprüft wird nur beim Losklettern – Verzögerung beim Abgleich soll nicht abbrechen */ K.phase = 'grab'; K.t = 0; q.coop.roof = true; Sfx.play('win'); FX.confetti(W / 2, H * 0.35, 50); this.toastTeam = { t: 0, text: 'Super! Du hast das Teil vom Dach geholt!' }; } }
+        else if (K.phase === 'grab') { if (K.t > 0.5) { K.phase = 'down'; K.t = 0; K.from = this.swingZ; } }
+        else { this.swingZ = Math.max(0, (K.from || top) * (1 - K.t / 1.0)); p.moving = true; if (K.t >= 1) { this.swingZ = 0; this.climb = null; p.y = this.coop.ladder.y + 24; } }
+      }
       if (o && o.fin && !this.mpOver) this.mpEnd('team');
     } else {
       if (o && o.fin && !this.mpOver) this.mpEnd('lose');
@@ -647,8 +663,8 @@ class Play {
     if (this.exiting) this.updateExit(dt);
     else if (!overlay) {
       this.idleT += dt; if (this.p.moving || this.joy) this.idleT = 0;
-      const raceHold = this.updateRace(dt);
-      if (raceHold) { this.p.moving = false; }
+      const raceHold = this.updateRace(dt) || !!this.climb;
+      if (raceHold) { if (!this.climb) this.p.moving = false; }
       else if (this.swinging) this.updateSwing(dt);
       else if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); }
       // Hilfe-Uhr: läuft nur, solange gesucht wird
@@ -726,7 +742,7 @@ class Play {
     }
   }
   // ---- Suchen ----
-  canSearch() { return (this.diff !== 'easy' || !!(this.st.active && this.st.active.team)) && !!this.st.active && !this.st.active.got.every(Boolean); }
+  canSearch() { const q = this.st.active; return (this.diff !== 'easy' || !!(q && q.team)) && !!q && q.got.some((g, i) => !this.off(q, i)); }
   startSearch() {
     if (this.searching || !this.canSearch() || this.p.slide) return;
     this.p.path = null; this.p.target = null; this.searching = { t: 0 };
@@ -743,7 +759,7 @@ class Play {
     const q = this.st.active; if (!q) return;
     const onSt = this.onStairs();
     let k = -1, bd = 1e9;
-    q.hidden.forEach((h, i) => { if (q.got[i]) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * (ability('detektor') ? 1.6 : 1) && d < bd) { bd = d; k = i; } });
+    q.hidden.forEach((h, i) => { if (this.off(q, i)) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * (ability('detektor') ? 1.6 : 1) && d < bd) { bd = d; k = i; } });
     if (k >= 0) {
       const h = q.hidden[k], sc = this.w2s(h.x, h.y, (h.l ? HOUSE.fz : 0) + 20);
       FX.sparkle(sc.x, sc.y, 18); Sfx.play('good');
@@ -765,10 +781,11 @@ class Play {
     if (this.canSearch()) for (const s of SPOTS) out.push({ k: 'spot', x: s.x, y: s.y, l: s.l || 0, r: s.reach - 12, sx: s.x, sy: s.y - (s.l ? HOUSE.fz : 0) - 16 });
     const q = this.st.active;
     if (this.canSearch() && q) {
-      q.hidden.forEach((h, i) => { if (q.got[i]) return; const pk = peekOf(h); out.push({ k: 'spot', x: pk.x, y: pk.y, l: h.l, r: 40, sx: pk.x, sy: pk.y - (h.l ? HOUSE.fz : 0) - 8 }); });
+      q.hidden.forEach((h, i) => { if (this.off(q, i)) return; const pk = peekOf(h); out.push({ k: 'spot', x: pk.x, y: pk.y, l: h.l, r: 40, sx: pk.x, sy: pk.y - (h.l ? HOUSE.fz : 0) - 8 }); });
       (q.decoys || []).forEach(d => { if (!d.done) out.push({ k: 'spot', x: d.x, y: d.y, l: 0, r: 40, sx: d.x, sy: d.y - 8 }); });
     }
     { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
+    if (this.coop && this.role === 0 && this.st.active && this.st.active.coop && !this.st.active.coop.roof) { const L2 = this.coop.ladder; out.push({ k: 'ladder', x: L2.x, y: L2.y + 20, l: 0, r: 52, sx: L2.x, sy: L2.y - 60 }); }
     { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
     out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
@@ -808,6 +825,12 @@ class Play {
   interact(T) {
     if (T.k === 'swing') { this.startSwing(); return; }
     if (T.k === 'racer') { this.startRace(); return; }
+    if (T.k === 'ladder') {
+      const o = this.mp && this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
+      if (this.climb) return;
+      if (!(fresh && o.hold)) { this.banner = { text: 'Allein wackelt die Leiter! ' + this.mp.otherName + ' muss sie unten halten.', t: 0 }; Sfx.play('bad'); return; }
+      const L2 = this.coop.ladder; this.p.path = null; this.p.target = null; this.p.x = L2.x; this.p.y = L2.y + 6; this.p.level = 0; this.climb = { t: 0, phase: 'up' }; Sfx.play('jump'); return;
+    }
     if (T.k === 'npc' || T.k === 'gate') this.talk(T.id);
     else if (T.k === 'spot') this.startSearch();
   }
@@ -1014,7 +1037,7 @@ class Play {
     if (q && this.diff !== 'easy') {
       const hard = this.diff === 'hard', size = hard ? 42 : 50, sink = hard ? 0.05 : -0.15;
       q.hidden.forEach((h, i) => {
-        if (q.got[i]) return;
+        if (this.off(q, i)) return;
         const pk = peekOf(h), tilt = ((i * 37) % 7 - 3) * 0.12;
         const wob = !hard && Math.sin(t * 2 + i) > 0.97 ? Math.sin(t * 40) * 0.15 : 0;
         const f = h.behind ? () => {
@@ -1056,15 +1079,24 @@ class Play {
       c.globalAlpha = 0.85; drawAnimal(c, g.k, g.x, g.y - g.z, 1.12, { t: t + 3, moving: g.moving, look: DEFAULT_LOOK, cap: false }); c.globalAlpha = 1;
       c.font = `900 13px ${FONT}`; const nw = c.measureText(this.mp.otherName).width + 16; rrPath(c, g.x - nw / 2, g.y - g.z - 92, nw, 22, 11); c.fillStyle = this.mp.mode === 'team' ? 'rgba(17,138,178,.9)' : 'rgba(239,71,111,.9)'; c.fill(); txt(c, this.mp.otherName, g.x, g.y - g.z - 81, 13, '#fff', 'center', null);
     } }); }
-    if (this.coop) { const C = this.coop, q = this.st.active, open = q && q.coop && q.coop.chest, o = this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
-      L.push({ y: C.chest.y, f: () => { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, C.chest.x, C.chest.y + 2, 30, 9); c.fill(); rrPath(c, C.chest.x - 26, C.chest.y - 30, 52, 30, 5); fs(c, '#a0673a', 3); if (open) { polyPath(c, [[C.chest.x - 26, C.chest.y - 30], [C.chest.x + 26, C.chest.y - 30], [C.chest.x + 22, C.chest.y - 52], [C.chest.x - 22, C.chest.y - 52]]); fs(c, '#8d5a3b', 3); ell(c, C.chest.x, C.chest.y - 34, 14, 6); c.fillStyle = '#ffd23f'; c.fill(); } else { rrPath(c, C.chest.x - 28, C.chest.y - 44, 56, 16, 6); fs(c, '#8d5a3b', 3); rrPath(c, C.chest.x - 5, C.chest.y - 34, 10, 10, 2); fs(c, '#ffd23f', 2); } } });
-      C.sw.forEach((w, i) => { const meOn = this.p.level === 0 && dist(this.p.x, this.p.y, w.x, w.y) < 34, otOn = fresh && o.sw === i + 1, on = meOn || otOn; L.push({ y: w.y - 5, f: () => { ell(c, w.x, w.y, 26, 11); fs(c, on ? '#06d6a0' : '#adb5bd', 3); ell(c, w.x, w.y - 3, 18, 7); fs(c, on ? '#80ed99' : '#dee2e6', 2); txt(c, String(i + 1), w.x, w.y - 3, 12, '#3d2c1f', 'center', null); if (!open) { const b = Math.sin(t * 4 + i) * 3; icon(c, 'friends', w.x, w.y - 34 + b, 26); } } }); });
-      const lad = C.ladder, held = (this.p.level === 0 && dist(this.p.x, this.p.y, lad.x, lad.y) < 34) || (fresh && o.ladder);
-      L.push({ y: lad.y, f: () => { c.save(); c.translate(lad.x, lad.y); c.rotate(lad.x < HOUSE.x ? 0.18 : -0.18); line(c, -9, 0, -9, -110, 4, '#8d5a3b'); line(c, 9, 0, 9, -110, 4, '#8d5a3b'); for (let k = 0; k < 7; k++) line(c, -9, -10 - k * 15, 9, -10 - k * 15, 3, '#a0673a'); c.restore(); if (held) { ell(c, lad.x, lad.y, 24, 9); c.lineWidth = 3; c.strokeStyle = '#06d6a0'; c.stroke(); } } });
+    if (this.coop) { const C = this.coop, q = this.st.active, cq = (q && q.coop) || {}, open = cq.chestOpen, o = this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
+      L.push({ y: C.chest.y, f: () => {
+        const x = C.chest.x, y = C.chest.y;
+        c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 2, 30, 9); c.fill(); rrPath(c, x - 26, y - 30, 52, 30, 5); fs(c, '#a0673a', 3); line(c, x - 26, y - 16, x + 26, y - 16, 3, '#6f4518', false);
+        if (open) { polyPath(c, [[x - 26, y - 30], [x + 26, y - 30], [x + 22, y - 56], [x - 22, y - 56]]); fs(c, '#8d5a3b', 3); ell(c, x, y - 31, 20, 5); c.fillStyle = '#3d2c1f'; c.fill(); }
+        else { rrPath(c, x - 28, y - 44, 56, 16, 6); fs(c, '#8d5a3b', 3); rrPath(c, x - 7, y - 34, 14, 14, 3); fs(c, '#ffd23f', 2); icon(c, 'lock', x, y - 27, 12); const b = Math.sin(t * 3) * 3; rrPath(c, x - 30, y - 84 + b, 60, 26, 13); c.fillStyle = 'rgba(17,138,178,.92)'; c.fill(); txt(c, '1 + 2', x, y - 71 + b, 15, '#fff', 'center', null); }
+        if (open && !cq.chest) { const b = Math.abs(Math.sin(t * 4)) * 8; ell(c, x + 46, y + 4, 22, 22); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.chest, x + 46, y - 6 - b, 40); }
+      } });
+      C.sw.forEach((w, i) => { const meOn = this.p.level === 0 && dist(this.p.x, this.p.y, w.x, w.y) < 34, otOn = fresh && o.sw === i + 1, on = meOn || otOn; L.push({ y: w.y - 5, f: () => { ell(c, w.x, w.y, 28, 12); fs(c, on ? '#06d6a0' : '#adb5bd', 3); ell(c, w.x, w.y - 3, 20, 8); fs(c, on ? '#80ed99' : '#dee2e6', 2); txt(c, String(i + 1), w.x, w.y - 3, 14, '#3d2c1f', 'center', null); if (!open) { const b = Math.sin(t * 4 + i) * 3; rrPath(c, w.x - 62, w.y - 48 + b, 124, 24, 12); c.fillStyle = i === this.role ? 'rgba(6,214,160,.95)' : 'rgba(17,138,178,.92)'; c.fill(); txt(c, 'Schalter ' + (i + 1) + ': ' + (i === this.role ? 'du' : this.mp.otherName), w.x, w.y - 36 + b, 11, '#fff', 'center', null); } } }); });
+      if (!cq.roof || this.climb) {
+        const lad = C.ladder, hd = C.hold, held = (this.p.level === 0 && dist(this.p.x, this.p.y, hd.x, hd.y) < 30) || (fresh && o.hold);
+        L.push({ y: lad.y, f: () => { c.save(); c.translate(lad.x, lad.y); c.rotate(-C.side * 0.12); line(c, -9, 0, -9, -150, 4, '#8d5a3b'); line(c, 9, 0, 9, -150, 4, '#8d5a3b'); for (let k = 0; k < 10; k++) line(c, -9, -10 - k * 15, 9, -10 - k * 15, 3, '#a0673a'); c.restore(); } });
+        L.push({ y: hd.y - 4, f: () => { ell(c, hd.x, hd.y, 26, 10); c.lineWidth = 3; c.setLineDash([6, 5]); c.strokeStyle = held ? '#06d6a0' : 'rgba(255,255,255,.9)'; c.stroke(); c.setLineDash([]); if (!held) { const b = Math.sin(t * 4) * 3; rrPath(c, hd.x - 64, hd.y - 44 + b, 128, 24, 12); c.fillStyle = 'rgba(17,138,178,.92)'; c.fill(); txt(c, this.role === 1 ? 'Hier halten: du' : 'Hier hält ' + this.mp.otherName, hd.x, hd.y - 32 + b, 11, '#fff', 'center', null); } } });
+      }
     }
     { const R = this.racer, run = R.state === 'run' || R.state === 'back';
       const ci = cellIdx(R.x, R.y), rz = R.slide ? HOUSE.fz * (1 - (R.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)) : ci >= 0 && ST[ci] ? stairsZ(R.y) : R.l ? HOUSE.fz : 0, up = rz > 1;
-      if (vis(R.x, R.y)) L.push({ y: up ? HOUSE.y + HOUSE.h + 1 : R.y, f: () => drawCritter(c, 'leo', R.x, R.y - rz - (run && !R.slide ? Math.abs(Math.sin(t * 14)) * 5 : R.slide ? 0 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
+      if (R.state !== 'off' && vis(R.x, R.y)) L.push({ y: up ? HOUSE.y + HOUSE.h + 1 : R.y, f: () => drawCritter(c, 'leo', R.x, R.y - rz - (run && !R.slide ? Math.abs(Math.sin(t * 14)) * 5 : R.slide ? 0 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
       if (R.state === 'ready' || R.state === 'run') { const P = R.cp, ok = R.cpMe; L.push({ y: P.y - 1, f: () => { line(c, P.x, P.y, P.x, P.y - 80, 4, '#6c757d'); polyPath(c, [[P.x, P.y - 80], [P.x + 36, P.y - 69], [P.x, P.y - 58]]); fs(c, ok ? '#06d6a0' : '#ffd23f', 2.5); if (ok) icon(c, 'check', P.x + 14, P.y - 69, 16, '#fff'); ell(c, P.x, P.y, 34, 12); c.lineWidth = 3; c.strokeStyle = ok ? 'rgba(6,214,160,.8)' : 'rgba(255,210,63,.9)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
       if (R.state === 'ready' || R.state === 'run') { const F = R.fin; L.push({ y: F.y - 1, f: () => { line(c, F.x + 18, F.y, F.x + 18, F.y - 70, 4, '#6c757d'); polyPath(c, [[F.x + 18, F.y - 70], [F.x + 52, F.y - 60], [F.x + 18, F.y - 50]]); fs(c, '#ef476f', 2.5); ell(c, F.x, F.y, 40, 14); c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.8)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
     }
@@ -1082,10 +1114,12 @@ class Play {
     L.push({ y: GATE.y, f: () => drawGate(c, GATE.x, GATE.y, 1, this.gateA, this.npcState('gate') === 'locked', t) });
     if (p.slide) L.push({ y: SLIDE.y1 + 1, f: drawPlayer });
     else if (this.swinging && !this.swinging.jump) { /* sitzt auf der Schaukel: wird mit dem Sitz gezeichnet */ }
+    else if (this.climb) { /* klettert: wird nach dem Dach gezeichnet */ }
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
     this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
-    if (this.coop) { const q = this.st.active; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = HOUSE.x + HOUSE.w * 0.5, ry = HOUSE.y - HOUSE.fz - 70 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.35)'; c.fill(); drawItem(c, ITEM_IDS[0], rx, ry, 44); } }
+    if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
+      if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
     this.drawMarkers(c);
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     const vg = c.createRadialGradient(W * 0.35, H * 0.3, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
@@ -1216,10 +1250,10 @@ class Play {
     // Fähigkeiten: Metalldetektor (Pfeil zum nächsten Versteck), Adlerauge (Verstecke leuchten)
     if (q && this.diff !== 'easy') {
       if (ability('detektor')) {
-        let bh = null, bd2 = 1e9; q.hidden.forEach((h, i) => { if (q.got[i]) return; const d = dist(h.x, h.y, p.x, p.y); if (d < bd2) { bd2 = d; bh = h; } });
+        let bh = null, bd2 = 1e9; q.hidden.forEach((h, i) => { if (this.off(q, i)) return; const d = dist(h.x, h.y, p.x, p.y); if (d < bd2) { bd2 = d; bh = h; } });
         if (bh && bd2 > 60) { const a = Math.atan2(bh.y - p.y, bh.x - p.x), pz2 = this.z(); c.save(); c.translate(p.x + Math.cos(a) * 46, p.y - pz2 - 20 + Math.sin(a) * 30); c.rotate(a); polyPath(c, [[14, 0], [-8, -10], [-3, 0], [-8, 10]]); fs(c, '#ffd60a', 2.5); c.restore(); }
       }
-      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (q.got[i] || dist(h.x, h.y, p.x, p.y) > 280) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
+      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (this.off(q, i) || dist(h.x, h.y, p.x, p.y) > 280) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
     }
     // Hilfe: großer Pfeil + Lichtkegel über dem Versteck
     if (q && q.hint !== null && q.hint !== undefined && !q.got[q.hint]) {
@@ -1262,7 +1296,7 @@ class Play {
   heat() {
     const q = this.st.active, p = this.p; let bd = 1e9;
     if (!q) return 0;
-    q.hidden.forEach((h, i) => { if (!q.got[i]) bd = Math.min(bd, dist(h.x, h.y, p.x, p.y) + (h.l !== p.level && !this.onStairs() ? 60 : 0)); });
+    q.hidden.forEach((h, i) => { if (!this.off(q, i)) bd = Math.min(bd, dist(h.x, h.y, p.x, p.y) + (h.l !== p.level && !this.onStairs() ? 60 : 0)); });
     return bd < 80 ? 5 : bd < 170 ? 4 : bd < 300 ? 3 : bd < 460 ? 2 : 1;
   }
   drawHud(c) {
@@ -1293,6 +1327,7 @@ class Play {
       q.items.forEach((it, k) => {
         const x = x0 + 40 + k * (iw + 3) + iw / 2, y = y0 + 21;
         c.save(); if (!q.got[k]) c.globalAlpha = 0.35; drawItem(c, it, x, y, iw * 0.95); c.restore();
+        if (q.owner) { ell(c, x, y + 17, 4, 4); c.fillStyle = q.owner[k] === this.role ? '#06d6a0' : '#118ab2'; c.fill(); }
         if (q.got[k]) icon(c, 'check', x + 9, y + 9, 14, '#06d6a0');
       });
       if (q.coop) [['chest', q.coop.chest], ['roof', q.coop.roof]].forEach(([kind, ok], j) => { const x = x0 + 40 + (q.items.length + j) * (iw + 3) + iw / 2, y = y0 + 21; c.save(); if (!ok) c.globalAlpha = 0.45; if (kind === 'chest') { rrPath(c, x - 12, y - 6, 24, 15, 3); fs(c, '#a0673a', 2); rrPath(c, x - 13, y - 12, 26, 8, 3); fs(c, '#8d5a3b', 2); } else { polyPath(c, [[x - 14, y + 8], [x, y - 10], [x + 14, y + 8]]); fs(c, '#9e3b2f', 2); } icon(c, 'friends', x + 9, y - 9, 13); c.restore(); if (ok) icon(c, 'check', x + 9, y + 9, 14, '#06d6a0'); });
@@ -1306,10 +1341,15 @@ class Play {
       if (!team) { const me = this.mpKidsDone() + '/' + M.opts.kids; txt(c, 'Du: ' + me, lx + lw + 12, ly + 1, 14, '#fff', 'left', BRAND.ink); }
       if (this.coop && !this.mpOver) {
         const C = this.coop, p = this.p, q = this.st.active, o2 = M.other, fresh = o2 && Date.now() - M.lastOther < 3500;
-        let hint = '';
-        if (!q.coop.chest && C.sw.some(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34)) hint = 'Du stehst auf dem Schalter – ' + M.otherName + ' muss auf den anderen!';
-        else if (p.level === 0 && dist(p.x, p.y, C.ladder.x, C.ladder.y) < 34 && !q.coop.roof) hint = 'Du hältst die Leiter – ' + M.otherName + ' kann jetzt vom Spielhaus aufs Dach!';
-        else if (p.level === 1 && !q.coop.roof && !(fresh && o2.ladder)) hint = M.otherName + ' muss unten die Leiter halten!';
+        let hint = ''; const onSw = C.sw.findIndex(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34);
+        if (this.climb) hint = this.climb.phase === 'grab' ? 'Geschnappt!' : 'Du kletterst …';
+        else if (!q.coop.chestOpen && onSw === this.role) hint = 'Du stehst auf deinem Schalter ' + (onSw + 1) + ' – ' + M.otherName + ' muss gleichzeitig auf Schalter ' + (2 - onSw) + '!';
+        else if (!q.coop.chestOpen && onSw >= 0) hint = 'Das ist der Schalter von ' + M.otherName + ' – deiner ist Schalter ' + (this.role + 1) + '!';
+        else if (q.coop.chestOpen && !q.coop.chest && dist(p.x, p.y, C.chest.x, C.chest.y) < 160) hint = this.role === 1 ? 'Die Kiste ist offen – lauf zum Schatz und heb ihn auf!' : 'Die Kiste ist offen – ' + M.otherName + ' holt den Schatz.';
+        else if (!q.coop.chestOpen && dist(p.x, p.y, C.chest.x, C.chest.y) < 110) hint = 'Die Kiste geht nur zu zweit auf: Du auf Schalter ' + (this.role + 1) + ', ' + M.otherName + ' auf Schalter ' + (2 - this.role) + '!';
+        else if (!q.coop.roof && this.role === 1 && p.level === 0 && dist(p.x, p.y, C.hold.x, C.hold.y) < 30) hint = 'Du hältst die Leiter – ' + M.otherName + ' kann jetzt hochklettern!';
+        else if (!q.coop.roof && dist(p.x, p.y, C.ladder.x, C.ladder.y) < 90) hint = this.role === 0 ? ((fresh && o2.hold) ? M.otherName + ' hält die Leiter – tippe sie an und kletter hoch!' : 'Tippe die Leiter an zum Klettern – ' + M.otherName + ' muss sie unten halten.') : 'Du hältst die Leiter: stell dich auf den Platz „Hier halten“!';
+        else if (!q.got.some((g, i) => !this.off(q, i)) && q.got.some(g => !g)) hint = 'Deine Sachen hast du alle – ' + M.otherName + ' sucht noch!';
         if (hint) { c.font = `900 15px ${FONT}`; const hw = Math.min(W - 30, c.measureText(hint).width + 30); rrPath(c, W / 2 - hw / 2, H - 58, hw, 36, 18); c.fillStyle = 'rgba(17,138,178,.92)'; c.fill(); txt(c, hint, W / 2, H - 40, Math.min(15, 15 * (W - 60) / c.measureText(hint).width), '#fff', 'center', null); }
       }
       if (this.toastTeam) { const q2 = this.toastTeam, k = ease.back(clamp(q2.t * 3, 0, 1)); c.save(); c.globalAlpha = clamp(2.6 - q2.t, 0, 1); c.translate(W / 2, H * 0.3); c.scale(k, k); txt(c, q2.text, 0, 0, 22, '#fff', 'center', OL); c.restore(); }
@@ -1367,7 +1407,7 @@ class Play {
       c.restore();
       txt(c, 'Hilfe', hx, hy + 44, 13, '#fff');
       if (ready) UI.btn(hx - 40, hy - 40, 80, 90, () => {
-        let k = -1, bd = 1e9; hq.hidden.forEach((h, i) => { if (hq.got[i]) return; const d = dist(h.x, h.y, this.p.x, this.p.y); if (d < bd) { bd = d; k = i; } });
+        let k = -1, bd = 1e9; hq.hidden.forEach((h, i) => { if (this.off(hq, i)) return; const d = dist(h.x, h.y, this.p.x, this.p.y); if (d < bd) { bd = d; k = i; } });
         if (k >= 0) { hq.hint = k; hq.helpT = 0; Save.write(); Sfx.play('good'); FX.sparkle(hx, hy, 16, '#ffd23f'); }
       });
       // Pfeil am Rand, wenn das markierte Teil nicht im Bild ist
