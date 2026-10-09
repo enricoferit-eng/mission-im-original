@@ -110,6 +110,7 @@ class GameOverlay {
     if (this.state !== 'play') return;
     this.combo = this.t - this.lastGood < 2.6 ? this.combo + 1 : 1; this.lastGood = this.t;
     const p = this.toScreen(x, y);
+    if (this.combo >= 5 && typeof achieve === 'function') achieve('combo5');
     if (this.combo >= 2) {
       const bonus = Math.min(2.5, 0.5 * this.combo), floor = this.stars < 3 ? this.thr[2 - this.stars] : 0;
       if (this.starsOn()) this.fuse = Math.max(floor, this.fuse - bonus);
@@ -234,6 +235,7 @@ class GameOverlay {
     } else if (this.state === 'won') {
       this.endT += dt;
       if (this.starsOn()) for (let i = 0; i < this.stars; i++) if (this.endT > 0.35 + i * 0.28 && this.won3 <= i) { this.won3 = i + 1; Sfx.note([523, 659, 784][i], 0.25, 'triangle', 0.09, 1.02); const sp = this.toScreen(200 + (i - 1) * 74, 380); FX.sparkle(sp.x, sp.y, 14, '#ffd23f'); }
+      if (!this.statDone) { this.statDone = true; if (this.starsOn() && this.stars === 3 && !this.usedJoker && typeof stat === 'function') stat('stars3'); }
       if (this.endT > (this.starsOn() ? 2.1 : 1.25)) this.finish(true);
     }
     else this.endT += dt;

@@ -76,13 +76,19 @@ class Menu {
     const LY = land ? 70 * ls + 18 : Math.max(132, H * 0.15);
     logo(c, W / 2, LY, ls);
     claimBand(c, CLAIMS.urlaub, W / 2, LY + 76 * ls, 15 * Math.min(1.2, Math.max(0.8, ls)));
-    accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
+    accountChip.lastW = accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
     if (!(a.tut && a.tut.guide)) { const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
-    const top = LY + 102 * ls, bottom = H - (land ? 14 : 24);
+    const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
+    // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
+    { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())]];
+      const bw = Math.min(170, (W - 60) / 3), by = H - (land ? 38 : 46);
+      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - 1) * (bw + 10) - bw / 2; rrPath(c, x, by - 24, bw, 48, 20); fs(c, col, 3); icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); UI.btn(x, by - 24, bw, 48, fn); });
+    }
+    { const cw = accountChip.lastW || 0; coinChip(c, 12 + (cw || 170) + 10, 40); }
     DIFFS.forEach((d, i) => {
       let x, y, w, h;
       if (wide) { w = Math.min(240, (W - 80) / 3); h = Math.min(bottom - top, w * 1.35); x = W / 2 + (i - 1) * (w + 20) - w / 2; y = top + (bottom - top - h) / 2; }
@@ -470,10 +476,10 @@ class CharSelect {
   draw(c) {
     skyBg(c);
     txt(c, 'Wähle deine Figur', W / 2, 44, Math.min(32, W / 14), '#fff', 'center', BRAND.olive);
-    const opts = [['cat', 'Katze'], ['dog', 'Hund'], ['lion', 'Löwe']], a = ACC();
-    const land = W > H * 0.9, cw = land ? Math.min(240, (W - 60) / 3) : Math.min(W - 40, 360), ch = land ? Math.min(H - 110, 300) : Math.min(190, (H - 120) / 3 - 12);
+    const opts = (typeof ownedAnimals === 'function' ? ownedAnimals() : ['cat', 'dog', 'lion']).map(k => [k, ANIMAL_NAMES[k]]), a = ACC(), n = opts.length;
+    const land = W > H * 0.9, cw = land ? Math.min(240, (W - 40) / n - 14) : Math.min(W - 40, 360), ch = land ? Math.min(H - 110, 300) : Math.min(190, (H - 120) / n - 12);
     opts.forEach(([k, name], i) => {
-      const x = land ? W / 2 + (i - 1) * (cw + 14) - cw / 2 : (W - cw) / 2, y = land ? 84 : 84 + i * (ch + 12);
+      const x = land ? W / 2 + (i - (n - 1) / 2) * (cw + 14) - cw / 2 : (W - cw) / 2, y = land ? 84 : 84 + i * (ch + 12);
       const sel = a && a.char === k, bob = Math.sin(this.t * 2 + i) * 3;
       panel(c, x, y + bob, cw, ch, sel ? '#d8f5e3' : '#fbf8f2', 22);
       drawAnimal(c, k, land ? x + cw / 2 : x + ch * 0.6, land ? y + bob + ch * 0.78 : y + bob + ch * 0.86, land ? Math.min(3, ch / 85) : Math.min(2.4, ch / 76), { t: this.t + i, look: DEFAULT_LOOK, moving: sel });
@@ -904,7 +910,8 @@ class Wardrobe {
     const d = DP(this.diff);
     txt(c, totalSkins() + '/108', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
     // Stage-Reiter
-    const tw = (w - 30) / 6;
+    const tw = (w - 30) / 7;
+    { const tx = x + 15 + 6 * tw, sel = this.stage === 'laden'; rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3); icon(c, 'shop', tx + tw / 2, y + 86, Math.min(30, tw * 0.5)); const m = META(); txt(c, (m ? m.skins.length : 0) + '/' + SHOP_SKINS.length, tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null); UI.btn(tx, y + 64, tw, 52, () => { this.stage = 'laden'; Sfx.play('tap'); }); }
     STAGE_ORDER.forEach((id, i) => {
       const tx = x + 15 + i * tw, sel = id === this.stage, open = OPEN_STAGES.includes(id);
       rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3);
@@ -912,8 +919,8 @@ class Wardrobe {
       const n = SP(this.diff, id).skins.length; txt(c, n + '/6', tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null);
       UI.btn(tx, y + 64, tw, 52, () => { this.stage = id; Sfx.play('tap'); });
     });
-    const sp = SP(this.diff, this.stage), ids = stageSkins(this.stage, this.diff);
-    const cols = land ? 6 : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
+    const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), ids = shop ? SHOP_SKINS.map(x => x[0]) : stageSkins(this.stage, this.diff);
+    const cols = land ? (shop ? 9 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / (shop ? 3 : 2));
     ids.forEach((sid, i) => {
       const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10);
       const own = sp.skins.includes(sid), eq = d.equip === sid;
@@ -929,7 +936,7 @@ class Wardrobe {
     drawAnimal(c, this.kind, W / 2 - 30, by + 20, 0.75, { look: DEFAULT_LOOK, cap: hasCap(this.kind), noShadow: true });
     if (d.equip === null) icon(c, 'check', W / 2 + 30, by, 24, '#06d6a0');
     UI.btn(W / 2 - 70, by - 26, 140, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
-    if (!OPEN_STAGES.includes(this.stage)) { icon(c, 'hourglass', W / 2, y + 128 + ch, 44); }
+    if (!shop && !OPEN_STAGES.includes(this.stage)) { icon(c, 'hourglass', W / 2, y + 128 + ch, 44); }
   }
   down() {} move() {} up() {}
 }
@@ -1054,7 +1061,7 @@ function resize() {
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
 }
-function setScene(s) { Voice.stop(); Music.stop(); scene = s; overlay = null; passInput.style.display = 'none'; if (!['NewAccount', 'LoginScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
+function setScene(s) { Voice.stop(); Music.stop(); scene = s; overlay = null; passInput.style.display = 'none'; if (!['NewAccount', 'LoginScene', 'MultiScene'].includes(s.constructor.name)) nameInput.style.display = 'none'; if (s.enter) s.enter(); }
 // Hochformat auf dem Handy: bitte drehen (das Spiel ist fürs Querformat gemacht)
 function drawRotate(c, t) {
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -1106,6 +1113,7 @@ function frame(now) {
     if (overlay) { UI.next = []; overlay.update(dt); if (overlay) overlay.draw(ctx); }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     FX.update(dt); FX.draw(ctx);
+    if (typeof drawToasts === 'function') drawToasts(ctx, dt);
     // Jeder Fingertipp bekommt sofort einen Ring (Rückmeldung unter 0,1 s)
     for (let i = TAPS.length - 1; i >= 0; i--) { const q = TAPS[i]; q.t += dt; if (q.t > 0.35) { TAPS.splice(i, 1); continue; } const k = q.t / 0.35; ell(ctx, q.x, q.y, 10 + k * 26, 10 + k * 26); ctx.lineWidth = 4 * (1 - k); ctx.strokeStyle = `rgba(255,255,255,${0.85 * (1 - k)})`; ctx.stroke(); }
   } catch (e) { console.error(e); }

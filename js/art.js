@@ -25,7 +25,12 @@ const ANIMALS = {
   cat: { body: '#f6a04d', light: '#ffe2bf', dark: '#c8702a' },
   dog: { body: '#c99460', light: '#f5e1c8', dark: '#7d5131' },
   lion: { body: '#f5c451', light: '#fdebb8', dark: '#c98a2b', mane: '#b9561d' },
+  // im Laden mit Talern freischaltbar
+  bunny: { body: '#f1ece4', light: '#ffffff', dark: '#cfc6b8', inner: '#f7b6c2' },
+  panda: { body: '#f8f9fa', light: '#ffffff', dark: '#2b2d42' },
+  fox: { body: '#e8742c', light: '#fff3e6', dark: '#9c3d10' },
 };
+const ANIMAL_NAMES = { cat: 'Katze', dog: 'Hund', lion: 'Löwe', bunny: 'Hase', panda: 'Panda', fox: 'Fuchs' };
 function lookOf(kind) { const s = ACC() ? DP(CUR_DIFF).equip : null; return SKINS[s] || DEFAULT_LOOK; }
 function paint(c, col, x0, x1) {
   if (col === 'gold') { const g = c.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, '#b8860b'); g.addColorStop(0.5, '#ffe066'); g.addColorStop(1, '#c9a227'); return g; }
@@ -54,8 +59,12 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   c.beginPath();
   if (kind === 'cat') { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -16 + Math.sin(t * 3) * 3, -21, -34); }
   else if (kind === 'dog') { const w = Math.sin(t * 14); c.moveTo(-11, -16); c.quadraticCurveTo(-21, -19, -20 + w * 4, -29); }
-  else { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -12, -26, -26 + Math.sin(t * 3) * 2); }
-  c.lineWidth = 9.5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 5; c.strokeStyle = A.body; c.stroke();
+  else if (kind === 'fox') { c.moveTo(-11, -14); c.quadraticCurveTo(-30, -14 + Math.sin(t * 3) * 2, -27, -32); }
+  else if (kind !== 'bunny' && kind !== 'panda') { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -12, -26, -26 + Math.sin(t * 3) * 2); }
+  if (kind === 'bunny') { ell(c, -13, -12, 5, 5); fs(c, '#fff', 2.5); }
+  else if (kind === 'panda') { ell(c, -12, -11, 4, 4); fs(c, A.dark, 2.5); }
+  else if (kind === 'fox') { c.lineWidth = 13; c.strokeStyle = OL; c.stroke(); c.lineWidth = 8.5; c.strokeStyle = A.body; c.stroke(); ell(c, -27, -32, 4.5, 4.5); fs(c, '#fff', 2.5); }
+  else { c.lineWidth = 9.5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 5; c.strokeStyle = A.body; c.stroke(); }
   if (kind === 'lion') { ell(c, -26, -28 + Math.sin(t * 3) * 2, 5, 5.5); fs(c, A.mane, 2.5); }
   // Körper
   ell(c, 0, -15, 13, 12); fs(c, A.body); shadeEll(c, 0, -15, 13, 12);
@@ -74,16 +83,28 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
     polyPath(c, [[5, -48], [10, -54], [11, -46]]); fs(c, '#f7a9a8', 0);
   } else if (kind === 'lion') {
     ell(c, -7, -48, 5, 5); fs(c, A.body); ell(c, 9, -48, 5, 5); fs(c, A.body);
+  } else if (kind === 'bunny') {
+    const fl = Math.sin(t * 2) * 0.06;
+    ell(c, -4, -59, 4.5, 13, -0.15 + fl); fs(c, A.body); ell(c, -4, -59, 2, 9, -0.15 + fl); fs(c, A.inner, 0);
+    ell(c, 7, -60, 4.5, 13, 0.2 - fl); fs(c, A.body); ell(c, 7, -60, 2, 9, 0.2 - fl); fs(c, A.inner, 0);
+  } else if (kind === 'panda') {
+    ell(c, -8, -47, 5.5, 5.5); fs(c, A.dark); ell(c, 10, -47, 5.5, 5.5); fs(c, A.dark);
+  } else if (kind === 'fox') {
+    polyPath(c, [[-11, -42], [-9, -58], [1, -48]]); fs(c, A.body); polyPath(c, [[3, -48], [12, -58], [14, -42]]); fs(c, A.body);
+    polyPath(c, [[5, -48], [11, -55], [12, -45]]); fs(c, '#5a2d12', 0);
   }
   // Kopf
   ell(c, 1, -37, 13.5, 12); fs(c, A.body); shadeEll(c, 1, -37, 13.5, 12);
   if (kind === 'cat') { line(c, -3, -48, -3, -44, 2, A.dark, false); line(c, 2, -49, 2, -45, 2, A.dark, false); }
   ell(c, 7, -33, 7, 5.2); fs(c, A.light, 0);
+  if (kind === 'panda') { ell(c, 1, -38.5, 4, 4.8, 0.3); c.fillStyle = A.dark; c.fill(); ell(c, 9.5, -38.5, 4, 4.8, -0.3); c.fill(); }
+  if (kind === 'fox') { polyPath(c, [[-1, -33], [14, -31], [6, -27]]); fs(c, '#fff', 0); }
   // Augen
-  ell(c, 1, -39, 2.3, 3.2); c.fillStyle = OL; c.fill(); ell(c, 9, -39, 2.3, 3.2); c.fill();
+  ell(c, 1, -39, 2.3, 3.2); c.fillStyle = kind === 'panda' ? '#fff' : OL; c.fill(); ell(c, 9, -39, 2.3, 3.2); c.fill();
+  if (kind === 'panda') { ell(c, 1.3, -39, 1.4, 2); c.fillStyle = OL; c.fill(); ell(c, 9.3, -39, 1.4, 2); c.fill(); }
   c.fillStyle = '#fff'; ell(c, 1.7, -40.2, 0.9, 0.9); c.fill(); ell(c, 9.7, -40.2, 0.9, 0.9); c.fill();
   // Nase, Mund, Wangen
-  ell(c, 12, -34.5, 2.6, 2); c.fillStyle = kind === 'dog' ? OL : '#d6457a'; c.fill();
+  ell(c, 12, -34.5, 2.6, 2); c.fillStyle = kind === 'dog' || kind === 'panda' || kind === 'fox' ? OL : '#d6457a'; c.fill();
   c.beginPath(); c.moveTo(12, -32.5); c.quadraticCurveTo(10, -29.5, 7.5, -31); c.lineWidth = 1.6; c.strokeStyle = OL; c.stroke();
   c.fillStyle = 'rgba(255,120,120,.35)'; ell(c, -2, -33, 3, 2); c.fill();
   // Hundeohren (vorne)

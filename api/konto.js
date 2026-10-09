@@ -93,6 +93,74 @@ async function remove(b) {
 }
 
 // Besitzer-Statistik: nur zusammengefasste, anonyme Zahlen – keine einzelnen Konten
+// ---------- Freunde + Mehrspieler (Duell über Lobby-Code, "Fortschritt vergleichen") ----------
+// Eigene Dateien (nicht im Konto), damit das normale Speichern nichts überschreibt
+const friendsFile = l => 'friends/' + l + '.json', invFile = l => 'invites/' + l + '.json', seenFile = l => 'seen/' + l + '.json';
+const lobbyFile = c => 'lobbies/' + c + '.json', progFile = (c, l) => 'lobbies/' + c + '/' + l + '.json';
+const LOBBY_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const pub = (l, acc) => ({ login: fmtLogin(l), name: acc.name, avatar: acc.avatar || 0 });
+async function touch(l) { await writeJSON(seenFile(l), { t: Date.now() }); }
+async function friendList(l) {
+  const f = (await readJSON(friendsFile(l))) || { list: [] };
+  const out = await Promise.all(f.list.map(async x => { const s = await readJSON(seenFile(cleanLogin(x.login))).catch(() => null); return { ...x, online: !!(s && Date.now() - s.t < 90000) }; }));
+  const inv = ((await readJSON(invFile(l))) || { list: [] }).list.filter(i => Date.now() - i.at < 15 * 60000);
+  return { friends: out, invites: inv };
+}
+async function friend_add(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  const nk = nameKey(b.name), idx = nk && (await readJSON(nameFile(nk)));
+  if (!idx) return [404, { error: 'not_found' }];
+  if (idx.login === a.l) return [400, { error: 'self' }];
+  const other = await readJSON(accFile(idx.login)); if (!other) return [404, { error: 'not_found' }];
+  const add = async (l, who) => { const f = (await readJSON(friendsFile(l))) || { list: [] }; if (!f.list.some(x => cleanLogin(x.login) === cleanLogin(who.login)) && f.list.length < 50) f.list.push(who); await writeJSON(friendsFile(l), f); };
+  await add(a.l, pub(idx.login, other)); await add(idx.login, pub(a.l, a.acc));   // Freundschaft gilt für beide
+  await touch(a.l);
+  return [200, await friendList(a.l)];
+}
+async function friends(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  await touch(a.l);
+  return [200, await friendList(a.l)];
+}
+async function friend_remove(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  const other = cleanLogin(b.friend);
+  for (const [l, x] of [[a.l, other], [other, a.l]]) { const f = await readJSON(friendsFile(l)); if (f) { f.list = f.list.filter(y => cleanLogin(y.login) !== x); await writeJSON(friendsFile(l), f); } }
+  return [200, await friendList(a.l)];
+}
+async function lobby_new(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  let code = '';
+  for (let i = 0; i < 10; i++) { code = Array.from(crypto.randomBytes(4), x => LOBBY_CHARS[x % LOBBY_CHARS.length]).join(''); if (!(await readJSON(lobbyFile(code)))) break; }
+  const o = b.opts || {}, opts = { mode: o.mode === 'team' ? 'team' : 'duell', diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 3, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false };
+  const lob = { code, host: pub(a.l, a.acc), guest: null, opts, seed: crypto.randomBytes(4).readUInt32BE(0), status: 'wait', created: Date.now(), started: 0 };
+  await writeJSON(lobbyFile(code), lob);
+  if (b.invite) { const t = cleanLogin(b.invite), inv = (await readJSON(invFile(t))) || { list: [] }; inv.list = inv.list.filter(i => Date.now() - i.at < 15 * 60000).concat([{ code, from: lob.host, at: Date.now() }]).slice(-5); await writeJSON(invFile(t), inv); }
+  const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.lobbies++; await writeJSON('stats/mp.json', st);
+  return [200, lob];
+}
+async function lobby_join(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  const code = String(b.code || '').toUpperCase().replace(/[^A-Z]/g, ''), lob = code.length === 4 && (await readJSON(lobbyFile(code)));
+  if (!lob || Date.now() - lob.created > 60 * 60000) return [404, { error: 'not_found' }];
+  if (cleanLogin(lob.host.login) === a.l) return [200, lob];
+  if (lob.guest && cleanLogin(lob.guest.login) !== a.l) return [409, { error: 'full' }];
+  lob.guest = pub(a.l, a.acc); lob.status = 'ready'; await writeJSON(lobbyFile(code), lob);
+  const inv = await readJSON(invFile(a.l)); if (inv) { inv.list = inv.list.filter(i => i.code !== code); await writeJSON(invFile(a.l), inv); }
+  return [200, lob];
+}
+async function lobby_poll(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  const code = String(b.code || '').toUpperCase(), lob = await readJSON(lobbyFile(code));
+  if (!lob) return [404, { error: 'not_found' }];
+  const isHost = cleanLogin(lob.host.login) === a.l, isGuest = lob.guest && cleanLogin(lob.guest.login) === a.l;
+  if (!isHost && !isGuest) return [403, { error: 'not_member' }];
+  if (b.start && isHost && lob.guest && lob.status === 'ready') { lob.status = 'run'; lob.started = Date.now(); await writeJSON(lobbyFile(code), lob); const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.matches++; await writeJSON('stats/mp.json', st); }
+  if (b.leave) { lob.status = 'closed'; lob.left = a.l; await writeJSON(lobbyFile(code), lob); }
+  if (b.progress && typeof b.progress === 'object') await writeJSON(progFile(code, a.l), { ...b.progress, at: Date.now() });
+  const other = isHost ? lob.guest : lob.host, op = other ? await readJSON(progFile(code, cleanLogin(other.login))) : null;
+  return [200, { lobby: lob, me: isHost ? 'host' : 'guest', other: op, now: Date.now() }];
+}
 // Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig
 const adminDeviceToken = (U, P) => crypto.createHmac('sha256', SECRET).update('admin-geraet:' + U + ':' + crypto.createHash('sha256').update(P).digest('hex')).digest('hex');
 async function admin(b) {
@@ -128,6 +196,7 @@ async function admin(b) {
       if (cleared) P2.playersCleared++;
     }
   }
+  st.mp = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 };
   st.device = adminDeviceToken(U, P);
   return [200, st];
 }
@@ -143,7 +212,7 @@ module.exports = async (req, res) => {
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
-  const fn = { register, login, save, delete: remove, admin }[b.action];
+  const fn = { register, login, save, delete: remove, admin, friend_add, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return res.status(400).json({ error: 'action' });
   try { const [status, out] = await fn(b); res.status(status).json(out); }
   catch (e) { console.error(e); res.status(500).json({ error: 'server' }); }

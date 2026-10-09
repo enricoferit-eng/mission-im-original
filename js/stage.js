@@ -293,12 +293,13 @@ function drawFace(c, id, x, y, s, t, o = {}) {
 
 // ---------- Spielszene ----------
 class Play {
-  constructor(diff) {
+  constructor(diff, opt = {}) {
     this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff];
-    this.sp = SP(diff, 'spielplatz');
+    this.mp = opt.mp || null;   // Mehrspieler: eigener Durchgang (nicht gespeichert), gleiche Zufallswerte für beide
+    this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, 'spielplatz');
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
     this.st = this.sp.run; this.st.clears = this.sp.clears;
-    if (!this.st.layout) { const r = mulberry32((Date.now() ^ 0x5bd1e995) >>> 0); this.st.layout = { seat: ri(0, 1, r) }; NPC_DEFS.forEach(n => { if (n.pos) this.st.layout[n.id] = ri(0, n.pos.length - 1, r); }); Save.write(); }
+    if (!this.st.layout) { const r = mulberry32(this.seedFor('layout')); this.st.layout = { seat: ri(0, 1, r) }; NPC_DEFS.forEach(n => { if (n.pos) this.st.layout[n.id] = ri(0, n.pos.length - 1, r); }); Save.write(); }
     this.npcs = NPC_DEFS.map(n => {
       if (n.swing) return { id: n.id, swing: this.st.layout.seat, x: SWING.seats[this.st.layout.seat], y: SWING.y + 55, l: 0 };
       const p = n.pos[this.st.layout[n.id]]; return { id: n.id, x: p[0], y: p[1], l: p[2] };
@@ -323,7 +324,7 @@ class Play {
 
     this.leafPop = 0; this.justDone = null;
     if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
-      const r = mulberry32((Date.now() ^ 0x2545f491) >>> 0), L = []; let g = 0;
+      const r = mulberry32(this.seedFor('leaves')), L = []; let g = 0;
       while (L.length < LEAVES_PER_RUN && g++ < 4000) { const x = 60 + r() * 880, y = 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
       this.st.leaves = L; Save.write();
     }
@@ -331,13 +332,73 @@ class Play {
     this.npcAnim = {}; ALL_IDS.forEach((id, i) => (this.npcAnim[id] = { ph: i * 1.7, wave: 0, jump: 0 }));
     this.pigeons = [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i }));
     if (!GROUND) buildGround();
+    if (this.mp) this.mpSetup();
+  }
+  seedFor(tag) { let h = 2166136261; for (const ch of String(tag)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return ((this.mp ? this.mp.seed : Date.now()) ^ h) >>> 0; }
+  // ---------- Mehrspieler ----------
+  mpSetup() {
+    const M = this.mp, st = this.st;
+    st.jokers = JOKERS_PER_RUN; this.mpT = 0; this.ghost = null;
+    ACC().tut.coach = true;
+    if (M.mode === 'team') {
+      // Ein großer gemeinsamer Auftrag von Mia + zwei Teile, die man nur zu zweit schafft
+      const q = this.genQuest('hase', { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chest: false, roof: false };
+      st.active = q; NPC_DEFS.forEach(n => { if (n.id !== 'hase') st.done[n.id] = true; });
+      const find = (cands) => cands.find(([x, y]) => canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70)) || cands[0];
+      const r = mulberry32(this.seedFor('coop')), spots = [];
+      for (let i = 0; i < 400 && spots.length < 3; i++) { const x = 90 + r() * 820, y = 320 + r() * 980; if (canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 80) && spots.every(([a, b]) => dist(a, b, x, y) > 420) && dist(x, y, HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2) > 220) spots.push([x, y]); }
+      while (spots.length < 3) spots.push(find([[200, 500], [800, 1150], [500, 1000]]));
+      this.coop = { chest: { x: spots[0][0], y: spots[0][1] }, sw: [{ x: spots[1][0], y: spots[1][1] }, { x: spots[2][0], y: spots[2][1] }], ladder: { x: HOUSE.x - 26, y: HOUSE.y + HOUSE.h - 30 } };
+      if (!canStand(0, this.coop.ladder.x, this.coop.ladder.y)) this.coop.ladder = { x: HOUSE.x + HOUSE.w + 26, y: HOUSE.y + 40 };
+      this.banner = { text: 'Mia braucht ganz viele Sachen – sucht sie zusammen!', t: 0 };
+    } else {
+      // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
+      this.pre = {}; if (this.diff !== 'easy') ALL_IDS.forEach(id => { this.pre[id] = this.genQuest(id); });
+      this.banner = { text: 'Duell! Hilf ' + M.opts.kids + (M.opts.kids === 1 ? ' Kind' : ' Kindern') + (M.opts.boss ? ' und öffne das Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
+    }
+  }
+  mpKidsDone() { return NPC_DEFS.filter(n => this.st.done[n.id]).length; }
+  mpGoal() { const o = this.mp.opts; return o.boss ? !!this.st.done.gate : this.mpKidsDone() >= o.kids; }
+  updateMp(dt) {
+    const M = this.mp; if (!M || this.mpOver) return;
+    this.mpT += dt;
+    const p = this.p, q = this.st.active;
+    const sw = this.coop ? this.coop.sw.findIndex(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34) : -1, lad = this.coop && p.level === 0 && dist(p.x, p.y, this.coop.ladder.x, this.coop.ladder.y) < 34;
+    M.set({ pos: { x: Math.round(p.x), y: Math.round(p.y), l: p.level, z: Math.round(this.z()), k: this.kind }, done: this.mpKidsDone(), got: q && q.team ? q.got.map((g, i) => (g ? i : -1)).filter(i => i >= 0) : [], sw: sw + 1, ladder: !!lad, chest: !!(q && q.coop && q.coop.chest), roof: !!(q && q.coop && q.coop.roof) });
+    const o = M.other, fresh = o && Date.now() - M.lastOther < 3500;
+    if (o && o.pos) { const g = this.ghost || (this.ghost = { x: o.pos.x, y: o.pos.y, z: 0 }); g.tx = o.pos.x; g.ty = o.pos.y; g.l = o.pos.l; g.tz = o.pos.z || 0; g.k = o.pos.k; g.x = lerp(g.x, g.tx, Math.min(1, dt * 4)); g.y = lerp(g.y, g.ty, Math.min(1, dt * 4)); g.z = lerp(g.z, g.tz, Math.min(1, dt * 4)); g.moving = dist(g.x, g.y, g.tx, g.ty) > 4; }
+    if (q && q.team) {
+      // Funde des Partners zählen mit
+      (o && o.got || []).forEach(i => { if (q.got[i] === false) { q.got[i] = true; this.toastTeam = { t: 0, text: M.otherName + ' hat etwas gefunden!' }; Sfx.note(880, 0.15, 'triangle', 0.06, 1.3); } });
+      if (o && o.chest && !q.coop.chest) { q.coop.chest = true; this.toastTeam = { t: 0, text: 'Die Schatzkiste ist offen!' }; }
+      if (o && o.roof && !q.coop.roof) { q.coop.roof = true; this.toastTeam = { t: 0, text: 'Das Teil vom Dach ist geholt!' }; }
+      // Schatzkiste: beide gleichzeitig auf verschiedenen Schaltern
+      if (!q.coop.chest && sw >= 0 && fresh && o.sw && o.sw - 1 !== sw) { q.coop.chest = true; Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 50); this.toastTeam = { t: 0, text: 'Geschafft! Die Schatzkiste ist offen!' }; }
+      // Dach: einer hält unten die Leiter, der andere ist oben auf dem Spielhaus
+      if (!q.coop.roof && p.level === 1 && !p.slide && fresh && o.ladder) { q.coop.roof = true; Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 50); this.toastTeam = { t: 0, text: 'Super! Du hast das Teil vom Dach geholt!' }; }
+      if (o && o.fin && !this.mpOver) this.mpEnd('team');
+    } else {
+      if (o && o.fin && !this.mpOver) this.mpEnd('lose');
+      else if (this.mpGoal() && !this.mpOver) { M.set({ fin: true, finT: Math.round(this.mpT * 10) / 10 }); M.sync(); this.mpEnd('win'); }
+    }
+    if (M.over === 'left' || M.over === 'lost') this.mpEnd('gone');
+    if (this.toastTeam) { this.toastTeam.t += dt; if (this.toastTeam.t > 2.6) this.toastTeam = null; }
+  }
+  mpEnd(kind) {
+    if (this.mpOver) return; this.mpOver = kind; const M = this.mp; overlay = null;
+    if (kind === 'team') { M.set({ fin: true }); M.sync(); setTimeout(() => M.stop(), 2500); stat('teams'); addCoins(MP_COINS.team, 'Zusammen geschafft!'); overlay = new MatchResult({ team: true, title: 'Zusammen geschafft!', sub: 'Ihr habt Mia alles gebracht. Tolles Teamwork mit ' + M.otherName + '!', coins: MP_COINS.team }); return; }
+    if (kind === 'gone') { M.stop(); addCoins(MP_COINS.lose, 'Mehrspieler'); overlay = new MatchResult({ title: 'Spiel beendet', sub: M.otherName + ' ist nicht mehr da – die Verbindung ist weg.', coins: MP_COINS.lose }); return; }
+    stat('duels');
+    if (kind === 'win') { setTimeout(() => M.stop(), 2500); stat('wins'); addCoins(MP_COINS.win, 'Duell gewonnen!'); overlay = new MatchResult({ win: true, title: 'Gewonnen!', sub: 'Du warst schneller als ' + M.otherName + ' (' + (Math.round(this.mpT * 10) / 10).toFixed(1).replace('.', ',') + ' s).', coins: MP_COINS.win }); }
+    else { M.stop(); addCoins(MP_COINS.lose, 'Duell'); overlay = new MatchResult({ title: M.otherName + ' war schneller', sub: 'Knapp! Fordere gleich eine Revanche.', coins: MP_COINS.lose }); }
   }
   enter() { FX.clear(); }
   // ---- Geheime Joker ----
   secretJoker(key) {
     if (this.st.secret[key]) return false;
     this.st.secret[key] = true; this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1; Save.write();
-    this.secretPop = { t: 0 }; FX.confetti(W / 2, H * 0.3, 70); Sfx.play('win'); buzz([40, 40, 80]);
+    this.secretPop = { t: 0, why: SECRET_NAMES[key] || '' }; FX.confetti(W / 2, H * 0.3, 70); Sfx.play('win'); buzz([40, 40, 80]);
+    if (!this.mp) achieve('g_' + key);
     return true;
   }
   // Wettlauf mit Leo: zuerst unten an der Rutsche
@@ -395,7 +456,7 @@ class Play {
       FX.sparkle(s.x, s.y, 18, '#c7f464'); Sfx.note(587 * Math.pow(2, n / 12), 0.18, 'triangle', 0.08, 1.6); buzz(25); this.leafPop = 1;
       if (n === this.st.leaves.length) {
         this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
-        FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); this.banner = { text: 'Alle Blätter gefunden: +1 Joker!', t: 0 };
+        FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); this.banner = { text: 'Alle Blätter gefunden: +1 Joker!', t: 0 }; if (!this.mp) achieve('blaetter');
       }
       Save.write();
     }
@@ -417,7 +478,7 @@ class Play {
   checkBonus(q, npc) {
     if (!q || (q.tt || 0) > this.bonusLimit(npc)) return;
     this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
-    this.bonusPop = { t: 0 }; Sfx.note(880, 0.3, 'triangle', 0.08, 1.5); buzz([30, 40, 30]);
+    this.bonusPop = { t: 0 }; Sfx.note(880, 0.3, 'triangle', 0.08, 1.5); buzz([30, 40, 30]); if (!this.mp) stat('bonusJ');
   }
   // Wohin soll das Kind als Nächstes? (für die Zeigehand)
   coachTarget() {
@@ -498,6 +559,7 @@ class Play {
         if (rec && a) { a.swingBest = J.m; Save.write(); FX.confetti(s2.x, s2.y - 40, 50); Sfx.play('win'); } else Sfx.play('good');
         this.swingPop = { t: 0, text: 'Weite: ' + J.m.toFixed(1).replace('.', ',') + ' m', rec };
         if (J.m >= SECRET_JUMP) this.secretJoker('swing');
+        if (J.m >= 6 && !this.mp) achieve('schaukel6');
         this.swinging = null;
       }
       return;
@@ -529,14 +591,14 @@ class Play {
     c.font = `900 15px ${FONT}`; const msg = 'Tippe, wenn der Ring grün ist!', mw = c.measureText(msg).width + 28;
     rrPath(c, W / 2 - mw / 2, H - 106, mw, 34, 17); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, H - 89, 15, '#fff', 'center', null);
   }
-  bossOpen() { return NPC_DEFS.every(n => this.st.done[n.id]); }
+  bossOpen() { if (this.mp && this.mp.mode === 'duell') return this.mpKidsDone() >= this.mp.opts.kids; return NPC_DEFS.every(n => this.st.done[n.id]); }
   npcState(id) {
     const st = this.st;
     if (st.done[id]) return 'done';
     if (id === 'gate' && !this.bossOpen()) return 'locked';
     if (this.diff === 'easy') return st.easy[id] ? 'busy' : id === 'gate' ? 'boss' : 'open';
     const q = st.active;
-    if (q && q.npc === id) return q.got.every(Boolean) ? 'ready' : 'active';
+    if (q && q.npc === id) return q.got.every(Boolean) && (!q.coop || (q.coop.chest && q.coop.roof)) ? 'ready' : 'active';
     if (q) return 'waiting';
     return id === 'gate' ? 'boss' : 'open';
   }
@@ -547,7 +609,7 @@ class Play {
   }
   onStairs() { const i = cellIdx(this.p.x, this.p.y); return i >= 0 && !!ST[i]; }
   // ---- Ablauf ----
-  stop() { overlay = null; Save.write(); setScene(new Menu()); }
+  stop() { overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
     this.t += dt;
     this.zoom = W > H ? clamp(H / 560, 0.55, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6);
@@ -576,6 +638,7 @@ class Play {
     if (this.bonusIntro) { this.bonusIntro.t += dt; if (this.bonusIntro.t > 2.4) this.bonusIntro = null; }
     if (this.bonusWarn) { this.bonusWarn.t += dt; if (this.bonusWarn.t > 1.8) this.bonusWarn = null; }
     if (this.bonusPop) { this.bonusPop.t += dt; if (this.bonusPop.t > 2.6) this.bonusPop = null; }
+    if (this.mp) this.updateMp(dt);
     this.leafPop = Math.max(0, this.leafPop - dt * 2.5); if (this.justDone) { this.justDone.t += dt; if (this.justDone.t > 1.6) this.justDone = null; }
     if (this.exiting) this.updateExit(dt);
     else if (!overlay) {
@@ -659,7 +722,7 @@ class Play {
     }
   }
   // ---- Suchen ----
-  canSearch() { return this.diff !== 'easy' && !!this.st.active && !this.st.active.got.every(Boolean); }
+  canSearch() { return (this.diff !== 'easy' || !!(this.st.active && this.st.active.team)) && !!this.st.active && !this.st.active.got.every(Boolean); }
   startSearch() {
     if (this.searching || !this.canSearch() || this.p.slide) return;
     this.p.path = null; this.p.target = null; this.searching = { t: 0 };
@@ -760,10 +823,11 @@ class Play {
     const nq = this.genQuest(id);
     overlay = new QuestDialog({ mode: 'offer', npc: id, items: nq.items, got: nq.got, boss: nq.boss, onYes: () => { st.active = nq; Save.write(); Sfx.play('good'); this.bonusStart(id); } });
   }
-  genQuest(id) {
-    const seed = (Date.now() ^ (id.length * 7919) ^ ((this.st.clears + 1) * 104729)) >>> 0, r = mulberry32(seed);
+  genQuest(id, cntOverride) {
+    if (this.pre && this.pre[id]) { const P = JSON.parse(JSON.stringify(this.pre[id])); delete this.pre[id]; return P; }   // Mehrspieler: vorab festgelegt
+    const seed = this.seedFor('q_' + id + '_' + (this.st.clears + 1)), r = mulberry32(seed);
     const boss = id === 'gate';
-    const cnt = (this.diff === 'medium' ? 3 : 4) + (boss ? 2 : 0);
+    const cnt = cntOverride || (this.diff === 'medium' ? 3 : 4) + (boss ? 2 : 0);
     const items = shuffle(ITEM_IDS, r).slice(0, cnt);
     // Verstecke: mal in der Umgebung, mal irgendwo im Hackschnitzel vergraben – jedes Mal neu
     const hidden = [], spots = shuffle(SPOTS, r), npcP = this.npcs.map(n => this.npcPos(n));
@@ -786,8 +850,9 @@ class Play {
     }
     // Spiele: möglichst abwechslungsreich (nichts doppelt im Auftrag, zuletzt gespielte meiden)
     // keine Aufgabe doppelt im ganzen Durchgang (alle Kinder + Tor)
-    const recent = ACC().recent || [], runUsed = this.st.usedGames || (this.st.usedGames = []), used = [];
+    const recent = this.mp ? [] : ACC().recent || [], runUsed = this.st.usedGames || (this.st.usedGames = []), used = [];
     const games = items.map(() => {
+      if (this.diff === 'easy') { const c2 = EASY_GAMES.filter(g => !used.includes(g) && !runUsed.includes(g)); const g = pick(c2.length ? c2 : EASY_GAMES, r); used.push(g); return g; }
       const ch = r() < (boss ? 0.7 : 0.4);
       const pool = ch ? (this.diff === 'hard' && r() < 0.4 ? CHALLENGES_HARD : r() < 0.45 ? CHALLENGES_SP : CHALLENGES_STD) : PUZZLES;
       const allPool = PUZZLES.concat(CHALLENGES_STD, CHALLENGES_SP, this.diff === 'hard' ? CHALLENGES_HARD : []);
@@ -825,13 +890,14 @@ class Play {
   }
   deliver(id) {
     const st = this.st, q = st.active; this.checkBonus(q, id);
-    st.done[id] = true; st.active = null;
+    if (q && q.team) { st.done[id] = true; st.active = null; this.mpEnd('team'); return; }
+    st.done[id] = true; st.active = null; if (!this.mp) stat('kids');
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
-    if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
+    if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => this.startExit() };
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
   }
   anchor(id) {
@@ -842,9 +908,9 @@ class Play {
     const st = this.st;
     let e = st.easy[id];
     if (!e) {
-      const seed = (Date.now() ^ (id.length * 31337)) >>> 0, r = mulberry32(seed);
+      const seed = this.seedFor('e_' + id), r = mulberry32(seed);
       // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
-      if (!st.easyPlan || st.easyPlan.length < 24) st.easyPlan = shuffle(EASY_GAMES, mulberry32((Date.now() ^ 0x9e3779b9) >>> 0)).slice(0, 24);
+      if (!st.easyPlan || st.easyPlan.length < 24) st.easyPlan = shuffle(EASY_GAMES, mulberry32(this.seedFor('plan'))).slice(0, 24);
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
     }
@@ -863,13 +929,13 @@ class Play {
     });
   }
   finishEasy(id) {
-    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id];
+    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id]; if (!this.mp) stat('kids');
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
-    if (id === 'gate') this.pending = { t: 1.0, fn: () => this.startExit() };
+    if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => this.startExit() };
   }
   // Tor geht auf, Figur läuft hinaus zum Parkplatz
   startExit() {
@@ -904,8 +970,11 @@ class Play {
     const skin = pick(missing.length ? missing : all);
     const newSkin = !sp.skins.includes(skin); if (newSkin) sp.skins.push(skin);
     if (newSkin) DP(this.diff).equip = skin;
+    const usedJoker = (this.st.jokersUsed || 0) > 0;
     sp.clears++; sp.run = null;
     Save.write();
+    stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
+    { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
     const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, have: sp.skins.length, diff: this.diff }, again => {
       if (again) setScene(new Play(this.diff)); else setScene(new StageMap(this.diff));
     }); };
@@ -913,7 +982,7 @@ class Play {
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
-  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; if (ACC() && ACC().admin) return { left: () => 99, use: () => {} }; return { left: () => st.jokers, use: () => { st.jokers = Math.max(0, st.jokers - 1); Save.write(); } }; }
+  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; if (ACC() && ACC().admin) return { left: () => 99, use: () => {} }; return { left: () => st.jokers + (this.mp ? 0 : jokerBank()), use: () => { st.jokersUsed = (st.jokersUsed || 0) + 1; if (st.jokers > 0) st.jokers--; else { const m = META(); if (m && m.bank > 0) m.bank--; } Save.write(); } }; }
   down(x, y, id) { this.idleT = 0; if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
   move(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; j.x = x; j.y = y; if (!j.moved && dist(x, y, j.x0, j.y0) > 14) j.moved = true; }
   up(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; if (!j.moved && this.t - j.t < 0.4 && !this.searching) this.tap(x, y); this.joy = null; }
@@ -978,6 +1047,17 @@ class Play {
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
     if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
+    // Mehrspieler: Mitspieler-Figur + Team-Objekte (Schatzkiste mit Doppel-Schalter, Leiter)
+    if (this.ghost && this.ghost.k) { const g = this.ghost, up = g.z > 1; L.push({ y: up ? HOUSE.y + HOUSE.h + 2 : g.y, f: () => {
+      c.globalAlpha = 0.85; drawAnimal(c, g.k, g.x, g.y - g.z, 1.12, { t: t + 3, moving: g.moving, look: DEFAULT_LOOK, cap: false }); c.globalAlpha = 1;
+      c.font = `900 13px ${FONT}`; const nw = c.measureText(this.mp.otherName).width + 16; rrPath(c, g.x - nw / 2, g.y - g.z - 92, nw, 22, 11); c.fillStyle = this.mp.mode === 'team' ? 'rgba(17,138,178,.9)' : 'rgba(239,71,111,.9)'; c.fill(); txt(c, this.mp.otherName, g.x, g.y - g.z - 81, 13, '#fff', 'center', null);
+    } }); }
+    if (this.coop) { const C = this.coop, q = this.st.active, open = q && q.coop && q.coop.chest, o = this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
+      L.push({ y: C.chest.y, f: () => { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, C.chest.x, C.chest.y + 2, 30, 9); c.fill(); rrPath(c, C.chest.x - 26, C.chest.y - 30, 52, 30, 5); fs(c, '#a0673a', 3); if (open) { polyPath(c, [[C.chest.x - 26, C.chest.y - 30], [C.chest.x + 26, C.chest.y - 30], [C.chest.x + 22, C.chest.y - 52], [C.chest.x - 22, C.chest.y - 52]]); fs(c, '#8d5a3b', 3); ell(c, C.chest.x, C.chest.y - 34, 14, 6); c.fillStyle = '#ffd23f'; c.fill(); } else { rrPath(c, C.chest.x - 28, C.chest.y - 44, 56, 16, 6); fs(c, '#8d5a3b', 3); rrPath(c, C.chest.x - 5, C.chest.y - 34, 10, 10, 2); fs(c, '#ffd23f', 2); } } });
+      C.sw.forEach((w, i) => { const meOn = this.p.level === 0 && dist(this.p.x, this.p.y, w.x, w.y) < 34, otOn = fresh && o.sw === i + 1, on = meOn || otOn; L.push({ y: w.y - 5, f: () => { ell(c, w.x, w.y, 26, 11); fs(c, on ? '#06d6a0' : '#adb5bd', 3); ell(c, w.x, w.y - 3, 18, 7); fs(c, on ? '#80ed99' : '#dee2e6', 2); txt(c, String(i + 1), w.x, w.y - 3, 12, '#3d2c1f', 'center', null); if (!open) { const b = Math.sin(t * 4 + i) * 3; icon(c, 'friends', w.x, w.y - 34 + b, 26); } } }); });
+      const lad = C.ladder, held = (this.p.level === 0 && dist(this.p.x, this.p.y, lad.x, lad.y) < 34) || (fresh && o.ladder);
+      L.push({ y: lad.y, f: () => { c.save(); c.translate(lad.x, lad.y); c.rotate(lad.x < HOUSE.x ? 0.18 : -0.18); line(c, -9, 0, -9, -110, 4, '#8d5a3b'); line(c, 9, 0, 9, -110, 4, '#8d5a3b'); for (let k = 0; k < 7; k++) line(c, -9, -10 - k * 15, 9, -10 - k * 15, 3, '#a0673a'); c.restore(); if (held) { ell(c, lad.x, lad.y, 24, 9); c.lineWidth = 3; c.strokeStyle = '#06d6a0'; c.stroke(); } } });
+    }
     { const R = this.racer, run = R.state === 'run' || R.state === 'back';
       const ci = cellIdx(R.x, R.y), rz = R.slide ? HOUSE.fz * (1 - (R.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)) : ci >= 0 && ST[ci] ? stairsZ(R.y) : R.l ? HOUSE.fz : 0, up = rz > 1;
       if (vis(R.x, R.y)) L.push({ y: up ? HOUSE.y + HOUSE.h + 1 : R.y, f: () => drawCritter(c, 'leo', R.x, R.y - rz - (run && !R.slide ? Math.abs(Math.sin(t * 14)) * 5 : R.slide ? 0 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
@@ -1001,6 +1081,7 @@ class Play {
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
     this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
+    if (this.coop) { const q = this.st.active; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = HOUSE.x + HOUSE.w * 0.5, ry = HOUSE.y - HOUSE.fz - 70 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.35)'; c.fill(); drawItem(c, ITEM_IDS[0], rx, ry, 44); } }
     this.drawMarkers(c);
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     const vg = c.createRadialGradient(W * 0.35, H * 0.3, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
@@ -1190,7 +1271,7 @@ class Play {
       txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
     const narrow = W < 640, rowY = narrow ? 92 : 46;
-    { const ids = ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
+    if (!(this.mp && this.mp.mode === 'team')) { const ids = ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
       rrPath(c, px, rowY - 20, pw, 40, 20); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       ids.forEach((id, i) => {
         const x = px + 7 + fw * (i + 0.5), done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
@@ -1202,7 +1283,7 @@ class Play {
       }); }
     const q = this.st.active; let itemsBottom = rowY;
     if (q && this.diff !== 'easy') {
-      const n = q.items.length, iw = 30, w = 34 + n * (iw + 3) + 10, x0 = narrow ? W - 12 - w : W - 74 - w, y0 = (narrow ? rowY + 46 : rowY) - 21;
+      const n = q.items.length + (q.coop ? 2 : 0), iw = 30, w = 34 + n * (iw + 3) + 10, x0 = narrow ? W - 12 - w : W - 74 - w, y0 = (narrow ? rowY + 46 : rowY) - 21;
       rrPath(c, x0, y0, w, 42, 21); fs(c, 'rgba(255,247,230,.95)', 2.5);
       drawFace(c, q.npc, x0 + 20, y0 + 38, 0.42, this.t, { noShadow: true });
       q.items.forEach((it, k) => {
@@ -1210,7 +1291,24 @@ class Play {
         c.save(); if (!q.got[k]) c.globalAlpha = 0.35; drawItem(c, it, x, y, iw * 0.95); c.restore();
         if (q.got[k]) icon(c, 'check', x + 9, y + 9, 14, '#06d6a0');
       });
+      if (q.coop) [['chest', q.coop.chest], ['roof', q.coop.roof]].forEach(([kind, ok], j) => { const x = x0 + 40 + (q.items.length + j) * (iw + 3) + iw / 2, y = y0 + 21; c.save(); if (!ok) c.globalAlpha = 0.45; if (kind === 'chest') { rrPath(c, x - 12, y - 6, 24, 15, 3); fs(c, '#a0673a', 2); rrPath(c, x - 13, y - 12, 26, 8, 3); fs(c, '#8d5a3b', 2); } else { polyPath(c, [[x - 14, y + 8], [x, y - 10], [x + 14, y + 8]]); fs(c, '#9e3b2f', 2); } icon(c, 'friends', x + 9, y - 9, 13); c.restore(); if (ok) icon(c, 'check', x + 9, y + 9, 14, '#06d6a0'); });
       itemsBottom = y0 + 42;
+    }
+    if (this.mp) {
+      const M = this.mp, o = M.other, team = M.mode === 'team', lx = 14, ly = narrow ? rowY + 92 : rowY + 46;
+      const label = team ? 'Team mit ' + M.otherName : M.otherName + ': ' + (M.opts.live ? ((o && o.done) || 0) + '/' + M.opts.kids + (M.opts.boss ? ' + Tor' : '') : '?');
+      c.font = `900 14px ${FONT}`; const lw = c.measureText(label).width + 44;
+      rrPath(c, lx, ly - 18, lw, 36, 18); c.fillStyle = team ? 'rgba(17,138,178,.85)' : 'rgba(239,71,111,.85)'; c.fill(); icon(c, 'friends', lx + 20, ly, 22); txt(c, label, lx + 36, ly + 1, 14, '#fff', 'left', null);
+      if (!team) { const me = this.mpKidsDone() + '/' + M.opts.kids; txt(c, 'Du: ' + me, lx + lw + 12, ly + 1, 14, '#fff', 'left', BRAND.ink); }
+      if (this.coop && !this.mpOver) {
+        const C = this.coop, p = this.p, q = this.st.active, o2 = M.other, fresh = o2 && Date.now() - M.lastOther < 3500;
+        let hint = '';
+        if (!q.coop.chest && C.sw.some(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34)) hint = 'Du stehst auf dem Schalter – ' + M.otherName + ' muss auf den anderen!';
+        else if (p.level === 0 && dist(p.x, p.y, C.ladder.x, C.ladder.y) < 34 && !q.coop.roof) hint = 'Du hältst die Leiter – ' + M.otherName + ' kann jetzt vom Spielhaus aufs Dach!';
+        else if (p.level === 1 && !q.coop.roof && !(fresh && o2.ladder)) hint = M.otherName + ' muss unten die Leiter halten!';
+        if (hint) { c.font = `900 15px ${FONT}`; const hw = Math.min(W - 30, c.measureText(hint).width + 30); rrPath(c, W / 2 - hw / 2, H - 58, hw, 36, 18); c.fillStyle = 'rgba(17,138,178,.92)'; c.fill(); txt(c, hint, W / 2, H - 40, Math.min(15, 15 * (W - 60) / c.measureText(hint).width), '#fff', 'center', null); }
+      }
+      if (this.toastTeam) { const q2 = this.toastTeam, k = ease.back(clamp(q2.t * 3, 0, 1)); c.save(); c.globalAlpha = clamp(2.6 - q2.t, 0, 1); c.translate(W / 2, H * 0.3); c.scale(k, k); txt(c, q2.text, 0, 0, 22, '#fff', 'center', OL); c.restore(); }
     }
     // Bonus-Uhr: Kind schnell geholfen = Extra-Joker
     { const bq = this.bonusQuest(), left = bq ? this.bonusLimit(bq.npc) - (bq.q.tt || 0) : -1;
@@ -1249,7 +1347,7 @@ class Play {
         rrPath(c, W / 2 - gw / 2, H - 94, gw, 28, 14); c.fillStyle = R.cpMe ? 'rgba(6,214,160,.9)' : 'rgba(255,183,3,.92)'; c.fill(); txt(c, goal, W / 2, H - 80, 14, '#fff', 'center', BRAND.ink);
       }
     }
-    if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -96, 0, 46); txt(c, 'Geheimer Joker! +1', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
+    if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -96, 0, 46); txt(c, 'Geheimer Joker! +1', 20, 0, 24, '#ffd23f', 'center', OL); if (q.why) txt(c, q.why, 0, 34, 17, '#fff', 'center', OL); c.restore(); }
     if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') this.drawCoach(c);
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil

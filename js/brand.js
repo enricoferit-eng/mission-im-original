@@ -249,6 +249,19 @@ SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di)
   if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Goldene ' + UNIFORM_NAMES[k]; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; }
   SKINS[id] = sk;
 })));
+// Laden-Skins: mit Talern kaufbar (je seltener, desto teurer; legendäre haben eine Fähigkeit)
+const SHOP_SKINS = [
+  ['shop_sport', 'Sport-Trikot', 'common', 60, { uniform: 'pulli', uCol: '#4dabf7', uCol2: '#ffffff', cap: '#4dabf7', scarf: '#ffffff', pat: 'stripes' }],
+  ['shop_garten', 'Gärtner-Latzhose', 'common', 60, { uniform: 'latz', uCol: '#2d6a4f', uCol2: '#ffd166', cap: '#ffd166', scarf: '#2d6a4f', leaf: true }],
+  ['shop_matrose', 'Matrosen-Look', 'common', 60, { uniform: 'weste', uCol: '#1d3557', uCol2: '#ffffff', cap: '#ffffff', scarf: '#e63946', pat: 'stripes' }],
+  ['shop_pirat', 'Piraten-Look', 'rare', 150, { uniform: 'weste', uCol: '#212529', uCol2: '#e63946', cap: '#212529', scarf: '#e63946', dots: '#ffffff', sparkle: '#bde0fe' }],
+  ['shop_astro', 'Astronauten-Anzug', 'rare', 150, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#118ab2', cap: '#f8f9fa', scarf: '#118ab2', pat: 'stars', sparkle: '#bde0fe' }],
+  ['shop_feuer', 'Feuerwehr-Look', 'rare', 150, { uniform: 'weste', uCol: '#d00000', uCol2: '#ffd166', cap: '#d00000', scarf: '#ffd166', sparkle: '#bde0fe' }],
+  ['shop_regenbogen', 'Regenbogen-Look', 'legend', 400, { uniform: 'schuerze', uCol: '#ffffff', uCol2: '#9b5de5', cap: 'rainbow', scarf: 'rainbow', sparkle: '#ffd60a', ability: 'turbo' }],
+  ['shop_goldchef', 'Goldener Chefkoch', 'legend', 400, { uniform: 'koch', uCol: '#ffffff', uCol2: '#c9a227', cap: 'gold', scarf: 'gold', hat: 'toque', sparkle: '#ffd60a', ability: 'glueck' }],
+  ['shop_ninja', 'Nacht-Ninja', 'legend', 400, { uniform: 'pulli', uCol: '#212529', uCol2: '#7209b7', cap: '#212529', scarf: '#7209b7', pat: 'stars', sparkle: '#ffd60a', ability: 'adlerauge' }],
+];
+SHOP_SKINS.forEach(([id, name, rarity, price, look]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); });
 // Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)
 function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return false; const sk = SKINS[DP(CUR_DIFF).equip]; return !!(sk && sk.ability === name); }
 // Standard-Look: grünes Helfer-Halstuch mit Blatt

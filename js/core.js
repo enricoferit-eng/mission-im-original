@@ -63,7 +63,7 @@ const Net = {
       return { status: r.status, data };
     } catch (e) { return null; }
   },
-  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null }; },
+  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0 }; },
   soon() { clearTimeout(this.tm); this.tm = setTimeout(() => this.syncNow(), 4000); },
   async syncNow(keep) {
     const a = ACC(); if (!a || !a.token) return;
@@ -91,7 +91,7 @@ setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.s
 function accFromServer(p) {
   const d = p.data || {}, diff = d.diff || {};
   ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
-  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff };
+  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0 };
 }
 function adoptAccount(p) {
   Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });
@@ -383,6 +383,16 @@ function icon(c, name, x, y, s, col) {
     case 'jump': // Bogen-Pfeil nach oben
       c.beginPath(); c.moveTo(-14, 14); c.quadraticCurveTo(-12, -10, 8, -10); c.lineWidth = 7; c.strokeStyle = OL; c.stroke(); c.lineWidth = 4; c.strokeStyle = col || '#118ab2'; c.stroke();
       polyPath(c, [[4, -20], [18, -10], [4, 0]]); fs(c, col || '#118ab2', 2.5); break;
+    case 'trophy':
+      c.beginPath(); c.moveTo(-12, -14); c.lineTo(12, -14); c.quadraticCurveTo(12, 6, 0, 8); c.quadraticCurveTo(-12, 6, -12, -14); c.closePath(); fs(c, col || '#ffc300', 2.5);
+      c.beginPath(); c.arc(-13, -6, 6, Math.PI * 0.5, Math.PI * 1.5); c.lineWidth = 3; c.strokeStyle = OL; c.stroke(); c.beginPath(); c.arc(13, -6, 6, -Math.PI * 0.5, Math.PI * 0.5); c.stroke();
+      rrPath(c, -3, 7, 6, 7, 1); fs(c, col || '#ffc300', 2); rrPath(c, -9, 13, 18, 5, 2); fs(c, '#8d5a3b', 2); starPath(c, 0, -5, 5, 2.2); c.fillStyle = '#fff7ae'; c.fill(); break;
+    case 'friends':
+      ell(c, 8, -6, 7, 7); fs(c, '#74c0fc', 2.5); c.beginPath(); c.arc(8, 14, 11, Math.PI, 0); c.closePath(); fs(c, '#74c0fc', 2.5);
+      ell(c, -7, -4, 8, 8); fs(c, '#ffd166', 2.5); c.beginPath(); c.arc(-7, 17, 12, Math.PI, 0); c.closePath(); fs(c, '#ffd166', 2.5); break;
+    case 'shop':
+      rrPath(c, -15, -4, 30, 20, 3); fs(c, '#fff', 2.5); polyPath(c, [[-18, -4], [-13, -16], [13, -16], [18, -4]]); fs(c, '#ef476f', 2.5);
+      for (let i = 0; i < 3; i++) { line(c, -10 + i * 10, -15, -12 + i * 10, -5, 2, '#fff', false); } rrPath(c, -5, 4, 10, 12, 2); fs(c, '#8d5a3b', 2); break;
     case 'pause': rrPath(c, -12, -15, 9, 30, 3); fs(c, col || '#fff', 3); rrPath(c, 3, -15, 9, 30, 3); fs(c, col || '#fff', 3); break;
     case 'book':
       polyPath(c, [[0, -10], [-18, -15], [-18, 13], [0, 17]]); fs(c, '#fff', 3); polyPath(c, [[0, -10], [18, -15], [18, 13], [0, 17]]); fs(c, '#f1e3c8', 3);
