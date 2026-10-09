@@ -226,6 +226,18 @@ function drawGroundSpielplatz(g, R) {
 // ---------- Bereiche: jede Stage beschreibt ihre Welt; Play ist für alle gleich ----------
 const OFFMAP = { x: -9999, y: -9999, w: 0, h: 0, fz: 60, x0: -9999, x1: -9990, y0: -9999, y1: -9990, top: 0, seats: [] };
 const STAGE_DEFS = {};
+// Versteck an einem Möbelstück: how = 'left' / 'right' (guckt seitlich dahinter hervor), 'top' (steckt oben drin / liegt dahinter),
+// 'on' (liegt vorne drauf, z. B. Regalbrett, Wagen). o.px/o.py = genauer Platz, o.sx/o.sy = wo man zum Suchen steht.
+function furnSpot(D, decorId, how, o = {}) {
+  const d = D.find(q => q.id === decorId); if (!d) throw new Error('Deko fehlt: ' + decorId);
+  const L0 = d.w ? d.x0 : d.x - (d.r || 20), R0 = d.w ? d.x0 + d.w : d.x + (d.r || 20), top = o.top != null ? o.top : (d.w ? d.y0 : d.y - (d.r || 20) * 1.6);
+  let px = o.px, py = o.py, rot = o.rot, sx = o.sx, sy = o.sy;
+  if (how === 'left') { px = px ?? L0 + 6; py = py ?? d.y - (o.up || 34); rot = rot ?? -0.45; sx = sx ?? L0 - 22; sy = sy ?? d.y + 4; }
+  else if (how === 'right') { px = px ?? R0 - 6; py = py ?? d.y - (o.up || 34); rot = rot ?? 0.45; sx = sx ?? R0 + 22; sy = sy ?? d.y + 4; }
+  else if (how === 'top') { px = px ?? d.x + (o.dx || 0); py = py ?? top + (o.dy || 0); rot = rot ?? (o.dx || 0) * 0.01; sx = sx ?? d.x; sy = sy ?? d.y + 30; }
+  else { px = px ?? d.x; py = py ?? d.y - 20; rot = rot ?? 0.15; sx = sx ?? px; sy = sy ?? d.y + 30; }
+  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 78, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.7 : 0.82), front: how === 'on' || !!o.front, cut: o.cut };
+}
 let SG = null;
 STAGE_DEFS.spielplatz = {
   id: 'spielplatz', house: HOUSE, stairs: STAIRS, slide: SLIDE, swing: SWING, start: START, gate: GATE,
@@ -290,6 +302,7 @@ function drawPlanter(c, x, y, t, sh) {
 }
 // Wo ein Versteck sichtbar "herausguckt": vor dem Busch/Stein, an der Mauer, am Zaun ...
 function peekOf(h) {
+  if (h.px != null) return { x: h.px, y: h.py };   // fester Platz am Möbelstück (hinter, in, auf ...)
   if (h.buried || !h.spot) return { x: h.x, y: h.y };
   const id = h.spot;
   if (id.startsWith('s_wall')) return { x: h.x, y: 208 };
@@ -317,6 +330,7 @@ function drawTowel(c, x, y, w, seed = 0) {
   c.restore();
 }
 function drawJunk(c, x, y, kind, s = 1) {
+  if (SG && SG.junkDraw && SG.junkDraw[kind]) { c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round'; SG.junkDraw[kind](c); c.restore(); return; }
   c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round';
   if (kind === 'nudel') { c.beginPath(); c.moveTo(-10, -4); c.quadraticCurveTo(-4, -14, 2, -4); c.quadraticCurveTo(7, 6, 12, -6); c.lineWidth = 5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 3; c.strokeStyle = '#f6d38d'; c.stroke(); c.restore(); return; }
   if (kind === 'zettel') { c.rotate(0.3); rrPath(c, -9, -12, 18, 14, 2); fs(c, '#fff', 2); line(c, -6, -8, 6, -8, 1.2, '#adb5bd', false); line(c, -6, -4, 4, -4, 1.2, '#adb5bd', false); c.restore(); return; }
@@ -812,9 +826,9 @@ class Play {
       this.toast = { kind: 'found', item: q.items[k], x: h.x, y: h.y, l: h.l, t: 0 };
       this.pending = { t: 0.6, fn: () => this.earn(q, k) };
     } else {
-      const dc = p.level === 0 && (q.decoys || []).find(d => !d.done && dist(p.x, p.y, d.x, d.y) < 46);
+      const dc = p.level === 0 && (q.decoys || []).find(d => !d.done && dist(p.x, p.y, d.x, d.y) < (d.reach || 46));
       if (dc) dc.done = true;
-      q.dug.push([dc ? dc.x : Math.round(p.x), dc ? dc.y : Math.round(p.y), p.level]); if (q.dug.length > 60) q.dug.shift(); Save.write();
+      if (!(SG && !SG.feat.dig)) q.dug.push([dc ? dc.x : Math.round(p.x), dc ? dc.y : Math.round(p.y), p.level]); if (q.dug.length > 60) q.dug.shift(); Save.write();
       Sfx.play('bad'); this.toast = dc ? { kind: 'junk', junk: dc.kind, x: dc.x, y: dc.y, l: 0, t: 0 } : { kind: 'empty', x: p.x, y: p.y, l: p.level, t: 0 };
     }
   }
@@ -912,6 +926,7 @@ class Play {
         const behindPool = spots.filter(s2 => s2.decor), pool = roll < 0.75 && SG.feat.dig ? behindPool : spots;
         const s = pool.find(s2 => !hidden.some(hh => hh.spot === s2.id) && farEnough(s2.x, s2.y, s2.l || 0));
         if (s) h = { x: s.x, y: s.y, l: s.l || 0, reach: s.reach, spot: s.id, behind: !!s.decor, side: r() < 0.5 ? -1 : 1 };
+        if (s && s.px != null) Object.assign(h, { px: s.px, py: s.py, rot: s.rot || 0, sz: s.sz || 0.8, front: !!s.front, cut: s.cut, zy: DECOR_BY[s.decor] ? DECOR_BY[s.decor].y + (DECOR_BY[s.decor].zy || 0) : s.py });
       }
       if (!h) {
         let x = 0, y = 0, g = 0;
@@ -937,7 +952,10 @@ class Play {
     });
     // Täuschungen: an anderen Stellen guckt auch etwas heraus (Stöckchen, Blatt, Steinchen, Kronkorken)
     const decoys = [], nd = this.diff === 'hard' ? 7 : 4;
-    for (let k = 0; k < nd; k++) {
+    // Täuschungen auch an Möbeln: dort, wo nichts versteckt ist, guckt manchmal nur Krimskrams hervor
+    const freeSp = shuffle(SPOTS.filter(s2 => s2.px != null && !hidden.some(h => h.spot === s2.id)), r), nFurn = freeSp.length ? Math.ceil(nd * 0.6) : 0;
+    for (let k = 0; k < nFurn && k < freeSp.length; k++) { const s2 = freeSp[k], dd = DECOR_BY[s2.decor]; decoys.push({ x: s2.x, y: s2.y, px: s2.px, py: s2.py, rot: s2.rot || 0, front: !!s2.front, zy: dd ? dd.y + (dd.zy || 0) : s2.py, kind: pick(SG.junk, r), done: false, reach: 60 }); }
+    for (let k = decoys.length; k < nd; k++) {
       let x = 0, y = 0, g = 0;
       do { x = 95 + r() * 810; y = 240 + r() * 900; g++; }
       while (g < 300 && (!canStand(0, x, y) || hidden.some(h => dist(peekOf(h).x, peekOf(h).y, x, y) < 110) || decoys.some(d => dist(d.x, d.y, x, y) < 110) || dist(x, y, START.x, START.y) < 120));
@@ -969,7 +987,7 @@ class Play {
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
-    this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
+    this.banner = id === 'gate' ? { text: W_('opened') || 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => this.startExit() };
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
   }
@@ -1007,7 +1025,7 @@ class Play {
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
-    this.banner = id === 'gate' ? { text: 'Das Tor ist offen!', t: 0 } : null;
+    this.banner = id === 'gate' ? { text: W_('opened') || 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => this.startExit() };
   }
   // Tor geht auf, Figur läuft hinaus zum Parkplatz
@@ -1086,11 +1104,15 @@ class Play {
         if (this.off(q, i)) return;
         const pk = peekOf(h), tilt = ((i * 37) % 7 - 3) * 0.12;
         const wob = !hard && Math.sin(t * 2 + i) > 0.97 ? Math.sin(t * 40) * 0.15 : 0;
+        if (h.px != null) {   // steckt hinter/in/auf einem Möbelstück: das Möbel verdeckt einen Teil davon
+          L.push({ y: h.zy + (h.front ? 0.5 : -0.5), f: () => { c.save(); if (h.cut != null) { c.beginPath(); c.rect(h.px - 80, h.cut - 200, 160, 200); c.clip(); } c.translate(h.px, h.py); c.rotate(h.rot + tilt * 0.5 + wob); drawItem(c, q.items[i], 0, 0, size * h.sz); c.restore(); } });
+          return;
+        }
         const f = h.behind ? () => {
           c.save(); c.translate(pk.x, pk.y - size * 0.32); c.rotate((h.side || 1) * 0.35 + tilt + wob); drawItem(c, q.items[i], 0, 0, size * 0.95); c.restore();
         } : !SG.feat.dig ? () => {   // ohne Hackschnitzel: Ding guckt unter einem Geschirrtuch hervor
           c.save(); c.translate(pk.x, pk.y - 8); c.rotate(tilt + wob); drawItem(c, q.items[i], 0, -size * 0.15, size * 0.95); c.restore();
-          drawTowel(c, pk.x, pk.y + 2, size * (hard ? 0.95 : 0.8), i);
+          (SG.cover || drawTowel)(c, pk.x, pk.y + 2, size * (hard ? 0.95 : 0.8), i);
         } : () => {
           const zz = h.l ? HOUSE.fz : 0;
           if (!hard) { const pu = 0.5 + 0.5 * Math.sin(t * 3 + i); ell(c, pk.x, pk.y - zz + 2, size * 0.75 + pu * 4, size * 0.3 + pu * 2); c.lineWidth = 3; c.strokeStyle = `rgba(255,255,255,${0.35 + pu * 0.35})`; c.stroke(); }
@@ -1098,7 +1120,7 @@ class Play {
         };
         if (h.l) this.peeksUp.push({ y: pk.y, f }); else L.push({ y: pk.y + 0.5, f });
       });
-      (q.decoys || []).forEach(d => { if (!d.done) L.push({ y: d.y + 0.5, f: () => drawJunk(c, d.x, d.y, d.kind, hard ? 1.25 : 1.4) }); });
+      (q.decoys || []).forEach(d => { if (d.done) return; if (d.px != null) L.push({ y: d.zy + (d.front ? 0.5 : -0.5), f: () => { c.save(); c.translate(d.px, d.py + 6); c.rotate(d.rot); drawJunk(c, 0, 0, d.kind, hard ? 1.25 : 1.4); c.restore(); } }); else L.push({ y: d.y + 0.5, f: () => drawJunk(c, d.x, d.y, d.kind, hard ? 1.25 : 1.4) }); });
     }
     const dig = this.searching ? Math.abs(Math.sin(this.searching.t * 18)) * 0.25 : 0;
     const drawPlayer = () => drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir });
@@ -1108,7 +1130,7 @@ class Play {
     const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
     const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
     for (const d of DECOR) {
-      if (!vis(d.x, d.y)) continue;
+      if (d.bb ? (d.bb[0] > vx1 || d.bb[0] + d.bb[2] < vx0 || d.bb[1] > vy1 || d.bb[1] + d.bb[3] < vy0 - 260) : !vis(d.x, d.y)) continue;   // hohe/lange Möbel: ganze Fläche zählt
       const sh = this.shake[d.id] || 0, k = 'd_' + d.id;
       if (d.t === 'yucca') L.push({ y: d.y, f: () => sh > 0 ? drawYucca(c, d.x, d.y, 1, t, sh) : drawSprite(c, sprite(k, d.x - 48, d.y - 62, 96, 76, g => drawYucca(g, d.x, d.y, 1, 0, 0))) });
       else if (d.t === 'rock') L.push({ y: d.y, f: () => sh > 0 ? drawRock(c, d.x, d.y, d.r, sh) : drawSprite(c, sprite(k, d.x - d.r - 8, d.y - d.r * 1.25 - 6, d.r * 2 + 16, d.r * 1.25 + 16, g => drawRock(g, d.x, d.y, d.r, 0))) });
@@ -1365,7 +1387,7 @@ class Play {
         const x = px + 7 + fw * (i + 0.5), done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
         c.save(); if (!done) c.globalAlpha = 0.55;
         if (jd >= 0) { const k = 1 + Math.sin(Math.min(1, jd / 0.8) * Math.PI) * 1.4; c.translate(x, rowY + 12); c.scale(k, k); c.translate(-x, -(rowY + 12)); }
-        if (id === 'gate') drawGate(c, x, rowY + 13, 0.17, done ? 1 : 0, !this.bossOpen(), 0); else drawCritter(c, id, x, rowY + 15, 0.5, 0, { noShadow: true });
+        if (id === 'gate') { if (SG.gateFace) SG.gateFace(c, x, rowY + 13, 0.4, 0); else drawGate(c, x, rowY + 13, 0.17, done ? 1 : 0, !this.bossOpen(), 0); } else drawCritter(c, id, x, rowY + 15, 0.5, 0, { noShadow: true });
         c.restore();
         if (done) icon(c, 'check', x + 7, rowY + 9, 13, '#06d6a0');
       }); }
@@ -1568,7 +1590,7 @@ class QuestDialog {
     c.save(); c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
     panel(c, x, y, w, h, '#fff7e6', 26);
     ell(c, x + 70, y + 110, 52, 52); fs(c, '#d8f3dc', 3);
-    if (o.npc === 'gate') drawGate(c, x + 70, y + 150, 0.75, 0, o.mode === 'lock', this.t);
+    if (o.npc === 'gate') (SG.drawGate || drawGate)(c, x + 70, y + (SG.drawGate ? 146 : 150), SG.drawGate ? (SG.dialogGate || 0.75) : 0.75, 0, o.mode === 'lock', this.t);
     else drawCritter(c, o.npc, x + 70, y + 150, 1.9, this.t, { staff: true, wave: true, noShadow: true });
     const bx = x + 135, by = y + 26, bw = w - 155, bh = 170;
     rrPath(c, bx, by, bw, bh, 20); fs(c, '#fff', 3.5);
@@ -1587,7 +1609,7 @@ class QuestDialog {
       if (o.mode === 'progress') icon(c, 'search', bx + 24, by + bh - 22, 30);
     }
     if (older) {
-      txt(c, NPC_NAMES[o.npc] || '', x + 24, y + 222, 16, BRAND.olive, 'left', null);
+      txt(c, (o.npc === 'gate' && SG.gateName) || NPC_NAMES[o.npc] || '', x + 24, y + 222, 16, BRAND.olive, 'left', null);
       lines.forEach((l, i) => txt(c, l, x + 24, y + 248 + i * 22, 16, '#3d2c1f', 'left', null));
     }
     c.restore();

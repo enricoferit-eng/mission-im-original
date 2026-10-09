@@ -567,7 +567,7 @@ const AREAS = {
   aussen: { x: 0.85, y: 0.44, w: 0.24, h: 0.24 }, chalet: { x: 0.15, y: 0.33, w: 0.22, h: 0.16 },
   spielplatz: { x: 0.27, y: 0.72, w: 0.4, h: 0.22 }, parkplatz: { x: 0.73, y: 0.84, w: 0.42, h: 0.16 },
 };
-const OPEN_STAGES = ['spielplatz', 'kueche'];
+const OPEN_STAGES = ['gastraum', 'kueche', 'aussen', 'chalet', 'spielplatz', 'parkplatz'];
 function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
   const t = o.t || 0, reveal = o.reveal === undefined ? 6 : o.reveal;
   const A = id => { const a = AREAS[id]; return { x: X + a.x * Wd, y: Y + a.y * Hd, w: a.w * Wd, h: a.h * Hd }; };

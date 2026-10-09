@@ -20,6 +20,30 @@ CAST = {
   'k_tom':     ('thorsten_emotional-medium', 4, 1.0, 0.6, 0.8, -2, True),    # Tom: gemütlich
   'k_nina':    ('kerstin-low', None, 0.98, 0.333, 0.8, 1, False),            # Nina
   'k_lea':     ('kerstin-low', None, 0.92, 0.333, 0.8, 2.5, False),          # Lea: flink
+  # Gastraum
+  'g_rosi':    ('kerstin-low', None, 1.06, 0.333, 0.8, -1, False),           # Oma Rosi: ruhig, etwas tiefer
+  'g_becker':  ('thorsten-high', None, 0.95, 0.6, 0.8, -2, False),          # Herr Becker
+  'g_lina':    ('kerstin-low', None, 0.9, 0.4, 0.8, 5, True),               # Lina: Geburtstagskind
+  'g_schulz':  ('kerstin-low', None, 0.95, 0.333, 0.8, 1.5, False),         # Frau Schulz
+  'g_ben':     ('thorsten_emotional-medium', 4, 0.92, 0.5, 0.8, 2, False),  # Ben: Jugendlicher
+  # Außenbereich
+  'a_weber':   ('thorsten_emotional-medium', 4, 0.98, 0.6, 0.8, -1, False), # Herr Weber: entspannt
+  'a_hoffmann': ('kerstin-low', None, 0.93, 0.333, 0.8, 2, False),          # Frau Hoffmann
+  'a_klaus':   ('thorsten-high', None, 1.08, 0.6, 0.8, -3.5, True),         # Opa Klaus: langsam, tief
+  'a_mila':    ('kerstin-low', None, 0.88, 0.4, 0.8, 6.5, True),            # Mila: kleines Mädchen
+  'a_noah':    ('thorsten_emotional-medium', 0, 0.92, 0.5, 0.8, 3, False),  # Noah: fröhlich
+  # Chalet
+  'c_gerda':   ('kerstin-low', None, 1.08, 0.333, 0.8, -0.5, False),        # Oma Gerda
+  'c_felix':   ('thorsten_emotional-medium', 0, 0.88, 0.4, 0.8, 7.5, True), # Felix: Junge
+  'c_berger':  ('kerstin-low', None, 0.95, 0.333, 0.8, 0.5, False),         # Frau Berger
+  'c_toni':    ('thorsten_emotional-medium', 6, 0.9, 0.6, 0.8, 0, False),   # Toni: Skifahrer
+  'c_anna':    ('kerstin-low', None, 0.9, 0.4, 0.8, 3.5, True),             # Anna
+  # Parkplatz
+  'p_schmidt': ('thorsten-high', None, 1.0, 0.6, 0.8, -2.5, False),         # Herr Schmidt: Einweiser
+  'p_julia':   ('kerstin-low', None, 0.92, 0.333, 0.8, 1, False),           # Julia
+  'p_karl':    ('thorsten-high', None, 1.1, 0.6, 0.8, -4, True),            # Opa Karl
+  'p_petra':   ('kerstin-low', None, 0.97, 0.333, 0.8, -0.5, False),        # Petra: Busfahrerin
+  'p_tim':     ('thorsten_emotional-medium', 6, 0.88, 0.4, 0.8, 7, True),   # Tim: Junge mit Fahrrad
   'leo':       ('thorsten_emotional-medium', 6, 0.85, 0.4, 0.8, 5, True),      # Leo: sportlich, schnell, überrascht
 }
 SAY = [('Joker', 'Dschoker'), ('Original-Blätter', 'Original Blätter'), ('Im Original', 'im Original')]

@@ -14,31 +14,52 @@ const STAFF_PEOPLE = {
 };
 function drawPerson(c, id, x, y, s, t = 0, o = {}) {
   const P = STAFF_PEOPLE[id];
-  c.save(); c.translate(x, y); c.scale(s, s); c.lineJoin = 'round'; c.lineCap = 'round';
+  c.save(); c.translate(x, y); c.scale(s * (P.kid ? 0.82 : 1), s * (P.kid ? 0.82 : 1)); c.lineJoin = 'round'; c.lineCap = 'round';
   if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, 0, 16, 6); c.fill(); }
   const bob = Math.sin(t * 2.5 + (o.ph || 0)) * 1.2; c.translate(0, -bob);
   if (P.pony) { c.save(); c.translate(-10, -50); c.rotate(0.5 + Math.sin(t * 3) * 0.12); ell(c, -2, 8, 4.5, 10); fs(c, P.hair, 2.5); c.restore(); }
-  // Beine
-  rrPath(c, -8, -18, 6.5, 16, 3); fs(c, P.pants, 2); rrPath(c, 1.5, -18, 6.5, 16, 3); fs(c, P.pants, 2);
-  ell(c, -5, -2, 5.5, 3.2); fs(c, P.shoes, 2); ell(c, 5, -2, 5.5, 3.2); fs(c, P.shoes, 2);
+  if (P.long) { rrPath(c, -14, -58, 28, 30, 10); fs(c, P.hair, 2.5); }
+  // Beine (oder Rock)
+  if (o.sit) { /* sitzt: Beine sind unter dem Tisch */ }
+  else if (P.skirt) { polyPath(c, [[-11, -20], [11, -20], [14, -6], [-14, -6]]); fs(c, P.skirt, 2); rrPath(c, -6, -8, 4, 8, 2); fs(c, P.skin, 1.5); rrPath(c, 2, -8, 4, 8, 2); fs(c, P.skin, 1.5); }
+  else { rrPath(c, -8, -18, 6.5, 16, 3); fs(c, P.pants, 2); rrPath(c, 1.5, -18, 6.5, 16, 3); fs(c, P.pants, 2); }
+  if (!o.sit) { ell(c, -5, -2, 5.5, 3.2); fs(c, P.shoes, 2); ell(c, 5, -2, 5.5, 3.2); fs(c, P.shoes, 2); }
   // Oberkörper (Kochjacke/Shirt)
   rrPath(c, -11, -38, 22, 23, 6); fs(c, P.jacket, 2.5);
+  if (P.check) { c.save(); rrPath(c, -11, -38, 22, 23, 6); c.clip(); c.fillStyle = P.check; for (let k = -3; k < 4; k++) { c.fillRect(k * 6, -38, 2.5, 23); c.fillRect(-11, -36 + k * 6, 22, 2.5); } c.restore(); rrPath(c, -11, -38, 22, 23, 6); fs(c, null, 2.5); }
+  if (P.knit) { for (let k = 0; k < 2; k++) line(c, -10, -31 + k * 7, 10, -31 + k * 7, 2, P.knit, false); for (let m = -2; m <= 2; m++) { ell(c, m * 4, -27.5, 1.3, 1.3); c.fillStyle = P.knit; c.fill(); } }
+  if (P.vest) { polyPath(c, [[-11, -36], [-3, -36], [0, -30], [3, -36], [11, -36], [11, -16], [-11, -16]]); fs(c, P.vest, 2); line(c, -10, -24, 10, -24, 2.5, '#e9ecef', false); line(c, -10, -20, 10, -20, 2.5, '#e9ecef', false); }
   if (P.pipe) { line(c, -11, -30, 11, -30, 1.4, P.pipe, false); for (let k = 0; k < 3; k++) { ell(c, -4, -33 + k * 6, 1.3, 1.3); c.fillStyle = P.pipe; c.fill(); ell(c, 4, -33 + k * 6, 1.3, 1.3); c.fill(); } }
   if (P.apron) { rrPath(c, -9, -28, 18, 22, 4); fs(c, P.apron, 2); if (P.apron === '#3a50a0') { c.save(); rrPath(c, -9, -28, 18, 22, 4); c.clip(); c.fillStyle = 'rgba(255,255,255,.35)'; for (let k = -2; k < 3; k++) { c.fillRect(k * 5, -28, 2, 22); c.fillRect(-9, -26 + k * 5, 18, 2); } c.restore(); } if (P.leaf) leaf(c, 0, -18, 0.6, BRAND.lime); }
+  if (P.scarf) { rrPath(c, -11, -41, 22, 7, 3.5); fs(c, P.scarf, 2); rrPath(c, 3, -37, 6, 14, 3); fs(c, P.scarf, 2); }
   // Arme
   const wave = o.wave ? Math.sin(t * 9) * 0.5 : 0, hand = P.gloves || P.skin;
-  c.save(); c.translate(-11, -35); c.rotate(0.3); rrPath(c, -3, 0, 6, 15, 3); fs(c, P.jacket, 2); ell(c, 0, 16, 3, 3); fs(c, hand, 1.5); c.restore();
-  c.save(); c.translate(11, -35); c.rotate(-0.3 + wave - (o.wave ? 2.2 : 0)); rrPath(c, -3, 0, 6, 15, 3); fs(c, P.jacket, 2); ell(c, 0, 16, 3, 3); fs(c, hand, 1.5); c.restore();
+  c.save(); c.translate(-11, -35); c.rotate(0.3); rrPath(c, -3, 0, 6, 15, 3); fs(c, P.sleeve || P.jacket, 2); ell(c, 0, 16, 3, 3); fs(c, hand, 1.5); c.restore();
+  if (P.hold && !o.wave) { c.save(); c.translate(15, -20); P.hold(c, t); c.restore(); }
+  c.save(); c.translate(11, -35); c.rotate(-0.3 + wave - (o.wave ? 2.2 : 0)); rrPath(c, -3, 0, 6, 15, 3); fs(c, P.sleeve || P.jacket, 2); ell(c, 0, 16, 3, 3); fs(c, hand, 1.5); c.restore();
   // Kopf
   ell(c, 0, -50, 12, 12); fs(c, P.skin, 2.5); ell(c, -12, -49, 2.4, 3.4); fs(c, P.skin, 2); ell(c, 12, -49, 2.4, 3.4); fs(c, P.skin, 2);
+  if (P.beard) { c.beginPath(); c.moveTo(-11.5, -50); c.quadraticCurveTo(-11, -36, 0, -35); c.quadraticCurveTo(11, -36, 11.5, -50); c.quadraticCurveTo(6, -43, 0, -43.5); c.quadraticCurveTo(-6, -43, -11.5, -50); c.closePath(); fs(c, P.beard, 2); }
   if (P.hair) {
     c.beginPath(); c.moveTo(-12.5, -48); c.quadraticCurveTo(-13, -64, 0, -63.5); c.quadraticCurveTo(13, -64, 12.5, -48); c.quadraticCurveTo(5, -56, -3, -55); c.quadraticCurveTo(-9, -53, -12.5, -48); c.closePath(); fs(c, P.hair, 2.5);
     if (P.curly) for (let k = 0; k < 6; k++) { ell(c, -11 + k * 4.4, -59 + Math.abs(k - 2.5), 3, 3); fs(c, P.hair, 1.5); }
     if (P.bun) { ell(c, 0, -66, 6, 5); fs(c, P.hair, 2.5); }
-  } else { ell(c, -4, -58, 4, 2); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill(); }   // Glatze glänzt
+  } else if (!P.hat) { ell(c, -4, -58, 4, 2); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill(); }   // Glatze glänzt
+  const hc = P.hatCol || '#e63946';
   if (P.hat === 'toque') { rrPath(c, -10, -66, 20, 10, 2); fs(c, '#fff', 2.5); for (const [dx, dy, rr] of [[-8, -71, 7], [0, -75, 8], [8, -71, 7]]) { ell(c, dx, dy, rr, rr); fs(c, '#fff', 2.5); } rrPath(c, -9, -67, 18, 6, 2); c.fillStyle = '#fff'; c.fill(); }
+  else if (P.hat === 'beanie') { c.beginPath(); c.moveTo(-13, -54); c.quadraticCurveTo(-13, -70, 0, -70); c.quadraticCurveTo(13, -70, 13, -54); c.closePath(); fs(c, hc, 2.5); rrPath(c, -13.5, -57, 27, 6, 3); fs(c, P.hatBand || '#f8f9fa', 2); if (P.bobble) { ell(c, 0, -72, 5, 5); fs(c, P.bobble, 2); } }
+  else if (P.hat === 'cap') { c.beginPath(); c.moveTo(-12.5, -55); c.quadraticCurveTo(-12, -67, 0, -67); c.quadraticCurveTo(12, -67, 12.5, -55); c.closePath(); fs(c, hc, 2.5); ell(c, 9, -55, 10, 3); fs(c, hc, 2); }
+  else if (P.hat === 'flatcap') { c.beginPath(); c.moveTo(-13, -55); c.quadraticCurveTo(-10, -66, 4, -65); c.quadraticCurveTo(15, -62, 15, -55); c.closePath(); fs(c, hc, 2.5); }
+  else if (P.hat === 'straw' || P.hat === 'sunhat') { ell(c, 0, -57, 22, 5.5); fs(c, hc, 2.5); c.beginPath(); c.moveTo(-10, -57); c.quadraticCurveTo(-10, -70, 0, -70); c.quadraticCurveTo(10, -70, 10, -57); c.closePath(); fs(c, hc, 2.5); rrPath(c, -10, -61, 20, 4, 2); c.fillStyle = P.hatBand || '#e63946'; c.fill(); }
+  else if (P.hat === 'party') { polyPath(c, [[-8, -60], [8, -60], [2, -80]]); fs(c, hc, 2.5); ell(c, 2, -81, 3, 3); fs(c, '#ffd166', 1.5); for (let k = 0; k < 3; k++) { ell(c, -3 + k * 3, -64 - k * 5, 1.4, 1.4); c.fillStyle = '#fff'; c.fill(); } }
+  else if (P.hat === 'helmet') { c.beginPath(); c.moveTo(-13.5, -53); c.quadraticCurveTo(-13, -70, 0, -70); c.quadraticCurveTo(13, -70, 13.5, -53); c.closePath(); fs(c, hc, 2.5); for (let k = -1; k <= 1; k++) line(c, k * 5, -68, k * 6, -60, 2, 'rgba(0,0,0,.35)', false); }
+  else if (P.hat === 'scarfhead') { c.beginPath(); c.moveTo(-14, -44); c.quadraticCurveTo(-15, -68, 0, -67); c.quadraticCurveTo(15, -68, 14, -44); c.quadraticCurveTo(10, -58, 0, -58); c.quadraticCurveTo(-10, -58, -14, -44); c.closePath(); fs(c, hc, 2.5); }
   ell(c, -4.5, -49, 1.7, 2.2); c.fillStyle = OL; c.fill(); ell(c, 4.5, -49, 1.7, 2.2); c.fill();
-  c.beginPath(); c.moveTo(-3, -44); c.quadraticCurveTo(0, -41, 3, -44); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke();
+  if (P.glasses) { ell(c, -4.5, -49, 4, 3.6); c.lineWidth = 1.4; c.strokeStyle = P.glasses; c.stroke(); ell(c, 4.5, -49, 4, 3.6); c.stroke(); line(c, -0.8, -49.5, 0.8, -49.5, 1.2, P.glasses, false); }
+  if (P.sun) { rrPath(c, -9, -52, 8, 5.5, 2.5); fs(c, '#212529', 1.4); rrPath(c, 1, -52, 8, 5.5, 2.5); fs(c, '#212529', 1.4); line(c, -1, -50, 1, -50, 1.2, OL, false); }
+  if (!P.beard) { c.beginPath(); c.moveTo(-3, -44); c.quadraticCurveTo(0, -41, 3, -44); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke(); }
+  else { c.beginPath(); c.moveTo(-2.5, -41.5); c.quadraticCurveTo(0, -39.5, 2.5, -41.5); c.lineWidth = 1.4; c.strokeStyle = OL; c.stroke(); }
+  if (P.stache) { c.beginPath(); c.moveTo(-6, -44); c.quadraticCurveTo(0, -47, 6, -44); c.quadraticCurveTo(0, -43, -6, -44); fs(c, P.stache, 1.2); }
   c.fillStyle = 'rgba(255,120,120,.3)'; ell(c, -8, -45.5, 2.3, 1.5); c.fill(); ell(c, 8, -45.5, 2.3, 1.5); c.fill();
   c.restore();
 }
@@ -130,7 +151,7 @@ const KDECOR = [
   { id: 'wagen1', t: 'wagen', x: 330, y: 900, r: 32, bb: [290, 840, 82, 80] },
   { id: 'wagen2', t: 'wagen', x: 640, y: 255, r: 32, bb: [600, 195, 82, 80] },
   { id: 'eimer', t: 'eimer', x: 240, y: 262, r: 20, bb: [214, 226, 54, 50] },
-  { id: 'kuehlraum', t: 'kuehlraum', x: 195, y: 1220, x0: 60, y0: 1000, w: 270, h: 220, bb: [52, 900, 300, 345] },
+  { id: 'kuehlraum', t: 'kuehlraum', x: 170, y: 1220, x0: 60, y0: 1000, w: 220, h: 220, bb: [52, 900, 250, 345] },
   { id: 'kisten1', t: 'kisten', x: 430, y: 1090, r: 34, bb: [390, 990, 84, 120] },
   { id: 'kisten2', t: 'kisten', x: 480, y: 1210, r: 34, bb: [440, 1110, 84, 120] },
   { id: 'kistenregal', t: 'kistenregal', x: 905, y: 1250, x0: 865, y0: 1000, w: 80, h: 250, bb: [850, 910, 100, 360] },
@@ -139,7 +160,7 @@ const KDECOR = [
   { id: 'stahl', t: 'stahl', x: 715, y: 1050, x0: 680, y0: 990, w: 70, h: 60, bb: [670, 880, 90, 180] },
   { id: 'saecke', t: 'saecke', x: 570, y: 1185, r: 26, bb: [536, 1140, 70, 60] },
   { id: 'kanister', t: 'kanister', x: 770, y: 1180, r: 16, bb: [748, 1148, 44, 44] },
-  { id: 'lagerregal', t: 'lagerregal', x: 270, y: 1330, x0: 200, y0: 1270, w: 140, h: 60, bb: [190, 1180, 160, 160] },
+  { id: 'lagerregal', t: 'lagerregal', x: 360, y: 1330, x0: 300, y0: 1270, w: 120, h: 60, bb: [290, 1180, 140, 160] },
 ];
 const KDRAW = {
   herd(c, d, t) {
@@ -204,7 +225,7 @@ const KDRAW = {
   stahl(c, d) { steel(c, d.x0, d.y0 - 110, d.w, d.h + 110, 4); rrPath(c, d.x0 + 6, d.y0 - 104, d.w - 12, 14, 2); fs(c, '#212529', 1.5); rrPath(c, d.x0 + 18, d.y0 - 70, 34, 44, 2); fs(c, '#fff', 1.5); rrPath(c, d.x0 + d.w - 12, d.y0 - 60, 5, 40, 2); fs(c, '#495057', 1.5); },
   saecke(c, d) { for (const [dx, dy] of [[-12, 0], [10, -4]]) { rrPath(c, d.x + dx - 16, d.y + dy - 36, 32, 38, 10); fs(c, '#f1e3c8', 2.5); txt(c, 'Mehl', d.x + dx, d.y + dy - 18, 8, '#8d5a3b', 'center', null); } },
   kanister(c, d) { rrPath(c, d.x - 13, d.y - 30, 26, 30, 4); fs(c, '#1c7ed6', 2.5); rrPath(c, d.x - 4, d.y - 36, 9, 7, 2); fs(c, '#e63946', 2); rrPath(c, d.x - 8, d.y - 22, 16, 12, 2); fs(c, '#fff', 1.2); },
-  lagerregal(c, d) { rrPath(c, d.x0, d.y0 - 90, d.w, d.h + 90, 3); fs(c, '#adb5bd', 2.5); for (let k = 0; k < 3; k++) { rrPath(c, d.x0 - 2, d.y0 - 84 + k * 44, d.w + 4, 6, 2); fs(c, '#868e96', 1.5); for (let m = 0; m < 3; m++) { rrPath(c, d.x0 + 8 + m * 44, d.y0 - 112 + k * 44 + 28, 36, 26, 3); fs(c, ['#d4a373', '#e9c46a', '#fff'][(m + k) % 3], 2); } } },
+  lagerregal(c, d) { rrPath(c, d.x0, d.y0 - 90, d.w, d.h + 90, 3); fs(c, '#adb5bd', 2.5); for (let k = 0; k < 3; k++) { rrPath(c, d.x0 - 2, d.y0 - 84 + k * 44, d.w + 4, 6, 2); fs(c, '#868e96', 1.5); for (let m = 0; m < 3; m++) { rrPath(c, d.x0 + 6 + m * 37, d.y0 - 112 + k * 44 + 28, 32, 26, 3); fs(c, ['#d4a373', '#e9c46a', '#fff'][(m + k) % 3], 2); } } },
 };
 function buildGridKueche() {
   cellsIn(60, 210, 940, 925, i => (G0[i] = 1));        // Küche
@@ -214,12 +235,30 @@ function buildGridKueche() {
   cellsIn(60, 200, 340, 225, i => (G0[i] = 0)); cellsIn(560, 200, 720, 225, i => (G0[i] = 0)); cellsIn(760, 200, 940, 245, i => (G0[i] = 0)); cellsIn(360, 200, 460, 220, i => (G0[i] = 0));
   for (const d of KDECOR) { if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0)); else if (d.r) cellsCircle(d.x, d.y - 6, d.r - 6, i => (G0[i] = 0)); }
 }
-// Verstecke: hinter Wagen, Kisten, Fässern, Säcken – und unter Geschirrtüchern an den Arbeitszeilen
+// Verstecke an den Möbeln: im Topf, in der Pfanne, auf der Wärmebrücke, hinterm Kühlschrank, auf den Servierwagen, im Eimer,
+// in der obersten Kiste, zwischen den Fässern, hinter Kühlraum, Säcken und Kanister, im Regal
 const KSPOTS = [
-  ...['wagen1', 'wagen2', 'eimer', 'kisten1', 'kisten2', 'faesser', 'saecke', 'kanister'].map(id => { const d = KDECOR.find(q => q.id === id); return { id: 's_' + id, x: d.x, y: d.y, reach: 70, decor: id }; }),
-  { id: 's_herd1', x: 222, y: 390, reach: 50 }, { id: 's_herd2', x: 222, y: 700, reach: 50 }, { id: 's_pass1', x: 412, y: 470, reach: 50 }, { id: 's_pass2', x: 628, y: 640, reach: 50 },
-  { id: 's_salat', x: 780, y: 470, reach: 50 }, { id: 's_regal', x: 820, y: 820, reach: 50 }, { id: 's_kuehl', x: 352, y: 1160, reach: 50 }, { id: 's_kregal', x: 842, y: 1150, reach: 50 },
-  { id: 's_lregal', x: 360, y: 1300, reach: 50 }, { id: 's_spuel', x: 300, y: 235, reach: 50 }, { id: 's_kombi', x: 480, y: 232, reach: 50 }, { id: 's_ofen', x: 740, y: 262, reach: 50 },
+  furnSpot(KDECOR, 'herd', 'top', { px: 155, py: 492, cut: 501, front: true, sx: 232, sy: 505, tag: 'topf' }),
+  furnSpot(KDECOR, 'herd', 'top', { px: 104, py: 366, cut: 380, front: true, sx: 232, sy: 380, tag: 'pfanne', rot: -0.3 }),
+  furnSpot(KDECOR, 'herd', 'top', { px: 128, py: 742, cut: 758, front: true, sx: 232, sy: 750, tag: 'fritteuse', rot: 0.25 }),
+  furnSpot(KDECOR, 'pass', 'on', { px: 468, py: 288, sx: 470, sy: 338, tag: 'bruecke', sz: 0.62 }),
+  furnSpot(KDECOR, 'pass', 'left', { py: 600, sx: 400, sy: 600 }),
+  furnSpot(KDECOR, 'pass', 'right', { py: 520, sx: 640, sy: 520 }),
+  furnSpot(KDECOR, 'salat', 'left', { py: 480, sx: 772, sy: 480 }),
+  furnSpot(KDECOR, 'regal', 'on', { px: 872, py: 758, sx: 812, sy: 790, sz: 0.58, rot: -0.2 }),
+  furnSpot(KDECOR, 'wagen1', 'on', { px: 342, py: 880, sx: 330, sy: 945, sz: 0.6 }),
+  furnSpot(KDECOR, 'wagen2', 'on', { px: 652, py: 236, sx: 640, sy: 302, sz: 0.6 }),
+  furnSpot(KDECOR, 'eimer', 'top', { px: 240, py: 226, sx: 240, sy: 300 }),
+  furnSpot(KDECOR, 'kuehlraum', 'right', { px: 276, py: 1150, sx: 304, sy: 1170 }),
+  furnSpot(KDECOR, 'kisten1', 'top', { px: 430, py: 992, sx: 430, sy: 1135 }),
+  furnSpot(KDECOR, 'kisten2', 'right', { px: 512, py: 1172, sx: 532, sy: 1215 }),
+  furnSpot(KDECOR, 'kistenregal', 'left', { px: 868, py: 1150, sx: 840, sy: 1150 }),
+  furnSpot(KDECOR, 'faesser', 'top', { px: 662, py: 1226, sx: 660, sy: 1318 }),
+  furnSpot(KDECOR, 'getraenke', 'left', { px: 574, py: 960, sx: 545, sy: 1062 }),
+  furnSpot(KDECOR, 'stahl', 'right', { px: 746, py: 965, sx: 775, sy: 1062 }),
+  furnSpot(KDECOR, 'saecke', 'top', { px: 582, py: 1140, sx: 570, sy: 1228 }),
+  furnSpot(KDECOR, 'kanister', 'left', { px: 757, py: 1158, sx: 742, sy: 1210 }),
+  furnSpot(KDECOR, 'lagerregal', 'left', { px: 304, py: 1288, sx: 272, sy: 1300 }),
 ];
 // Schwingtür zum Gastraum = Boss-Level am Ende
 function drawKitchenDoor(c, x, y, s, open, locked, t) {
@@ -242,13 +281,14 @@ STAGE_DEFS.kueche = {
   decor: KDECOR, spots: KSPOTS, grid: buildGridKueche, ground: drawGroundKueche, decorDraw: KDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['cap', 'nudel', 'zettel', 'salat'], items: KUECHE_ITEMS,
-  drawGate: drawKitchenDoor, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
+  drawGate: drawKitchenDoor, gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
   words: { one: 'Mitarbeiter', the: 'den Mitarbeiter', a: 'einen Mitarbeiter', many: 'Mitarbeiter', dat: 'Mitarbeitern', back: 'zum Mitarbeiter', each: 'Jeder Mitarbeiter',
-    hide: 'hinter Kisten, Fässern und Wagen oder unter Geschirrtüchern', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Tür zum Gastraum', gateTap: 'Lauf zur Tür und tippe sie an!',
+    hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Tür zum Gastraum', gateTap: 'Lauf zur Tür und tippe sie an!',
+    opened: 'Die Tür ist offen!',
     lock: 'Die Tür zum Gastraum geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.',
-    progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!',
+    progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!',
     gateAsk: 'Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Gastraum.',
-    search: 'Schau hinter Kisten und unter Geschirrtücher – dann tippe auf die Lupe!' },
+    search: 'Schau in Töpfe, auf Wagen und hinter Kühlschränke – dann tippe auf die Lupe!' },
   pools: {
     easy: ['schnippeln', 'pfannkuchen', 'eier', 'kneten', 'ruehren', 'ueberkochen', 'kuehlpacken', 'pizzaofen', 'belegen', 'spuelen', 'bestellung', 'tisch', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color'],
     puzzle: ['kuehlpacken', 'eier', 'belegen', 'bestellung', 'hanoi', 'pipes', 'lights', 'pairs', 'sequence', 'dials', 'balance', 'diff', 'count', 'pattern', 'sort'],

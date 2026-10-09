@@ -121,6 +121,14 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
     if (L.pat === 'stars') { starPath(c, 3, -20, 2.6, 1.1); c.fillStyle = '#fff7ae'; c.fill(); }
     if (L.leaf) leaf(c, 3, -20, 0.55, '#fff');
   }
+  // weitere Ausrüstungsteile, sobald der jeweilige Bereich geschafft ist
+  if (!L.uniform && !o.noOutfit && typeof SP === 'function' && ACC()) {
+    const got = id => SP(CUR_DIFF, id).outfit;
+    if (got('chalet')) { ell(c, 1, -26, 12.5, 4.6); fs(c, '#4361ee', 2.5); rrPath(c, -6, -25, 6, 13, 3); fs(c, '#4361ee', 2); line(c, -5, -15, -1, -15, 2, '#f8f9fa', false); line(c, -6, -27, 8, -27, 1.6, 'rgba(255,255,255,.8)', false); }
+    if (got('gastraum')) { polyPath(c, [[1, -24], [-6, -28], [-6, -20]]); fs(c, '#e63946', 1.8); polyPath(c, [[1, -24], [8, -28], [8, -20]]); fs(c, '#e63946', 1.8); ell(c, 1, -24, 2, 2.3); fs(c, '#b5172b', 1.2); }
+    if (got('parkplatz')) { rrPath(c, -12, -22, 7, 15, 3); fs(c, '#ff9f1c', 2); rrPath(c, 7, -22, 6, 15, 3); fs(c, '#ff9f1c', 2); line(c, -11, -12, -6, -12, 2, '#e9ecef', false); line(c, 8, -12, 12, -12, 2, '#e9ecef', false); }
+    if (got('aussen')) { rrPath(c, -3, -42, 8, 6, 2.5); fs(c, '#212529', 1.5); rrPath(c, 6, -42, 7, 6, 2.5); fs(c, '#212529', 1.5); line(c, 5, -40, 6, -40, 1.5, OL, false); line(c, -3, -40, -10, -42, 1.5, OL, false); }
+  }
   // Spielplatz-Ausrüstung: Kappe
   if (o.cap) {
     const cp = paint(c, L.cap, -10, 14);
