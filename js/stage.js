@@ -315,7 +315,10 @@ class Play {
       // Ziel = Landepunkt am Ende der Rutsche; Leo läuft zum nächsten begehbaren Punkt daneben
       const fx = SLIDE.x1 + 12, fy = (SLIDE.y0 + SLIDE.y1) / 2; let lx = fx, ly = fy;
       for (let r = 0; r < 120 && !canStand(0, lx, ly); r += 6) { const a = [[0, 1], [-1, 0], [0, -1], [-1, 1], [1, 1]].find(([dx, dy]) => canStand(0, fx + dx * r, fy + dy * r)); if (a) { lx = fx + a[0] * r; ly = fy + a[1] * r; } }
-      this.racer = { x: hp[0], y: hp[1], hx: hp[0], hy: hp[1], state: 'idle', t: 0, path: null, dir: 1, fin: { x: fx, y: fy }, leoFin: { x: lx, y: ly } };
+      // Wendepunkt-Fahne: begehbarer Punkt unten rechts, möglichst weit weg von der Rutsche
+      let CP = [850, 900], best = -1;
+      for (let x = 700; x <= 930; x += 25) for (let y = 1000; y <= 1320; y += 25) if (canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, GATE.ix, GATE.iy) > 110 && !DECOR.some(d => dist(d.x, d.y, x, y) < 90)) { const d = dist(x, y, SLIDE.x1, SLIDE.y1); if (d > best) { best = d; CP = [x, y]; } }
+      this.racer = { x: hp[0], y: hp[1], hx: hp[0], hy: hp[1], state: 'idle', t: 0, path: null, dir: 1, l: 0, fin: { x: fx, y: fy }, leoFin: { x: lx, y: ly }, cp: { x: CP[0], y: CP[1] } };
     }
 
     this.leafPop = 0; this.justDone = null;
@@ -341,10 +344,14 @@ class Play {
   startRace() {
     const R = this.racer; if (R.state === 'run') return;
     const p = this.p; p.path = null; p.target = null; p.slide = null; p.level = 0; p.x = R.hx + 34; p.y = R.hy; p.dir = 1;
-    R.x = R.hx; R.y = R.hy; R.state = 'ready'; R.t = 0; R.path = findPath(R.x, R.y, 0, R.leoFin.x, R.leoFin.y, 0, true) || [];
-    R.speed = { easy: 162, medium: 176, hard: 181 }[this.diff];   // Lauf auf Zeit: wer den direkten Weg nimmt, ist knapp schneller
-    R.leoTime = R.path.reduce((s2, w, i) => s2 + dist(i ? R.path[i - 1].x : R.x, i ? R.path[i - 1].y : R.y, w.x, w.y), 0) / R.speed;
-    this.banner = { text: 'Wer zuerst unten an der Rutsche ist! Die Zeit läuft, sobald du losläufst.', t: 0 }; Voice.say(LEO_SAY.start, true, 'leo');
+    R.x = R.hx; R.y = R.hy; R.l = 0; R.slide = null; R.done = false; R.state = 'ready'; R.t = 0; R.cpMe = false; R.cpLeo = false; R.meDone = false;
+    const top = { x: SLIDE.x0 + 12, y: (SLIDE.y0 + SLIDE.y1) / 2 };
+    R.path = (findPath(R.x, R.y, 0, R.cp.x, R.cp.y, 0, true) || []).map(w => Object.assign(w, { cp: false }));
+    if (R.path.length) R.path[R.path.length - 1].cp = true;
+    R.path = R.path.concat(findPath(R.cp.x, R.cp.y, 0, top.x, top.y, 1, true) || []);
+    R.speed = { easy: 150, medium: 162, hard: 166 }[this.diff];   // Lauf auf Zeit: wer den direkten Weg nimmt (Fahne, Treppe, Rutsche), ist knapp schneller
+    R.leoTime = R.path.reduce((s2, w, i) => s2 + dist(i ? R.path[i - 1].x : R.x, i ? R.path[i - 1].y : R.y, w.x, w.y), 0) / R.speed + 0.8;
+    this.banner = { text: 'Erst zur gelben Fahne, dann die Rutsche runter ins Ziel! Die Zeit läuft, sobald du losläufst.', t: 0 }; Voice.say(LEO_SAY.start, true, 'leo');
   }
   updateRace(dt) {
     const R = this.racer, p = this.p; R.t += dt;
@@ -354,9 +361,14 @@ class Play {
       return false;
     }
     if (R.state === 'run') {
-      let step = R.speed * dt;
-      while (step > 0 && R.path.length) { const w = R.path[0], d = dist(R.x, R.y, w.x, w.y); if (d <= step) { R.x = w.x; R.y = w.y; R.path.shift(); step -= d; } else { R.dir = w.x > R.x ? 1 : -1; R.x += (w.x - R.x) / d * step; R.y += (w.y - R.y) / d * step; step = 0; } }
-      const meIn = !p.slide && p.level === 0 && dist(p.x, p.y, R.fin.x, R.fin.y) < 44, leoIn = !R.path.length;
+      if (R.slide) { R.slide.t += dt / 0.8; const e = Math.min(1, R.slide.t * R.slide.t); R.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); R.dir = 1; if (R.slide.t >= 1) { R.slide = null; R.l = 0; R.done = true; } }
+      else {
+        let step = R.speed * dt;
+        while (step > 0 && R.path.length) { const w = R.path[0], d = dist(R.x, R.y, w.x, w.y); if (d <= step) { R.x = w.x; R.y = w.y; R.l = w.l || 0; if (w.cp) R.cpLeo = true; R.path.shift(); step -= d; } else { R.dir = w.x > R.x ? 1 : -1; R.x += (w.x - R.x) / d * step; R.y += (w.y - R.y) / d * step; const i = cellIdx(R.x, R.y); if (i >= 0 && !ST[i]) R.l = w.l || 0; step = 0; } }
+        if (!R.path.length && !R.done) { R.slide = { t: 0 }; R.y = clamp(R.y, SLIDE.y0 + 8, SLIDE.y1 - 8); }
+      }
+      if (!R.cpMe && p.level === 0 && dist(p.x, p.y, R.cp.x, R.cp.y) < 50) { R.cpMe = true; Sfx.note(880, 0.2, 'triangle', 0.07, 1.4); buzz(25); const sp = this.w2s(R.cp.x, R.cp.y, 60); FX.sparkle(sp.x, sp.y, 14, '#80ed99'); }
+      const meIn = R.meDone, leoIn = !!R.done;
       if (meIn || leoIn) {
         const won = meIn, mine = R.t; R.state = 'done'; R.t = 0;
         const fmt = v => v.toFixed(1).replace('.', ',') + ' s', times = (won ? 'Deine Zeit: ' + fmt(mine) : 'Leo: ' + fmt(R.leoTime)) + (won ? ' – Leo: ' + fmt(R.leoTime) : '');
@@ -370,7 +382,7 @@ class Play {
     if (R.state === 'back') {
       let step = 90 * dt;
       while (step > 0 && R.path.length) { const w = R.path[0], d = dist(R.x, R.y, w.x, w.y); if (d <= step) { R.x = w.x; R.y = w.y; R.path.shift(); step -= d; } else { R.dir = w.x > R.x ? 1 : -1; R.x += (w.x - R.x) / d * step; R.y += (w.y - R.y) / d * step; step = 0; } }
-      if (!R.path.length) { R.state = 'idle'; R.x = R.hx; R.y = R.hy; }
+      if (!R.path.length) { R.state = 'idle'; R.x = R.hx; R.y = R.hy; R.l = 0; }
     }
     return false;
   }
@@ -598,6 +610,7 @@ class Play {
       if (p.slide.t >= 1) {
         p.slide = null; p.level = 0; p.x = SLIDE.x1 + 12; p.slideZ = 0; const s = this.w2s(p.x, p.y); FX.puff(s.x, s.y, 10); Sfx.play('good'); buzz(30);
         this.slides = this.slides.filter(t => this.t - t < 40); this.slides.push(this.t); if (this.slides.length >= 3) this.secretJoker('slide');
+        if (this.racer.state === 'run' && this.racer.cpMe) this.racer.meDone = true;   // ins Ziel gerutscht
       }
       return;
     }
@@ -966,7 +979,9 @@ class Play {
     if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     { const R = this.racer, run = R.state === 'run' || R.state === 'back';
-      if (vis(R.x, R.y)) L.push({ y: R.y, f: () => drawCritter(c, 'leo', R.x, R.y - (run ? Math.abs(Math.sin(t * 14)) * 5 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
+      const ci = cellIdx(R.x, R.y), rz = R.slide ? HOUSE.fz * (1 - (R.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)) : ci >= 0 && ST[ci] ? stairsZ(R.y) : R.l ? HOUSE.fz : 0, up = rz > 1;
+      if (vis(R.x, R.y)) L.push({ y: up ? HOUSE.y + HOUSE.h + 1 : R.y, f: () => drawCritter(c, 'leo', R.x, R.y - rz - (run && !R.slide ? Math.abs(Math.sin(t * 14)) * 5 : R.slide ? 0 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
+      if (R.state === 'ready' || R.state === 'run') { const P = R.cp, ok = R.cpMe; L.push({ y: P.y - 1, f: () => { line(c, P.x, P.y, P.x, P.y - 80, 4, '#6c757d'); polyPath(c, [[P.x, P.y - 80], [P.x + 36, P.y - 69], [P.x, P.y - 58]]); fs(c, ok ? '#06d6a0' : '#ffd23f', 2.5); if (ok) icon(c, 'check', P.x + 14, P.y - 69, 16, '#fff'); ell(c, P.x, P.y, 34, 12); c.lineWidth = 3; c.strokeStyle = ok ? 'rgba(6,214,160,.8)' : 'rgba(255,210,63,.9)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
       if (R.state === 'ready' || R.state === 'run') { const F = R.fin; L.push({ y: F.y - 1, f: () => { line(c, F.x + 18, F.y, F.x + 18, F.y - 70, 4, '#6c757d'); polyPath(c, [[F.x + 18, F.y - 70], [F.x + 52, F.y - 60], [F.x + 18, F.y - 50]]); fs(c, '#ef476f', 2.5); ell(c, F.x, F.y, 40, 14); c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.8)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
     }
     for (const lf of this.st.leaves) if (!lf.got && vis(lf.x, lf.y)) L.push({ y: lf.y, f: () => {
@@ -1227,8 +1242,12 @@ class Play {
       if (this.bonusPop) { const k = ease.back(clamp(this.bonusPop.t * 3, 0, 1)), a = clamp(2.6 - this.bonusPop.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.32 - this.bonusPop.t * 12); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -70, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
     }
     { const R = this.racer;
-      if (R.state === 'ready') { const pu = 1 + Math.sin(this.t * 5) * 0.04; c.save(); c.translate(W / 2, H - 44); c.scale(pu, pu); rrPath(c, -150, -18, 300, 36, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); txt(c, 'Lauf los, wenn du bereit bist!', 0, 1, 16, '#fff', 'center', null); c.restore(); }
-      if (R.state === 'run') { rrPath(c, W / 2 - 80, H - 62, 160, 44, 22); c.fillStyle = 'rgba(30,20,10,.8)'; c.fill(); icon(c, 'clock', W / 2 - 52, H - 40, 26); txt(c, R.t.toFixed(1).replace('.', ',') + ' s', W / 2 + 12, H - 39, 22, '#fff', 'center', null); }
+      if (R.state === 'ready') { const pu = 1 + Math.sin(this.t * 5) * 0.04; c.save(); c.translate(W / 2, H - 44); c.scale(pu, pu); rrPath(c, -180, -18, 360, 36, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); txt(c, 'Erst zur gelben Fahne, dann rutsch ins Ziel!', 0, 1, 15, '#fff', 'center', null); c.restore(); }
+      if (R.state === 'run') {
+        rrPath(c, W / 2 - 80, H - 62, 160, 44, 22); c.fillStyle = 'rgba(30,20,10,.8)'; c.fill(); icon(c, 'clock', W / 2 - 52, H - 40, 26); txt(c, R.t.toFixed(1).replace('.', ',') + ' s', W / 2 + 12, H - 39, 22, '#fff', 'center', null);
+        const goal = R.cpMe ? 'Jetzt rauf und die Rutsche runter!' : 'Zur gelben Fahne!'; c.font = `900 14px ${FONT}`; const gw = c.measureText(goal).width + 26;
+        rrPath(c, W / 2 - gw / 2, H - 94, gw, 28, 14); c.fillStyle = R.cpMe ? 'rgba(6,214,160,.9)' : 'rgba(255,183,3,.92)'; c.fill(); txt(c, goal, W / 2, H - 80, 14, '#fff', 'center', BRAND.ink);
+      }
     }
     if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -96, 0, 46); txt(c, 'Geheimer Joker! +1', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
     if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') this.drawCoach(c);
@@ -1320,7 +1339,7 @@ const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schne
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
 const SECRET_JUMP = 4;   // Meter beim Schaukel-Weitsprung (ca. 6 gute Schwünge, dann abspringen)
 const LEO_SAY = {
-  start: 'Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Die Zeit läuft, sobald du losläufst.',
+  start: 'Wetten, ich bin schneller als du? Erst zur gelben Fahne, dann rauf aufs Spielhaus und die Rutsche runter ins Ziel! Die Zeit läuft, sobald du losläufst.',
   win: 'Wow, du bist ja echt schnell!',
   lose: 'Erster! Willst du nochmal?',
 };
