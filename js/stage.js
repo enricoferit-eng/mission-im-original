@@ -494,7 +494,9 @@ class Play {
     const hase = this.npcs.find(n => n.swing !== undefined);
     if (hase) { const off = this.seatOff(hase.swing); hase.y = SWING.y + off; hase.z = 24 + Math.abs(off) * 0.35; }
     { const bq = this.bonusQuest();
-      if (bq && !this.exiting && scene === this && !this.bonusIntro) {
+      // pausiert, solange man nicht spielen kann (Kind erzählt, Aufgaben-Erklärung, 3-2-1, Feier)
+      const paused = overlay && (overlay instanceof QuestDialog || (overlay instanceof GameOverlay && overlay.bonusPaused()));
+      if (bq && !this.exiting && scene === this && !this.bonusIntro && !paused) {
         const lim = this.bonusLimit(bq.npc), before = lim - (bq.q.tt || 0); bq.q.tt = (bq.q.tt || 0) + dt; const after = lim - bq.q.tt;
         if (before > 0) {
           if (Math.ceil(after) !== Math.ceil(before) && after <= 10 && after > 0) { Sfx.note(after <= 5 ? 1500 : 1200, 0.05, 'square', 0.04); if (after <= 5) buzz(15); }
