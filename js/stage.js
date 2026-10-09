@@ -339,29 +339,30 @@ class Play {
   }
   // Wettlauf mit Leo: zuerst unten an der Rutsche
   startRace() {
-    const R = this.racer; if (R.state === 'count' || R.state === 'run') return;
+    const R = this.racer; if (R.state === 'run') return;
     const p = this.p; p.path = null; p.target = null; p.slide = null; p.level = 0; p.x = R.hx + 34; p.y = R.hy; p.dir = 1;
-    R.x = R.hx; R.y = R.hy; R.state = 'count'; R.t = 0; R.path = findPath(R.x, R.y, 0, R.leoFin.x, R.leoFin.y, 0, true) || [];
-    this.banner = { text: LEO_SAY.start.replace(' Drei, zwei, eins, los!', ''), t: 0 }; Voice.say(LEO_SAY.start, true, 'leo');
+    R.x = R.hx; R.y = R.hy; R.state = 'ready'; R.t = 0; R.path = findPath(R.x, R.y, 0, R.leoFin.x, R.leoFin.y, 0, true) || [];
+    R.speed = { easy: 162, medium: 176, hard: 181 }[this.diff];   // Lauf auf Zeit: wer den direkten Weg nimmt, ist knapp schneller
+    R.leoTime = R.path.reduce((s2, w, i) => s2 + dist(i ? R.path[i - 1].x : R.x, i ? R.path[i - 1].y : R.y, w.x, w.y), 0) / R.speed;
+    this.banner = { text: 'Wer zuerst unten an der Rutsche ist! Die Zeit läuft, sobald du losläufst.', t: 0 }; Voice.say(LEO_SAY.start, true, 'leo');
   }
   updateRace(dt) {
     const R = this.racer, p = this.p; R.t += dt;
-    if (R.state === 'count') {
-      const before = Math.ceil(4 - (R.t - dt)), after = Math.ceil(4 - R.t);
-      if (after !== before && after >= 1 && after <= 3) Sfx.note(660, 0.12, 'square', 0.05);
-      if (R.t >= 4) { R.state = 'run'; R.t = 0; Sfx.note(990, 0.35, 'square', 0.06, 1.2); buzz(40); }
-      p.path = null; p.target = null; this.joy = null; return true;   // beim Countdown nicht loslaufen
+    if (R.state === 'ready') {   // Zeit startet mit dem ersten Schritt – Leo läuft im selben Moment los
+      if (p.moving || (p.path && p.path.length) || p.slide) { R.state = 'run'; R.t = 0; Sfx.note(990, 0.3, 'square', 0.06, 1.2); buzz(30); }
+      else if (dist(p.x, p.y, R.hx, R.hy) > 200) R.state = 'idle';
+      return false;
     }
     if (R.state === 'run') {
-      const LEO_SPEED = { easy: 158, medium: 174, hard: 182 }[this.diff];   // knapp: wer sofort richtig losläuft, gewinnt
-      let step = LEO_SPEED * dt;
+      let step = R.speed * dt;
       while (step > 0 && R.path.length) { const w = R.path[0], d = dist(R.x, R.y, w.x, w.y); if (d <= step) { R.x = w.x; R.y = w.y; R.path.shift(); step -= d; } else { R.dir = w.x > R.x ? 1 : -1; R.x += (w.x - R.x) / d * step; R.y += (w.y - R.y) / d * step; step = 0; } }
       const meIn = !p.slide && p.level === 0 && dist(p.x, p.y, R.fin.x, R.fin.y) < 44, leoIn = !R.path.length;
       if (meIn || leoIn) {
-        R.state = 'done'; R.t = 0; const won = meIn;
+        const won = meIn, mine = R.t; R.state = 'done'; R.t = 0;
+        const fmt = v => v.toFixed(1).replace('.', ',') + ' s', times = (won ? 'Deine Zeit: ' + fmt(mine) : 'Leo: ' + fmt(R.leoTime)) + (won ? ' – Leo: ' + fmt(R.leoTime) : '');
         Voice.say(won ? LEO_SAY.win : LEO_SAY.lose, true, 'leo');
-        if (won) { if (!this.secretJoker('race')) { this.banner = { text: 'Gewonnen!', t: 0 }; Sfx.play('win'); } }
-        else { this.banner = { text: 'Leo war schneller!', t: 0 }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
+        if (won) { this.banner = { text: times, t: 0 }; if (!this.secretJoker('race')) Sfx.play('win'); }
+        else { this.banner = { text: 'Leo war schneller! ' + times, t: 0 }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
       }
       return false;
     }
@@ -966,7 +967,7 @@ class Play {
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     { const R = this.racer, run = R.state === 'run' || R.state === 'back';
       if (vis(R.x, R.y)) L.push({ y: R.y, f: () => drawCritter(c, 'leo', R.x, R.y - (run ? Math.abs(Math.sin(t * 14)) * 5 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
-      if (R.state === 'count' || R.state === 'run') { const F = R.fin; L.push({ y: F.y - 1, f: () => { line(c, F.x + 18, F.y, F.x + 18, F.y - 70, 4, '#6c757d'); polyPath(c, [[F.x + 18, F.y - 70], [F.x + 52, F.y - 60], [F.x + 18, F.y - 50]]); fs(c, '#ef476f', 2.5); ell(c, F.x, F.y, 40, 14); c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.8)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
+      if (R.state === 'ready' || R.state === 'run') { const F = R.fin; L.push({ y: F.y - 1, f: () => { line(c, F.x + 18, F.y, F.x + 18, F.y - 70, 4, '#6c757d'); polyPath(c, [[F.x + 18, F.y - 70], [F.x + 52, F.y - 60], [F.x + 18, F.y - 50]]); fs(c, '#ef476f', 2.5); ell(c, F.x, F.y, 40, 14); c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.8)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
     }
     for (const lf of this.st.leaves) if (!lf.got && vis(lf.x, lf.y)) L.push({ y: lf.y, f: () => {
       const b = Math.sin(t * 3 + lf.x) * 5, gl = 0.5 + 0.5 * Math.sin(t * 4 + lf.y);
@@ -1137,7 +1138,7 @@ class Play {
     });
     // Wortlose "Schau-her"-Hinweise beim ersten Mal
     let hintT = null;
-    if (!ACC().tut.symbol && !this.swinging && this.racer.state !== 'run' && this.racer.state !== 'count') {
+    if (!ACC().tut.symbol && !this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') {
       let bd = 1e9; for (const m of marks) { const s = this.npcState(m.id); if (s !== 'open' && s !== 'busy') continue; const d = dist(m.x, m.y, p.x, p.y); if (d < bd) { bd = d; hintT = { x: m.x, y: m.y }; } }
     }
     if (hintT) {
@@ -1226,12 +1227,11 @@ class Play {
       if (this.bonusPop) { const k = ease.back(clamp(this.bonusPop.t * 3, 0, 1)), a = clamp(2.6 - this.bonusPop.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.32 - this.bonusPop.t * 12); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -70, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
     }
     { const R = this.racer;
-      if (R.state === 'count' && R.t > 1) { const n = Math.ceil(4 - R.t), fr = (4 - R.t) % 1, k = ease.back(clamp((1 - fr) * 3, 0, 1)); c.save(); c.translate(W / 2, H * 0.42); c.scale(k * 1.5, k * 1.5); ell(c, 0, 0, 46, 46); fs(c, ['#06d6a0', '#ffd166', '#ef476f'][n - 1] || '#ef476f', 5); txt(c, String(n), 0, 3, 56, '#fff', 'center', OL); c.restore(); }
-      if (R.state === 'run' && R.t < 0.7) { const k = ease.back(clamp(R.t * 4, 0, 1)); c.save(); c.globalAlpha = clamp(1.4 - R.t * 2, 0, 1); c.translate(W / 2, H * 0.42); c.scale(k * 1.3, k * 1.3); rrPath(c, -90, -36, 180, 72, 36); fs(c, BRAND.lime, 5); txt(c, 'LOS!', 0, 3, 48, '#fff', 'center', OL); c.restore(); }
-      if (R.state === 'run') { rrPath(c, W / 2 - 90, H - 58, 180, 36, 18); c.fillStyle = 'rgba(30,20,10,.7)'; c.fill(); txt(c, 'Wettlauf zur Rutsche!', W / 2, H - 40, 15, '#fff', 'center', null); }
+      if (R.state === 'ready') { const pu = 1 + Math.sin(this.t * 5) * 0.04; c.save(); c.translate(W / 2, H - 44); c.scale(pu, pu); rrPath(c, -150, -18, 300, 36, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); txt(c, 'Lauf los, wenn du bereit bist!', 0, 1, 16, '#fff', 'center', null); c.restore(); }
+      if (R.state === 'run') { rrPath(c, W / 2 - 80, H - 62, 160, 44, 22); c.fillStyle = 'rgba(30,20,10,.8)'; c.fill(); icon(c, 'clock', W / 2 - 52, H - 40, 26); txt(c, R.t.toFixed(1).replace('.', ',') + ' s', W / 2 + 12, H - 39, 22, '#fff', 'center', null); }
     }
     if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -96, 0, 46); txt(c, 'Geheimer Joker! +1', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
-    if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'count') this.drawCoach(c);
+    if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') this.drawCoach(c);
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
@@ -1320,7 +1320,7 @@ const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schne
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
 const SECRET_JUMP = 4;   // Meter beim Schaukel-Weitsprung (ca. 6 gute Schwünge, dann abspringen)
 const LEO_SAY = {
-  start: 'Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Drei, zwei, eins, los!',
+  start: 'Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Die Zeit läuft, sobald du losläufst.',
   win: 'Wow, du bist ja echt schnell!',
   lose: 'Erster! Willst du nochmal?',
 };
