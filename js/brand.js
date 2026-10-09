@@ -230,7 +230,7 @@ const UNIFORM_LOOKS = [
   { uniform: 'schuerze', uCol: '#ffffff', uCol2: BRAND.lime, cap: 'gold', scarf: BRAND.lime },                           // Festtags-Service
 ];
 const UNIFORM_NAMES = ['Service-Schürze', 'Koch-Jacke', 'Kellner-Weste', 'Eis-Theke', 'Palmen-Gärtner', 'Chalet-Pulli', 'Barista', 'Chefkoch', 'Limo-Stand', 'Original-Weste', 'Hütten-Pulli', 'Festtags-Service'];
-// Seltenheit: 4 normal, 1 selten, 1 legendär (mit Fähigkeit – nur bei 2 und 3 Sternen)
+// Seltenheit: 4 normal, 1 selten, 1 legendär (mit Fähigkeit – nur bei Mittel und Schwer)
 const ABILITIES = {
   detektor: { name: 'Metalldetektor', text: 'Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung.' },
   adlerauge: { name: 'Adlerauge', text: 'Verstecke in deiner Nähe leuchten golden auf.' },

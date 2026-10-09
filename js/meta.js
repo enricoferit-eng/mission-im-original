@@ -19,7 +19,7 @@ const ACHIEVEMENTS = [
   { id: 'erster', name: 'Erste Hilfe', desc: 'Hilf deinem ersten Kind.', coins: 10, stat: 'kids', need: 1 },
   { id: 'kinder25', name: 'Guter Freund', desc: 'Hilf 25 Kindern.', coins: 40, stat: 'kids', need: 25 },
   { id: 'spielplatz', name: 'Spielplatz-Held', desc: 'Schaffe den Spielplatz.', coins: 30, stat: 'clears', need: 1 },
-  { id: 'profi', name: 'Drei-Sterne-Profi', desc: 'Schaffe den Spielplatz mit drei Sternen.', coins: 60 },
+  { id: 'profi', name: 'Schwer-Profi', desc: 'Schaffe den Spielplatz auf Schwer.', coins: 60 },
   { id: 'ohnejoker', name: 'Ganz ohne Joker', desc: 'Schaffe den Spielplatz, ohne einen Joker zu benutzen.', coins: 50 },
   { id: 'bonus1', name: 'Blitzschnell', desc: 'Hol dir einen Bonus-Joker mit der Bonus-Uhr.', coins: 15, stat: 'bonusJ', need: 1 },
   { id: 'bonus5', name: 'Bonus-Jäger', desc: 'Hol dir 5 Bonus-Joker.', coins: 40, stat: 'bonusJ', need: 5 },
@@ -157,7 +157,7 @@ class SkinInfo {
       const A = ABILITIES[sk.ability];
       txt(c, 'Fähigkeit: ' + A.name, x + 150, y + 112, 16, '#c9762f', 'left', null);
       wrapLines(c, A.text, w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
-      wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei 2 und 3 Sternen.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
+      wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei Mittel und Schwer.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
     } else wrapLines(c, 'Dieser Skin hat keine besondere Fähigkeit – er sieht einfach gut aus! Fähigkeiten haben nur legendäre Skins.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
     c.restore();
   }
@@ -283,8 +283,8 @@ class MultiScene {
       vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = cur === v; rrPath(c, bx, y + 10, bw, 32, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 27, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, 32, () => { set(v); Sfx.play('tap'); }); });
     };
     seg(ry + 22, 'Modus', [['duell', 'Gegeneinander'], ['team', 'Zusammen']], o.mode, v => (o.mode = v));
-    seg(ry + 74, 'Stufe', [['easy', '1 Stern'], ['medium', '2 Sterne'], ['hard', '3 Sterne']], o.diff, v => (o.diff = v));
-    if (o.mode === 'duell') { seg(ry + 126, 'Wie viele Kinder?', [[1, '1'], [3, '3'], [5, 'alle 5']], o.kids, v => (o.kids = v)); seg(ry + 178, 'Tor am Ende · Gegner sehen', [['b', o.boss ? 'Tor: ja' : 'Tor: nein'], ['l', o.live ? 'live: ja' : 'live: nein']], null, v => (v === 'b' ? (o.boss = !o.boss) : (o.live = !o.live))); }
+    seg(ry + 74, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], o.diff, v => (o.diff = v));
+    if (o.mode === 'duell') { seg(ry + 126, 'Wie vielen Kindern wollt ihr helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], o.kids, v => (o.kids = v)); seg(ry + 178, 'Boss-Level am Ende · Gegner sehen', [['b', o.boss ? 'Boss-Level: ja' : 'Boss-Level: nein'], ['l', o.live ? 'live: ja' : 'live: nein']], null, v => (v === 'b' ? (o.boss = !o.boss) : (o.live = !o.live))); }
     else wrapLines(c, 'Ein großer gemeinsamer Auftrag: Was einer findet, zählt für beide. Zwei Sachen schafft ihr nur zusammen!', rw - 32, 13).forEach((l, i) => txt(c, l, rx + 16, ry + 140 + i * 18, 13, '#3d2c1f', 'left', null));
     const by = ry + rh - 34, bw2 = (rw - 42) / 2;
     rrPath(c, rx + 14, by - 22, bw2, 44, 16); fs(c, '#06d6a0', 3); txt(c, this.busy ? '…' : 'Spiel erstellen', rx + 14 + bw2 / 2, by, 15, '#fff', 'center', BRAND.ink); UI.btn(rx + 14, by - 22, bw2, 44, () => { if (!this.busy) this.create(); });
@@ -308,7 +308,8 @@ class LobbyScene {
     topBar(c, () => { api({ action: 'lobby_poll', code: this.lob.code, leave: true }); setScene(new MultiScene()); });
     const w = Math.min(W - 30, 460), h = Math.min(H - 150, 290), x = (W - w) / 2, y = 76, py = y + Math.min(190, h - 60);
     panel(c, x, y, w, h, '#fff7e6', 24);
-    txt(c, this.lob.opts.mode === 'team' ? 'Zusammen spielen' : 'Duell', W / 2, y + 30, 20, BRAND.olive, 'center', null);
+    const o = this.lob.opts, stars = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff];
+    txt(c, o.mode === 'team' ? 'Zusammen spielen · ' + stars : 'Duell · ' + o.kids + (o.kids === 1 ? ' Kind' : ' Kinder') + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars, W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
     txt(c, 'Spiel-Code', W / 2, y + 62, 13, '#6b5a48', 'center', null);
     this.lob.code.split('').forEach((ch, i) => { const cx = W / 2 + (i - 1.5) * 52; rrPath(c, cx - 22, y + 74, 44, 52, 12); fs(c, '#fff', 3); txt(c, ch, cx, y + 101, 30, '#118ab2', 'center', null); });
     const ppl = [this.lob.host, this.lob.guest];

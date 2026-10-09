@@ -334,16 +334,20 @@ class Play {
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
   }
+  // Mehrspieler: gleicher Zufall, aber der zweite Spieler bekommt die nächste Aufgabe in der Liste -> andere Aufgaben als der Gegner
+  pickRole(arr, r) { const i = Math.floor(r() * arr.length); return arr[(i + (this.mp && this.mp.me === 'guest' && arr.length > 1 ? 1 : 0)) % arr.length]; }
   seedFor(tag) { let h = 2166136261; for (const ch of String(tag)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return ((this.mp ? this.mp.seed : Date.now()) ^ h) >>> 0; }
   // ---------- Mehrspieler ----------
   mpSetup() {
     const M = this.mp, st = this.st;
     st.jokers = JOKERS_PER_RUN; this.mpT = 0; this.ghost = null;
     ACC().tut.coach = true;
+    this.activeIds = M.mode === 'team' ? ['hase'] : shuffle(NPC_DEFS.map(n => n.id), mulberry32(this.seedFor('kids'))).slice(0, M.opts.kids);
+    this.npcs = this.npcs.filter(n => this.activeIds.includes(n.id));   // nicht gewählte Kinder sind gar nicht da
     if (M.mode === 'team') {
       // Ein großer gemeinsamer Auftrag von Mia + zwei Teile, die man nur zu zweit schafft
       const q = this.genQuest('hase', { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chest: false, roof: false };
-      st.active = q; NPC_DEFS.forEach(n => { if (n.id !== 'hase') st.done[n.id] = true; });
+      st.active = q;
       const find = (cands) => cands.find(([x, y]) => canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70)) || cands[0];
       const r = mulberry32(this.seedFor('coop')), spots = [];
       for (let i = 0; i < 400 && spots.length < 3; i++) { const x = 90 + r() * 820, y = 320 + r() * 980; if (canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 80) && spots.every(([a, b]) => dist(a, b, x, y) > 420) && dist(x, y, HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2) > 220) spots.push([x, y]); }
@@ -353,8 +357,8 @@ class Play {
       this.banner = { text: 'Mia braucht ganz viele Sachen – sucht sie zusammen!', t: 0 };
     } else {
       // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
-      this.pre = {}; if (this.diff !== 'easy') ALL_IDS.forEach(id => { this.pre[id] = this.genQuest(id); });
-      this.banner = { text: 'Duell! Hilf ' + M.opts.kids + (M.opts.kids === 1 ? ' Kind' : ' Kindern') + (M.opts.boss ? ' und öffne das Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
+      this.pre = {}; if (this.diff !== 'easy') this.activeIds.concat(['gate']).forEach(id => { this.pre[id] = this.genQuest(id); });
+      this.banner = { text: 'Duell! Hilf ' + M.opts.kids + (M.opts.kids === 1 ? ' Kind' : ' Kindern') + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
     }
   }
   mpKidsDone() { return NPC_DEFS.filter(n => this.st.done[n.id]).length; }
@@ -852,7 +856,7 @@ class Play {
     // keine Aufgabe doppelt im ganzen Durchgang (alle Kinder + Tor)
     const recent = this.mp ? [] : ACC().recent || [], runUsed = this.st.usedGames || (this.st.usedGames = []), used = [];
     const games = items.map(() => {
-      if (this.diff === 'easy') { const c2 = EASY_GAMES.filter(g => !used.includes(g) && !runUsed.includes(g)); const g = pick(c2.length ? c2 : EASY_GAMES, r); used.push(g); return g; }
+      if (this.diff === 'easy') { const c2 = EASY_GAMES.filter(g => !used.includes(g) && !runUsed.includes(g)); const g = this.pickRole(c2.length ? c2 : EASY_GAMES, r); used.push(g); return g; }
       const ch = r() < (boss ? 0.7 : 0.4);
       const pool = ch ? (this.diff === 'hard' && r() < 0.4 ? CHALLENGES_HARD : r() < 0.45 ? CHALLENGES_SP : CHALLENGES_STD) : PUZZLES;
       const allPool = PUZZLES.concat(CHALLENGES_STD, CHALLENGES_SP, this.diff === 'hard' ? CHALLENGES_HARD : []);
@@ -860,7 +864,7 @@ class Play {
       if (!cand.length) cand = pool.filter(g => !used.includes(g) && !runUsed.includes(g));
       if (!cand.length) cand = allPool.filter(g => !used.includes(g) && !runUsed.includes(g));
       if (!cand.length) cand = allPool.filter(g => !used.includes(g));
-      const g = pick(cand, r); used.push(g); return g;
+      const g = this.pickRole(cand, r); used.push(g); return g;
     });
     // Täuschungen: an anderen Stellen guckt auch etwas heraus (Stöckchen, Blatt, Steinchen, Kronkorken)
     const decoys = [], nd = this.diff === 'hard' ? 7 : 4;
@@ -910,7 +914,7 @@ class Play {
     if (!e) {
       const seed = this.seedFor('e_' + id), r = mulberry32(seed);
       // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
-      if (!st.easyPlan || st.easyPlan.length < 24) st.easyPlan = shuffle(EASY_GAMES, mulberry32(this.seedFor('plan'))).slice(0, 24);
+      if (!st.easyPlan || st.easyPlan.length < 24) { st.easyPlan = shuffle(EASY_GAMES, mulberry32(this.seedFor('plan'))).slice(0, 24); if (this.mp && this.mp.me === 'guest') st.easyPlan = st.easyPlan.slice(4).concat(st.easyPlan.slice(0, 4)); }
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
     }
@@ -1271,7 +1275,7 @@ class Play {
       txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
     const narrow = W < 640, rowY = narrow ? 92 : 46;
-    if (!(this.mp && this.mp.mode === 'team')) { const ids = ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
+    if (!(this.mp && this.mp.mode === 'team')) { const ids = this.activeIds ? this.activeIds.concat(this.mp.opts.boss ? ['gate'] : []) : ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
       rrPath(c, px, rowY - 20, pw, 40, 20); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       ids.forEach((id, i) => {
         const x = px + 7 + fw * (i + 0.5), done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
@@ -1296,7 +1300,7 @@ class Play {
     }
     if (this.mp) {
       const M = this.mp, o = M.other, team = M.mode === 'team', lx = 14, ly = narrow ? rowY + 92 : rowY + 46;
-      const label = team ? 'Team mit ' + M.otherName : M.otherName + ': ' + (M.opts.live ? ((o && o.done) || 0) + '/' + M.opts.kids + (M.opts.boss ? ' + Tor' : '') : '?');
+      const label = team ? 'Team mit ' + M.otherName : M.otherName + ': ' + (M.opts.live ? ((o && o.done) || 0) + '/' + M.opts.kids + (M.opts.boss ? ' + Boss' : '') : '?');
       c.font = `900 14px ${FONT}`; const lw = c.measureText(label).width + 44;
       rrPath(c, lx, ly - 18, lw, 36, 18); c.fillStyle = team ? 'rgba(17,138,178,.85)' : 'rgba(239,71,111,.85)'; c.fill(); icon(c, 'friends', lx + 20, ly, 22); txt(c, label, lx + 36, ly + 1, 14, '#fff', 'left', null);
       if (!team) { const me = this.mpKidsDone() + '/' + M.opts.kids; txt(c, 'Du: ' + me, lx + lw + 12, ly + 1, 14, '#fff', 'left', BRAND.ink); }

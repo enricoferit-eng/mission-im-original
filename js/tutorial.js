@@ -66,7 +66,7 @@ const TUT_CHAPTERS = [
       drawAnimal(c, S.kind, x, y, 1.3, { t, moving: k < 0.55, tilt: k > 0.55 ? -0.35 : 0 });
     } },
   { title: 'Die Kinder', dur: 9,
-    say: 'Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.',
+    say: 'Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen – da starten die Aufgaben sofort.',
     try: 'Jetzt du: Tippe das Kind mit dem gelben Ausrufezeichen an!',
     draw(c, t, S) {
       tvGround(c);
@@ -100,7 +100,7 @@ const TUT_CHAPTERS = [
     tick(S, dt) { if (S.ok) S.okT = (S.okT || 0) + dt; },
     check(S) { return S.ok && S.okT > 1; } },
   { title: 'Hilfen beim Suchen', dur: 9,
-    say: 'Bei zwei Sternen zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei drei Sternen glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck.',
+    say: 'Bei Mittel zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei Schwer glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck.',
     draw(c, t, S) {
       tvGround(c); drawYucca(c, 470, 220, 1.4, t);
       const k = clamp(t / 4, 0, 1), heat = 1 + Math.floor(k * 4.9);
@@ -112,7 +112,7 @@ const TUT_CHAPTERS = [
       if (t > 7.4) { const b = Math.abs(Math.sin(t * 4)) * 12; polyPath(c, [[460, 110 - b], [480, 110 - b], [480, 135 - b], [494, 135 - b], [470, 165 - b], [446, 135 - b], [460, 135 - b]]); fs(c, '#ffd23f', 3); }
     } },
   { title: 'Dinge verdienen', dur: 8,
-    say: 'Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei drei Sternen hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste – sammle Uhren für mehr Zeit.',
+    say: 'Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei Schwer hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste – sammle Uhren für mehr Zeit.',
     try: 'Jetzt du: Lass die 3 Luftballons platzen!',
     draw(c, t, S) {
       c.fillStyle = '#cfe8ef'; c.fillRect(0, 0, TV.w, TV.h);

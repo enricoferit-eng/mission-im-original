@@ -132,7 +132,7 @@ async function lobby_new(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   let code = '';
   for (let i = 0; i < 10; i++) { code = Array.from(crypto.randomBytes(4), x => LOBBY_CHARS[x % LOBBY_CHARS.length]).join(''); if (!(await readJSON(lobbyFile(code)))) break; }
-  const o = b.opts || {}, opts = { mode: o.mode === 'team' ? 'team' : 'duell', diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 3, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false };
+  const o = b.opts || {}, opts = { mode: o.mode === 'team' ? 'team' : 'duell', diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 2, 3, 4, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false };
   const lob = { code, host: pub(a.l, a.acc), guest: null, opts, seed: crypto.randomBytes(4).readUInt32BE(0), status: 'wait', created: Date.now(), started: 0 };
   await writeJSON(lobbyFile(code), lob);
   if (b.invite) { const t = cleanLogin(b.invite), inv = (await readJSON(invFile(t))) || { list: [] }; inv.list = inv.list.filter(i => Date.now() - i.at < 15 * 60000).concat([{ code, from: lob.host, at: Date.now() }]).slice(-5); await writeJSON(invFile(t), inv); }

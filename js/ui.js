@@ -1,9 +1,9 @@
 'use strict';
 // ---------- Menü, Stage-Karte, Shop, Stage-Abschluss, Start ----------
 const DIFFS = [
-  { id: 'easy', stars: 1, age: '6–8', col: '#f6d3a3' },
-  { id: 'medium', stars: 2, age: '9–11', col: '#d5e8a6' },
-  { id: 'hard', stars: 3, age: '12–14', col: '#e9bb93' },
+  { id: 'easy', stars: 1, name: 'Leicht', age: '6–8', col: '#f6d3a3' },
+  { id: 'medium', stars: 2, name: 'Mittel', age: '9–11', col: '#d5e8a6' },
+  { id: 'hard', stars: 3, name: 'Schwer', age: '12–14', col: '#e9bb93' },
 ];
 
 function skyBg(c) {
@@ -97,13 +97,13 @@ class Menu {
       panel(c, x, y + bob, w, h, d.col, 24);
       CUR_DIFF = d.id; const kind = ANIMAL_OF[d.id], sp = SP(d.id, 'spielplatz');
       if (wide) {
-        for (let s = 0; s < d.stars; s++) icon(c, 'star', x + w / 2 + (s - (d.stars - 1) / 2) * 40, y + bob + 36, 38);
+        txt(c, d.name, x + w / 2, y + bob + 36, 30, '#fff', 'center', OL);
         drawAnimal(c, kind, x + w / 2, y + bob + h * 0.8, Math.min(2.6, h / 110), { t: this.t + i, cap: hasCap(kind) });
         txt(c, d.age, x + w / 2, y + bob + h - 18, 16, '#fff');
       } else {
         drawAnimal(c, kind, x + h * 0.55, y + bob + h * 0.86, Math.min(2.4, h / 76), { t: this.t + i, cap: hasCap(kind) });
         const sx0 = x + h * 1.05, ss = Math.min(42, (w - h * 1.05 - 60) / 3);
-        for (let s = 0; s < d.stars; s++) icon(c, 'star', sx0 + s * ss * 1.08, y + bob + h * 0.42, ss);
+        txt(c, d.name, sx0 - ss / 2, y + bob + h * 0.42, Math.min(30, ss * 0.9), '#fff', 'left', OL);
         txt(c, d.age, sx0 - ss / 2, y + bob + h * 0.78, 16, '#fff', 'left');
         icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
       }
@@ -382,7 +382,7 @@ class AdminPanel {
       box(0, 'Konten', S.accounts); box(1, 'neu (7 Tage)', S.new7); box(2, 'aktiv (7 Tage)', S.active7); box(3, 'aktiv (30 Tage)', S.active30); box(4, 'Skins gesamt', S.skins);
       const cols = ['Stufe', 'Spieler', 'geschafft', 'Bereiche', 'Aufträge', 'Skins'], cx = [x + 24, x + w * 0.36, x + w * 0.5, x + w * 0.64, x + w * 0.77, x + w * 0.9];
       cols.forEach((t2, i) => txt(c, t2, cx[i], y + 146, 13, '#8d5a3b', i ? 'center' : 'left', null));
-      [['easy', '1 Stern'], ['medium', '2 Sterne'], ['hard', '3 Sterne']].forEach(([k, label], r) => {
+      [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']].forEach(([k, label], r) => {
         const p = S.perDiff[k], yy = y + 172 + r * 28; [label, p.players, p.playersCleared, p.stageClears, p.questsDone, p.skins].forEach((v, i) => txt(c, String(v), cx[i], yy, 15, '#3d2c1f', i ? 'center' : 'left', null));
       });
       txt(c, 'Stand: ' + new Date(S.generated).toLocaleString('de-DE'), x + 24, y + 262, 12, '#8d5a3b', 'left', null);
@@ -774,7 +774,7 @@ class StageMap {
     c.restore();
     // Kopfleiste
     topBar(c, () => setScene(new Menu()));
-    for (let s2 = 0; s2 < d.stars; s2++) icon(c, 'star', 96 + s2 * 30, 44, 28);
+    txt(c, d.name, 92, 44, 22, '#fff', 'left', BRAND.olive);
     // Info-Karte zum gewählten Bereich
     const id = STAGE_ORDER[this.cur], open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
     const cw = Math.min(W - 120, 560), ch = 104, cx = 16 + (W - 120 - cw) / 2, k = ease.back(this.card), cy = H - ch - 12 + (1 - k) * 140;

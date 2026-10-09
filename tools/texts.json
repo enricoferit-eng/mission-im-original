@@ -67,9 +67,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.",
-  "key": "902075a6",
-  "clean": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen, da starten die Aufgaben sofort."
+  "text": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen – da starten die Aufgaben sofort.",
+  "key": "6e4f3541",
+  "clean": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen, da starten die Aufgaben sofort."
  },
  {
   "who": "erzaehler",
@@ -91,15 +91,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Bei zwei Sternen zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei drei Sternen glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck.",
-  "key": "c8513b7f",
-  "clean": "Bei zwei Sternen zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei drei Sternen glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck."
+  "text": "Bei Mittel zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei Schwer glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck.",
+  "key": "d49c70eb",
+  "clean": "Bei Mittel zeigt dir die Spürnase, wie nah du an einem Versteck bist: viele rote Striche heißt ganz nah. Bei Schwer glitzert es nur kurz. Und wenn du zweieinhalb Minuten nichts findest, füllt sich der Hilfe-Stern. Tippe ihn an, dann zeigt dir ein großer Pfeil ein Versteck."
  },
  {
   "who": "erzaehler",
-  "text": "Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei drei Sternen hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste – sammle Uhren für mehr Zeit.",
-  "key": "05a045b2",
-  "clean": "Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei drei Sternen hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste, sammle Uhren für mehr Zeit."
+  "text": "Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei Schwer hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste – sammle Uhren für mehr Zeit.",
+  "key": "684870c9",
+  "clean": "Hast du etwas gefunden, verdienst du es dir mit einem Rätsel oder einer Geschicklichkeits-Aufgabe. Beim ersten Mal wird jede Aufgabe erklärt, und das Fragezeichen erklärt sie jederzeit nochmal. Bei Schwer hast du in Geschicklichkeits-Aufgaben drei Herzen und eine Zeit-Leiste, sammle Uhren für mehr Zeit."
  },
  {
   "who": "erzaehler",
@@ -409,15 +409,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei 3 Sternen verschwindet das Rezept nach ein paar Sekunden – merk es dir gut!",
-  "key": "91862836",
-  "clean": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei 3 Sternen verschwindet das Rezept nach ein paar Sekunden, merk es dir gut!"
+  "text": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei Schwer verschwindet das Rezept nach ein paar Sekunden – merk es dir gut!",
+  "key": "b65ff9aa",
+  "clean": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei Schwer verschwindet das Rezept nach ein paar Sekunden, merk es dir gut!"
  },
  {
   "who": "erzaehler",
-  "text": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben. Bei 3 Sternen musst du dir die Bestellung merken.",
-  "key": "116d96c2",
-  "clean": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an, von unten nach oben. Bei 3 Sternen musst du dir die Bestellung merken."
+  "text": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben. Bei Schwer musst du dir die Bestellung merken.",
+  "key": "392c6eb4",
+  "clean": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an, von unten nach oben. Bei Schwer musst du dir die Bestellung merken."
  },
  {
   "who": "erzaehler",
@@ -433,21 +433,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei 2 und 3 Sternen trocknen sie langsam wieder aus – alle müssen gleichzeitig voll sein!",
-  "key": "ba480795",
-  "clean": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei 2 und 3 Sternen trocknen sie langsam wieder aus, alle müssen gleichzeitig voll sein!"
+  "text": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei Mittel und Schwer trocknen sie langsam wieder aus – alle müssen gleichzeitig voll sein!",
+  "key": "50e669f0",
+  "clean": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei Mittel und Schwer trocknen sie langsam wieder aus, alle müssen gleichzeitig voll sein!"
  },
  {
   "who": "erzaehler",
-  "text": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei 3 Sternen verschwinden die Bestellungen nach ein paar Sekunden.",
-  "key": "39f57b27",
-  "clean": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei 3 Sternen verschwinden die Bestellungen nach ein paar Sekunden."
+  "text": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei Schwer verschwinden die Bestellungen nach ein paar Sekunden.",
+  "key": "835b1ff3",
+  "clean": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei Schwer verschwinden die Bestellungen nach ein paar Sekunden."
  },
  {
   "who": "erzaehler",
-  "text": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei 3 Sternen weht der Wind neue Blätter herein!",
-  "key": "38472a16",
-  "clean": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei 3 Sternen weht der Wind neue Blätter herein!"
+  "text": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei Schwer weht der Wind neue Blätter herein!",
+  "key": "52962f8a",
+  "clean": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei Schwer weht der Wind neue Blätter herein!"
  },
  {
   "who": "erzaehler",

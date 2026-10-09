@@ -325,11 +325,11 @@ EASY_GAMES.push(...RESTO_GAMES);
 PUZZLES.push(...RESTO_GAMES);
 Object.assign(HELP_TEXT, {
   tisch: 'Deck den Tisch für die Gäste! Zieh Teller, Besteck, Glas und Serviette genau auf die hellen Umrisse auf dem Tisch.',
-  belegen: 'Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei 3 Sternen verschwindet das Rezept nach ein paar Sekunden – merk es dir gut!',
-  eisbecher_r: 'Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben. Bei 3 Sternen musst du dir die Bestellung merken.',
+  belegen: 'Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht. Bei Schwer verschwindet das Rezept nach ein paar Sekunden – merk es dir gut!',
+  eisbecher_r: 'Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben. Bei Schwer musst du dir die Bestellung merken.',
   limo_mix: 'Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept. Zu viel geht nicht!',
   spuelen: 'Spül das Geschirr: Wisch mit dem Finger so lange über die Flecken, bis jeder Teller sauber ist.',
-  giessen: 'Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei 2 und 3 Sternen trocknen sie langsam wieder aus – alle müssen gleichzeitig voll sein!',
-  bestellung: 'Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei 3 Sternen verschwinden die Bestellungen nach ein paar Sekunden.',
-  fegen: 'Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei 3 Sternen weht der Wind neue Blätter herein!',
+  giessen: 'Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist. Bei Mittel und Schwer trocknen sie langsam wieder aus – alle müssen gleichzeitig voll sein!',
+  bestellung: 'Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht. Bei Schwer verschwinden die Bestellungen nach ein paar Sekunden.',
+  fegen: 'Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt. Bei Schwer weht der Wind neue Blätter herein!',
 });
