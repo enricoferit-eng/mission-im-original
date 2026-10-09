@@ -1318,7 +1318,7 @@ const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
 const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schnell geholfen = +1 Joker (Tor: +30 s)
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
-const SECRET_JUMP = 6;   // Meter beim Schaukel-Weitsprung
+const SECRET_JUMP = 4;   // Meter beim Schaukel-Weitsprung (ca. 6 gute Schwünge, dann abspringen)
 const LEO_SAY = {
   start: 'Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Drei, zwei, eins, los!',
   win: 'Wow, du bist ja echt schnell!',
