@@ -118,6 +118,7 @@ class Shop {
         if (own) txt(c, 'gekauft', x + cw / 2, y + ch - 12, 12, '#2b9348', 'center', null);
         else { icon(c, 'coin', x + cw / 2 - 22, y + ch - 12, 16); txt(c, String(price), x + cw / 2 + 4, y + ch - 11, 13, '#8d5a3b', 'center', null); }
         UI.btn(x, y, cw, ch, () => { if (own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; } this.buy(price, mm => { mm.skins.push(id); this.say(name + ' liegt jetzt im Kleiderschrank.'); }); });
+        skinInfoBtn(c, x + cw - 18, y + ch - 46, id);
       });
     } else {
       const all = BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS), cols = W > H ? 6 : 3, gap = 10, cw = Math.min(140, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(180, (bottom - top - gap) / Math.ceil(all.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
@@ -135,6 +136,34 @@ class Shop {
     if (this.msgT > 0) { c.globalAlpha = clamp(this.msgT * 2, 0, 1); c.font = `900 15px ${FONT}`; const mw = c.measureText(this.msg).width + 30; rrPath(c, W / 2 - mw / 2, H - 52, mw, 36, 18); c.fillStyle = 'rgba(32,44,30,.92)'; c.fill(); txt(c, this.msg, W / 2, H - 34, 15, '#fff', 'center', null); c.globalAlpha = 1; }
   }
 }
+
+// ---------- Info zu einem Skin: Seltenheit + was die Fähigkeit kann ----------
+function skinInfoBtn(c, x, y, sid, r = 12) { icon(c, 'info', x, y, r * 2); UI.btn(x - r - 6, y - r - 6, (r + 6) * 2, (r + 6) * 2, () => { overlay = new SkinInfo(sid, overlay); Sfx.play('tap'); }); }
+class SkinInfo {
+  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; Voice.say(sk.ability ? ABILITIES[sk.ability].name + '. ' + ABILITIES[sk.ability].text : 'Dieser Skin hat keine besondere Fähigkeit.', true); }
+  update(dt) { this.t += dt; }
+  close() { Voice.stop(); overlay = this.back || null; }
+  draw(c) {
+    c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
+    const sk = SKINS[this.sid] || {}, w = Math.min(W - 30, 420), h = 300, x = (W - w) / 2, y = (H - h) / 2;
+    fitBegin(c, w, h);
+    panel(c, x, y, w, h, '#fff7e6', 26);
+    roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
+    drawAnimal(c, (ACC() && ACC().char) || 'cat', x + 80, y + 170, 2.2, { look: sk, cap: true, t: this.t });
+    const R = RARITY[sk.rarity || 'common'];
+    txt(c, sk.name || 'Skin', x + 150, y + 50, 19, BRAND.olive, 'left', null);
+    rrPath(c, x + 150, y + 66, 110, 22, 11); c.fillStyle = R.col; c.fill(); txt(c, R.name, x + 205, y + 77, 12, '#3d2c1f', 'center', null);
+    if (sk.ability) {
+      const A = ABILITIES[sk.ability];
+      txt(c, 'Fähigkeit: ' + A.name, x + 150, y + 112, 16, '#c9762f', 'left', null);
+      wrapLines(c, A.text, w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
+      wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei 2 und 3 Sternen.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
+    } else wrapLines(c, 'Dieser Skin hat keine besondere Fähigkeit – er sieht einfach gut aus! Fähigkeiten haben nur legendäre Skins.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
+    c.restore();
+  }
+  down() {} move() {} up() {}
+}
+SkinInfo.prototype.freezeBg = true;
 
 // ---------- Erfolge ansehen ----------
 class Achievements {
@@ -171,7 +200,7 @@ class Achievements {
 }
 
 // ---------- Freunde + Mehrspieler ----------
-const MP_COINS = { win: 30, lose: 5, team: 25 };
+const MP_COINS = { win: 15, lose: 5, team: 20 };
 function needOnline(c, back) {
   const a = ACC();
   if (a && a.token) return false;

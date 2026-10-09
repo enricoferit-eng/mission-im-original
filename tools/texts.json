@@ -814,5 +814,47 @@
   "text": "Erster! Willst du nochmal?",
   "key": "19760be2",
   "clean": "Erster! Willst du nochmal?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung.",
+  "key": "8c8fa7a9",
+  "clean": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf.",
+  "key": "20f37846",
+  "clean": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst viel schneller über den Spielplatz.",
+  "key": "0a440115",
+  "clean": "Turbo-Schuhe. Du läufst viel schneller über den Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.",
+  "key": "1645afc5",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit.",
+  "key": "151be999",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 1 Minute statt nach 2,5 Minuten.",
+  "key": "1572d5ec",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 1 Minute statt nach 2,5 Minuten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dieser Skin hat keine besondere Fähigkeit.",
+  "key": "7ae64372",
+  "clean": "Dieser Skin hat keine besondere Fähigkeit."
  }
 ]

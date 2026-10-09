@@ -393,6 +393,7 @@ function icon(c, name, x, y, s, col) {
     case 'shop':
       rrPath(c, -15, -4, 30, 20, 3); fs(c, '#fff', 2.5); polyPath(c, [[-18, -4], [-13, -16], [13, -16], [18, -4]]); fs(c, '#ef476f', 2.5);
       for (let i = 0; i < 3; i++) { line(c, -10 + i * 10, -15, -12 + i * 10, -5, 2, '#fff', false); } rrPath(c, -5, 4, 10, 12, 2); fs(c, '#8d5a3b', 2); break;
+    case 'info': ell(c, 0, 0, 17, 17); fs(c, col || '#118ab2', 3); ell(c, 0, -8, 3, 3); c.fillStyle = '#fff'; c.fill(); rrPath(c, -2.5, -3, 5, 14, 2); c.fill(); break;
     case 'pause': rrPath(c, -12, -15, 9, 30, 3); fs(c, col || '#fff', 3); rrPath(c, 3, -15, 9, 30, 3); fs(c, col || '#fff', 3); break;
     case 'book':
       polyPath(c, [[0, -10], [-18, -15], [-18, 13], [0, 17]]); fs(c, '#fff', 3); polyPath(c, [[0, -10], [18, -15], [18, 13], [0, 17]]); fs(c, '#f1e3c8', 3);

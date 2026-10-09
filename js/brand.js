@@ -246,7 +246,7 @@ SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di)
   const rarity = i === 5 ? 'legend' : i === 4 ? 'rare' : 'common';
   const sk = Object.assign({}, UNIFORM_LOOKS[k], { name: UNIFORM_NAMES[k], rarity });
   if (rarity === 'rare') { sk.cap = '#4dabf7'; sk.sparkle = '#bde0fe'; }
-  if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Goldene ' + UNIFORM_NAMES[k]; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; }
+  if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Gold-' + UNIFORM_NAMES[k]; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; }
   SKINS[id] = sk;
 })));
 // Laden-Skins: mit Talern kaufbar (je seltener, desto teurer; legendäre haben eine Fähigkeit)

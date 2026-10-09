@@ -929,6 +929,7 @@ class Wardrobe {
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
       if (eq) icon(c, 'check', cx + cw - 20, cy + 20, 24, '#06d6a0');
       if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
+      if (own) skinInfoBtn(c, cx + 18, cy + 18, sid);
     });
     // Standard-Look
     const by = y + h - 50;
