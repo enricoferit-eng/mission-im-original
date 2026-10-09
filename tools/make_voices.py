@@ -15,6 +15,11 @@ CAST = {
   'fuchs':     ('thorsten_emotional-medium', 0, 0.9, 0.4, 0.8, 7, True),       # Paul: fröhlicher Junge
   'waschbaer': ('thorsten_emotional-medium', 4, 0.95, 0.4, 0.8, 6, True),      # Willi: tieferer Junge
   'gate':      ('thorsten-high', None, 1.0, 0.6, 0.8, -3, True),               # das Tor: tief, brummig
+  'k_marco':   ('thorsten-high', None, 0.95, 0.6, 0.8, -1, False),            # Chefkoch Marco: ruhig, tief
+  'k_luca':    ('thorsten_emotional-medium', 0, 0.92, 0.6, 0.8, 1, False),   # Luca: fröhlich
+  'k_tom':     ('thorsten_emotional-medium', 4, 1.0, 0.6, 0.8, -2, True),    # Tom: gemütlich
+  'k_nina':    ('kerstin-low', None, 0.98, 0.333, 0.8, 1, False),            # Nina
+  'k_lea':     ('kerstin-low', None, 0.92, 0.333, 0.8, 2.5, False),          # Lea: flink
   'leo':       ('thorsten_emotional-medium', 6, 0.85, 0.4, 0.8, 5, True),      # Leo: sportlich, schnell, überrascht
 }
 SAY = [('Joker', 'Dschoker'), ('Original-Blätter', 'Original Blätter'), ('Im Original', 'im Original')]

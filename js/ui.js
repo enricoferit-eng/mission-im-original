@@ -567,7 +567,7 @@ const AREAS = {
   aussen: { x: 0.85, y: 0.44, w: 0.24, h: 0.24 }, chalet: { x: 0.15, y: 0.33, w: 0.22, h: 0.16 },
   spielplatz: { x: 0.27, y: 0.72, w: 0.4, h: 0.22 }, parkplatz: { x: 0.73, y: 0.84, w: 0.42, h: 0.16 },
 };
-const OPEN_STAGES = ['spielplatz'];
+const OPEN_STAGES = ['spielplatz', 'kueche'];
 function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
   const t = o.t || 0, reveal = o.reveal === undefined ? 6 : o.reveal;
   const A = id => { const a = AREAS[id]; return { x: X + a.x * Wd, y: Y + a.y * Hd, w: a.w * Wd, h: a.h * Hd }; };
@@ -610,7 +610,7 @@ function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
     ell(c, 0, 4, R, R); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
     ell(c, 0, 0, R, R); fs(c, open || o.trailer ? '#fff7e6' : '#ced4da', 4);
     c.globalAlpha = open || o.trailer ? 1 : 0.5; stageIcon(c, id, 0, 0, R * 1.1); c.globalAlpha = 1;
-    const earned = o.kind && id === 'spielplatz' && hasCap(o.kind);
+    const earned = o.kind && ACC() && SP(CUR_DIFF, id).outfit;
     ell(c, R * 0.85, R * 0.75, R * 0.45, R * 0.45); fs(c, earned ? '#ffd166' : '#fff', 3);
     drawOutfitIcon(c, OUTFIT_OF[id], R * 0.85, R * 0.75, R * 0.7, !earned && !o.trailer);
     if (!open && !o.trailer) { ell(c, -R * 0.75, -R * 0.75, R * 0.36, R * 0.36); fs(c, '#fff', 3); icon(c, 'hourglass', -R * 0.75, -R * 0.75, R * 0.45); }
@@ -727,7 +727,7 @@ class StageMap {
     if (i === this.cur) { this.card = 0; return; }
     this.walk = { to: this.pts.at[i], node: i }; Sfx.play('jump');
   }
-  play() { const id = STAGE_ORDER[this.cur]; if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); return; } Sfx.play('win'); setScene(new Play(this.diff)); }
+  play() { const id = STAGE_ORDER[this.cur]; if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); return; } Sfx.play('win'); setScene(new Play(this.diff, { stage: id })); }
   draw(c) {
     const G = this.geo(), P = this.pts, t = this.t, kind = ANIMAL_OF[this.diff], d = DIFFS.find(q => q.id === this.diff);
     // Himmel + Hügel mit Parallaxe

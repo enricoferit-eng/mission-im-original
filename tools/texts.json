@@ -451,6 +451,54 @@
  },
  {
   "who": "erzaehler",
+  "text": "Das Gemüse rollt am Messer vorbei. Tippe genau dann, wenn eine gestrichelte Schnittlinie unter dem Messer ist.",
+  "key": "4c8bdeda",
+  "clean": "Das Gemüse rollt am Messer vorbei. Tippe genau dann, wenn eine gestrichelte Schnittlinie unter dem Messer ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Töpfe werden immer heißer. Leg den Finger in einen Topf und rühr im Kreis, damit nichts anbrennt – bis die Zeit-Leiste voll ist.",
+  "key": "d74d5e88",
+  "clean": "Die Töpfe werden immer heißer. Leg den Finger in einen Topf und rühr im Kreis, damit nichts anbrennt, bis die Zeit-Leiste voll ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bei einem Topf steigt der Schaum! Tippe ihn schnell an, bevor er überkocht.",
+  "key": "48b1286c",
+  "clean": "Bei einem Topf steigt der Schaum! Tippe ihn schnell an, bevor er überkocht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Beweg die Pfanne mit dem Finger. Tippe, dann fliegt der Pfannkuchen hoch – fang ihn mit der Pfanne wieder auf.",
+  "key": "173ed450",
+  "clean": "Beweg die Pfanne mit dem Finger. Tippe, dann fliegt der Pfannkuchen hoch, fang ihn mit der Pfanne wieder auf."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch schnell hin und her über den Teig, bis die Leiste voll ist. Hörst du auf, fällt der Teig wieder zusammen.",
+  "key": "7b4fa962",
+  "clean": "Wisch schnell hin und her über den Teig, bis die Leiste voll ist. Hörst du auf, fällt der Teig wieder zusammen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Das Ei schwingt hin und her. Tippe genau dann, wenn es über der Mitte der Schüssel ist.",
+  "key": "8be59f8d",
+  "clean": "Das Ei schwingt hin und her. Tippe genau dann, wenn es über der Mitte der Schüssel ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Räum alles in den Kühlschrank, sodass kein Fach frei bleibt. Zieh die Sachen hinein – kurz antippen dreht sie.",
+  "key": "9ed6285f",
+  "clean": "Räum alles in den Kühlschrank, sodass kein Fach frei bleibt. Zieh die Sachen hinein, kurz antippen dreht sie."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Flammkuchen backen im Ofen. Tippe auf einen Flammkuchen, wenn er goldbraun ist – der Zeiger steht dann im grünen Bereich.",
+  "key": "e6c490d6",
+  "clean": "Die Flammkuchen backen im Ofen. Tippe auf einen Flammkuchen, wenn er goldbraun ist, der Zeiger steht dann im grünen Bereich."
+ },
+ {
+  "who": "erzaehler",
   "text": "Probier es einfach aus!",
   "key": "8c9aba00",
   "clean": "Probier es einfach aus!"
@@ -559,15 +607,45 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "d108b192",
-  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "9434aead",
+  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "5189187b",
-  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "53c90282",
+  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+ },
+ {
+  "who": "gate",
+  "text": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.",
+  "key": "8ba5a499",
+  "clean": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
+  "key": "0e2ecb83",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "gate",
+  "text": "Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.",
+  "key": "0217f95f",
+  "clean": "Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring die Sachen zurück – tippe das Kind an!",
+  "key": "b898a65b",
+  "clean": "Bring die Sachen zurück, tippe das Kind an!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe ein Kind mit ! an.",
+  "key": "f8e9347d",
+  "clean": "Tippe ein Kind mit ! an."
  },
  {
   "who": "hase",
@@ -751,15 +829,243 @@
  },
  {
   "who": "gate",
-  "text": "Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.",
-  "key": "0217f95f",
-  "clean": "Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz."
- },
- {
-  "who": "gate",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
   "key": "4f581974",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Lauf zur Tür und tippe sie an!",
+  "key": "ff408baf",
+  "clean": "Lauf zur Tür und tippe sie an!"
+ },
+ {
+  "who": "gate",
+  "text": "Die Tür zum Gastraum geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.",
+  "key": "4fcdab6b",
+  "clean": "Die Tür zum Gastraum geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "93df19eb",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "gate",
+  "text": "Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Gastraum.",
+  "key": "fa771950",
+  "clean": "Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Gastraum."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau hinter Kisten und unter Geschirrtücher – dann tippe auf die Lupe!",
+  "key": "eba53368",
+  "clean": "Schau hinter Kisten und unter Geschirrtücher, dann tippe auf die Lupe!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Heute ist richtig was los in der Küche, und mir fehlen Sachen! Kannst du diese Sachen für mich finden?",
+  "key": "196046e4",
+  "clean": "Heute ist richtig was los in der Küche, und mir fehlen Sachen! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_marco",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "7333fcd1",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Hilf zuerst Luca, danach bin ich dran!",
+  "key": "ee4ced98",
+  "clean": "Hilf zuerst Luca, danach bin ich dran!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Hilf zuerst Tom, danach bin ich dran!",
+  "key": "a3de5ced",
+  "clean": "Hilf zuerst Tom, danach bin ich dran!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Hilf zuerst Nina, danach bin ich dran!",
+  "key": "50171027",
+  "clean": "Hilf zuerst Nina, danach bin ich dran!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Hilf zuerst Lea, danach bin ich dran!",
+  "key": "f0e84ec3",
+  "clean": "Hilf zuerst Lea, danach bin ich dran!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Kannst du diese Sachen für mich finden?",
+  "key": "3537ec65",
+  "clean": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_luca",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "985016a6",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Hilf zuerst Marco, danach bin ich dran!",
+  "key": "d870a2c4",
+  "clean": "Hilf zuerst Marco, danach bin ich dran!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Hilf zuerst Tom, danach bin ich dran!",
+  "key": "160183a2",
+  "clean": "Hilf zuerst Tom, danach bin ich dran!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Hilf zuerst Nina, danach bin ich dran!",
+  "key": "2c8e0ac2",
+  "clean": "Hilf zuerst Nina, danach bin ich dran!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Hilf zuerst Lea, danach bin ich dran!",
+  "key": "327afca4",
+  "clean": "Hilf zuerst Lea, danach bin ich dran!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Beim Spülen ist mir einiges verloren gegangen! Kannst du diese Sachen für mich finden?",
+  "key": "ae087596",
+  "clean": "Beim Spülen ist mir einiges verloren gegangen! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_tom",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "c447af73",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Hilf zuerst Marco, danach bin ich dran!",
+  "key": "925f0bd1",
+  "clean": "Hilf zuerst Marco, danach bin ich dran!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Hilf zuerst Luca, danach bin ich dran!",
+  "key": "c4aafc02",
+  "clean": "Hilf zuerst Luca, danach bin ich dran!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Hilf zuerst Nina, danach bin ich dran!",
+  "key": "27e8e8cd",
+  "clean": "Hilf zuerst Nina, danach bin ich dran!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Hilf zuerst Lea, danach bin ich dran!",
+  "key": "b6ddddad",
+  "clean": "Hilf zuerst Lea, danach bin ich dran!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Im Lager ist alles durcheinander. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?",
+  "key": "3ac321b8",
+  "clean": "Im Lager ist alles durcheinander. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_nina",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "7205f02d",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Hilf zuerst Marco, danach bin ich dran!",
+  "key": "a8bea897",
+  "clean": "Hilf zuerst Marco, danach bin ich dran!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Hilf zuerst Luca, danach bin ich dran!",
+  "key": "af9246bc",
+  "clean": "Hilf zuerst Luca, danach bin ich dran!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Hilf zuerst Tom, danach bin ich dran!",
+  "key": "fc5673c1",
+  "clean": "Hilf zuerst Tom, danach bin ich dran!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Hilf zuerst Lea, danach bin ich dran!",
+  "key": "5cf37f4f",
+  "clean": "Hilf zuerst Lea, danach bin ich dran!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Kannst du diese Sachen für mich finden?",
+  "key": "0fcb9e11",
+  "clean": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_lea",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "209a43b9",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Hilf zuerst Marco, danach bin ich dran!",
+  "key": "37976cf3",
+  "clean": "Hilf zuerst Marco, danach bin ich dran!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Hilf zuerst Luca, danach bin ich dran!",
+  "key": "24782d00",
+  "clean": "Hilf zuerst Luca, danach bin ich dran!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Hilf zuerst Tom, danach bin ich dran!",
+  "key": "2df607f5",
+  "clean": "Hilf zuerst Tom, danach bin ich dran!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Hilf zuerst Nina, danach bin ich dran!",
+  "key": "8928d72f",
+  "clean": "Hilf zuerst Nina, danach bin ich dran!"
+ },
+ {
+  "who": "gate",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!",
+  "key": "cbd2b580",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Kisten und Wagen und unter den Geschirrtüchern!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "1cd0fd29",
+  "clean": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Kisten, Fässern und Wagen oder unter Geschirrtüchern. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "0e27d1d3",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Kisten, Fässern und Wagen oder unter Geschirrtüchern. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Kisten, Fässern und Wagen oder unter Geschirrtüchern. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "f6f93728",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Kisten, Fässern und Wagen oder unter Geschirrtüchern. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "gate",
@@ -790,12 +1096,6 @@
   "text": "Hilf zuerst Emma, danach bin ich dran!",
   "key": "2e11c234",
   "clean": "Hilf zuerst Emma, danach bin ich dran!"
- },
- {
-  "who": "gate",
-  "text": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.",
-  "key": "8ba5a499",
-  "clean": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast."
  },
  {
   "who": "leo",

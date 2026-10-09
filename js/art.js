@@ -70,6 +70,8 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   ell(c, 0, -15, 13, 12); fs(c, A.body); shadeEll(c, 0, -15, 13, 12);
   ell(c, 3, -13, 7, 7.5); fs(c, A.light, 0);
   if (L.uniform) drawUniform(c, L, A);
+  // Uniform-Teil aus der Küche: Schürze (sobald die Küche geschafft ist)
+  if (!L.uniform && !o.noOutfit && typeof SP === 'function' && ACC() && SP(CUR_DIFF, 'kueche').outfit) { rrPath(c, -5, -24, 15, 19, 4); fs(c, '#fbf8f2', 2); line(c, -4, -24, -9, -30, 1.5, '#fbf8f2', false); leaf(c, 2.5, -14, 0.5, BRAND.lime); }
   ell(c, 9, -5, 5, 4); fs(c, A.light, 2.5);
   // Mähne
   if (kind === 'lion') {

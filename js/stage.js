@@ -4,26 +4,26 @@
 // Doppelschaukel am Haus, Raum unter dem Haus gesperrt. Oben Glashaus + Terrasse (Eingang), unten Zaun mit
 // Ausgangstor zum Parkplatz (Endlevel), rechts Zypressen.
 const WORLD_W = 1000, WORLD_H = 1400, CELL = 25, GW = 40, GH = 56;
-const HOUSE = { x: 550, y: 550, w: 200, h: 150, fz: 60 };   // Plattform (Obergeschoss) auf 60 Höhe
-const STAIRS = { x: 625, y: 700, w: 50, h: 125 };
-const SLIDE = { x0: 750, x1: 905, y0: 600, y1: 650 };
-const SWING = { y: 600, x0: 160, x1: 550, top: 118, seats: [270, 430] };
-const START = { x: 500, y: 228 };                            // kommt von der Terrasse herunter
-const GATE = { x: 520, y: 1214, ix: 520, iy: 1158 };        // Ausgang zum Parkplatz
+let HOUSE = { x: 550, y: 550, w: 200, h: 150, fz: 60 };   // Plattform (Obergeschoss) auf 60 Höhe
+let STAIRS = { x: 625, y: 700, w: 50, h: 125 };
+let SLIDE = { x0: 750, x1: 905, y0: 600, y1: 650 };
+let SWING = { y: 600, x0: 160, x1: 550, top: 118, seats: [270, 430] };
+let START = { x: 500, y: 228 };                            // kommt von der Terrasse herunter
+let GATE = { x: 520, y: 1214, ix: 520, iy: 1158 };        // Ausgang zum Parkplatz
 
-function hasCap(k, diff = CUR_DIFF) { return !!(ACC() && SP(diff, 'spielplatz').outfit); }
+function hasCap(k, diff = CUR_DIFF) { return !!(ACC() && SP(diff, 'spielplatz').outfit); }   // Kappe = Teil vom Spielplatz
 
 // Auftrags-Tiere: mehrere mögliche Plätze, pro Durchgang zufällig. Der Hase sitzt immer auf einer Schaukel.
-const NPC_DEFS = [
+let NPC_DEFS = [
   { id: 'hase', swing: true },
   { id: 'fuchs', pos: [[815, 435, 0], [560, 330, 0], [300, 1000, 0]] },
   { id: 'igel', pos: [[215, 1045, 0], [880, 1100, 0], [420, 860, 0]] },
   { id: 'waschbaer', pos: [[850, 735, 0], [650, 880, 0], [130, 780, 0]] },
   { id: 'eule', pos: [[705, 590, 1], [600, 662, 1], [400, 520, 0]] },
 ];
-const ALL_IDS = NPC_DEFS.map(n => n.id).concat(['gate']);
+let ALL_IDS = NPC_DEFS.map(n => n.id).concat(['gate']);
 
-const DECOR = [
+let DECOR = [
   { id: 'y1', t: 'yucca', x: 300, y: 300, r: 30 }, { id: 'y2', t: 'yucca', x: 862, y: 330, r: 30 },
   { id: 'y3', t: 'yucca', x: 765, y: 1128, r: 28 }, { id: 'y4', t: 'yucca', x: 100, y: 650, r: 24 },
   { id: 'y5', t: 'yucca', x: 130, y: 430, r: 30 }, { id: 'y6', t: 'yucca', x: 150, y: 910, r: 30 },
@@ -39,10 +39,10 @@ const DECOR = [
   { id: 'pp3', t: 'potpalm', x: 30, y: 166, r: 0 }, { id: 'pp4', t: 'potpalm', x: 975, y: 166, r: 0 },
 ];
 for (let y = 225, k = 0; y < 1180; y += 112, k++) DECOR.push({ id: 'cy' + k, t: 'cypress', x: 968 + (k % 2) * 8, y, r: 0 });
-const DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d));
+let DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d));
 
 // Mögliche Verstecke in der Umgebung (zusätzlich kann alles im Hackschnitzel vergraben sein)
-const SPOTS = [
+let SPOTS = [
   ...['y1', 'y2', 'y3', 'y4', 'y5', 'y6', 'y7', 'y8', 'y9'].map(id => ({ id: 's_' + id, x: DECOR_BY[id].x, y: DECOR_BY[id].y, reach: 72, decor: id })),
   ...['r1', 'r2', 'r3', 'r4', 'r5'].map(id => ({ id: 's_' + id, x: DECOR_BY[id].x, y: DECOR_BY[id].y, reach: 66, decor: id })),
   { id: 's_pl', x: 390, y: 1110, reach: 70, decor: 'pl' }, { id: 's_bench', x: 690, y: 1020, reach: 66, decor: 'bench' },
@@ -64,7 +64,7 @@ function cellsIn(x0, y0, x1, y1, fn) {
   }
 }
 function cellsCircle(x, y, r, fn) { cellsIn(x - r - 13, y - r - 13, x + r + 13, y + r + 13, i => { const cx = (i % GW) * CELL + CELL / 2, cy = Math.floor(i / GW) * CELL + CELL / 2; if (dist(cx, cy, x, y) < r + 7) fn(i); }); }
-(function buildGrid() {
+function buildGridSpielplatz() {
   cellsIn(75, 195, 925, 1170, i => (G0[i] = 1));
   cellsIn(HOUSE.x, HOUSE.y, HOUSE.x + HOUSE.w, HOUSE.y + HOUSE.h, i => { G0[i] = 0; G1[i] = 1; });
   cellsIn(STAIRS.x, STAIRS.y, STAIRS.x + STAIRS.w, STAIRS.y + STAIRS.h, i => { ST[i] = 1; G0[i] = 0; });
@@ -79,7 +79,7 @@ function cellsCircle(x, y, r, fn) { cellsIn(x - r - 13, y - r - 13, x + r + 13, 
     else if (d.t === 'planter') cellsIn(d.x - 42, d.y - 22, d.x + 42, d.y + 22, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y, d.r - 4, i => (G0[i] = 0));
   }
-})();
+}
 const walk = (l, i) => i >= 0 && (ST[i] || (l ? G1[i] : G0[i]));
 function canStand(l, x, y) {
   return walk(l, cellIdx(x, y)) && walk(l, cellIdx(x - 9, y)) && walk(l, cellIdx(x + 9, y)) && walk(l, cellIdx(x, y - 6)) && walk(l, cellIdx(x, y + 6));
@@ -142,6 +142,10 @@ function buildGround() {
   const Q = 1.5, cv2 = document.createElement('canvas'); cv2.width = WORLD_W * Q; cv2.height = WORLD_H * Q;
   const g = cv2.getContext('2d'); g.scale(Q, Q); g.lineJoin = 'round';
   const R = mulberry32(4242);
+  SG.ground(g, R);
+  GROUND = cv2;
+}
+function drawGroundSpielplatz(g, R) {
   g.fillStyle = '#86a866'; g.fillRect(0, 0, WORLD_W, WORLD_H);
   // Terrasse + Glashaus (oben)
   g.fillStyle = '#e3dbcd'; g.fillRect(0, 0, WORLD_W, 178);
@@ -217,8 +221,36 @@ function buildGround() {
     polyPath(c, [[SLIDE.x0, SLIDE.y1], [SLIDE.x1, SLIDE.y1], [SLIDE.x1 + 10, SLIDE.y1 + 14], [SLIDE.x0 + 40, SLIDE.y1 + 40]]); c.fill();
     for (const d of DECOR) if (d.t === 'cypress') { ell(c, d.x - 10, d.y + 30, 18, 70, -0.6); c.fill(); }
   }
-  GROUND = cv2;
 }
+
+// ---------- Bereiche: jede Stage beschreibt ihre Welt; Play ist für alle gleich ----------
+const OFFMAP = { x: -9999, y: -9999, w: 0, h: 0, fz: 60, x0: -9999, x1: -9990, y0: -9999, y1: -9990, top: 0, seats: [] };
+const STAGE_DEFS = {};
+let SG = null;
+STAGE_DEFS.spielplatz = {
+  id: 'spielplatz', house: HOUSE, stairs: STAIRS, slide: SLIDE, swing: SWING, start: START, gate: GATE,
+  npcs: NPC_DEFS, decor: DECOR, spots: SPOTS, grid: buildGridSpielplatz, ground: drawGroundSpielplatz,
+  feat: { swing: true, slide: true, house: true, racer: true, pigeons: true, waiter: true, dig: true }, junk: ['twig', 'leaf', 'pebble', 'cap'],
+  words: { one: 'Kind', the: 'das Kind', a: 'ein Kind', many: 'Kinder', dat: 'Kindern', back: 'zum Kind', each: 'Jedes Kind',
+    hide: 'hinter Steinen und Büschen oder gucken aus dem Boden', junk: 'ein Stöckchen', gate: 'am Tor zum Parkplatz', gateTap: 'Lauf zum Tor und tippe es an!',
+    lock: 'Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.',
+    progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!',
+    gateAsk: 'Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.', search: 'Schau hinter Steine und Büsche – dann tippe auf die Lupe!' },
+};
+function useStage(id) {
+  const D = STAGE_DEFS[id] || STAGE_DEFS.spielplatz;
+  if (SG === D) return;
+  SG = D;
+  HOUSE = D.house || OFFMAP; STAIRS = D.stairs || OFFMAP; SLIDE = D.slide || OFFMAP; SWING = D.swing || OFFMAP;
+  START = D.start; GATE = D.gate; NPC_DEFS = D.npcs; ALL_IDS = NPC_DEFS.map(n => n.id).concat(['gate']);
+  DECOR = D.decor; DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d)); SPOTS = D.spots;
+  G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); D.grid();
+  GROUND = null; if (typeof clearSprites === 'function') clearSprites();
+}
+const W_ = k => (SG ? SG.words[k] : STAGE_DEFS.spielplatz.words[k]);   // Wort für die Auftraggeber (Kind / Mitarbeiter)
+// Aufgaben-Listen pro Bereich (sonst die vom Spielplatz)
+const POOL = k => (SG && SG.pools && SG.pools[k]) || { easy: EASY_GAMES, puzzle: PUZZLES, std: CHALLENGES_STD, sp: CHALLENGES_SP, hard: CHALLENGES_HARD }[k];
+useStage('spielplatz');
 
 // ---------- Objekte zeichnen ----------
 function drawYucca(c, x, y, s, t, rustle = 0) {
@@ -277,17 +309,27 @@ function drawPeek(c, x, y, id, size, sink, tilt, wob) {
   moundAt(c, x, y + 2, size * 0.62);
 }
 const JUNK = ['twig', 'leaf', 'pebble', 'cap'];
+// Blau kariertes Geschirrtuch (wie in der Küche vom Original)
+function drawTowel(c, x, y, w, seed = 0) {
+  c.save(); c.translate(x, y); c.rotate(((seed * 37) % 7 - 3) * 0.05);
+  c.beginPath(); c.moveTo(-w, -w * 0.15); c.quadraticCurveTo(-w * 0.3, -w * 0.45, w * 0.2, -w * 0.25); c.quadraticCurveTo(w * 0.8, -w * 0.4, w, -w * 0.1); c.lineTo(w * 0.9, w * 0.3); c.quadraticCurveTo(0, w * 0.42, -w * 0.95, w * 0.28); c.closePath();
+  fs(c, '#e7ecf7', 2.5); c.save(); c.clip(); c.fillStyle = 'rgba(58,80,160,.55)'; for (let k = -6; k < 6; k++) { c.fillRect(k * w * 0.2, -w, w * 0.09, w * 2); c.fillRect(-w, k * w * 0.2, w * 2, w * 0.09); } c.restore();
+  c.restore();
+}
 function drawJunk(c, x, y, kind, s = 1) {
   c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round';
+  if (kind === 'nudel') { c.beginPath(); c.moveTo(-10, -4); c.quadraticCurveTo(-4, -14, 2, -4); c.quadraticCurveTo(7, 6, 12, -6); c.lineWidth = 5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 3; c.strokeStyle = '#f6d38d'; c.stroke(); c.restore(); return; }
+  if (kind === 'zettel') { c.rotate(0.3); rrPath(c, -9, -12, 18, 14, 2); fs(c, '#fff', 2); line(c, -6, -8, 6, -8, 1.2, '#adb5bd', false); line(c, -6, -4, 4, -4, 1.2, '#adb5bd', false); c.restore(); return; }
+  if (kind === 'salat') { ell(c, 0, -5, 11, 7, 0.3); fs(c, '#95d5b2', 2); line(c, -8, -3, 8, -8, 1.2, '#52b788', false); c.restore(); return; }
   if (kind === 'twig') { line(c, -10, 2, 8, -14, 3.5, '#7a4f2a'); line(c, 2, -7, 10, -4, 2.5, '#7a4f2a'); }
   else if (kind === 'leaf') { ell(c, 2, -6, 9, 5, -0.6); fs(c, '#95c56b', 2); line(c, -6, 0, 9, -11, 1.2, '#5f8a3a', false); }
   else if (kind === 'pebble') { ell(c, 0, -4, 8, 6); fs(c, '#adb5bd', 2); ell(c, -2, -6, 3, 2); c.fillStyle = 'rgba(255,255,255,.5)'; c.fill(); }
   else { ell(c, 0, -5, 8, 4); fs(c, '#e63946', 2); ell(c, 0, -6, 5, 2); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill(); }
   c.restore();
-  moundAt(c, x, y + 2, 13 * s);
+  if (!SG || SG.feat.dig) moundAt(c, x, y + 2, 13 * s);
 }
 function drawFace(c, id, x, y, s, t, o = {}) {
-  if (id === 'gate') drawGate(c, x, y, s * 0.42, 0, true, t);
+  if (id === 'gate') { if (SG && SG.gateFace) SG.gateFace(c, x, y, s, t); else drawGate(c, x, y, s * 0.42, 0, true, t); }
   else drawCritter(c, id, x, y, s, t, o);
 }
 
@@ -296,7 +338,8 @@ class Play {
   constructor(diff, opt = {}) {
     this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff];
     this.mp = opt.mp || null;   // Mehrspieler: eigener Durchgang (nicht gespeichert), gleiche Zufallswerte für beide
-    this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, 'spielplatz');
+    this.stage = opt.stage || (opt.mp && opt.mp.stage) || 'spielplatz'; useStage(this.stage);
+    this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, this.stage);
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
     this.st = this.sp.run; this.st.clears = this.sp.clears;
     if (!this.st.layout) { const r = mulberry32(this.seedFor('layout')); this.st.layout = { seat: ri(0, 1, r) }; NPC_DEFS.forEach(n => { if (n.pos) this.st.layout[n.id] = ri(0, n.pos.length - 1, r); }); Save.write(); }
@@ -330,7 +373,9 @@ class Play {
     }
     this.shake = {};
     this.npcAnim = {}; ALL_IDS.forEach((id, i) => (this.npcAnim[id] = { ph: i * 1.7, wave: 0, jump: 0 }));
-    this.pigeons = [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i }));
+    this.pigeons = SG.feat.pigeons ? [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i })) : [];
+    if (!SG.feat.racer) this.racer.state = 'off';
+    if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
   }
@@ -515,7 +560,7 @@ class Play {
     const T = this.coachTarget(); if (!T) return;
     const a = ACC(), first = a && !a.tut.coach;
     if (T.search) {
-      if (this.idleT > 9 && !this.coachSaid.search) { this.coachSaid.search = true; this.banner = { text: 'Schau hinter Steine und Büsche – dann tippe auf die Lupe!', t: 0 }; Voice.say(this.banner.text, true); }
+      if (this.idleT > 9 && !this.coachSaid.search) { this.coachSaid.search = true; this.banner = { text: W_('search'), t: 0 }; Voice.say(this.banner.text, true); }
       return;
     }
     if (!first && this.idleT < 7) return;
@@ -527,7 +572,7 @@ class Play {
       const ax = clamp(sp.x, 60, W - 60), ay = clamp(sp.y, 130, H - 100), ang = Math.atan2(sp.y - H / 2, sp.x - W / 2), pu = 1 + Math.sin(this.t * 6) * 0.12;
       c.save(); c.translate(ax, ay); c.rotate(ang); c.scale(pu, pu); polyPath(c, [[30, 0], [-14, -24], [-4, 0], [-14, 24]]); fs(c, '#ffd23f', 4); c.restore();
     }
-    const msg = T.npc === 'gate' ? 'Lauf zum Tor und tippe es an!' : (this.st.active ? 'Bring die Sachen zurück – tippe das Kind an!' : 'Tippe ein Kind mit ! an.');
+    const msg = T.npc === 'gate' ? W_('gateTap') : (this.st.active ? `Bring die Sachen zurück – tippe ${W_('the')} an!` : `Tippe ${W_('a')} mit ! an.`);
     const key = 'c_' + msg; if (!this.coachSaid[key]) { this.coachSaid[key] = true; Voice.say(msg, true); }
     c.font = `900 17px ${FONT}`; const mw = c.measureText(msg).width + 30, by = H - 40;
     rrPath(c, W / 2 - mw / 2, by - 20, mw, 40, 20); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, by, 17, '#fff', 'center', null);
@@ -677,7 +722,8 @@ class Play {
     else { this.joy = null; this.p.moving = false; }
     this.updatePigeons(dt);
     // Kellner auf der Terrasse (Deko, ohne Auftrag)
-    const wt = this.waiter || (this.waiter = { x: 260, dir: 1, dish: 0 });
+    if (this.extras && this.extras.update) this.extras.update(dt);
+    const wt = !SG.feat.waiter ? { x: 0, dir: 1 } : this.waiter || (this.waiter = { x: 260, dir: 1, dish: 0 });
     wt.x += wt.dir * 45 * dt;
     if (wt.x > 900 || wt.x < 90) { wt.dir *= -1; wt.dish = (wt.dish + 1) % 6; }
     const z = this.z(), hw = W / 2 / this.zoom, hh = H / 2 / this.zoom;
@@ -786,8 +832,8 @@ class Play {
     }
     { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
     if (this.coop && this.role === 0 && this.st.active && this.st.active.coop && !this.st.active.coop.roof) { const L2 = this.coop.ladder; out.push({ k: 'ladder', x: L2.x, y: L2.y + 20, l: 0, r: 52, sx: L2.x, sy: L2.y - 60 }); }
-    { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
-    out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
+    if (SG.feat.swing) { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
+    if (SG.feat.slide) out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
   }
   inRange(T) {
@@ -855,15 +901,15 @@ class Play {
     const seed = this.seedFor('q_' + id + '_' + (this.st.clears + 1)), r = mulberry32(seed);
     const boss = id === 'gate';
     const cnt = cntOverride || (this.diff === 'medium' ? 3 : 4) + (boss ? 2 : 0);
-    const items = shuffle(ITEM_IDS, r).slice(0, cnt);
+    const items = shuffle(SG.items || ITEM_IDS, r).slice(0, cnt);
     // Verstecke: mal in der Umgebung, mal irgendwo im Hackschnitzel vergraben – jedes Mal neu
     const hidden = [], spots = shuffle(SPOTS, r), npcP = this.npcs.map(n => this.npcPos(n));
     const farEnough = (x, y, l) => hidden.every(h => h.l !== l || dist(h.x, h.y, x, y) > 120);
     for (let k = 0; k < cnt; k++) {
       let h = null;
       const roll = r();
-      if (roll < 0.9) {
-        const behindPool = spots.filter(s2 => s2.decor), pool = roll < 0.75 ? behindPool : spots;
+      if (roll < 0.9 || !SG.feat.dig) {
+        const behindPool = spots.filter(s2 => s2.decor), pool = roll < 0.75 && SG.feat.dig ? behindPool : spots;
         const s = pool.find(s2 => !hidden.some(hh => hh.spot === s2.id) && farEnough(s2.x, s2.y, s2.l || 0));
         if (s) h = { x: s.x, y: s.y, l: s.l || 0, reach: s.reach, spot: s.id, behind: !!s.decor, side: r() < 0.5 ? -1 : 1 };
       }
@@ -879,10 +925,10 @@ class Play {
     // keine Aufgabe doppelt im ganzen Durchgang (alle Kinder + Tor)
     const recent = this.mp ? [] : ACC().recent || [], runUsed = this.st.usedGames || (this.st.usedGames = []), used = [];
     const games = items.map(() => {
-      if (this.diff === 'easy') { const c2 = EASY_GAMES.filter(g => !used.includes(g) && !runUsed.includes(g)); const g = this.pickRole(c2.length ? c2 : EASY_GAMES, r); used.push(g); return g; }
+      if (this.diff === 'easy') { const E = POOL('easy'), c2 = E.filter(g => !used.includes(g) && !runUsed.includes(g)); const g = this.pickRole(c2.length ? c2 : E, r); used.push(g); return g; }
       const ch = r() < (boss ? 0.7 : 0.4);
-      const pool = ch ? (this.diff === 'hard' && r() < 0.4 ? CHALLENGES_HARD : r() < 0.45 ? CHALLENGES_SP : CHALLENGES_STD) : PUZZLES;
-      const allPool = PUZZLES.concat(CHALLENGES_STD, CHALLENGES_SP, this.diff === 'hard' ? CHALLENGES_HARD : []);
+      const pool = ch ? (this.diff === 'hard' && r() < 0.4 ? POOL('hard') : r() < 0.45 ? POOL('sp') : POOL('std')) : POOL('puzzle');
+      const allPool = POOL('puzzle').concat(POOL('std'), POOL('sp'), this.diff === 'hard' ? POOL('hard') : []);
       let cand = pool.filter(g => !used.includes(g) && !runUsed.includes(g) && !recent.includes(g));
       if (!cand.length) cand = pool.filter(g => !used.includes(g) && !runUsed.includes(g));
       if (!cand.length) cand = allPool.filter(g => !used.includes(g) && !runUsed.includes(g));
@@ -895,7 +941,7 @@ class Play {
       let x = 0, y = 0, g = 0;
       do { x = 95 + r() * 810; y = 240 + r() * 900; g++; }
       while (g < 300 && (!canStand(0, x, y) || hidden.some(h => dist(peekOf(h).x, peekOf(h).y, x, y) < 110) || decoys.some(d => dist(d.x, d.y, x, y) < 110) || dist(x, y, START.x, START.y) < 120));
-      decoys.push({ x: Math.round(x), y: Math.round(y), kind: pick(JUNK, r), done: false });
+      decoys.push({ x: Math.round(x), y: Math.round(y), kind: pick(SG.junk, r), done: false });
     }
     runUsed.push(...games);
     return { npc: id, boss, items, got: items.map(() => false), hidden, decoys, dug: [], games, seed };
@@ -937,7 +983,7 @@ class Play {
     if (!e) {
       const seed = this.seedFor('e_' + id), r = mulberry32(seed);
       // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
-      if (!st.easyPlan || st.easyPlan.length < 24) { st.easyPlan = shuffle(EASY_GAMES, mulberry32(this.seedFor('plan'))).slice(0, 24); if (this.mp && this.mp.me === 'guest') st.easyPlan = st.easyPlan.slice(4).concat(st.easyPlan.slice(0, 4)); }
+      if (!st.easyPlan || st.easyPlan.length < 24) { { const E = POOL('easy'), rr = mulberry32(this.seedFor('plan')); let pl = shuffle(E, rr); while (pl.length < 24) pl = pl.concat(shuffle(E, rr)); st.easyPlan = pl.slice(0, 24); } if (this.mp && this.mp.me === 'guest') st.easyPlan = st.easyPlan.slice(4).concat(st.easyPlan.slice(0, 4)); }
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
     }
@@ -993,7 +1039,7 @@ class Play {
     const kind = this.kind, sp = this.sp;
     const newPiece = !sp.outfit; sp.outfit = true;
     // Belohnung: ein zufälliger Skin dieser Stage + Stufe (bevorzugt einer, den man noch nicht hat)
-    const all = stageSkins('spielplatz', this.diff), missing = all.filter(s => !sp.skins.includes(s));
+    const all = stageSkins(this.stage, this.diff), missing = all.filter(s => !sp.skins.includes(s));
     const skin = pick(missing.length ? missing : all);
     const newSkin = !sp.skins.includes(skin); if (newSkin) sp.skins.push(skin);
     if (newSkin) DP(this.diff).equip = skin;
@@ -1003,9 +1049,9 @@ class Play {
     stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
     { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
     const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, have: sp.skins.length, diff: this.diff }, again => {
-      if (again) setScene(new Play(this.diff)); else setScene(new StageMap(this.diff));
+      if (again) setScene(new Play(this.diff, { stage: this.stage })); else setScene(new StageMap(this.diff));
     }); };
-    overlay = new WheelOverlay({ kind, diff: this.diff, stage: 'spielplatz', skin, newSkin }, after);
+    overlay = new WheelOverlay({ kind, diff: this.diff, stage: this.stage, skin, newSkin }, after);
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
@@ -1016,7 +1062,7 @@ class Play {
   // ---- Zeichnen ----
   draw(c) {
     const z = this.zoom, p = this.p, t = this.t, pz = this.z();
-    c.fillStyle = '#86a866'; c.fillRect(0, 0, W, H);
+    c.fillStyle = SG.bg || '#86a866'; c.fillRect(0, 0, W, H);
     c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z));
     if (!GROUND) buildGround();
     c.drawImage(GROUND, 0, 0, WORLD_W, WORLD_H);
@@ -1042,6 +1088,9 @@ class Play {
         const wob = !hard && Math.sin(t * 2 + i) > 0.97 ? Math.sin(t * 40) * 0.15 : 0;
         const f = h.behind ? () => {
           c.save(); c.translate(pk.x, pk.y - size * 0.32); c.rotate((h.side || 1) * 0.35 + tilt + wob); drawItem(c, q.items[i], 0, 0, size * 0.95); c.restore();
+        } : !SG.feat.dig ? () => {   // ohne Hackschnitzel: Ding guckt unter einem Geschirrtuch hervor
+          c.save(); c.translate(pk.x, pk.y - 8); c.rotate(tilt + wob); drawItem(c, q.items[i], 0, -size * 0.15, size * 0.95); c.restore();
+          drawTowel(c, pk.x, pk.y + 2, size * (hard ? 0.95 : 0.8), i);
         } : () => {
           const zz = h.l ? HOUSE.fz : 0;
           if (!hard) { const pu = 0.5 + 0.5 * Math.sin(t * 3 + i); ell(c, pk.x, pk.y - zz + 2, size * 0.75 + pu * 4, size * 0.3 + pu * 2); c.lineWidth = 3; c.strokeStyle = `rgba(255,255,255,${0.35 + pu * 0.35})`; c.stroke(); }
@@ -1069,10 +1118,11 @@ class Play {
       else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 232, 84, 246, g => drawCypress(g, d.x, d.y))) });
       else if (d.t === 'planter') L.push({ y: d.y, f: () => sh > 0 ? drawPlanter(c, d.x, d.y, t, sh) : drawSprite(c, sprite(k, d.x - 52, d.y - 72, 104, 90, g => drawPlanter(g, d.x, d.y, 0, 0))) });
       else if (d.t === 'lamp') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 16, d.y - 190, 54, 200, g => lampRaw(g, d))) });
+      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = d.bb; L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0))) : fn(c, d, t, sh)) }); }
       else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => sh > 0 ? benchRaw(c, d, Math.sin(sh * 60) * 2) : drawSprite(c, sprite(k, d.x - 52, d.y - 26, 104, 52, g => benchRaw(g, d, 0))) });
     }
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
-    if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
+    if (this.waiter && SG.feat.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     // Mehrspieler: Mitspieler-Figur + Team-Objekte (Schatzkiste mit Doppel-Schalter, Leiter)
     if (this.ghost && this.ghost.k) { const g = this.ghost, up = g.z > 1; L.push({ y: up ? HOUSE.y + HOUSE.h + 2 : g.y, f: () => {
@@ -1106,18 +1156,18 @@ class Play {
       ell(c, lf.x, lf.y - 18 + b, 16 + gl * 4, 16 + gl * 4); c.fillStyle = `rgba(199,244,100,${0.25 + gl * 0.25})`; c.fill();
       leaf(c, lf.x, lf.y - 18 + b, 2.6, BRAND.lime, -0.5 + Math.sin(t * 2 + lf.x) * 0.3);
     } });
-    L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) });
-    SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); });
-    L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
-    L.push({ y: HOUSE.y + HOUSE.h, f: () => this.drawHouse(c, behind, drawPlayer) });
-    L.push({ y: HOUSE.y + HOUSE.h + 0.5, f: () => this.drawStairs(c) });
-    L.push({ y: GATE.y, f: () => drawGate(c, GATE.x, GATE.y, 1, this.gateA, this.npcState('gate') === 'locked', t) });
+    if (SG.feat.swing) { L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) }); SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); }); }
+    if (SG.feat.slide) L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
+    if (SG.feat.house) { L.push({ y: HOUSE.y + HOUSE.h, f: () => this.drawHouse(c, behind, drawPlayer) }); L.push({ y: HOUSE.y + HOUSE.h + 0.5, f: () => this.drawStairs(c) }); }
+    if (this.extras && this.extras.draw) this.extras.draw(c, L, vis, t);
+    L.push({ y: GATE.y, f: () => (SG.drawGate || drawGate)(c, GATE.x, GATE.y, 1, this.gateA, this.npcState('gate') === 'locked', t) });
     if (p.slide) L.push({ y: SLIDE.y1 + 1, f: drawPlayer });
     else if (this.swinging && !this.swinging.jump) { /* sitzt auf der Schaukel: wird mit dem Sitz gezeichnet */ }
     else if (this.climb) { /* klettert: wird nach dem Dach gezeichnet */ }
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
-    this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
+    if (SG.feat.house) this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
+    if (SG.overlay) SG.overlay(c, this, t);   // z. B. Deckenlampen über allem
     if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
       if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
     this.drawMarkers(c);
@@ -1443,20 +1493,20 @@ class Play {
     }
     if (this.helpOpen && !overlay) {
       const T = this.diff === 'easy' ? [
-        'Tippe auf die Kinder mit dem gelben Ausrufezeichen. Jedes Kind hat 4 Aufgaben für dich.',
-        'Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte Aufgabe.',
+        `Tippe auf die ${W_('many')} mit dem gelben Ausrufezeichen. ${W_('each')} hat 4 Aufgaben für dich.`,
+        `Wenn du allen 5 ${W_('dat')} geholfen hast, wartet ${W_('gate')} die letzte Aufgabe.`,
         'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
         'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
       ] : [
-        'Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.',
-        'Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen!',
+        `Sprich mit den ${W_('dat')} mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.`,
+        `Die Dinge liegen ${W_('hide')}. Aber Vorsicht: Manchmal ist es nur ${W_('junk')}!`,
         'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
         this.diff === 'medium' ? 'Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah.' : 'Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau.',
-        'Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
+        `Hast du alles, bring es zurück ${W_('back')}. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.`,
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
-        'Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
+        `Wenn du allen 5 ${W_('dat')} geholfen hast, wartet ${W_('gate')} die letzte große Aufgabe.`,
         'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
         'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Die ganze Anleitung findest du im Menü unter dem Buch.',
@@ -1496,10 +1546,10 @@ const NPC_LINES = {
 // Feste Sätze (ohne wechselnde Gegenstands-Listen – die stehen als Bilder im Dialog), damit jeder Satz als echte Aufnahme abgespielt werden kann
 const NPC_SHORT = { hase: 'Mia', fuchs: 'Paul', igel: 'Ida', waschbaer: 'Willi', eule: 'Emma', gate: 'dem Tor' };
 function questText(o) {
-  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.';
+  if (o.mode === 'lock') return W_('lock');
   if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_SHORT[o.other] + ', danach bin ich dran!';
-  if (o.mode === 'progress') return 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!';
-  if (o.npc === 'gate') return 'Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.';
+  if (o.mode === 'progress') return W_('progress');
+  if (o.npc === 'gate') return W_('gateAsk');
   return (NPC_LINES[o.npc] || '') + ' Kannst du diese Sachen für mich finden?';
 }
 
