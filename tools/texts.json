@@ -19,9 +19,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Das Team hat Sachen verloren. Finde sie!",
-  "key": "e0504a24",
-  "clean": "Das Team hat Sachen verloren. Finde sie!"
+  "text": "Die Kinder haben Sachen verloren. Finde sie!",
+  "key": "101432af",
+  "clean": "Die Kinder haben Sachen verloren. Finde sie!"
  },
  {
   "who": "erzaehler",
@@ -67,15 +67,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Im Original arbeitet ein nettes Team. Wer ein gelbes Ausrufezeichen hat, hat einen Auftrag für dich. Eine blaue Lupe heißt: Du suchst gerade für ihn. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.",
-  "key": "8ab07f36",
-  "clean": "Im Original arbeitet ein nettes Team. Wer ein gelbes Ausrufezeichen hat, hat einen Auftrag für dich. Eine blaue Lupe heißt: Du suchst gerade für ihn. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen, da starten die Aufgaben sofort."
+  "text": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.",
+  "key": "902075a6",
+  "clean": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen, da starten die Aufgaben sofort."
  },
  {
   "who": "erzaehler",
-  "text": "Jetzt du: Tippe den Mitarbeiter mit dem gelben Ausrufezeichen an!",
-  "key": "9f5a6e64",
-  "clean": "Jetzt du: Tippe den Mitarbeiter mit dem gelben Ausrufezeichen an!"
+  "text": "Jetzt du: Tippe das Kind mit dem gelben Ausrufezeichen an!",
+  "key": "76aacf15",
+  "clean": "Jetzt du: Tippe das Kind mit dem gelben Ausrufezeichen an!"
  },
  {
   "who": "erzaehler",
@@ -139,15 +139,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Jetzt du: Tippe schnell die 3 Bälle an und dann Hoppel – bevor die Uhr abläuft!",
-  "key": "6f68777b",
-  "clean": "Jetzt du: Tippe schnell die 3 Bälle an und dann Hoppel, bevor die Uhr abläuft!"
+  "text": "Jetzt du: Tippe schnell die 3 Bälle an und dann Mia – bevor die Uhr abläuft!",
+  "key": "910017d4",
+  "clean": "Jetzt du: Tippe schnell die 3 Bälle an und dann Mia, bevor die Uhr abläuft!"
  },
  {
   "who": "erzaehler",
-  "text": "Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!",
-  "key": "de48a1a1",
-  "clean": "Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf, und du hast den Bereich geschafft!"
+  "text": "Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf Kindern geholfen, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!",
+  "key": "18e59aac",
+  "clean": "Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf Kindern geholfen, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf, und du hast den Bereich geschafft!"
  },
  {
   "who": "erzaehler",
@@ -553,27 +553,27 @@
  },
  {
   "who": "erzaehler",
-  "text": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
-  "key": "7c284d96",
-  "clean": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+  "text": "Tippe auf die Kinder mit dem gelben Ausrufezeichen. Jedes Kind hat 4 Aufgaben für dich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "d791b41b",
+  "clean": "Tippe auf die Kinder mit dem gelben Ausrufezeichen. Jedes Kind hat 4 Aufgaben für dich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "54bb6c88",
-  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "d108b192",
+  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "7edeefab",
-  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "5189187b",
+  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "hase",
-  "text": "Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden! Kannst du diese Sachen für mich finden?",
-  "key": "e5aa8e58",
-  "clean": "Nach dem Kinderfest räume ich den Spielplatz auf, aber einiges ist verschwunden! Kannst du diese Sachen für mich finden?"
+  "text": "Ich hab beim Spielen meine Sachen verloren! Kannst du diese Sachen für mich finden?",
+  "key": "65c0b54f",
+  "clean": "Ich hab beim Spielen meine Sachen verloren! Kannst du diese Sachen für mich finden?"
  },
  {
   "who": "hase",
@@ -583,9 +583,9 @@
  },
  {
   "who": "hase",
-  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
-  "key": "01fba4a1",
-  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+  "text": "Hilf zuerst Paul, danach bin ich dran!",
+  "key": "0a6d115a",
+  "clean": "Hilf zuerst Paul, danach bin ich dran!"
  },
  {
   "who": "hase",
@@ -607,9 +607,9 @@
  },
  {
   "who": "fuchs",
-  "text": "Ich habe für die Kinder Spielsachen bereitgelegt, und jetzt sind sie weg! Kannst du diese Sachen für mich finden?",
-  "key": "883dd270",
-  "clean": "Ich habe für die Kinder Spielsachen bereitgelegt, und jetzt sind sie weg! Kannst du diese Sachen für mich finden?"
+  "text": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Kannst du diese Sachen für mich finden?",
+  "key": "5123255b",
+  "clean": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Kannst du diese Sachen für mich finden?"
  },
  {
   "who": "fuchs",
@@ -619,9 +619,9 @@
  },
  {
   "who": "fuchs",
-  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
-  "key": "b37d8f5e",
-  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+  "text": "Hilf zuerst Mia, danach bin ich dran!",
+  "key": "06997447",
+  "clean": "Hilf zuerst Mia, danach bin ich dran!"
  },
  {
   "who": "fuchs",
@@ -643,9 +643,9 @@
  },
  {
   "who": "igel",
-  "text": "Die Kinder haben ihre Sachen bei mir an der Eistheke liegen lassen – und dann irgendwo versteckt! Kannst du diese Sachen für mich finden?",
-  "key": "c3e18089",
-  "clean": "Die Kinder haben ihre Sachen bei mir an der Eistheke liegen lassen, und dann irgendwo versteckt! Kannst du diese Sachen für mich finden?"
+  "text": "Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden! Kannst du diese Sachen für mich finden?",
+  "key": "6227a748",
+  "clean": "Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden! Kannst du diese Sachen für mich finden?"
  },
  {
   "who": "igel",
@@ -655,15 +655,15 @@
  },
  {
   "who": "igel",
-  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
-  "key": "d35f58ea",
-  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+  "text": "Hilf zuerst Mia, danach bin ich dran!",
+  "key": "dd314beb",
+  "clean": "Hilf zuerst Mia, danach bin ich dran!"
  },
  {
   "who": "igel",
-  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
-  "key": "d0f44087",
-  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+  "text": "Hilf zuerst Paul, danach bin ich dran!",
+  "key": "95f41a60",
+  "clean": "Hilf zuerst Paul, danach bin ich dran!"
  },
  {
   "who": "igel",
@@ -679,9 +679,9 @@
  },
  {
   "who": "waschbaer",
-  "text": "Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas! Kannst du diese Sachen für mich finden?",
-  "key": "50dd8c22",
-  "clean": "Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas! Kannst du diese Sachen für mich finden?"
+  "text": "Ich will weiterspielen, aber überall fehlt etwas! Kannst du diese Sachen für mich finden?",
+  "key": "ab98fe99",
+  "clean": "Ich will weiterspielen, aber überall fehlt etwas! Kannst du diese Sachen für mich finden?"
  },
  {
   "who": "waschbaer",
@@ -691,15 +691,15 @@
  },
  {
   "who": "waschbaer",
-  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
-  "key": "11262923",
-  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+  "text": "Hilf zuerst Mia, danach bin ich dran!",
+  "key": "d8f7a628",
+  "clean": "Hilf zuerst Mia, danach bin ich dran!"
  },
  {
   "who": "waschbaer",
-  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
-  "key": "7503dd7e",
-  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+  "text": "Hilf zuerst Paul, danach bin ich dran!",
+  "key": "edec62cd",
+  "clean": "Hilf zuerst Paul, danach bin ich dran!"
  },
  {
   "who": "waschbaer",
@@ -715,9 +715,9 @@
  },
  {
   "who": "eule",
-  "text": "Vom Spielhaus aus habe ich alles im Blick – nur die vergessenen Sachen nicht! Kannst du diese Sachen für mich finden?",
-  "key": "6dc11df3",
-  "clean": "Vom Spielhaus aus habe ich alles im Blick, nur die vergessenen Sachen nicht! Kannst du diese Sachen für mich finden?"
+  "text": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Kannst du diese Sachen für mich finden?",
+  "key": "90706518",
+  "clean": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Kannst du diese Sachen für mich finden?"
  },
  {
   "who": "eule",
@@ -727,15 +727,15 @@
  },
  {
   "who": "eule",
-  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
-  "key": "d3c5aa16",
-  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+  "text": "Hilf zuerst Mia, danach bin ich dran!",
+  "key": "260da87f",
+  "clean": "Hilf zuerst Mia, danach bin ich dran!"
  },
  {
   "who": "eule",
-  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
-  "key": "7442fc33",
-  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+  "text": "Hilf zuerst Paul, danach bin ich dran!",
+  "key": "b870fd24",
+  "clean": "Hilf zuerst Paul, danach bin ich dran!"
  },
  {
   "who": "eule",
@@ -763,15 +763,15 @@
  },
  {
   "who": "gate",
-  "text": "Hilf zuerst Hoppel, danach bin ich dran!",
-  "key": "8ff2b990",
-  "clean": "Hilf zuerst Hoppel, danach bin ich dran!"
+  "text": "Hilf zuerst Mia, danach bin ich dran!",
+  "key": "5e7b8411",
+  "clean": "Hilf zuerst Mia, danach bin ich dran!"
  },
  {
   "who": "gate",
-  "text": "Hilf zuerst Fridolin, danach bin ich dran!",
-  "key": "9d3447c1",
-  "clean": "Hilf zuerst Fridolin, danach bin ich dran!"
+  "text": "Hilf zuerst Paul, danach bin ich dran!",
+  "key": "f7184a7a",
+  "clean": "Hilf zuerst Paul, danach bin ich dran!"
  },
  {
   "who": "gate",
@@ -793,8 +793,8 @@
  },
  {
   "who": "gate",
-  "text": "Das Tor zum Parkplatz geht erst auf, wenn alle fünf Mitarbeiter zufrieden sind.",
-  "key": "bbfa8e95",
-  "clean": "Das Tor zum Parkplatz geht erst auf, wenn alle fünf Mitarbeiter zufrieden sind."
+  "text": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.",
+  "key": "8ba5a499",
+  "clean": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast."
  }
 ]

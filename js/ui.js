@@ -799,7 +799,7 @@ const STORY_SAY = [
   'Willkommen im Original in Teningen!',
   'Chefkoch Bruno macht dich zum neuen Helfer.',
   'Sechs Bereiche, sechs Uniform-Teile – sammle sie alle!',
-  'Das Team hat Sachen verloren. Finde sie!',
+  'Die Kinder haben Sachen verloren. Finde sie!',
   'Hilf allen, dann geht das Tor auf. Los geht’s!',
 ];
 class Trailer {

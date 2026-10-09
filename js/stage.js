@@ -380,7 +380,7 @@ class Play {
       const ax = clamp(sp.x, 60, W - 60), ay = clamp(sp.y, 130, H - 100), ang = Math.atan2(sp.y - H / 2, sp.x - W / 2), pu = 1 + Math.sin(this.t * 6) * 0.12;
       c.save(); c.translate(ax, ay); c.rotate(ang); c.scale(pu, pu); polyPath(c, [[30, 0], [-14, -24], [-4, 0], [-14, 24]]); fs(c, '#ffd23f', 4); c.restore();
     }
-    const msg = T.npc === 'gate' ? 'Lauf zum Tor und tippe es an!' : (this.st.active ? 'Bring die Sachen zurück – tippe den Mitarbeiter an!' : 'Tippe einen Mitarbeiter mit ! an.');
+    const msg = T.npc === 'gate' ? 'Lauf zum Tor und tippe es an!' : (this.st.active ? 'Bring die Sachen zurück – tippe das Kind an!' : 'Tippe ein Kind mit ! an.');
     const key = 'c_' + msg; if (!this.coachSaid[key]) { this.coachSaid[key] = true; Voice.say(msg, true); }
     c.font = `900 17px ${FONT}`; const mw = c.measureText(msg).width + 30, by = H - 86;
     rrPath(c, W / 2 - mw / 2, by - 20, mw, 40, 20); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, by, 17, '#fff', 'center', null);
@@ -705,7 +705,7 @@ class Play {
       hidden.push(h);
     }
     // Spiele: möglichst abwechslungsreich (nichts doppelt im Auftrag, zuletzt gespielte meiden)
-    // keine Aufgabe doppelt im ganzen Durchgang (alle Mitarbeiter + Tor)
+    // keine Aufgabe doppelt im ganzen Durchgang (alle Kinder + Tor)
     const recent = ACC().recent || [], runUsed = this.st.usedGames || (this.st.usedGames = []), used = [];
     const games = items.map(() => {
       const ch = r() < (boss ? 0.7 : 0.4);
@@ -1113,7 +1113,7 @@ class Play {
         if (q.got[k]) icon(c, 'check', x + iw * 0.3, y + iw * 0.3, iw * 0.42, '#06d6a0');
       });
     }
-    // Bonus-Uhr: Mitarbeiter schnell geschafft = Extra-Joker
+    // Bonus-Uhr: Kind schnell geholfen = Extra-Joker
     { const bq = this.bonusQuest(), left = bq ? this.bonusLimit(bq.npc) - (bq.q.tt || 0) : -1;
       if (left > 0 && !this.bonusIntro) {
         const lim = this.bonusLimit(bq.npc), f = clamp(left / lim, 0, 1), low = left < 10, mid = left < 30;
@@ -1205,20 +1205,20 @@ class Play {
     }
     if (this.helpOpen && !overlay) {
       const T = this.diff === 'easy' ? [
-        'Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich.',
-        'Wenn alle 5 Mitarbeiter fertig sind, wartet am Tor zum Parkplatz die letzte Aufgabe.',
+        'Tippe auf die Kinder mit dem gelben Ausrufezeichen. Jedes Kind hat 4 Aufgaben für dich.',
+        'Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte Aufgabe.',
         'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
         'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
       ] : [
-        'Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.',
+        'Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.',
         'Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen!',
         'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
         this.diff === 'medium' ? 'Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah.' : 'Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau.',
-        'Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
+        'Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
-        'Wenn alle 5 Mitarbeiter fertig sind, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
+        'Wenn du allen 5 Kindern geholfen hast, stellt das Tor zum Parkplatz die letzte große Aufgabe.',
         'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
         'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Die ganze Anleitung findest du im Menü unter dem Buch.',
@@ -1239,19 +1239,19 @@ class Play {
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
 const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
-const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // Mitarbeiter so schnell geschafft = +1 Joker (Tor: +30 s)
-const NPC_NAMES = { hase: 'Hoppel vom Service', fuchs: 'Fridolin aus der Küche', igel: 'Ida von der Eistheke', waschbaer: 'Willi, der Hausmeister', eule: 'Emma vom Empfang', gate: 'Das Tor' };
+const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schnell geholfen = +1 Joker (Tor: +30 s)
+const NPC_NAMES = { hase: 'Mia', fuchs: 'Paul', igel: 'Ida', waschbaer: 'Willi', eule: 'Emma', gate: 'Das Tor' };   // die Kinder auf dem Spielplatz
 const NPC_LINES = {
-  hase: 'Nach dem Kinderfest räume ich den Spielplatz auf – aber einiges ist verschwunden!',
-  fuchs: 'Ich habe für die Kinder Spielsachen bereitgelegt, und jetzt sind sie weg!',
-  igel: 'Die Kinder haben ihre Sachen bei mir an der Eistheke liegen lassen – und dann irgendwo versteckt!',
-  waschbaer: 'Ich muss den Spielplatz für morgen fertig machen, aber überall fehlt etwas!',
-  eule: 'Vom Spielhaus aus habe ich alles im Blick – nur die vergessenen Sachen nicht!',
+  hase: 'Ich hab beim Spielen meine Sachen verloren!',
+  fuchs: 'Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg!',
+  igel: 'Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden!',
+  waschbaer: 'Ich will weiterspielen, aber überall fehlt etwas!',
+  eule: 'Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht!',
 };
 // Feste Sätze (ohne wechselnde Gegenstands-Listen – die stehen als Bilder im Dialog), damit jeder Satz als echte Aufnahme abgespielt werden kann
-const NPC_SHORT = { hase: 'Hoppel', fuchs: 'Fridolin', igel: 'Ida', waschbaer: 'Willi', eule: 'Emma', gate: 'dem Tor' };
+const NPC_SHORT = { hase: 'Mia', fuchs: 'Paul', igel: 'Ida', waschbaer: 'Willi', eule: 'Emma', gate: 'dem Tor' };
 function questText(o) {
-  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn alle fünf Mitarbeiter zufrieden sind.';
+  if (o.mode === 'lock') return 'Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.';
   if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_SHORT[o.other] + ', danach bin ich dran!';
   if (o.mode === 'progress') return 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!';
   if (o.npc === 'gate') return 'Das Tor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Parkplatz.';
@@ -1259,7 +1259,7 @@ function questText(o) {
 }
 
 class QuestDialog {
-  constructor(o) { this.o = o; this.t = 0; Voice.say(questText(o), true, o.npc); }   // jeder Mitarbeiter spricht mit eigener Stimme
+  constructor(o) { this.o = o; this.t = 0; Voice.say(questText(o), true, o.npc); }   // jedes Kind spricht mit eigener Stimme
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; Voice.stop(); }
   draw(c) {

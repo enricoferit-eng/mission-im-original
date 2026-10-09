@@ -115,7 +115,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
 }
 
 // ---------- Auftrags-Tiere (frontal, mit eigener Farbe) ----------
-// Arbeitskleidung der Mitarbeiter
+// Arbeitskleidung (Schürzen-Farben, frühere Mitarbeiter-Figuren)
 const STAFF_COL = { hase: '#35452F', fuchs: '#ffffff', igel: '#ff8fab', waschbaer: '#6a994e', eule: '#35452F' };
 const CRIT = {
   hase: { body: '#ece6dc', light: '#ffffff', ear: 'long', inner: '#f7b6c2' },
@@ -125,7 +125,60 @@ const CRIT = {
   eule: { body: '#a47148', light: '#f3d9b1', ear: 'tuft', owl: true },
   baer: { body: '#8b5a2b', light: '#d9b38c', ear: 'round' },
 };
+// Die Kinder auf dem Spielplatz (früher Tiere): gleiche Größe wie die Tierfiguren, Füße auf dem Boden
+const KIDS = {
+  hase:      { skin: '#f6d2b8', hair: '#f2c94c', shirt: '#e63946', pants: '#e63946', dress: true, style: 'pigtails' },   // Mia
+  fuchs:     { skin: '#f1c7a5', hair: '#b5541c', shirt: '#4dabf7', pants: '#495057', style: 'cap', cap: '#ffd166' },     // Paul
+  igel:      { skin: '#a8714f', hair: '#2b1d14', shirt: '#ffd166', pants: '#118ab2', style: 'bun' },                    // Ida
+  waschbaer: { skin: '#d9a57e', hair: '#1f1a17', shirt: '#52b788', pants: '#6c4f3d', style: 'short', glasses: true, stripes: true }, // Willi
+  eule:      { skin: '#f6d2b8', hair: '#7a4a2a', shirt: '#9b5de5', pants: '#343a40', style: 'long', band: '#ef476f' },   // Emma
+};
+function drawKid(c, id, x, y, s, t = 0, o = {}) {
+  const K = KIDS[id];
+  c.save(); c.translate(x, y); c.scale(s, s); c.lineJoin = 'round'; c.lineCap = 'round';
+  if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, 0, 15, 5.5); c.fill(); }
+  const bob = Math.sin(t * 2.5 + (o.ph || 0)) * 1.2; c.translate(0, -bob);
+  // Haare hinten (lange Haare / Zöpfe)
+  if (K.style === 'long') { rrPath(c, -14, -44, 28, 30, 10); fs(c, K.hair, 2.5); }
+  if (K.style === 'pigtails') { const sw = Math.sin(t * 3 + (o.ph || 0)) * 0.15; [-1, 1].forEach(d => { c.save(); c.translate(d * 12, -36); c.rotate(d * (0.5 + sw)); ell(c, d * 4, 6, 4.5, 8); fs(c, K.hair, 2.5); c.restore(); }); }
+  // Beine + Schuhe
+  rrPath(c, -7, -12, 5.5, 10, 2.5); fs(c, K.dress ? K.skin : K.pants, 2); rrPath(c, 1.5, -12, 5.5, 10, 2.5); fs(c, K.dress ? K.skin : K.pants, 2);
+  ell(c, -4.5, -2, 4.5, 3); fs(c, '#343a40', 2); ell(c, 4.5, -2, 4.5, 3); fs(c, '#343a40', 2);
+  // Körper: Kleid oder T-Shirt
+  if (K.dress) { polyPath(c, [[-6, -24], [6, -24], [12, -9], [-12, -9]]); fs(c, K.shirt, 2.5); }
+  else { rrPath(c, -9, -25, 18, 15, 5); fs(c, K.shirt, 2.5); if (K.stripes) { c.save(); rrPath(c, -9, -25, 18, 15, 5); c.clip(); for (let i = 0; i < 3; i++) { c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(-9, -22 + i * 4.5, 18, 1.8); } c.restore(); } }
+  // Arme (einer winkt)
+  const wave = o.wave ? Math.sin(t * 9) * 0.5 : 0;
+  c.save(); c.translate(-9, -22); c.rotate(0.35); rrPath(c, -2.5, 0, 5, 11, 2.5); fs(c, K.shirt, 2); ell(c, 0, 12, 2.6, 2.6); fs(c, K.skin, 1.5); c.restore();
+  c.save(); c.translate(9, -22); c.rotate(-0.35 + wave - (o.wave ? 2.2 : 0)); rrPath(c, -2.5, 0, 5, 11, 2.5); fs(c, K.shirt, 2); ell(c, 0, 12, 2.6, 2.6); fs(c, K.skin, 1.5); c.restore();
+  // Kopf
+  ell(c, 0, -36, 12, 12); fs(c, K.skin, 2.5);
+  ell(c, -12, -35, 2.5, 3.5); fs(c, K.skin, 2); ell(c, 12, -35, 2.5, 3.5); fs(c, K.skin, 2);
+  // Haare vorne
+  c.fillStyle = K.hair; c.strokeStyle = OL; c.lineWidth = 2.5;
+  if (K.style === 'cap') {
+    c.beginPath(); c.arc(0, -39, 12.5, Math.PI, 0); c.closePath(); fs(c, K.cap, 2.5); rrPath(c, -16, -41, 9, 4, 2); fs(c, K.cap, 2);
+    c.beginPath(); c.moveTo(-11, -38); c.quadraticCurveTo(-6, -34, -2, -38); c.quadraticCurveTo(3, -34, 8, -38); c.lineTo(11, -38); c.lineTo(11, -40); c.lineTo(-11, -40); c.closePath(); c.fillStyle = K.hair; c.fill();
+  } else {
+    c.beginPath(); c.moveTo(-12.5, -34); c.quadraticCurveTo(-13, -50, 0, -49.5); c.quadraticCurveTo(13, -50, 12.5, -34);
+    if (K.style === 'short') { c.quadraticCurveTo(6, -42, -2, -40); c.quadraticCurveTo(-8, -42, -12.5, -34); }
+    else { c.quadraticCurveTo(4, -43, -3, -41); c.quadraticCurveTo(-9, -39, -12.5, -34); }
+    c.closePath(); fs(c, K.hair, 2.5);
+    if (K.style === 'bun') { ell(c, 0, -51, 6.5, 5.5); fs(c, K.hair, 2.5); for (let i = 0; i < 5; i++) { ell(c, -10 + i * 5, -46 + Math.abs(i - 2), 2.6, 2.6); c.fillStyle = 'rgba(255,255,255,.12)'; c.fill(); } }
+    if (K.style === 'pigtails') { ell(c, -12, -36, 2.5, 2.5); fs(c, '#ef476f', 1.5); ell(c, 12, -36, 2.5, 2.5); fs(c, '#ef476f', 1.5); }
+    if (K.band) { c.beginPath(); c.arc(0, -37, 12.5, Math.PI * 1.08, Math.PI * 1.92); c.lineWidth = 3; c.strokeStyle = K.band; c.stroke(); }
+  }
+  // Gesicht
+  ell(c, -4.5, -34, 1.7, 2.2); c.fillStyle = OL; c.fill(); ell(c, 4.5, -34, 1.7, 2.2); c.fill();
+  ell(c, -4, -34.8, 0.6, 0.7); c.fillStyle = '#fff'; c.fill(); ell(c, 5, -34.8, 0.6, 0.7); c.fill();
+  if (K.glasses) { c.lineWidth = 1.3; c.strokeStyle = OL; ell(c, -4.5, -34, 3.6, 3.2); c.stroke(); ell(c, 4.5, -34, 3.6, 3.2); c.stroke(); c.beginPath(); c.moveTo(-1, -34.5); c.lineTo(1, -34.5); c.stroke(); }
+  c.beginPath(); c.moveTo(-3, -29.5); c.quadraticCurveTo(0, -26.5, 3, -29.5); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke();
+  c.fillStyle = 'rgba(255,120,120,.35)'; ell(c, -8, -30.5, 2.4, 1.6); c.fill(); ell(c, 8, -30.5, 2.4, 1.6); c.fill();
+  c.restore();
+}
+
 function drawCritter(c, id, x, y, s, t = 0, o = {}) {
+  if (KIDS[id]) { drawKid(c, id, x, y, s, t, o); return; }
   const C = CRIT[id];
   c.save(); c.translate(x, y); c.scale(s, s); c.lineJoin = 'round'; c.lineCap = 'round';
   if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, 0, 16, 6); c.fill(); }

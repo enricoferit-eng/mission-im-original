@@ -65,9 +65,9 @@ const TUT_CHAPTERS = [
       if (k < 0.4) { x = 290; y = lerp(300, 130, k / 0.4); } else if (k < 0.55) { x = lerp(290, 360, (k - 0.4) / 0.15); y = 130; } else { x = lerp(370, 520, (k - 0.55) / 0.45); y = lerp(126, 250, (k - 0.55) / 0.45); }
       drawAnimal(c, S.kind, x, y, 1.3, { t, moving: k < 0.55, tilt: k > 0.55 ? -0.35 : 0 });
     } },
-  { title: 'Die Mitarbeiter', dur: 9,
-    say: 'Im Original arbeitet ein nettes Team. Wer ein gelbes Ausrufezeichen hat, hat einen Auftrag für dich. Eine blaue Lupe heißt: Du suchst gerade für ihn. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.',
-    try: 'Jetzt du: Tippe den Mitarbeiter mit dem gelben Ausrufezeichen an!',
+  { title: 'Die Kinder', dur: 9,
+    say: 'Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei einem Stern musst du nichts suchen – da starten die Aufgaben sofort.',
+    try: 'Jetzt du: Tippe das Kind mit dem gelben Ausrufezeichen an!',
     draw(c, t, S) {
       tvGround(c);
       const staff = [['hase', 'neu'], ['fuchs', 'sucht'], ['igel', 'fertig'], ['waschbaer', 'erledigt']];
@@ -187,7 +187,7 @@ const TUT_CHAPTERS = [
     check(S) { return S.ok && S.okT > 1; } },
   { title: 'Bonus-Jagd!', dur: 11,
     say: 'Sobald du einen Auftrag annimmst, startet die Bonus-Jagd. Oben läuft die Bonus-Uhr – auch während der Rätsel und Aufgaben! Bringst du alles zurück, bevor sie abläuft, bekommst du einen Extra-Joker. Bei Grün hast du noch Zeit, bei Gelb wird es knapp, bei Rot musst du dich richtig beeilen!',
-    try: 'Jetzt du: Tippe schnell die 3 Bälle an und dann Hoppel – bevor die Uhr abläuft!',
+    try: 'Jetzt du: Tippe schnell die 3 Bälle an und dann Mia – bevor die Uhr abläuft!',
     draw(c, t, S) {
       tvGround(c);
       const LIM = S.trying ? 8 : 9, el = S.trying ? (S.tt || 0) : clamp(t - 2.2, 0, 99), left = Math.max(0, LIM - el), f = left / LIM;
@@ -234,7 +234,7 @@ const TUT_CHAPTERS = [
     },
     check(S) { return S.ok && S.okT > 1.2; } },
   { title: 'Zurückbringen und das Tor', dur: 9,
-    say: 'Hast du alles gefunden, bring es zurück zum Mitarbeiter und tippe ihn an. Sind alle fünf Mitarbeiter zufrieden, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
+    say: 'Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf Kindern geholfen, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
     draw(c, t, S) {
       tvGround(c);
       c.fillStyle = '#6c757d'; c.fillRect(0, 300, TV.w, 60);

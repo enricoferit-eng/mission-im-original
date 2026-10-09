@@ -7,13 +7,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); VD = sys.arg
 OUT = os.path.join(ROOT, 'assets', 'voice'); os.makedirs(OUT, exist_ok=True)
 # Besetzung: Modell, Sprecher (bei mehreren), Tempo (kleiner = schneller), Ausdruck, Tonhöhe in Halbtönen, Klangfarbe mitverschieben
 CAST = {
-  'erzaehler': ('thorsten-high', None, 0.95, 0.6, 0.8, 0, False),            # Erzähler: klarste Stimme
-  'hase':      ('kerstin-low', None, 0.92, 0.333, 0.8, 3, True),             # Hoppel: hell, jung, flink
-  'igel':      ('kerstin-low', None, 1.0, 0.333, 0.8, 1, False),             # Ida: freundlich, sanft
-  'eule':      ('kerstin-low', None, 1.02, 0.333, 0.8, -2, True),            # Emma: ruhig, tiefer
-  'fuchs':     ('thorsten_emotional-medium', 0, 0.9, 0.7, 0.9, 0, False),    # Fridolin: fröhlich, flott
-  'waschbaer': ('thorsten_emotional-medium', 4, 1.05, 0.6, 0.8, -2.5, True), # Willi: tief, gemütlich
-  'gate':      ('thorsten-high', None, 1.0, 0.6, 0.8, -3, True),             # das Tor: tief, brummig
+  'erzaehler': ('thorsten-high', None, 0.95, 0.6, 0.8, 0, False),              # Erzähler: klarste Stimme
+  # die Kinder: Tonhöhe + Klangfarbe nach oben = Kinderstimme
+  'hase':      ('kerstin-low', None, 0.9, 0.4, 0.8, 6, True),                  # Mia: hell, lebhaft
+  'igel':      ('kerstin-low', None, 0.95, 0.4, 0.8, 4, True),                 # Ida: freundlich
+  'eule':      ('kerstin-low', None, 1.0, 0.4, 0.8, 3, True),                  # Emma: ruhig
+  'fuchs':     ('thorsten_emotional-medium', 0, 0.9, 0.4, 0.8, 7, True),       # Paul: fröhlicher Junge
+  'waschbaer': ('thorsten_emotional-medium', 4, 0.95, 0.4, 0.8, 6, True),      # Willi: tieferer Junge
+  'gate':      ('thorsten-high', None, 1.0, 0.6, 0.8, -3, True),               # das Tor: tief, brummig
 }
 SAY = [('Joker', 'Dschoker'), ('Original-Blätter', 'Original Blätter'), ('Im Original', 'im Original')]
 texts = json.load(open(os.path.join(ROOT, 'tools', 'texts.json')))

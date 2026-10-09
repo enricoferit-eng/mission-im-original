@@ -116,11 +116,11 @@ function SP(diff, stage = 'spielplatz') {
 // Stimmen: jeder Text am Stück (flüssig), jede Figur mit eigener Stimme/Tonhöhe/Tempo
 const VOICE_OF = {
   erzaehler: { pitch: 1.0, rate: 1.0, pick: 0 },
-  hase: { pitch: 1.45, rate: 1.1, pick: 1 },      // Hoppel: hell und flink
-  fuchs: { pitch: 1.15, rate: 1.05, pick: 2 },    // Fridolin: frech, etwas schneller
-  igel: { pitch: 1.3, rate: 0.97, pick: 3 },      // Ida: freundlich, sanft
-  waschbaer: { pitch: 0.72, rate: 0.93, pick: 4 },// Willi: tief und gemütlich
-  eule: { pitch: 0.92, rate: 0.9, pick: 5 },      // Emma: ruhig
+  hase: { pitch: 1.45, rate: 1.1, pick: 1 },      // Mia
+  fuchs: { pitch: 1.15, rate: 1.05, pick: 2 },    // Paul
+  igel: { pitch: 1.3, rate: 0.97, pick: 3 },      // Ida
+  waschbaer: { pitch: 0.72, rate: 0.93, pick: 4 },// Willi
+  eule: { pitch: 0.92, rate: 0.9, pick: 5 },      // Emma
   baer: { pitch: 0.6, rate: 0.92, pick: 6 },      // Chefkoch Bruno: ganz tief
   gate: { pitch: 0.85, rate: 0.95, pick: 0 },
 };

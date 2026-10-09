@@ -16,7 +16,7 @@ const CLAIMS = {
 // wechselnde Mottos (Stage-Auswahl, Danke-Banner)
 const MOTTOS = [CLAIMS.urlaub, CLAIMS.da, CLAIMS.ankommen + ' ' + CLAIMS.rest, CLAIMS.feiern + '!', CLAIMS.fruehstueck, CLAIMS.versprochen, CLAIMS.herz];
 const PRAISE = ['Super gemacht!', 'Klasse!', 'Toll gelöst!', 'Spitze!', 'Ganz Original!'];
-// Dank der Mitarbeiter nach einem Auftrag (passend zum Spielplatz)
+// Dank der Kinder nach einem Auftrag (passend zum Spielplatz)
 const THANKS = ['Danke! Jetzt ist auf dem Spielplatz wieder alles an seinem Platz.', 'Danke für deine Hilfe! Die Kinder können weiterspielen.', 'Super! Du bist ein echter Original-Helfer.', 'Danke! Das hätte ich ohne dich nie gefunden.', 'Klasse gemacht! Das Team ist stolz auf dich.'];
 // Schild am Ausgang
 function drawGateSign(c, x, y) {
