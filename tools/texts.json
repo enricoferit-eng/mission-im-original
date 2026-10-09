@@ -796,5 +796,23 @@
   "text": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.",
   "key": "8ba5a499",
   "clean": "Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast."
+ },
+ {
+  "who": "leo",
+  "text": "Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Drei, zwei, eins, los!",
+  "key": "2e5fd884",
+  "clean": "Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Drei, zwei, eins, los!"
+ },
+ {
+  "who": "leo",
+  "text": "Wow, du bist ja echt schnell!",
+  "key": "7df94296",
+  "clean": "Wow, du bist ja echt schnell!"
+ },
+ {
+  "who": "leo",
+  "text": "Erster! Willst du nochmal?",
+  "key": "19760be2",
+  "clean": "Erster! Willst du nochmal?"
  }
 ]

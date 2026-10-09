@@ -15,6 +15,7 @@ CAST = {
   'fuchs':     ('thorsten_emotional-medium', 0, 0.9, 0.4, 0.8, 7, True),       # Paul: fröhlicher Junge
   'waschbaer': ('thorsten_emotional-medium', 4, 0.95, 0.4, 0.8, 6, True),      # Willi: tieferer Junge
   'gate':      ('thorsten-high', None, 1.0, 0.6, 0.8, -3, True),               # das Tor: tief, brummig
+  'leo':       ('thorsten_emotional-medium', 6, 0.85, 0.4, 0.8, 5, True),      # Leo: sportlich, schnell, überrascht
 }
 SAY = [('Joker', 'Dschoker'), ('Original-Blätter', 'Original Blätter'), ('Im Original', 'im Original')]
 texts = json.load(open(os.path.join(ROOT, 'tools', 'texts.json')))

@@ -123,6 +123,7 @@ const VOICE_OF = {
   eule: { pitch: 0.92, rate: 0.9, pick: 5 },      // Emma
   baer: { pitch: 0.6, rate: 0.92, pick: 6 },      // Chefkoch Bruno: ganz tief
   gate: { pitch: 0.85, rate: 0.95, pick: 0 },
+  leo: { pitch: 1.3, rate: 1.1, pick: 2 },
 };
 // Vorlesen: zuerst echte Aufnahmen (assets/voice/<key>.mp3, siehe js/voiceclips.js) – lückenlos und mit eigener Stimme je Figur.
 // Nur Texte ohne Aufnahme (z. B. mit Kontonamen) fallen auf die Browser-Stimme zurück.

@@ -30,6 +30,7 @@ const puppeteer = require('puppeteer-core');
       npcs.filter(o => o !== n && o !== 'gate').forEach(o => add(questText({ mode: 'busy', npc: n, other: o }), n));
     });
     add(questText({ mode: 'lock', npc: 'gate' }), 'gate');
+    Object.values(LEO_SAY).forEach(t => add(t, 'leo'));
     const seen = new Set(); return L.filter(x => !seen.has(x.key) && seen.add(x.key));
   });
   process.stdout.write(JSON.stringify(out, null, 1));

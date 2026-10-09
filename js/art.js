@@ -132,6 +132,7 @@ const KIDS = {
   igel:      { skin: '#a8714f', hair: '#2b1d14', shirt: '#ffd166', pants: '#118ab2', style: 'bun' },                    // Ida
   waschbaer: { skin: '#d9a57e', hair: '#1f1a17', shirt: '#52b788', pants: '#6c4f3d', style: 'short', glasses: true, stripes: true }, // Willi
   eule:      { skin: '#f6d2b8', hair: '#7a4a2a', shirt: '#9b5de5', pants: '#343a40', style: 'long', band: '#ef476f' },   // Emma
+  leo:       { skin: '#e0ac85', hair: '#3b2a1e', shirt: '#f77f00', pants: '#1d3557', style: 'short', band: '#06d6a0' },  // Leo: sportlich, Stirnband
 };
 function drawKid(c, id, x, y, s, t = 0, o = {}) {
   const K = KIDS[id];

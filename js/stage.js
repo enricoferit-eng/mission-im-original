@@ -308,6 +308,16 @@ class Play {
     this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null;
     this.gateA = this.st.done.gate ? 1 : 0;
     this.idleT = 0; this.coachSaid = {};
+    if (!this.st.secret) this.st.secret = {};
+    this.slides = []; this.secretPop = null;
+    { // Leo: steht weit weg von der Rutsche und macht Dehnübungen
+      const C = [[130, 1230], [150, 1120], [110, 980], [860, 1250], [180, 1300]], hp = C.find(([x, y]) => canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 80)) || C[0];
+      // Ziel = Landepunkt am Ende der Rutsche; Leo läuft zum nächsten begehbaren Punkt daneben
+      const fx = SLIDE.x1 + 12, fy = (SLIDE.y0 + SLIDE.y1) / 2; let lx = fx, ly = fy;
+      for (let r = 0; r < 120 && !canStand(0, lx, ly); r += 6) { const a = [[0, 1], [-1, 0], [0, -1], [-1, 1], [1, 1]].find(([dx, dy]) => canStand(0, fx + dx * r, fy + dy * r)); if (a) { lx = fx + a[0] * r; ly = fy + a[1] * r; } }
+      this.racer = { x: hp[0], y: hp[1], hx: hp[0], hy: hp[1], state: 'idle', t: 0, path: null, dir: 1, fin: { x: fx, y: fy }, leoFin: { x: lx, y: ly } };
+    }
+
     this.leafPop = 0; this.justDone = null;
     if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
       const r = mulberry32((Date.now() ^ 0x2545f491) >>> 0), L = []; let g = 0;
@@ -320,6 +330,49 @@ class Play {
     if (!GROUND) buildGround();
   }
   enter() { FX.clear(); }
+  // ---- Geheime Joker ----
+  secretJoker(key) {
+    if (this.st.secret[key]) return false;
+    this.st.secret[key] = true; this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1; Save.write();
+    this.secretPop = { t: 0 }; FX.confetti(W / 2, H * 0.3, 70); Sfx.play('win'); buzz([40, 40, 80]);
+    return true;
+  }
+  // Wettlauf mit Leo: zuerst unten an der Rutsche
+  startRace() {
+    const R = this.racer; if (R.state === 'count' || R.state === 'run') return;
+    const p = this.p; p.path = null; p.target = null; p.slide = null; p.level = 0; p.x = R.hx + 34; p.y = R.hy; p.dir = 1;
+    R.x = R.hx; R.y = R.hy; R.state = 'count'; R.t = 0; R.path = findPath(R.x, R.y, 0, R.leoFin.x, R.leoFin.y, 0, true) || [];
+    this.banner = { text: LEO_SAY.start.replace(' Drei, zwei, eins, los!', ''), t: 0 }; Voice.say(LEO_SAY.start, true, 'leo');
+  }
+  updateRace(dt) {
+    const R = this.racer, p = this.p; R.t += dt;
+    if (R.state === 'count') {
+      const before = Math.ceil(4 - (R.t - dt)), after = Math.ceil(4 - R.t);
+      if (after !== before && after >= 1 && after <= 3) Sfx.note(660, 0.12, 'square', 0.05);
+      if (R.t >= 4) { R.state = 'run'; R.t = 0; Sfx.note(990, 0.35, 'square', 0.06, 1.2); buzz(40); }
+      p.path = null; p.target = null; this.joy = null; return true;   // beim Countdown nicht loslaufen
+    }
+    if (R.state === 'run') {
+      const LEO_SPEED = { easy: 158, medium: 174, hard: 182 }[this.diff];   // knapp: wer sofort richtig losläuft, gewinnt
+      let step = LEO_SPEED * dt;
+      while (step > 0 && R.path.length) { const w = R.path[0], d = dist(R.x, R.y, w.x, w.y); if (d <= step) { R.x = w.x; R.y = w.y; R.path.shift(); step -= d; } else { R.dir = w.x > R.x ? 1 : -1; R.x += (w.x - R.x) / d * step; R.y += (w.y - R.y) / d * step; step = 0; } }
+      const meIn = !p.slide && p.level === 0 && dist(p.x, p.y, R.fin.x, R.fin.y) < 44, leoIn = !R.path.length;
+      if (meIn || leoIn) {
+        R.state = 'done'; R.t = 0; const won = meIn;
+        Voice.say(won ? LEO_SAY.win : LEO_SAY.lose, true, 'leo');
+        if (won) { if (!this.secretJoker('race')) { this.banner = { text: 'Gewonnen!', t: 0 }; Sfx.play('win'); } }
+        else { this.banner = { text: 'Leo war schneller!', t: 0 }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
+      }
+      return false;
+    }
+    if (R.state === 'done' && R.t > 2.5) { R.state = 'back'; R.path = findPath(R.x, R.y, 0, R.hx, R.hy, 0, true) || []; }
+    if (R.state === 'back') {
+      let step = 90 * dt;
+      while (step > 0 && R.path.length) { const w = R.path[0], d = dist(R.x, R.y, w.x, w.y); if (d <= step) { R.x = w.x; R.y = w.y; R.path.shift(); step -= d; } else { R.dir = w.x > R.x ? 1 : -1; R.x += (w.x - R.x) / d * step; R.y += (w.y - R.y) / d * step; step = 0; } }
+      if (!R.path.length) { R.state = 'idle'; R.x = R.hx; R.y = R.hy; }
+    }
+    return false;
+  }
   // ---- Original-Blätter einsammeln ----
   updateLeaves() {
     const p = this.p; if (p.level !== 0 || p.slide) return;
@@ -431,6 +484,7 @@ class Play {
         const a = ACC(), best = (a && a.swingBest) || 0, rec = J.m > best;
         if (rec && a) { a.swingBest = J.m; Save.write(); FX.confetti(s2.x, s2.y - 40, 50); Sfx.play('win'); } else Sfx.play('good');
         this.swingPop = { t: 0, text: 'Weite: ' + J.m.toFixed(1).replace('.', ',') + ' m', rec };
+        if (J.m >= SECRET_JUMP) this.secretJoker('swing');
         this.swinging = null;
       }
       return;
@@ -504,6 +558,7 @@ class Play {
           if (after <= 0) { this.bonusWarn = { t: 0, text: 'Bonus verpasst', miss: true }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
         }
       } }
+    if (this.secretPop) { this.secretPop.t += dt; if (this.secretPop.t > 2.8) this.secretPop = null; }
     if (this.swingPop) { this.swingPop.t += dt; if (this.swingPop.t > 2.4) this.swingPop = null; }
     if (this.bonusIntro) { this.bonusIntro.t += dt; if (this.bonusIntro.t > 2.4) this.bonusIntro = null; }
     if (this.bonusWarn) { this.bonusWarn.t += dt; if (this.bonusWarn.t > 1.8) this.bonusWarn = null; }
@@ -512,7 +567,9 @@ class Play {
     if (this.exiting) this.updateExit(dt);
     else if (!overlay) {
       this.idleT += dt; if (this.p.moving || this.joy) this.idleT = 0;
-      if (this.swinging) this.updateSwing(dt);
+      const raceHold = this.updateRace(dt);
+      if (raceHold) { this.p.moving = false; }
+      else if (this.swinging) this.updateSwing(dt);
       else if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); }
       // Hilfe-Uhr: läuft nur, solange gesucht wird
       const hq = this.st.active;
@@ -537,7 +594,10 @@ class Play {
     if (p.slide) {
       p.slide.t += dt / 0.8; const e = Math.min(1, p.slide.t * p.slide.t);
       p.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); p.slideZ = HOUSE.fz * (1 - (p.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)); p.dir = 1; p.moving = false;
-      if (p.slide.t >= 1) { p.slide = null; p.level = 0; p.x = SLIDE.x1 + 12; p.slideZ = 0; const s = this.w2s(p.x, p.y); FX.puff(s.x, s.y, 10); Sfx.play('good'); buzz(30); }
+      if (p.slide.t >= 1) {
+        p.slide = null; p.level = 0; p.x = SLIDE.x1 + 12; p.slideZ = 0; const s = this.w2s(p.x, p.y); FX.puff(s.x, s.y, 10); Sfx.play('good'); buzz(30);
+        this.slides = this.slides.filter(t => this.t - t < 40); this.slides.push(this.t); if (this.slides.length >= 3) this.secretJoker('slide');
+      }
       return;
     }
     let mx = 0, my = 0;
@@ -571,7 +631,9 @@ class Play {
       if (b.fly > 0) { b.fly -= dt; b.x += (b.tx - b.x) * Math.min(1, dt * 2); b.y += (b.ty - b.y) * Math.min(1, dt * 2); continue; }
       if (dist(b.x, b.y, p.x, p.y) < 70 && p.level === 0) {
         let tries = 0; do { b.tx = 120 + rnd() * 760; b.ty = 760 + rnd() * 380; tries++; } while (!canStand(0, b.tx, b.ty) && tries < 20);
-        b.fly = 1.4; b.dir = b.tx > b.x ? 1 : -1; Sfx.play('pop'); continue;
+        b.fly = 1.4; b.dir = b.tx > b.x ? 1 : -1; Sfx.play('pop'); b.scared = this.t;
+        if (this.pigeons.every(q => q.scared !== undefined && this.t - q.scared < 4)) this.secretJoker('pigeons');
+        continue;
       }
       b.wait -= dt;
       if (b.wait <= 0) {
@@ -625,6 +687,7 @@ class Play {
       q.hidden.forEach((h, i) => { if (q.got[i]) return; const pk = peekOf(h); out.push({ k: 'spot', x: pk.x, y: pk.y, l: h.l, r: 40, sx: pk.x, sy: pk.y - (h.l ? HOUSE.fz : 0) - 8 }); });
       (q.decoys || []).forEach(d => { if (!d.done) out.push({ k: 'spot', x: d.x, y: d.y, l: 0, r: 40, sx: d.x, sy: d.y - 8 }); });
     }
+    { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
     { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
     out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
@@ -663,6 +726,7 @@ class Play {
   }
   interact(T) {
     if (T.k === 'swing') { this.startSwing(); return; }
+    if (T.k === 'racer') { this.startRace(); return; }
     if (T.k === 'npc' || T.k === 'gate') this.talk(T.id);
     else if (T.k === 'spot') this.startSearch();
   }
@@ -900,6 +964,10 @@ class Play {
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
     if (this.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
+    { const R = this.racer, run = R.state === 'run' || R.state === 'back';
+      if (vis(R.x, R.y)) L.push({ y: R.y, f: () => drawCritter(c, 'leo', R.x, R.y - (run ? Math.abs(Math.sin(t * 14)) * 5 : Math.abs(Math.sin(t * 3)) * 3), 1.12, run ? t * 3 : t, { wave: R.state === 'idle' && Math.sin(t * 0.7) > 0.6 }) });
+      if (R.state === 'count' || R.state === 'run') { const F = R.fin; L.push({ y: F.y - 1, f: () => { line(c, F.x + 18, F.y, F.x + 18, F.y - 70, 4, '#6c757d'); polyPath(c, [[F.x + 18, F.y - 70], [F.x + 52, F.y - 60], [F.x + 18, F.y - 50]]); fs(c, '#ef476f', 2.5); ell(c, F.x, F.y, 40, 14); c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.8)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
+    }
     for (const lf of this.st.leaves) if (!lf.got && vis(lf.x, lf.y)) L.push({ y: lf.y, f: () => {
       const b = Math.sin(t * 3 + lf.x) * 5, gl = 0.5 + 0.5 * Math.sin(t * 4 + lf.y);
       c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, lf.x, lf.y + 2, 12, 4); c.fill();
@@ -1069,7 +1137,7 @@ class Play {
     });
     // Wortlose "Schau-her"-Hinweise beim ersten Mal
     let hintT = null;
-    if (!ACC().tut.symbol) {
+    if (!ACC().tut.symbol && !this.swinging && this.racer.state !== 'run' && this.racer.state !== 'count') {
       let bd = 1e9; for (const m of marks) { const s = this.npcState(m.id); if (s !== 'open' && s !== 'busy') continue; const d = dist(m.x, m.y, p.x, p.y); if (d < bd) { bd = d; hintT = { x: m.x, y: m.y }; } }
     }
     if (hintT) {
@@ -1157,7 +1225,13 @@ class Play {
       }
       if (this.bonusPop) { const k = ease.back(clamp(this.bonusPop.t * 3, 0, 1)), a = clamp(2.6 - this.bonusPop.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.32 - this.bonusPop.t * 12); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -70, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
     }
-    if (!this.swinging) this.drawCoach(c);
+    { const R = this.racer;
+      if (R.state === 'count' && R.t > 1) { const n = Math.ceil(4 - R.t), fr = (4 - R.t) % 1, k = ease.back(clamp((1 - fr) * 3, 0, 1)); c.save(); c.translate(W / 2, H * 0.42); c.scale(k * 1.5, k * 1.5); ell(c, 0, 0, 46, 46); fs(c, ['#06d6a0', '#ffd166', '#ef476f'][n - 1] || '#ef476f', 5); txt(c, String(n), 0, 3, 56, '#fff', 'center', OL); c.restore(); }
+      if (R.state === 'run' && R.t < 0.7) { const k = ease.back(clamp(R.t * 4, 0, 1)); c.save(); c.globalAlpha = clamp(1.4 - R.t * 2, 0, 1); c.translate(W / 2, H * 0.42); c.scale(k * 1.3, k * 1.3); rrPath(c, -90, -36, 180, 72, 36); fs(c, BRAND.lime, 5); txt(c, 'LOS!', 0, 3, 48, '#fff', 'center', OL); c.restore(); }
+      if (R.state === 'run') { rrPath(c, W / 2 - 90, H - 58, 180, 36, 18); c.fillStyle = 'rgba(30,20,10,.7)'; c.fill(); txt(c, 'Wettlauf zur Rutsche!', W / 2, H - 40, 15, '#fff', 'center', null); }
+    }
+    if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -96, 0, 46); txt(c, 'Geheimer Joker! +1', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
+    if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'count') this.drawCoach(c);
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
@@ -1243,6 +1317,13 @@ class Play {
 const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
 const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schnell geholfen = +1 Joker (Tor: +30 s)
+// Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
+const SECRET_JUMP = 6;   // Meter beim Schaukel-Weitsprung
+const LEO_SAY = {
+  start: 'Wetten, ich bin schneller als du? Wer zuerst unten an der Rutsche ist! Drei, zwei, eins, los!',
+  win: 'Wow, du bist ja echt schnell!',
+  lose: 'Erster! Willst du nochmal?',
+};
 const NPC_NAMES = { hase: 'Mia', fuchs: 'Paul', igel: 'Ida', waschbaer: 'Willi', eule: 'Emma', gate: 'Das Tor' };   // die Kinder auf dem Spielplatz
 const NPC_LINES = {
   hase: 'Ich hab beim Spielen meine Sachen verloren!',
