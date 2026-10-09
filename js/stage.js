@@ -374,7 +374,7 @@ class Play {
     if (!first && this.idleT < 7) return;
     const P = T.npc === 'gate' ? { x: GATE.x, y: GATE.y, l: 0 } : this.npcs.find(n => n.id === T.npc); if (!P) return;
     const z = P.l ? HOUSE.fz : 0, sp = this.w2s(P.x, P.y - 40, z);
-    if (sp.x > 30 && sp.x < W - 30 && sp.y > 100 && sp.y < H - 80) {
+    if (sp.x > 30 && sp.x < W - 30 && sp.y > 100 && sp.y < H - 70) {
       const b = Math.abs(Math.sin(this.t * 4)) * 14; drawHand(c, sp.x + 6, sp.y + 30 + b, 1.6);
     } else {
       const ax = clamp(sp.x, 60, W - 60), ay = clamp(sp.y, 130, H - 100), ang = Math.atan2(sp.y - H / 2, sp.x - W / 2), pu = 1 + Math.sin(this.t * 6) * 0.12;
@@ -382,7 +382,7 @@ class Play {
     }
     const msg = T.npc === 'gate' ? 'Lauf zum Tor und tippe es an!' : (this.st.active ? 'Bring die Sachen zurück – tippe das Kind an!' : 'Tippe ein Kind mit ! an.');
     const key = 'c_' + msg; if (!this.coachSaid[key]) { this.coachSaid[key] = true; Voice.say(msg, true); }
-    c.font = `900 17px ${FONT}`; const mw = c.measureText(msg).width + 30, by = H - 86;
+    c.font = `900 17px ${FONT}`; const mw = c.measureText(msg).width + 30, by = H - 40;
     rrPath(c, W / 2 - mw / 2, by - 20, mw, 40, 20); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, by, 17, '#fff', 'center', null);
   }
   // ---- Hilfsfunktionen ----
@@ -1102,29 +1102,41 @@ class Play {
       rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       c.save(); c.translate(174, 46); c.scale(k, k); leaf(c, 0, 0, 2.2, BRAND.lime, -0.5); c.restore();
       txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
-    const q = this.st.active;
+    // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
+    const narrow = W < 640, rowY = narrow ? 92 : 46;
+    { const ids = ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
+      rrPath(c, px, rowY - 20, pw, 40, 20); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
+      ids.forEach((id, i) => {
+        const x = px + 7 + fw * (i + 0.5), done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
+        c.save(); if (!done) c.globalAlpha = 0.55;
+        if (jd >= 0) { const k = 1 + Math.sin(Math.min(1, jd / 0.8) * Math.PI) * 1.4; c.translate(x, rowY + 12); c.scale(k, k); c.translate(-x, -(rowY + 12)); }
+        if (id === 'gate') drawGate(c, x, rowY + 13, 0.17, done ? 1 : 0, !this.bossOpen(), 0); else drawCritter(c, id, x, rowY + 15, 0.5, 0, { noShadow: true });
+        c.restore();
+        if (done) icon(c, 'check', x + 7, rowY + 9, 13, '#06d6a0');
+      }); }
+    const q = this.st.active; let itemsBottom = rowY;
     if (q && this.diff !== 'easy') {
-      const n = q.items.length, iw = Math.min(48, (W - 40) / (n + 1.6)), w = iw * (n + 1.4) + 16, x0 = W / 2 - w / 2, y0 = 82;
-      panel(c, x0, y0, w, iw + 18, '#fff7e6', 18);
-      drawFace(c, q.npc, x0 + 10 + iw * 0.6, y0 + iw + 6, iw / 70, this.t, { noShadow: true, staff: true });
+      const n = q.items.length, iw = 30, w = 34 + n * (iw + 3) + 10, x0 = narrow ? W - 12 - w : W - 74 - w, y0 = (narrow ? rowY + 46 : rowY) - 21;
+      rrPath(c, x0, y0, w, 42, 21); fs(c, 'rgba(255,247,230,.95)', 2.5);
+      drawFace(c, q.npc, x0 + 20, y0 + 38, 0.42, this.t, { noShadow: true });
       q.items.forEach((it, k) => {
-        const x = x0 + 8 + iw * (1.4 + k) + iw / 2, y = y0 + 9 + iw / 2;
-        c.save(); if (!q.got[k]) c.globalAlpha = 0.35; drawItem(c, it, x, y, iw * 0.9); c.restore();
-        if (q.got[k]) icon(c, 'check', x + iw * 0.3, y + iw * 0.3, iw * 0.42, '#06d6a0');
+        const x = x0 + 40 + k * (iw + 3) + iw / 2, y = y0 + 21;
+        c.save(); if (!q.got[k]) c.globalAlpha = 0.35; drawItem(c, it, x, y, iw * 0.95); c.restore();
+        if (q.got[k]) icon(c, 'check', x + 9, y + 9, 14, '#06d6a0');
       });
+      itemsBottom = y0 + 42;
     }
     // Bonus-Uhr: Kind schnell geholfen = Extra-Joker
     { const bq = this.bonusQuest(), left = bq ? this.bonusLimit(bq.npc) - (bq.q.tt || 0) : -1;
       if (left > 0 && !this.bonusIntro) {
         const lim = this.bonusLimit(bq.npc), f = clamp(left / lim, 0, 1), low = left < 10, mid = left < 30;
-        const pu = low ? 1 + Math.abs(Math.sin(this.t * 8)) * 0.12 : mid ? 1 + Math.abs(Math.sin(this.t * 4)) * 0.05 : 1, by = this.diff === 'easy' ? 96 : 172, txtT = Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0');
-        const col = low ? '#ef476f' : mid ? '#ffb703' : '#06d6a0';
-        c.save(); c.translate(W / 2 + (low ? Math.sin(this.t * 40) * 2 : 0), by); c.scale(pu, pu);
-        rrPath(c, -110, -24, 220, 48, 24); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke();
-        txt(c, 'BONUS', -72, -9, 11, col, 'center', null); icon(c, 'clock', -72, 8, 20);
-        txt(c, txtT, -14, -2, 24, low ? '#ff8fa3' : '#fff', 'center', null);
-        rrPath(c, -46, 12, 64, 6, 3); c.fillStyle = 'rgba(255,255,255,.2)'; c.fill(); rrPath(c, -46, 12, 64 * f, 6, 3); c.fillStyle = col; c.fill();
-        txt(c, '→', 34, 1, 18, '#fff', 'center', null); icon(c, 'joker', 74, 0, 32);
+        const pu = low ? 1 + Math.abs(Math.sin(this.t * 8)) * 0.12 : mid ? 1 + Math.abs(Math.sin(this.t * 4)) * 0.05 : 1, txtT = Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0');
+        const col = low ? '#ef476f' : mid ? '#ffb703' : '#06d6a0', bx = (narrow ? W - 12 : W - 74) - 78, by = this.diff === 'easy' ? (narrow ? rowY + 46 : rowY) : itemsBottom + 22;
+        c.save(); c.translate(bx + (low ? Math.sin(this.t * 40) * 2 : 0), by); c.scale(pu, pu);
+        rrPath(c, -78, -18, 156, 36, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke();
+        icon(c, 'clock', -58, 0, 20); txt(c, txtT, -24, -3, 18, low ? '#ff8fa3' : '#fff', 'center', null);
+        rrPath(c, -42, 9, 40, 5, 2.5); c.fillStyle = 'rgba(255,255,255,.2)'; c.fill(); rrPath(c, -42, 9, 40 * f, 5, 2.5); c.fillStyle = col; c.fill();
+        txt(c, '→', 14, 1, 16, '#fff', 'center', null); icon(c, 'joker', 46, 0, 26); txt(c, 'BONUS', 46, -14, 8, col, 'center', null);
         c.restore();
       }
       if (this.bonusIntro) {
@@ -1143,17 +1155,6 @@ class Play {
       }
       if (this.bonusPop) { const k = ease.back(clamp(this.bonusPop.t * 3, 0, 1)), a = clamp(2.6 - this.bonusPop.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.32 - this.bonusPop.t * 12); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -70, 0, 44); txt(c, 'Schnell! +1 Joker', 20, 0, 24, '#ffd23f', 'center', OL); c.restore(); }
     }
-    // Fortschritt: 5 Tiere + Ausgang
-    const fw = 40, ids = ALL_IDS, fx = W / 2 - (ids.length - 1) * fw / 2, fy = H - 30;
-    rrPath(c, fx - 30, fy - 26, (ids.length - 1) * fw + 60, 46, 23); c.fillStyle = 'rgba(30,20,10,.45)'; c.fill();
-    ids.forEach((id, i) => {
-      const x = fx + i * fw, done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
-      c.save(); if (!done) c.globalAlpha = 0.55;
-      if (jd >= 0) { const k = 1 + Math.sin(Math.min(1, jd / 0.8) * Math.PI) * 1.2; c.translate(x, fy + 14); c.scale(k, k); c.translate(-x, -(fy + 14)); }
-      if (id === 'gate') drawGate(c, x, fy + 14, 0.26, done ? 1 : 0, !this.bossOpen(), 0); else drawCritter(c, id, x, fy + 14, 0.55, 0, { noShadow: true, staff: true });
-      c.restore();
-      if (done) icon(c, 'check', x + 10, fy + 6, 16, '#06d6a0');
-    });
     if (!this.swinging) this.drawCoach(c);
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
