@@ -71,7 +71,12 @@ function drawGroundChalet(g, R) {
     g.fillStyle = '#e7f5ff'; g.fillRect(wx - 46, 118, 92, 8); line(g, wx, 62, wx, 126, 4, '#5c3d2e', false); line(g, wx - 46, 94, wx + 46, 94, 4, '#5c3d2e', false);
     rrPath(g, wx - 64, 56, 12, 76, 2); fs(g, '#6f4e37', 2); rrPath(g, wx + 52, 56, 12, 76, 2); fs(g, '#6f4e37', 2);
     for (let k = 0; k < 5; k++) { ell(g, wx - 40 + k * 20, 58 + Math.sin(k) * 2, 3, 4); g.fillStyle = '#ffe066'; g.fill(); }
+    for (const sd of [-1, 1]) { const cx = wx + sd * 50; polyPath(g, [[cx - 14, 54], [cx + 14, 54], [cx + 10 * sd + 4, 134], [cx - 10 * sd - 4, 134]]); fs(g, '#f8f1e7', 2); for (let k = 0; k < 6; k++) { ell(g, cx - 5 + (k % 2) * 10, 66 + k * 11, 2.5, 2.5); g.fillStyle = '#c1121f'; g.fill(); } }
   }
+  // Durchgang mit grauen Vorhängen, roten Raffbändern und Kranz (Foto)
+  { const dx = 330; rrPath(g, dx - 40, 50, 80, 102, 3); g.fillStyle = '#3d2c1f'; g.fill();
+    for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(dx + sd * 40, 50); g.lineTo(dx + sd * 6, 50); g.quadraticCurveTo(dx + sd * 30, 100, dx + sd * 22, 150); g.lineTo(dx + sd * 40, 150); g.closePath(); fs(g, '#adb5bd', 2); ell(g, dx + sd * 30, 104, 5, 4); g.fillStyle = '#c1121f'; g.fill(); }
+    ell(g, dx, 40, 15, 15); g.lineWidth = 7; g.strokeStyle = '#2d6a4f'; g.stroke(); ell(g, dx, 54, 4, 4); g.fillStyle = '#c1121f'; g.fill(); rrPath(g, dx - 16, 12, 32, 10, 2); fs(g, '#2b9348', 1.5); }
   // Kamin aus Naturstein (Mitte)
   rrPath(g, 430, 20, 140, 136, 8); fs(g, '#adb5bd', 3);
   for (let k = 0; k < 14; k++) { rrPath(g, 436 + (k % 4) * 33 + (Math.floor(k / 4) % 2) * 12, 26 + Math.floor(k / 4) * 32, 30, 28, 8); fs(g, ['#ced4da', '#adb5bd', '#dee2e6'][k % 3], 1.5); }
@@ -125,16 +130,19 @@ const CDECOR = [
 ];
 const CDRAW = {
   huettentafel(c, d) {
-    // lange Holztafel mit Bänken, Schaffellen, Fondue-Topf, Kerzen, Lichterkette
-    const benches = y => { rrPath(c, d.x0 - 6, y, d.w + 12, 18, 5); fs(c, '#8d5a3b', 2.5); for (let k = 0; k < 3; k++) { ell(c, d.x0 + 40 + k * 90, y + 6, 22, 10); fs(c, '#f1ebdc', 2); } };
+    // lange Holztafel (Foto): Holzbänke mit roten Sitzkissen, weißer Läufer, grüne Servietten, Windlichter, Fondue-Topf, Weihnachtsstern
+    const benches = y => { rrPath(c, d.x0 - 6, y, d.w + 12, 18, 5); fs(c, '#8d5a3b', 2.5); for (let k = 0; k < 4; k++) { rrPath(c, d.x0 + 6 + k * 64, y - 3, 56, 14, 6); fs(c, '#c1121f', 2); line(c, d.x0 + 12 + k * 64, y + 1, d.x0 + 54 + k * 64, y + 1, 1.5, 'rgba(255,255,255,.25)', false); } };
     benches(d.y0 - 30);
     rrPath(c, d.x0, d.y0, d.w, d.h, 6); fs(c, '#c08b55', 3); for (let k = 1; k < 4; k++) line(c, d.x0 + 4, d.y0 + k * d.h / 4, d.x0 + d.w - 4, d.y0 + k * d.h / 4, 1.5, 'rgba(90,60,30,.3)', false);
+    rrPath(c, d.x0 + 8, d.y0 + d.h / 2 - 9, d.w - 16, 18, 2); c.fillStyle = '#f8f9fa'; c.fill();
     line(c, d.x0 + 16, d.y0 + d.h, d.x0 + 16, d.y0 + d.h + 22, 6, '#6f4e37', false); line(c, d.x0 + d.w - 16, d.y0 + d.h, d.x0 + d.w - 16, d.y0 + d.h + 22, 6, '#6f4e37', false);
-    const cx = d.x0 + d.w / 2; ell(c, cx, d.y0 + 26, 24, 9); fs(c, '#343a40', 2); rrPath(c, cx - 20, d.y0, 40, 24, 8); fs(c, '#c1121f', 2.5); ell(c, cx, d.y0, 20, 7); fs(c, '#9d0208', 2); ell(c, cx, d.y0 + 1, 16, 5); c.fillStyle = '#ffd166'; c.fill();
-    for (const kx of [d.x0 + 40, d.x0 + d.w - 40]) { rrPath(c, kx - 4, d.y0 - 4, 8, 22, 2); fs(c, '#f8f9fa', 2); }
-    for (let k = 0; k < 6; k++) { const mx = d.x0 + 24 + k * 44; rrPath(c, mx - 6, d.y0 + (k % 2 ? 28 : 6), 12, 14, 3); fs(c, '#f8f9fa', 1.5); }
+    for (let k = 0; k < 5; k++) { const mx = d.x0 + 22 + k * 52; polyPath(c, [[mx - 7, d.y0 + 4], [mx + 7, d.y0 + 4], [mx + 5, d.y0 + 14], [mx - 9, d.y0 + 14]]); c.fillStyle = '#4f772d'; c.fill(); polyPath(c, [[mx - 7, d.y0 + d.h - 14], [mx + 7, d.y0 + d.h - 14], [mx + 5, d.y0 + d.h - 4], [mx - 9, d.y0 + d.h - 4]]); c.fill(); }
+    const cx = d.x0 + d.w / 2; ell(c, cx, d.y0 + 26, 24, 9); fs(c, '#343a40', 2); rrPath(c, cx - 20, d.y0, 40, 24, 8); fs(c, '#212529', 2.5); ell(c, cx, d.y0, 20, 7); fs(c, '#343a40', 2); ell(c, cx, d.y0 + 1, 16, 5); c.fillStyle = '#ffd166'; c.fill();
+    for (const kx of [d.x0 + 60, d.x0 + d.w - 60]) { rrPath(c, kx - 6, d.y0 + 12, 12, 14, 4); c.fillStyle = 'rgba(255,236,190,.9)'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke(); ell(c, kx, d.y0 + 16, 2, 3); c.fillStyle = '#ffb703'; c.fill(); }
+    const px = d.x0 + d.w - 22; rrPath(c, px - 7, d.y0 + 14, 14, 12, 3); fs(c, '#212529', 1.5); for (let k = 0; k < 6; k++) { const a2 = k * TAU / 6; ell(c, px + Math.cos(a2) * 8, d.y0 + 8 + Math.sin(a2) * 5, 6, 3, a2); fs(c, '#c1121f', 1.2); } ell(c, px, d.y0 + 8, 2.5, 2.5); c.fillStyle = '#ffd166'; c.fill();
     benches(d.y0 + d.h + 6);
   },
+  balken(c, d) { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x + 6, d.y + 2, 16, 6); c.fill(); rrPath(c, d.x - 11, d.y - 200, 22, 200, 3); fs(c, '#8d5a3b', 3); for (let k = 0; k < 6; k++) line(c, d.x - 6, d.y - 190 + k * 32, d.x - 6, d.y - 176 + k * 32, 1.5, 'rgba(60,35,20,.4)', false); },
   christbaum(c, d, t) {
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 2, 40, 10); c.fill();
     rrPath(c, d.x - 16, d.y - 24, 32, 24, 4); fs(c, '#8d5a3b', 2.5);
@@ -285,6 +293,12 @@ STAGE_DEFS.chalet = {
         L.push({ y: 151, f: () => { for (let k = 0; k < 6; k++) { const fx = 470 + k * 12, h = 26 + Math.sin(t * 9 + k * 1.7) * 9; c.beginPath(); c.moveTo(fx - 10, 150); c.quadraticCurveTo(fx - 6, 150 - h * 0.6, fx + Math.sin(t * 7 + k) * 4, 150 - h); c.quadraticCurveTo(fx + 8, 150 - h * 0.6, fx + 10, 150); c.closePath(); c.fillStyle = k % 2 ? '#f77f00' : '#ffd166'; c.fill(); } ell(c, 500, 150, 60, 14); c.fillStyle = `rgba(255,140,40,${0.25 + 0.1 * Math.sin(t * 5)})`; c.fill(); } });
         const sx = 260 + Math.sin(t * 0.3) * 24;
         if (vis(sx, 225)) L.push({ y: 225, f: () => { drawPerson(c, 'c_sepp', sx, 225, 1.05, t, {}); c.save(); c.translate(sx + 22, 220); line(c, 0, -24, -8 + Math.sin(t * 4) * 6, -6, 3, '#8d5a3b'); c.restore(); } });
+        L.push({ y: 99996, f: () => {
+          // Tannengirlanden mit Lichtern an den Balken + hängende Laternen über den Tafeln (Foto)
+          for (const gy of [175, 330]) { if (!vis(500, gy + 80)) continue; c.beginPath(); c.moveTo(HUT.x0, gy); for (let x = HUT.x0; x <= HUT.x1; x += 30) c.lineTo(x, gy + Math.sin(x * 0.05) * 4); c.lineWidth = 9; c.strokeStyle = '#2d6a4f'; c.stroke(); c.lineWidth = 4; c.strokeStyle = '#40916c'; c.stroke();
+            for (let x = HUT.x0 + 10; x < HUT.x1; x += 26) { ell(c, x, gy + Math.sin(x * 0.05) * 4 + 3, 2.6, 2.6); c.fillStyle = `rgba(255,220,120,${0.7 + 0.3 * Math.sin(t * 3 + x)})`; c.fill(); } }
+          for (const [lx, ly] of [[300, 300], [700, 300], [300, 430], [700, 430]]) { if (!vis(lx, ly + 60)) continue; line(c, lx, ly - 140, lx, ly - 100, 1.5, '#3d2c1f', false); rrPath(c, lx - 9, ly - 100, 18, 26, 3); fs(c, '#343a40', 2); rrPath(c, lx - 6, ly - 96, 12, 18, 2); c.fillStyle = `rgba(255,214,110,${0.85 + 0.15 * Math.sin(t * 5 + lx)})`; c.fill(); ell(c, lx, ly - 86, 26, 26); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
+        } });
         L.push({ y: 99997, f: () => {
           c.save(); c.fillStyle = 'rgba(255,255,255,.92)';
           flakes.forEach(f => { if (f.y < HUT.y1 + 30 && f.y > HUT.y0 - 120 && f.x > HUT.x0 - 30 && f.x < HUT.x1 + 30) return; if (!vis(f.x, f.y)) return; ell(c, f.x, f.y, f.s, f.s); c.fill(); });

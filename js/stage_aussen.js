@@ -49,62 +49,75 @@ function lawn(g, x, y, w, h, R) {
   for (let i = 0; i < w * h / 60; i++) { const px = x + R() * w, py = y + R() * h; g.strokeStyle = ['#6a994e', '#8cbf6f', '#a7c957', '#5b8c45'][i % 4]; g.lineWidth = 1.6; g.beginPath(); g.moveTo(px, py); g.lineTo(px + (R() - 0.5) * 3, py - 5 - R() * 4); g.stroke(); }
   g.restore();
 }
+// Aufbau wie auf dem Luftbild (gedreht, Glashaus-Wand oben): Pavillon mit Glasdach direkt vor dem Glashaus (orange – weiß – orange),
+// darunter links der eingezäunte Spielplatz (Hackschnitzel, Schaukel, Turm mit Rutsche), rechts Rasen; rechts Zypressenreihe,
+// in der Mitte der geschwungene Kiesweg, Bäume, unten rechts die Holzhütte (Chalet), unten links der Wendehammer mit Autos.
+const PAV = { x0: 200, x1: 840, y0: 150, y1: 470, H: 150, secs: [[200, 450, '#f26b3a'], [450, 590, '#f1ebdc'], [590, 840, '#f26b3a']] };
+const PLAY = { x0: 0, x1: 490, y0: 535, y1: 905 };
+const CIRC = { x: 150, y: 1330, r: 330 };
 function drawGroundAussen(g, R) {
-  gravel(g, 0, 0, WORLD_W, WORLD_H, R);
-  // Glashaus-Front (oben): Glas, Stahlrahmen, offene Falttüren in der Mitte
-  const sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#a5d8ff'); sky.addColorStop(1, '#e7f5ff'); g.fillStyle = sky; g.fillRect(0, 0, WORLD_W, 150);
-  for (let x = 0; x < WORLD_W; x += 125) { g.fillStyle = 'rgba(60,110,70,.4)'; ell(g, x + 60, 120, 40, 22); g.fill(); line(g, x + 40, 120, x + 46, 60, 4, 'rgba(80,60,40,.5)', false); for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * 0.5; line(g, x + 46, 60, x + 46 + Math.cos(a) * 30, 60 + Math.sin(a) * 26, 3, 'rgba(70,120,60,.5)', false); } }
-  g.strokeStyle = '#495057'; g.lineWidth = 5; for (let x = 0; x <= WORLD_W; x += 62) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 150); g.stroke(); } g.beginPath(); g.moveTo(0, 50); g.lineTo(WORLD_W, 50); g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 20; x < WORLD_W; x += 186) { polyPath(g, [[x, 150], [x + 30, 150], [x + 90, 0], [x + 60, 0]]); g.fill(); }
-  // offene Falttüren
+  lawn(g, 0, 0, WORLD_W, WORLD_H, R);
+  // oben links: Parkplatz neben dem Glashaus
+  g.fillStyle = '#7d8489'; g.fillRect(0, 0, 150, 160); for (let i = 0; i < 900; i++) { g.fillStyle = i % 2 ? '#868d92' : '#737a7f'; g.fillRect(R() * 150, R() * 160, 2, 2); }
+  // Glashaus-Front: Glas, Stahlrahmen, offene Falttüren in der Mitte
+  const sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#a5d8ff'); sky.addColorStop(1, '#e7f5ff'); g.fillStyle = sky; g.fillRect(150, 0, WORLD_W - 150, 150);
+  for (let x = 170; x < WORLD_W; x += 125) { g.fillStyle = 'rgba(60,110,70,.4)'; ell(g, x + 60, 120, 40, 22); g.fill(); line(g, x + 40, 120, x + 46, 60, 4, 'rgba(80,60,40,.5)', false); for (let k = 0; k < 6; k++) { const a2 = -Math.PI / 2 + (k - 2.5) * 0.5; line(g, x + 46, 60, x + 46 + Math.cos(a2) * 30, 60 + Math.sin(a2) * 26, 3, 'rgba(70,120,60,.5)', false); } }
+  g.strokeStyle = '#495057'; g.lineWidth = 5; for (let x = 150; x <= WORLD_W; x += 62) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 150); g.stroke(); } g.beginPath(); g.moveTo(150, 50); g.lineTo(WORLD_W, 50); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 170; x < WORLD_W; x += 186) { polyPath(g, [[x, 150], [x + 30, 150], [x + 90, 0], [x + 60, 0]]); g.fill(); }
   g.fillStyle = '#d27d55'; g.fillRect(430, 60, 140, 90);
   for (let k = 0; k < 3; k++) { rrPath(g, 380 + k * 12, 50, 12, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2.5); rrPath(g, 584 + k * 12, 50, 12, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2.5); }
-  rrPath(g, 420, 4, 160, 40, 10); fs(g, 'rgba(251,248,242,.95)', 3); drawLogo(g, 500, 24, 110, false);
-  g.fillStyle = '#495057'; g.fillRect(0, 146, WORLD_W, 8);
-  // Klinkerstreifen an der Hauswand + Sonnensegel-Schatten
-  brickFloor(g, 0, 154, WORLD_W, 240, R);
-  g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 392, WORLD_W, 4);
-  // Rasen unten + Lavendel-Rand, Trittsteine zum Tor
-  lawn(g, 0, 990, WORLD_W, 410, R);
-  g.save(); g.beginPath(); g.moveTo(0, 990); for (let x = 0; x <= WORLD_W; x += 40) g.quadraticCurveTo(x + 20, 984 + (x % 80 ? 6 : -4), x + 40, 990); g.lineTo(WORLD_W, 1000); g.lineTo(0, 1000); g.closePath(); g.fillStyle = '#d8cfbf'; g.fill(); g.restore();
-  for (let k = 0; k < 9; k++) { const y = 1010 + k * 38, x = 500 + Math.sin(k * 0.8) * 22; ell(g, x, y, 26, 13); fs(g, '#cfc7b8', 2); ell(g, x - 6, y - 3, 8, 3); g.fillStyle = 'rgba(255,255,255,.35)'; g.fill(); }
-  // Hecken links/rechts + unten
-  for (let y = 160; y < 1360; y += 26) { ell(g, 18 + (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); ell(g, 982 - (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
-  for (let x = 0; x < WORLD_W; x += 26) if (Math.abs(x - 500) > 60) { ell(g, x, 1366, 22, 26); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
-  // feste Schatten der Sonnensegel (leicht versetzt, Sonne von links oben)
-  for (const P of ASAILS) { sailPath(g, P.map(([x, y]) => [x + 30, y + 14])); g.fillStyle = 'rgba(90,35,10,.13)'; g.fill(); }
+  g.fillStyle = '#495057'; g.fillRect(150, 146, WORLD_W - 150, 8); g.fillRect(146, 0, 8, 154);
+  // Pflaster unter und vor dem Pavillon (wie auf dem Foto: graue Betonpflaster im Verband)
+  g.save(); g.beginPath(); g.rect(158, 154, 732, 372); g.clip();
+  g.fillStyle = '#8a7f78'; g.fillRect(158, 154, 732, 372);
+  for (let y = 154, k = 0; y < 530; y += 18, k++) for (let x = 158 - (k % 2) * 18; x < 890; x += 36) { g.fillStyle = ['#9c918a', '#a69b93', '#938880', '#ada39b'][Math.floor(R() * 4)]; g.fillRect(x + 1, y + 1, 34, 16); }
+  for (let i = 0; i < 20; i++) { g.fillStyle = 'rgba(255,255,255,.05)'; ell(g, 158 + R() * 732, 154 + R() * 372, 60, 30); g.fill(); }
+  g.restore(); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(158, 524, 732, 4);
+  // Schatten des Pavillondachs (Sonne von links oben)
+  g.fillStyle = 'rgba(70,30,15,.12)'; g.fillRect(PAV.x0 + 30, PAV.y0 + 20, PAV.x1 - PAV.x0, PAV.y1 - PAV.y0 - 10);
+  // Spielplatz (eingezäunt): Hackschnitzel
+  g.save(); g.beginPath(); g.rect(PLAY.x0, PLAY.y0, PLAY.x1 - PLAY.x0, PLAY.y1 - PLAY.y0); g.clip();
+  g.fillStyle = CHIP_BASE; g.fillRect(PLAY.x0, PLAY.y0, PLAY.x1 - PLAY.x0, PLAY.y1 - PLAY.y0);
+  for (let i = 0; i < 5000; i++) { g.fillStyle = CHIP_COLS[i % 6]; ell(g, R() * PLAY.x1, PLAY.y0 + R() * (PLAY.y1 - PLAY.y0), 2.2, 1.2, R() * 3); g.fill(); }
+  g.restore();
+  // Wendehammer unten links (Asphalt) mit Bordstein + Hecke
+  g.save(); ell(g, CIRC.x, CIRC.y, CIRC.r, CIRC.r); g.clip(); g.fillStyle = '#7d8489'; g.fillRect(0, 900, 520, 500); for (let i = 0; i < 4000; i++) { g.fillStyle = i % 2 ? '#868d92' : '#737a7f'; g.fillRect(R() * 520, 960 + R() * 440, 2, 2); } g.restore();
+  for (let a2 = -Math.PI; a2 < 0.2; a2 += 0.09) { const x = CIRC.x + Math.cos(a2) * (CIRC.r + 12), y = CIRC.y + Math.sin(a2) * (CIRC.r + 12); if (y > 1400 || x < -20) continue; ell(g, x, y, 20, 16); fs(g, (a2 * 10 | 0) % 2 ? '#2d6a4f' : '#40916c', 2); }
+  // geschwungener Kiesweg vom Pavillon zum Gartentor + Abzweig zur Hütte
+  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+  const path = (w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(700, 520); g.bezierCurveTo(820, 640, 560, 820, 640, 1000); g.bezierCurveTo(700, 1140, 730, 1250, 720, 1400); g.stroke(); g.beginPath(); g.moveTo(660, 1060); g.quadraticCurveTo(780, 1100, 860, 1170); g.stroke(); };
+  path(84, '#c8bfae'); path(74, '#e3dccd'); g.restore();
+  for (let i = 0; i < 900; i++) { const u = R(), x = 640 + (R() - 0.5) * 60, y = 560 + u * 820; }
+  // Zypressen-Schatten + kleine Blumenrabatte vor den Zypressen
+  for (let y = 210; y < 500; y += 80) { ell(g, 925, y + 8, 30, 10); g.fillStyle = 'rgba(0,0,0,.18)'; g.fill(); }
 }
-// Sonnensegel: gespannte Dreiecke mit nach innen gebogenen Kanten; Eckpunkte = Masten am Boden, Segel hängt in der Höhe
-const ASAILS = [[[150, 430], [560, 410], [330, 660]], [[470, 430], [880, 460], [700, 700]], [[160, 700], [560, 720], [360, 960]]];
-const SAIL_H = 170, S_FADE = [0.5, 0.5, 0.5];
-function sailPath(c, P, sag = 0.18, fl = 0) {
-  c.beginPath(); c.moveTo(P[0][0], P[0][1]);
-  for (let k = 0; k < 3; k++) { const A = P[k], B = P[(k + 1) % 3], mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, cx = (P[0][0] + P[1][0] + P[2][0]) / 3, cy = (P[0][1] + P[1][1] + P[2][1]) / 3; c.quadraticCurveTo(mx + (cx - mx) * sag, my + (cy - my) * sag + fl, B[0], B[1]); }
-  c.closePath();
-}
+const AGATE = { x: 720, y: 1392, ix: 720, iy: 1320 };
 const ADECOR = [
-  { id: 'topf1', t: 'blumentopf', x: 330, y: 200, r: 18, bb: [300, 140, 60, 66] },
-  { id: 'topf2', t: 'blumentopf', x: 670, y: 200, r: 18, bb: [640, 140, 60, 66] },
-  { id: 'fahne', t: 'fahne', x: 890, y: 260, r: 10, bb: [870, 40, 110, 226] },
-  { id: 'olive1', t: 'oliventopf', x: 110, y: 350, r: 26, bb: [40, 200, 140, 156] },
-  { id: 'olive2', t: 'oliventopf', x: 880, y: 470, r: 26, bb: [810, 320, 140, 156] },
-  { id: 'set1', t: 'rattan', x: 230, y: 520, x0: 175, y0: 470, w: 110, h: 50, bb: [160, 420, 140, 130] },
-  { id: 'set2', t: 'rattan', x: 540, y: 520, x0: 485, y0: 470, w: 110, h: 50, bb: [470, 420, 140, 130] },
-  { id: 'brunnen', t: 'brunnen', x: 770, y: 680, r: 46, bb: [690, 470, 160, 220] },
-  { id: 'kugel1', t: 'kugel', x: 380, y: 650, r: 14, anim: true },
-  { id: 'kugel2', t: 'kugel', x: 120, y: 700, r: 14, anim: true },
-  { id: 'kugel3', t: 'kugel', x: 620, y: 880, r: 14, anim: true },
-  { id: 'kugel4', t: 'kugel', x: 900, y: 860, r: 14, anim: true },
-  { id: 'set3', t: 'rattan', x: 240, y: 820, x0: 185, y0: 770, w: 110, h: 50, bb: [170, 720, 140, 130] },
-  { id: 'set4', t: 'rattan', x: 470, y: 820, x0: 415, y0: 770, w: 110, h: 50, bb: [400, 720, 140, 130] },
-  { id: 'cyp1', t: 'cypress', x: 935, y: 640 }, { id: 'cyp2', t: 'cypress', x: 935, y: 960 }, { id: 'cyp3', t: 'cypress', x: 65, y: 980 },
-  { id: 'kissenbox', t: 'kissenbox', x: 110, y: 880, r: 30, bb: [60, 820, 100, 70] },
-  { id: 'olive3', t: 'oliventopf', x: 760, y: 950, r: 26, bb: [690, 800, 140, 156] },
-  { id: 'liege1', t: 'liege', x: 200, y: 1260, x0: 150, y0: 1200, w: 100, h: 60, bb: [140, 1150, 120, 120] },
-  { id: 'liege2', t: 'liege', x: 330, y: 1260, x0: 280, y0: 1200, w: 100, h: 60, bb: [270, 1150, 120, 120] },
-  { id: 'schirm', t: 'schirm', x: 265, y: 1150, r: 16, bb: [150, 910, 230, 250] },
-  { id: 'beet', t: 'lavendel', x: 760, y: 1170, x0: 640, y0: 1120, w: 240, h: 50, bb: [630, 1070, 260, 110] },
-  { id: 'bank', t: 'gartenbank', x: 770, y: 1290, x0: 700, y0: 1260, w: 140, h: 30, bb: [690, 1210, 160, 90] },
+  { id: 'topf1', t: 'blumentopf', x: 430, y: 192, r: 18, bb: [400, 132, 60, 66] },
+  { id: 'topf2', t: 'blumentopf', x: 570, y: 192, r: 18, bb: [540, 132, 60, 66] },
+  { id: 'olive1', t: 'oliventopf', x: 180, y: 240, r: 26, bb: [110, 90, 140, 156] },
+  { id: 'olive2', t: 'oliventopf', x: 875, y: 515, r: 26, bb: [805, 365, 140, 156] },
+  { id: 'kissenbox', t: 'kissenbox', x: 850, y: 235, r: 28, bb: [800, 170, 100, 70] },
+  ...[[300, 250], [520, 250], [740, 250], [300, 400], [520, 400], [740, 400]].map(([x, y], i) => ({ id: 'tisch' + (i + 1), t: 'pavtisch', x, y: y + 34, cy: y, x0: x - 54, y0: y - 30, w: 108, h: 38, bb: [x - 70, y - 70, 140, 120] })),
+  ...[[200, 310], [450, 310], [590, 310], [840, 310], [200, 470], [450, 470], [590, 470], [840, 470]].map(([x, y], i) => ({ id: 'pf' + i, t: 'pfosten', x, y, r: 9, bb: [x - 14, y - PAV.H - 12, 28, PAV.H + 20] })),
+  { id: 'lounge', t: 'lounge', x: 185, y: 410, r: 18, bb: [155, 350, 60, 66] },
+  ...[220, 300, 380, 460].map((y, i) => ({ id: 'cyp' + i, t: 'cypress', x: 905, y })),
+  { id: 'kugel1', t: 'kugel', x: 520, y: 548, r: 14, anim: true },
+  { id: 'kugel2', t: 'kugel', x: 880, y: 600, r: 14, anim: true },
+  { id: 'brunnen', t: 'brunnen', x: 640, y: 700, r: 46, bb: [560, 490, 160, 220] },
+  // Spielplatz-Ecke (hinter dem Zaun, gehört zum Bereich Spielplatz)
+  { id: 'spielturm', t: 'spielturm', x: 120, y: 760, bb: [20, 560, 220, 210] },
+  { id: 'schaukel', t: 'schaukelgerust', x: 330, y: 820, bb: [220, 640, 230, 190] },
+  { id: 'schirmL1', t: 'schirmlila', x: 400, y: 600, bb: [320, 460, 160, 150] },
+  { id: 'zaunP', t: 'spielzaun', x: 245, y: 905, bb: [0, 500, 500, 420] },
+  { id: 'baum1', t: 'laubbaum', x: 620, y: 1010, r: 34, bb: [500, 820, 240, 200] },
+  { id: 'baum2', t: 'laubbaum', x: 760, y: 900, r: 34, bb: [640, 710, 240, 200] },
+  { id: 'baum3', t: 'laubbaum', x: 950, y: 820, r: 30, bb: [830, 630, 240, 200] },
+  { id: 'bank', t: 'gartenbank', x: 590, y: 1150, x0: 520, y0: 1120, w: 140, h: 30, bb: [510, 1070, 160, 90] },
+  { id: 'huette', t: 'huette', x: 920, y: 1330, x0: 840, y0: 1190, w: 160, h: 140, bb: [820, 1020, 200, 320] },
+  { id: 'auto1', t: 'parkauto', x: 70, y: 110, cy: 60, a: 0, col: '#e9ecef', bb: [20, 0, 100, 120] },
+  { id: 'auto2', t: 'parkauto', x: 90, y: 1210, cy: 1160, a: 0.4, col: '#e63946', bb: [30, 1090, 120, 130] },
+  { id: 'auto3', t: 'parkauto', x: 250, y: 1290, cy: 1240, a: -0.3, col: '#343a40', bb: [190, 1170, 120, 130] },
 ];
 const ADRAW = {
   blumentopf(c, d) { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 2, 22, 6); c.fill(); polyPath(c, [[d.x - 18, d.y - 26], [d.x + 18, d.y - 26], [d.x + 13, d.y], [d.x - 13, d.y]]); fs(c, '#d27d55', 2.5); for (let k = 0; k < 7; k++) { ell(c, d.x - 16 + (k % 4) * 11, d.y - 34 - Math.floor(k / 4) * 10, 8, 7); fs(c, '#52b788', 1.5); } for (let k = 0; k < 6; k++) { ell(c, d.x - 14 + (k % 3) * 14, d.y - 40 - Math.floor(k / 3) * 10, 4.5, 4.5); c.fillStyle = '#ef233c'; c.fill(); } },
@@ -170,36 +183,104 @@ const ADRAW = {
   },
   gartenbank(c, d) { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y0 + d.h, 76, 9); c.fill(); rrPath(c, d.x0, d.y0 - 26, d.w, 12, 4); fs(c, '#a0673a', 2.5); rrPath(c, d.x0, d.y0 - 10, d.w, 12, 4); fs(c, '#a0673a', 2.5); rrPath(c, d.x0, d.y0 + 6, d.w, 12, 4); fs(c, '#8d5a3b', 2.5); line(c, d.x0 + 10, d.y0 + 16, d.x0 + 10, d.y0 + d.h + 2, 4, '#343a40', false); line(c, d.x0 + d.w - 10, d.y0 + 16, d.x0 + d.w - 10, d.y0 + d.h + 2, 4, '#343a40', false); },
 };
+Object.assign(ADRAW, {
+  pavtisch(c, d) {
+    // schwarzer Bistrotisch mit heller Steinplatte, Stühle aus Rattan (hell) mit schwarzen Beinen – wie auf dem Foto
+    const x = d.x, y = d.cy, ch = (cx, cy, back) => { line(c, cx - 10, cy + 6, cx - 12, cy + 22, 2.5, '#212529', false); line(c, cx + 10, cy + 6, cx + 12, cy + 22, 2.5, '#212529', false); rrPath(c, cx - 14, cy - 6, 28, 13, 5); fs(c, '#c8a27a', 2.5); if (back) { c.beginPath(); c.moveTo(cx - 15, cy - 2); c.quadraticCurveTo(cx, cy - 30, cx + 15, cy - 2); c.lineWidth = 7; c.strokeStyle = OL; c.stroke(); c.lineWidth = 4.5; c.strokeStyle = '#c8a27a'; c.stroke(); for (let k = -1; k <= 1; k++) line(c, cx + k * 6, cy - 4, cx + k * 6, cy - 16, 1.2, 'rgba(110,70,30,.5)', false); } };
+    c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 30, 64, 12); c.fill();
+    ch(x - 26, y - 22, true); ch(x + 26, y - 22, true);
+    line(c, x, y + 4, x, y + 26, 4, '#212529', false); c.beginPath(); c.moveTo(x - 20, y + 30); c.quadraticCurveTo(x, y + 20, x + 20, y + 30); c.lineWidth = 3; c.strokeStyle = '#212529'; c.stroke();
+    rrPath(c, x - 46, y - 14, 92, 20, 3); fs(c, '#212529', 2.5); rrPath(c, x - 44, y - 16, 88, 16, 3); fs(c, '#dee2e6', 2);
+    rrPath(c, x - 6, y - 26, 12, 12, 2); fs(c, '#6c757d', 1.5); ell(c, x, y - 28, 8, 5); fs(c, '#74c69d', 1.5);
+    ch(x - 26, y + 22, false); ch(x + 26, y + 22, false);
+  },
+  pfosten(c, d) { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x + 6, d.y + 2, 12, 4); c.fill(); rrPath(c, d.x - 6, d.y - PAV.H, 12, PAV.H, 2); fs(c, '#495057', 2.5); line(c, d.x - 2, d.y - PAV.H + 4, d.x - 2, d.y - 4, 2, 'rgba(255,255,255,.25)', false); },
+  lounge(c, d) {
+    // bunter Streifen-Sessel (Foto)
+    c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 2, 22, 6); c.fill();
+    line(c, d.x - 12, d.y, d.x - 10, d.y - 16, 3, '#212529', false); line(c, d.x + 12, d.y, d.x + 10, d.y - 16, 3, '#212529', false);
+    c.save(); c.beginPath(); c.moveTo(d.x - 20, d.y - 14); c.quadraticCurveTo(d.x - 22, d.y - 52, d.x, d.y - 54); c.quadraticCurveTo(d.x + 22, d.y - 52, d.x + 20, d.y - 14); c.closePath(); c.clip();
+    for (let k = 0; k < 12; k++) { c.fillStyle = ['#e63946', '#f8f9fa', '#457b9d', '#e9c46a', '#adb5bd', '#2a9d8f'][k % 6]; c.fillRect(d.x - 22 + k * 3.7, d.y - 56, 3.7, 44); } c.restore();
+    c.beginPath(); c.moveTo(d.x - 20, d.y - 14); c.quadraticCurveTo(d.x - 22, d.y - 52, d.x, d.y - 54); c.quadraticCurveTo(d.x + 22, d.y - 52, d.x + 20, d.y - 14); c.closePath(); fs(c, null, 2.5);
+  },
+  spielturm(c, d) {
+    // Holzturm mit Edelstahlrutsche (Blick vom Pavillon auf den Spielplatz)
+    const x = d.x, y = d.y;
+    c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x + 20, y + 4, 70, 14); c.fill();
+    for (const dx of [-36, 36]) line(c, x + dx, y, x + dx, y - 150, 8, '#8d5a3b');
+    rrPath(c, x - 42, y - 90, 84, 10, 3); fs(c, '#a0673a', 2.5);
+    polyPath(c, [[x - 50, y - 150], [x, y - 196], [x + 50, y - 150]]); fs(c, '#b5654a', 3);
+    for (let k = 0; k < 5; k++) line(c, x - 34 + k * 17, y - 84, x - 34 + k * 17, y - 120, 2.5, '#c08b55', false);
+    c.beginPath(); c.moveTo(x + 40, y - 90); c.quadraticCurveTo(x + 90, y - 60, x + 110, y - 4); c.lineWidth = 16; c.strokeStyle = OL; c.stroke(); c.lineWidth = 11; c.strokeStyle = '#ced4da'; c.stroke();
+    for (let k = 0; k < 5; k++) line(c, x - 30, y - 10 - k * 16, x - 18, y - 10 - k * 16, 3, '#8d5a3b', false);
+  },
+  schaukelgerust(c, d, t) {
+    const x = d.x, y = d.y;
+    for (const dx of [-90, 90]) { line(c, x + dx - 20, y, x + dx, y - 150, 7, '#8d5a3b'); line(c, x + dx + 20, y, x + dx, y - 150, 7, '#8d5a3b'); }
+    line(c, x - 96, y - 150, x + 96, y - 150, 9, '#6f4e37');
+    for (const sx of [-40, 40]) { const sw = Math.sin(t * 1.6 + sx) * 6; line(c, x + sx, y - 146, x + sx + sw, y - 40, 2, '#495057', false); line(c, x + sx + 20, y - 146, x + sx + 20 + sw, y - 40, 2, '#495057', false); rrPath(c, x + sx - 4 + sw, y - 44, 28, 8, 3); fs(c, '#212529', 2); }
+  },
+  schirmlila(c, d, t) {
+    line(c, d.x, d.y, d.x, d.y - 110, 4, '#adb5bd'); const w = Math.sin(t * 1.3) * 2;
+    c.beginPath(); c.moveTo(d.x - 70, d.y - 96 + w); c.quadraticCurveTo(d.x, d.y - 150, d.x + 70, d.y - 96 - w); c.quadraticCurveTo(d.x, d.y - 112, d.x - 70, d.y - 96 + w); fs(c, '#5a3d8a', 3);
+    txt(c, 'Weisse', d.x, d.y - 116, 11, '#fff', 'center', null);
+  },
+  spielzaun(c, d) {
+    // niedriger Holzzaun um den Spielplatz (oben + rechts)
+    for (let x = 6; x < PLAY.x1; x += 22) { rrPath(c, x - 3, PLAY.y0 - 24, 6, 26, 2); fs(c, '#a0673a', 1.5); }
+    line(c, 0, PLAY.y0 - 16, PLAY.x1, PLAY.y0 - 16, 3, '#8d5a3b', false);
+    for (let y = PLAY.y0; y < PLAY.y1; y += 22) { rrPath(c, PLAY.x1 - 3, y - 24, 6, 26, 2); fs(c, '#a0673a', 1.5); }
+    line(c, PLAY.x1, PLAY.y0 - 16, PLAY.x1, PLAY.y1 - 16, 3, '#8d5a3b', false);
+  },
+  laubbaum(c, d) {
+    c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, d.x + 26, d.y + 4, 74, 26); c.fill();
+    c.beginPath(); c.moveTo(d.x - 9, d.y - 4); c.quadraticCurveTo(d.x - 6, d.y - 60, d.x - 4, d.y - 90); c.lineTo(d.x + 6, d.y - 90); c.quadraticCurveTo(d.x + 8, d.y - 60, d.x + 9, d.y - 4); c.closePath(); fs(c, '#6f4e37', 2.5);
+    for (const [dx, dy, rr] of [[-44, -112, 42], [34, -118, 46], [-6, -156, 48], [48, -152, 34], [-50, -150, 32]]) { ell(c, d.x + dx, d.y + dy, rr, rr * 0.85); fs(c, '#2d6a4f', 3); }
+    for (let k = 0; k < 14; k++) { ell(c, d.x - 50 + (k * 37) % 100, d.y - 176 + (k * 23) % 80, 7, 5, k); c.fillStyle = k % 2 ? '#52b788' : '#40916c'; c.fill(); }
+  },
+  huette(c, d) {
+    // die Holzhütte (Chalet) unten rechts: Bohlenwand, Satteldach, Fenster mit Läden, Wagenrad
+    const x0 = d.x0, y0 = d.y0, w = d.w, h = d.h;
+    rrPath(c, x0, y0, w + 10, h, 3); fs(c, '#8d5a3b', 3);
+    for (let k = 0; k < 8; k++) line(c, x0 + 2, y0 + 10 + k * 16, x0 + w + 8, y0 + 10 + k * 16, 1.5, 'rgba(60,35,20,.4)', false);
+    polyPath(c, [[x0 - 16, y0 + 6], [x0 + w / 2 + 5, y0 - 70], [x0 + w + 26, y0 + 6]]); fs(c, '#6c584c', 3);
+    for (let k = 0; k < 5; k++) line(c, x0 - 8 + k * 8, y0 + 2 - k * 13, x0 + w + 18 - k * 8, y0 + 2 - k * 13, 1.5, 'rgba(0,0,0,.2)', false);
+    rrPath(c, x0 + 26, y0 + 34, 40, 36, 3); fs(c, '#1d3557', 2.5); line(c, x0 + 46, y0 + 34, x0 + 46, y0 + 70, 2, '#5c3d2e', false); rrPath(c, x0 + 14, y0 + 32, 12, 40, 2); fs(c, '#6f4e37', 2); rrPath(c, x0 + 66, y0 + 32, 12, 40, 2); fs(c, '#6f4e37', 2);
+    rrPath(c, x0 + 100, y0 + 40, 44, h - 40, 3); fs(c, '#5c3d2e', 2.5); heartPath(c, x0 + 122, y0 + 60, 6); c.fillStyle = '#c1121f'; c.fill();
+    ell(c, x0 + 6, y0 + h - 34, 24, 24); c.lineWidth = 6; c.strokeStyle = OL; c.stroke(); c.lineWidth = 3.5; c.strokeStyle = '#a0673a'; c.stroke(); for (let k = 0; k < 8; k++) { const a2 = k * TAU / 8; line(c, x0 + 6, y0 + h - 34, x0 + 6 + Math.cos(a2) * 22, y0 + h - 34 + Math.sin(a2) * 22, 1.8, '#a0673a', false); }
+    rrPath(c, x0 + 40, y0 - 30, 70, 20, 4); fs(c, '#fbf8f2', 2); txt(c, 'Chalet', x0 + 75, y0 - 20, 12, '#6f4e37', 'center', null);
+  },
+  parkauto(c, d) { drawCar(c, d.x, d.cy, d.a, d.col, 1.05); },
+});
 function buildGridAussen() {
-  cellsIn(42, 160, 958, 1340, i => (G0[i] = 1));
-  cellsIn(455, 1320, 545, 1345, i => (G0[i] = 1));
+  cellsIn(160, 160, 990, 1336, i => (G0[i] = 1));
+  cellsIn(AGATE.ix - 45, 1320, AGATE.ix + 45, 1345, i => (G0[i] = 1));
+  cellsIn(0, PLAY.y0 - 22, PLAY.x1 + 8, PLAY.y1, i => (G0[i] = 0));                         // Spielplatz-Zaun
+  for (let i = 0; i < G0.length; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (dist(x, y, CIRC.x, CIRC.y) < CIRC.r + 26) G0[i] = 0; }   // Wendehammer + Hecke
   for (const d of ADECOR) {
-    if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0));
+    if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + (d.t === 'pavtisch' ? 30 : 26), i => (G0[i] = 0));
     else if (d.t === 'cypress') cellsCircle(d.x, d.y - 6, 18, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(8, d.r - 6), i => (G0[i] = 0));
   }
 }
 const ASPOTS = [
-  furnSpot(ADECOR, 'topf1', 'top', { px: 336, py: 168, sx: 330, sy: 236 }),
-  furnSpot(ADECOR, 'topf2', 'top', { px: 664, py: 168, sx: 670, sy: 236 }),
-  furnSpot(ADECOR, 'olive1', 'top', { px: 120, py: 306, sx: 110, sy: 390 }),
-  furnSpot(ADECOR, 'olive2', 'top', { px: 870, py: 426, sx: 880, sy: 510 }),
-  furnSpot(ADECOR, 'olive3', 'top', { px: 770, py: 906, sx: 760, sy: 990 }),
-  furnSpot(ADECOR, 'set1', 'top', { px: 258, py: 510, sx: 230, sy: 565 }),
-  furnSpot(ADECOR, 'set2', 'top', { px: 512, py: 510, sx: 540, sy: 565 }),
-  furnSpot(ADECOR, 'set3', 'top', { px: 268, py: 810, sx: 240, sy: 865 }),
-  furnSpot(ADECOR, 'set4', 'top', { px: 442, py: 810, sx: 470, sy: 865 }),
-  furnSpot(ADECOR, 'brunnen', 'top', { px: 760, py: 646, cut: 657, front: true, sx: 770, sy: 722 }),
-  furnSpot(ADECOR, 'kugel1', 'right', { px: 390, py: 640, sx: 412, sy: 660 }),
-  furnSpot(ADECOR, 'kugel3', 'left', { px: 610, py: 870, sx: 588, sy: 890 }),
-  furnSpot(ADECOR, 'kissenbox', 'top', { px: 104, py: 832, cut: 840, front: true, sx: 150, sy: 912 }),
-  furnSpot(ADECOR, 'cyp1', 'left', { px: 918, py: 620, sx: 890, sy: 650 }),
-  furnSpot(ADECOR, 'cyp3', 'right', { px: 82, py: 960, sx: 110, sy: 990 }),
-  furnSpot(ADECOR, 'liege1', 'top', { px: 200, py: 1240, sx: 200, sy: 1306 }),
-  furnSpot(ADECOR, 'liege2', 'top', { px: 330, py: 1240, sx: 330, sy: 1306 }),
-  furnSpot(ADECOR, 'beet', 'top', { px: 700, py: 1146, sx: 700, sy: 1212 }),
-  furnSpot(ADECOR, 'beet', 'top', { px: 830, py: 1146, sx: 830, sy: 1212, tag: 'b' }),
-  furnSpot(ADECOR, 'bank', 'top', { px: 790, py: 1276, sx: 790, sy: 1240 }),
+  ...[1, 2, 3].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 300, 520, 740][k] + 26, py: 262, sx: [0, 300, 520, 740][k], sy: 318 })),
+  ...[4, 5, 6].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 0, 0, 0, 300, 520, 740][k] - 26, py: 412, sx: [0, 0, 0, 0, 300, 520, 740][k], sy: 492 })),
+  furnSpot(ADECOR, 'topf1', 'top', { px: 436, py: 160, sx: 430, sy: 228 }),
+  furnSpot(ADECOR, 'topf2', 'top', { px: 564, py: 160, sx: 570, sy: 228 }),
+  furnSpot(ADECOR, 'olive1', 'top', { px: 190, py: 196, sx: 230, sy: 290 }),
+  furnSpot(ADECOR, 'olive2', 'top', { px: 865, py: 471, sx: 830, sy: 560 }),
+  furnSpot(ADECOR, 'kissenbox', 'top', { px: 844, py: 186, cut: 194, front: true, sx: 850, sy: 285 }),
+  furnSpot(ADECOR, 'lounge', 'top', { px: 190, py: 384, cut: 396, front: true, sx: 230, sy: 430 }),
+  furnSpot(ADECOR, 'cyp1', 'left', { px: 888, py: 280, sx: 860, sy: 320 }),
+  furnSpot(ADECOR, 'cyp3', 'left', { px: 888, py: 440, sx: 860, sy: 450 }),
+  furnSpot(ADECOR, 'kugel1', 'right', { px: 530, py: 538, sx: 552, sy: 570 }),
+  furnSpot(ADECOR, 'kugel2', 'left', { px: 868, py: 590, sx: 846, sy: 620 }),
+  furnSpot(ADECOR, 'brunnen', 'top', { px: 630, py: 666, cut: 677, front: true, sx: 640, sy: 745 }),
+  furnSpot(ADECOR, 'baum1', 'right', { px: 636, py: 970, sx: 668, sy: 1020 }),
+  furnSpot(ADECOR, 'baum3', 'left', { px: 936, py: 780, sx: 905, sy: 830 }),
+  furnSpot(ADECOR, 'bank', 'top', { px: 590, py: 1132, sx: 590, sy: 1100 }),
+  furnSpot(ADECOR, 'huette', 'left', { px: 846, py: 1290, sx: 815, sy: 1300 }),
 ];
 // Laubhaufen: darunter guckt etwas hervor
 function drawLeafPile(c, x, y, w, seed = 0) {
@@ -222,13 +303,13 @@ function drawGardenGate(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.aussen = {
-  id: 'aussen', bg: '#5b8c45', start: { x: 500, y: 230 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
+  id: 'aussen', bg: '#5b8c45', start: { x: 500, y: 200 }, gate: AGATE,
   npcs: [
-    { id: 'a_weber', pos: [[230, 610], [560, 640], [870, 590]] },
-    { id: 'a_hoffmann', pos: [[400, 450], [700, 440], [160, 450]] },
-    { id: 'a_klaus', pos: [[200, 1060], [120, 1310], [430, 1250]] },
-    { id: 'a_mila', pos: [[640, 760], [820, 800], [340, 980]] },
-    { id: 'a_noah', pos: [[880, 1040], [640, 1300], [600, 1050]] },
+    { id: 'a_weber', pos: [[300, 490], [520, 495], [740, 490]] },
+    { id: 'a_hoffmann', pos: [[410, 325], [630, 325], [240, 330]] },
+    { id: 'a_klaus', pos: [[520, 1240], [320, 960], [870, 900]] },
+    { id: 'a_mila', pos: [[560, 620], [800, 660], [720, 770]] },
+    { id: 'a_noah', pos: [[600, 840], [820, 1060], [600, 1290]] },
   ],
   decor: ADECOR, spots: ASPOTS, grid: buildGridAussen, ground: drawGroundAussen, decorDraw: ADRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
@@ -249,32 +330,39 @@ STAGE_DEFS.aussen = {
     hard: ['jump', 'platform', 'slide'],
   },
   extras(play) {
-    // Sonnensegel flattern, Schmetterlinge am Lavendel, Kellner läuft mit Getränken
-    const flies = [0, 1, 2, 3].map(i => ({ x: 680 + i * 50, y: 1120, ph: i * 1.7 }));
-    const route = [[500, 300], [380, 660], [360, 960], [600, 960], [640, 420]], K = { x: 500, y: 300, i: 1, pause: 0 };
+    // Pavillon-Dach (Glas + Sonnensegel, wie auf dem Luftbild orange – weiß – orange): wird durchsichtig, sobald man darunter steht.
+    // Kellner läuft zwischen den Tischen, Heizstrahler unter dem Dach, Schmetterlinge über dem Rasen.
+    const route = [[500, 200], [410, 330], [630, 330], [740, 470], [520, 470], [300, 470]], K = { x: 500, y: 200, i: 1, pause: 0 };
+    const flies = [0, 1, 2].map(i => ({ x: 700, y: 760, ph: i * 2.1 }));
+    let fade = 0.95;
     return {
       update(dt) {
-        flies.forEach(f => { f.ph += dt; f.x = 760 + Math.sin(f.ph * 0.7 + f.y) * 120; f.y = 1110 + Math.sin(f.ph * 1.3) * 40; });
-        const p = play.p; if (K.pause > 0) { K.pause -= dt; return; } if (dist(p.x, p.y, K.x, K.y) < 60) return;
-        const [tx, ty] = route[K.i], d = dist(K.x, K.y, tx, ty), s = 75 * dt; if (d <= s) { K.x = tx; K.y = ty; K.i = (K.i + 1) % route.length; if (Math.random() < 0.4) K.pause = 1.4; } else { K.x += (tx - K.x) / d * s; K.y += (ty - K.y) / d * s; }
+        flies.forEach(f => { f.ph += dt; f.x = 760 + Math.sin(f.ph * 0.7) * 140; f.y = 760 + Math.sin(f.ph * 1.3) * 60; });
+        const p = play.p, under = p.x > PAV.x0 - 30 && p.x < PAV.x1 + 30 && p.y > PAV.y0 && p.y < PAV.y1 + 60;
+        fade = lerp(fade, under ? 0.14 : 0.95, Math.min(1, dt * 6));
+        if (K.pause > 0) { K.pause -= dt; return; } if (dist(p.x, p.y, K.x, K.y) < 60) return;
+        const [tx, ty] = route[K.i], d = dist(K.x, K.y, tx, ty), s2 = 75 * dt; if (d <= s2) { K.x = tx; K.y = ty; K.i = (K.i + 1) % route.length; if (Math.random() < 0.4) K.pause = 1.4; } else { K.x += (tx - K.x) / d * s2; K.y += (ty - K.y) / d * s2; }
       },
       draw(c, L, vis, t) {
         if (vis(K.x, K.y)) L.push({ y: K.y, f: () => { drawPerson(c, 'a_ober', K.x, K.y, 1.05, t * 2, { ph: 2 }); c.save(); c.translate(K.x + 18, K.y - 46); ell(c, 0, 0, 20, 6); fs(c, '#adb5bd', 2.5); drawGlass(c, -8, -2, 0.3, 0.7, '#ff9f1c'); drawGlass(c, 8, -2, 0.3, 0.6, '#e63946'); c.restore(); } });
-        flies.forEach((f, i) => { if (!vis(f.x, f.y)) return; L.push({ y: f.y + 40, f: () => { const fl = Math.abs(Math.sin(t * 14 + i)); c.save(); c.translate(f.x, f.y - 40); for (const sd of [-1, 1]) { ell(c, sd * 6 * fl, -3, 6 * fl + 1, 5, sd * 0.4); fs(c, ['#ffd166', '#fff', '#74c0fc', '#ff8fab'][i], 1.2); } line(c, 0, -6, 0, 4, 1.5, OL, false); c.restore(); } }); });
+        flies.forEach((f, i) => { if (!vis(f.x, f.y)) return; L.push({ y: f.y + 40, f: () => { const fl = Math.abs(Math.sin(t * 14 + i)); c.save(); c.translate(f.x, f.y - 40); for (const sd of [-1, 1]) { ell(c, sd * 6 * fl, -3, 6 * fl + 1, 5, sd * 0.4); fs(c, ['#ffd166', '#fff', '#74c0fc'][i], 1.2); } line(c, 0, -6, 0, 4, 1.5, OL, false); c.restore(); } }); });
         L.push({ y: 99998, f: () => {
-          ASAILS.forEach((P, i) => {
-            const mx = (P[0][0] + P[1][0] + P[2][0]) / 3, my = (P[0][1] + P[1][1] + P[2][1]) / 3;
-            if (!vis(mx, my)) return;
-            c.save();
-            for (const [x, y] of P) { line(c, x, y, x, y - SAIL_H - 10, 4, '#6c757d'); ell(c, x, y, 6, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); }
-            const fl = Math.sin(t * 1.6 + i * 2) * 6, Q = P.map(([x, y]) => [x, y - SAIL_H]);
-            const pp = play.p, under = dist(pp.x, pp.y, mx, my) < 230 || [K].some(k => dist(k.x, k.y, mx, my) < 150);
-            S_FADE[i] = lerp(S_FADE[i], under ? 0.16 : 0.5, 0.08); c.globalAlpha = S_FADE[i]; sailPath(c, Q, 0.2, fl);
-            const gr = c.createLinearGradient(Q[0][0], Q[0][1], Q[2][0], Q[2][1]); gr.addColorStop(0, i === 1 ? '#ff922b' : '#f76707'); gr.addColorStop(1, i === 1 ? '#e8590c' : '#d9480f'); c.fillStyle = gr; c.fill();
-            c.globalAlpha = Math.min(0.9, S_FADE[i] * 1.8); c.lineWidth = 2.5; c.strokeStyle = 'rgba(110,40,10,.8)'; c.stroke();
-            c.globalAlpha = S_FADE[i] * 0.45; sailPath(c, Q.map(([x, y]) => [x + (mx - x) * 0.35, y + (my - SAIL_H - y) * 0.35]), 0.2, fl * 0.5); c.fillStyle = '#fff'; c.fill();
-            c.restore();
+          const H = PAV.H, y0 = PAV.y0 - H, y1 = PAV.y1 - H;
+          c.save(); c.globalAlpha = fade;
+          PAV.secs.forEach(([a2, b2, col], i) => {
+            // Glasdach (bläulich durchscheinend) mit Stahlsprossen
+            rrPath(c, a2, y0, b2 - a2, y1 - y0, 2); c.fillStyle = 'rgba(205,228,240,.85)'; c.fill();
+            // Sonnensegel unter dem Glas (leicht durchhängend)
+            const fl = Math.sin(t * 1.2 + i) * 3, m = 12;
+            c.beginPath(); c.moveTo(a2 + m, y0 + m); c.quadraticCurveTo((a2 + b2) / 2, y0 + m + 10 + fl, b2 - m, y0 + m); c.quadraticCurveTo(b2 - m - 8, (y0 + y1) / 2, b2 - m, y1 - m); c.quadraticCurveTo((a2 + b2) / 2, y1 - m - 10 - fl, a2 + m, y1 - m); c.quadraticCurveTo(a2 + m + 8, (y0 + y1) / 2, a2 + m, y0 + m); c.closePath();
+            c.fillStyle = col; c.fill(); c.lineWidth = 2; c.strokeStyle = 'rgba(80,40,20,.5)'; c.stroke();
+            c.save(); c.clip(); c.fillStyle = 'rgba(255,255,255,.12)'; for (let k = 0; k < 40; k++) c.fillRect(a2 + (k * 37) % (b2 - a2), y0 + (k * 53) % (y1 - y0), 3, 3); c.restore();
+            c.strokeStyle = 'rgba(73,80,87,.9)'; c.lineWidth = 3; for (let x = a2 + 42; x < b2 - 10; x += 42) { c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y1); c.stroke(); }
+            c.fillStyle = 'rgba(255,255,255,.22)'; polyPath(c, [[a2 + 10, y1 - 10], [a2 + 40, y1 - 10], [a2 + 90, y0 + 10], [a2 + 60, y0 + 10]]); c.fill();
+            ell(c, (a2 + b2) / 2, y1 - 40, 16, 6); fs(c, '#343a40', 2);   // Heizstrahler
           });
+          c.lineWidth = 7; c.strokeStyle = '#495057'; c.strokeRect(PAV.x0, y0, PAV.x1 - PAV.x0, y1 - y0); c.lineWidth = 5; PAV.secs.forEach(([a2]) => { c.beginPath(); c.moveTo(a2, y0); c.lineTo(a2, y1); c.stroke(); });
+          c.restore();
         } });
       },
     };
