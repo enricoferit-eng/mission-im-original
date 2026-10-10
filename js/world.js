@@ -271,3 +271,49 @@ const STAGE_COL = { kueche: '#adb5bd', gastraum: '#d27d55', aussen: '#74c69d', s
   };
   if (Play.prototype.drawHud._src === undefined) Play.prototype.drawHud._src = hud0._src || hud0;
 }
+
+// ---------- Weltkarte: Übersicht aller Bereiche + Teleport in freigeschaltete ----------
+class WorldMap {
+  constructor(play) { this.play = play; this.t = 0; Voice.say('Tippe auf einen freigeschalteten Bereich, dann reist du dorthin.', true); }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; }
+  draw(c) {
+    c.fillStyle = 'rgba(20,30,20,.6)'; c.fillRect(0, 0, W, H);
+    const cols = 3, rows = 4, pad = 16, top = 62, tileH = (H - top - pad * 2) / rows, tileW = Math.min((W - pad * 2 - 90) / cols, tileH * 1.7);
+    const gw = tileW * cols, x0 = (W - gw) / 2, y0 = top + 4;
+    txt(c, 'Weltkarte', W / 2, 32, 24, '#fff', 'center', BRAND.olive);
+    roundBtn(c, W - 40, 36, 22, '#ced4da', 'cross', () => this.close());
+    rrPath(c, x0 - 8, y0 - 8, gw + 16, tileH * rows + 16, 16); fs(c, '#fbf8f2', 3);
+    for (let r = 0; r < rows; r++) for (let col = 0; col < cols; col++) {
+      const id = stageAt(col, r), fill = WORLD_FILL[col + ',' + r], x = x0 + col * tileW, y = y0 + r * tileH;
+      c.save(); c.beginPath(); c.rect(x + 1, y + 1, tileW - 2, tileH - 2); c.clip();
+      if (fill) { const img = fillGround(fill); c.drawImage(img, x, y, tileW, tileH); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(x, y, tileW, tileH); }
+      else if (id) {
+        const open = areaUnlocked(this.play.diff, id), img = GROUND_CACHE[id];
+        if (img) c.drawImage(img, x, y, tileW, tileH); else { c.fillStyle = STAGE_COL[id] || '#ddd'; c.fillRect(x, y, tileW, tileH); stageIcon(c, id, x + tileW / 2, y + tileH * 0.42, Math.min(tileW, tileH) * 0.32); }
+        if (!open) { c.fillStyle = 'rgba(210,220,224,.92)'; c.fillRect(x, y, tileW, tileH); icon(c, 'lock', x + tileW / 2, y + tileH * 0.42, Math.min(tileW, tileH) * 0.3); }
+        const here = id === this.play.stage, cl = areaCleared(this.play.diff, id);
+        rrPath(c, x + 6, y + tileH - 30, tileW - 12, 24, 10); fs(c, here ? '#ffd166' : open ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.7)', 2);
+        txt(c, (cl ? '✓ ' : '') + STAGE_NAME[id], x + tileW / 2, y + tileH - 18, Math.min(14, tileW / 9), open ? '#35452F' : '#868e96', 'center', null);
+        if (here) { const p = this.play.p, px = x + p.x / TILE_W * tileW, py = y + p.y / TILE_H * tileH, pu = 1 + Math.sin(this.t * 6) * 0.2; ell(c, px, py, 9 * pu, 9 * pu); fs(c, '#ef476f', 2.5); }
+        if (open && !here) UI.btn(x, y, tileW, tileH, () => { this.close(); Sfx.play('win'); Save.write(); setScene(new Play(this.play.diff, { stage: id })); });
+        else if (!open) UI.btn(x, y, tileW, tileH, () => { Sfx.play('bad'); const i = STAGE_ORDER.indexOf(id); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_NAME[STAGE_ORDER[i - 1]], 'lock'); });
+      }
+      c.restore();
+      c.lineWidth = 2; c.strokeStyle = 'rgba(0,0,0,.25)'; c.strokeRect(x, y, tileW, tileH);
+    }
+  }
+}
+{
+  const hud1 = Play.prototype.drawHud;
+  Play.prototype.drawHud = function (c) {
+    hud1.call(this, c);
+    if (this.mp) return;
+    const x = W - 46, y = 108;
+    roundBtn(c, x, y, 24, '#caffbf', null, () => { Sfx.play('tap'); overlay = new WorldMap(this); }, '#2d6a4f');
+    // kleines Karten-Symbol: 3 x 2 Kacheln
+    for (let r = 0; r < 2; r++) for (let k = 0; k < 3; k++) { rrPath(c, x - 13 + k * 9, y - 9 + r * 9, 8, 8, 2); c.fillStyle = (r + k) % 2 ? '#2d6a4f' : '#74c69d'; c.fill(); }
+    txt(c, 'Karte', x, y + 34, 11, '#fff', 'center', BRAND.olive);
+  };
+  Play.prototype.drawHud._src = hud1._src || hud1;
+}
