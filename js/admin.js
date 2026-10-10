@@ -1,7 +1,7 @@
 'use strict';
 // ---------- Admin-Konto (Enrico): alle Bereiche, alle Kinder, alle Skins, unendlich Taler + Joker, Versteck-Anzeige ----------
 function adminBoost() {
-  const a = ACC(); if (!a || !a.admin) return;
+  const a = ACC(); if (!isGameAdmin(a)) return;
   const m = META(a); m.coins = 999999; m.bank = 999;
   if (typeof SHOP_SKINS !== 'undefined') m.skins = SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]));
   if (typeof ANIMALS !== 'undefined') m.animals = Object.keys(ANIMALS);
@@ -9,16 +9,16 @@ function adminBoost() {
 }
 {
   const ctor0 = Play.prototype.bossOpen;
-  Play.prototype.bossOpen = function () { return isAdmin() && !this.mp ? true : ctor0.call(this); };
+  Play.prototype.bossOpen = function () { return isGameAdmin() && !this.mp ? true : ctor0.call(this); };
   const hud0 = Play.prototype.drawHud;
   Play.prototype.drawHud = function (c) {
     hud0.call(this, c);
-    if (!isAdmin() || this.mp) return;
+    if (!isGameAdmin() || this.mp) return;
     const on = !!this.showSpots, x = W - 46, y = H - 150;
     roundBtn(c, x, y, 24, on ? '#ffd166' : '#e9ecef', 'search', () => { this.showSpots = !this.showSpots; Sfx.play('tap'); }, '#3d2c1f');
     txt(c, 'Verstecke', x, y + 34, 11, '#fff', 'center', BRAND.olive);
   };
-  Play.prototype.drawHud._src = hud0;
+  Play.prototype.drawHud._src = hud0._src || hud0;
   const mark0 = Play.prototype.drawMarkers;
   Play.prototype.drawMarkers = function (c) {
     if (this.showSpots) {

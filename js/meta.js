@@ -333,20 +333,24 @@ class MultiScene {
     });
     // Spiel einstellen
     panel(c, rx, ry, rw, rh, '#fff7e6', 22);
-    const o = this.opts, seg = (y, label, vals, cur, set) => {
-      txt(c, label, rx + 16, y, 13, '#6b5a48', 'left', null); const bw = Math.min(110, (rw - 32) / vals.length - 6);
-      vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = cur === v; rrPath(c, bx, y + 10, bw, 32, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 27, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, 32, () => { set(v); Sfx.play('tap'); }); });
+    const o = this.opts, duel = o.mode === 'duell', nRows = duel ? 5 : 3, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
+    const seg = (y, label, vals, isSel, set, maxW = 150) => {
+      txt(c, label, rx + 16, y, 13, '#6b5a48', 'left', null); const bw = Math.min(maxW, (rw - 32) / vals.length - 6);
+      vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = isSel(v); rrPath(c, bx, y + 10, bw, bh, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 10 + bh / 2, bw < 80 ? 11 : 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, bh, () => { set(v); Sfx.play('tap'); }); });
     };
-    seg(ry + 22, 'Modus', [['duell', 'Gegeneinander'], ['team', 'Zusammen']], o.mode, v => (o.mode = v));
-    seg(ry + 74, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], o.diff, v => (o.diff = v));
-    { const cw = 190, cx = rx + rw - cw - 14, cy = ry + 64, st = o.mode === 'team' ? [o.stages[0]] : o.stages, nm = st.length === 1 ? STAGE_INFO[st[0]].name : st.length + ' Bereiche'; rrPath(c, cx, cy, cw, 20, 10); fs(c, '#caffbf', 2); txt(c, (st.length === 1 ? 'Bereich: ' : 'Bereiche: ') + nm + ' ▸', cx + cw / 2, cy + 10, 12, '#2b9348', 'center', null); UI.btn(cx, cy - 4, cw, 28, () => { this.mode = 'stages'; Sfx.play('tap'); }); }
-    if (o.mode === 'duell') { seg(ry + 126, 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], o.kids, v => (o.kids = v)); { const hw = (rw - 44) / 2, y = ry + 178;   // zwei getrennte Felder: Boss-Level | Gegner live sehen
-      [['Boss-Level am Ende', o.boss, () => (o.boss = !o.boss)], ['Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
-        const bx = rx + 14 + i * (hw + 16); rrPath(c, bx, y - 12, hw, 66, 14); fs(c, 'rgba(255,255,255,.55)', 2, 'rgba(61,44,31,.35)');
-        txt(c, lab, bx + hw / 2, y + 4, 12, '#6b5a48', 'center', null);
-        const tw2 = Math.min(64, hw / 2 - 10); [['Ja', true], ['Nein', false]].forEach(([n, v], k) => { const tx = bx + hw / 2 - tw2 - 3 + k * (tw2 + 6), sel = on === v; rrPath(c, tx, y + 16, tw2, 30, 12); fs(c, sel ? (v ? '#06d6a0' : '#ffd166') : '#fff', 2.5); txt(c, n, tx + tw2 / 2, y + 31, 13, '#3d2c1f', 'center', null); UI.btn(tx, y + 16, tw2, 30, () => { if (on !== v) fn(); Sfx.play('tap'); }); });
-      }); } }
-    else wrapLines(c, 'Ein großer gemeinsamer Auftrag: Was einer findet, zählt für beide. Zwei Sachen schafft ihr nur zusammen!', rw - 32, 13).forEach((l, i) => txt(c, l, rx + 16, ry + 140 + i * 18, 13, '#3d2c1f', 'left', null));
+    let y = ry + 20;
+    seg(y, 'Modus', [['duell', 'Gegeneinander'], ['team', 'Zusammen']], v => o.mode === v, v => { o.mode = v; if (v === 'team') o.stages = [o.stages[0]]; o.stage = o.stages[0]; }, 180); y += rowH;
+    seg(y, duel ? 'Bereiche (mehrere = nacheinander)' : 'Bereich', STAGE_ORDER.map(id => [id, small || rw < 560 ? { kueche: 'Küche', gastraum: 'Innen', aussen: 'Außen', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' }[id] : STAGE_INFO[id].name]), v => o.stages.includes(v), v => { if (!duel) o.stages = [v]; else if (o.stages.includes(v)) { if (o.stages.length > 1) o.stages = o.stages.filter(x => x !== v); } else o.stages = STAGE_ORDER.filter(x => x === v || o.stages.includes(x)); o.stage = o.stages[0]; }); y += rowH;
+    seg(y, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], v => o.diff === v, v => (o.diff = v)); y += rowH;
+    if (duel) {
+      seg(y, 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], v => o.kids === v, v => (o.kids = v), 90); y += rowH;
+      const hw = (rw - 44) / 2;
+      [[hw < 300 ? 'Boss-Level' : 'Boss-Level am Ende', o.boss, () => (o.boss = !o.boss)], [hw < 300 ? 'Gegner sehen' : 'Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
+        const bx = rx + 14 + i * (hw + 16), boxH = bh + 12; rrPath(c, bx, y - 4, hw, boxH, 14); fs(c, 'rgba(255,255,255,.55)', 2, 'rgba(61,44,31,.35)');
+        txt(c, lab, bx + 10, y + boxH / 2 - 4, 12, '#6b5a48', 'left', null);
+        const tw2 = Math.min(64, hw / 5); [['Ja', true], ['Nein', false]].forEach(([n, v], k) => { const tx = bx + hw - 8 - (2 - k) * (tw2 + 4), sel = on === v; rrPath(c, tx, y + 2, tw2, bh, 12); fs(c, sel ? (v ? '#06d6a0' : '#ffd166') : '#fff', 2.5); txt(c, n, tx + tw2 / 2, y + 2 + bh / 2, 13, '#3d2c1f', 'center', null); UI.btn(tx, y + 2, tw2, bh, () => { if (on !== v) fn(); Sfx.play('tap'); }); });
+      });
+    } else wrapLines(c, 'Ein großer gemeinsamer Auftrag: Was einer findet, zählt für beide. Zwei Sachen schafft ihr nur zusammen!', rw - 32, 13).forEach((l, i) => txt(c, l, rx + 16, y + 10 + i * 18, 13, '#3d2c1f', 'left', null));
     const by = ry + rh - 34, bw2 = (rw - 42) / 2;
     rrPath(c, rx + 14, by - 22, bw2, 44, 16); fs(c, '#06d6a0', 3); txt(c, this.busy ? '…' : 'Spiel erstellen', rx + 14 + bw2 / 2, by, 15, '#fff', 'center', BRAND.ink); UI.btn(rx + 14, by - 22, bw2, 44, () => { if (!this.busy) this.create(); });
     rrPath(c, rx + 28 + bw2, by - 22, bw2, 44, 16); fs(c, '#bde0fe', 3); txt(c, 'Code eingeben', rx + 28 + bw2 * 1.5, by, 15, '#3d2c1f', 'center', null); UI.btn(rx + 28 + bw2, by - 22, bw2, 44, () => { this.mode = 'code'; this.err = ''; nameInput.value = ''; });

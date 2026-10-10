@@ -183,6 +183,19 @@ const passInput = document.createElement('input');
 passInput.style.cssText = nameInput.style.cssText; passInput.type = 'password'; passInput.placeholder = 'Passwort'; passInput.autocomplete = 'off'; passInput.maxLength = 64;
 document.body.appendChild(passInput);
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
+// Enricos Admin-Konto: funktioniert auch ohne Server (im Spiel steht nur ein Prüfwert, nicht der Code)
+const ENRICO_HASH = '3dac95a62bad66804a8c231d440c5189590390ea045c750a5325e656112c3ba3';
+async function enricoLogin(v) {
+  try {
+    const code = String(v).toUpperCase().replace(/[^A-Z0-9]/g, ''); if (code.length !== 8) return false;
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('mio-enrico-admin-v1:' + code));
+    const hex = Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join(''); if (hex !== ENRICO_HASH) return false;
+    const id = 'enrico'; if (!Save.data.accounts[id]) Save.data.accounts[id] = { name: 'Enrico', code: [0, 1, 2, 3], login: code.slice(0, 4) + '-' + code.slice(4), avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true, symbol: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
+    Object.assign(Save.data.accounts[id], { admin: true, gameAdmin: true }); Save.data.current = id; Save.write(false); return true;
+  } catch (e) { return false; }
+}
+// Spiel-Admin (alle Bereiche, Skins, Taler): nur das vom Server markierte Konto (Enrico), nicht das Passwort-Admin-Konto
+function isGameAdmin(a = ACC()) { return !!(a && a.admin && a.gameAdmin); }
 const NAME_A = ['Flinke', 'Mutige', 'Schlaue', 'Wilde', 'Lustige', 'Schnelle', 'Kleine', 'Starke'];
 const NAME_B = ['Rakete', 'Wolke', 'Pfote', 'Banane', 'Socke', 'Kugel', 'Brezel', 'Feder'];
 
@@ -461,7 +474,7 @@ class LoginScene {
     if (this.busy) for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 240, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
     else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 240, 32, '#06d6a0', 'check', ok ? () => {
       const v = nameInput.value.trim(); nameInput.blur();
-      if (this.mode === 'code') { this.busy = true; Net.call({ action: 'login', login: v }).then(r => this.done(r)); }
+      if (this.mode === 'code') { this.busy = true; enricoLogin(v).then(ok => { if (ok) { this.busy = false; Sfx.play('win'); setScene(new Menu()); return; } Net.call({ action: 'login', login: v }).then(r => this.done(r)); }); }
       else if (v.toLowerCase() === 'admin') { this.setMode('admin'); nameInput.value = 'admin'; }   // Admin hat keinen Bilder-Code, sondern ein Passwort
       else overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r => this.done(r)); } });
     } : null); c.restore(); }
@@ -688,7 +701,7 @@ function stageArt(c, id, x, y, w, h, t) {
 class StageMap {
   constructor(diff) { MAP_DIFF = diff;
     this.diff = diff; this.t = 0; this.camX = null; this.drag = null;
-    this.cur = Math.max(0, STAGE_ORDER.indexOf('spielplatz')); this.sel = this.cur; this.walk = null; this.card = 0;
+    this.cur = Math.max(0, STAGE_ORDER.indexOf(startArea(diff))); this.sel = this.cur; this.walk = null; this.card = 0;
   }
   enter() { FX.clear(); }
   geo() {
@@ -730,11 +743,9 @@ class StageMap {
     this.walk = { to: this.pts.at[i], node: i }; Sfx.play('jump');
   }
   play() {
-    const id = STAGE_ORDER[this.cur]; if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); return; }
-    // nur der Admin springt direkt hin – alle anderen spielen dort weiter, wo sie in der Welt sind, und laufen selbst hin
-    const go = isAdmin() ? id : startArea(this.diff);
-    if (go !== id) toast('Lauf in der Welt zum Bereich ' + STAGE_INFO[id].name + '!', 'Du startest im Bereich ' + STAGE_INFO[go].name, 'search');
-    Sfx.play('win'); setScene(new Play(this.diff, { stage: go }));
+    const id = STAGE_ORDER[this.cur];
+    if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_INFO[STAGE_ORDER[STAGE_ORDER.indexOf(id) - 1]].name, 'lock'); return; }
+    Sfx.play('win'); setScene(new Play(this.diff, { stage: id }));   // in jeden freigeschalteten Bereich, genau dort
   }
   draw(c) {
     const G = this.geo(), P = this.pts, t = this.t, kind = ANIMAL_OF[this.diff], d = DIFFS.find(q => q.id === this.diff);

@@ -36,7 +36,7 @@ const puppeteer = require('puppeteer-core');
     });
     add(questText({ mode: 'lock', npc: 'gate' }), 'gate');
     Object.values(LEO_SAY).forEach(t => add(t, 'leo'));
-    Object.keys(ABILITIES).forEach(k => { const A = ABILITIES[k]; add(A.name + '. ' + A.text); add(A.name + '. ' + abilityText({ ability: k, rarity: 'rare' })); }); add('Dieser Skin hat keine besondere Fähigkeit.');
+    Object.values(SKINS).filter(sk => sk.ability).forEach(sk => add(ABILITIES[sk.ability].name + '. ' + abilityText(sk))); add('Dieser Skin hat keine besondere Fähigkeit.');
     const seen = new Set(); return L.filter(x => !seen.has(x.key) && seen.add(x.key));
   });
   process.stdout.write(JSON.stringify(out, null, 1));

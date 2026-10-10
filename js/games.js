@@ -19,7 +19,7 @@ class GameOverlay {
     const o = this.opts, self = this;
     this.state = 'play'; this.t = 0; this.endT = 0; this.touched = false; this.flash = 0;
     this.timed = o.diff === 'hard' && !!GAMES[this.id].challenge;   // nur Schwer-Challenges: Leben + Zeit
-    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? 3 + ability('extraherz') : 3; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
+    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? [3, 4, 5, 5, 6][ability('extraherz')] : 3; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
     this.env = {
       diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1,
       r: mulberry32(((o.seed || 7) + this.retries * 977) >>> 0),
@@ -54,7 +54,7 @@ class GameOverlay {
     if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); Voice.say(this.tip.text, true); }
     this.cdWait = this.tip ? 2.4 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
-    this.timeMax = this.timed ? (this.g.timeLimit || 30) + [0, 4, 10][ability('zeitplus')] : 0;
+    this.timeMax = this.timed ? (this.g.timeLimit || 30) + ABIL_VAL.zeitplus[ability('zeitplus')] : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
   }
   // Joker: wer nicht weiterkommt, darf die Aufgabe überspringen (nur wenige pro Bereich)
@@ -130,7 +130,7 @@ class GameOverlay {
       if (after !== before && before > 0) { if (after > 0) Sfx.note(660, 0.12, 'square', 0.05); else { Sfx.note(990, 0.35, 'square', 0.06, 1.2); buzz(40); } }
       if (this.cd > 0) return false;
     }
-    Music.start(); this.fuse += dt * [1, 0.8, 0.6][typeof ability === 'function' ? ability('sternschutz') : 0];
+    Music.start(); this.fuse += dt * ABIL_VAL.sternschutz[typeof ability === 'function' ? ability('sternschutz') : 0];
     if (this.starsOn() && this.stars > 1) {
       const thr = this.thr[3 - this.stars], rem = thr - this.fuse;
       Music.tempo(110 + clamp((8 - rem) / 8, 0, 1) * 70);

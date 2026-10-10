@@ -521,7 +521,7 @@ class Play {
   updateLeaves() {
     const p = this.p; if (p.level !== 0 || p.slide) return;
     for (const lf of this.st.leaves) {
-      if (lf.got || dist(lf.x, lf.y, p.x, p.y) > [34, 80, 140][ability('magnet')]) continue;
+      if (lf.got || dist(lf.x, lf.y, p.x, p.y) > ABIL_VAL.magnet[ability('magnet')]) continue;
       lf.got = true; const n = this.st.leaves.filter(o => o.got).length, s = this.w2s(lf.x, lf.y, 20);
       FX.sparkle(s.x, s.y, 18, '#c7f464'); Sfx.note(587 * Math.pow(2, n / 12), 0.18, 'triangle', 0.08, 1.6); buzz(25); this.leafPop = 1;
       if (n === this.st.leaves.length) {
@@ -536,7 +536,7 @@ class Play {
     if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
     return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
   }
-  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0) + [0, 15, 30][ability('bonuszeit')]; }
+  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0) + ABIL_VAL.bonuszeit[ability('bonuszeit')]; }
   bonusLeft() { const bq = this.bonusQuest(); return bq ? { left: this.bonusLimit(bq.npc) - (bq.q.tt || 0), limit: this.bonusLimit(bq.npc) } : null; }
   // Große Ankündigung, sobald ein Auftrag startet: jetzt zählt jede Sekunde
   bonusStart(npc) {
@@ -739,7 +739,7 @@ class Play {
     const k = Math.min(1, dt * 6); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
   }
   updatePlayer(dt) {
-    const p = this.p, spd = [180, 215, 270][ability('turbo')];
+    const p = this.p, spd = ABIL_VAL.turbo[ability('turbo')];
     if (p.slide) {
       p.slide.t += dt / 0.8; const e = Math.min(1, p.slide.t * p.slide.t);
       p.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); p.slideZ = HOUSE.fz * (1 - (p.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)); p.dir = 1; p.moving = false;
@@ -812,7 +812,7 @@ class Play {
     const q = this.st.active; if (!q) return;
     const onSt = this.onStairs();
     let k = -1, bd = 1e9;
-    q.hidden.forEach((h, i) => { if (this.off(q, i)) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * [1, 1.3, 1.8][ability('detektor')] && d < bd) { bd = d; k = i; } });
+    q.hidden.forEach((h, i) => { if (this.off(q, i)) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * ABIL_VAL.detektor[ability('detektor')] && d < bd) { bd = d; k = i; } });
     if (k >= 0) {
       const h = q.hidden[k], sc = this.w2s(h.x, h.y, (h.l ? HOUSE.fz : 0) + 20);
       FX.sparkle(sc.x, sc.y, 18); Sfx.play('good');
@@ -1069,7 +1069,7 @@ class Play {
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
-  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN + (this.mp ? 0 : ability('jokerplus')); if (ACC() && ACC().admin) return { left: () => 99, use: () => {} }; return { left: () => st.jokers + (this.mp ? 0 : jokerBank()), use: () => { st.jokersUsed = (st.jokersUsed || 0) + 1; if (st.jokers > 0) st.jokers--; else { const m = META(); if (m && m.bank > 0) m.bank--; } Save.write(); } }; }
+  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN + (this.mp ? 0 : ABIL_VAL.jokerplus[ability('jokerplus')]); if (isGameAdmin()) return { left: () => 99, use: () => {} }; return { left: () => st.jokers + (this.mp ? 0 : jokerBank()), use: () => { st.jokersUsed = (st.jokersUsed || 0) + 1; if (st.jokers > 0) st.jokers--; else { const m = META(); if (m && m.bank > 0) m.bank--; } Save.write(); } }; }
   down(x, y, id) { this.idleT = 0; if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
   move(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; j.x = x; j.y = y; if (!j.moved && dist(x, y, j.x0, j.y0) > 14) j.moved = true; }
   up(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; if (!j.moved && this.t - j.t < 0.4 && !this.searching) this.tap(x, y); this.joy = null; }
@@ -1319,11 +1319,11 @@ class Play {
     }
     // Fähigkeiten: Metalldetektor (Pfeil zum nächsten Versteck), Adlerauge (Verstecke leuchten)
     if (q && this.diff !== 'easy') {
-      if (ability('detektor') === 2) {
+      if (ability('detektor') >= 2) {
         let bh = null, bd2 = 1e9; q.hidden.forEach((h, i) => { if (this.off(q, i)) return; const d = dist(h.x, h.y, p.x, p.y); if (d < bd2) { bd2 = d; bh = h; } });
         if (bh && bd2 > 60) { const a = Math.atan2(bh.y - p.y, bh.x - p.x), pz2 = this.z(); c.save(); c.translate(p.x + Math.cos(a) * 46, p.y - pz2 - 20 + Math.sin(a) * 30); c.rotate(a); polyPath(c, [[14, 0], [-8, -10], [-3, 0], [-8, 10]]); fs(c, '#ffd60a', 2.5); c.restore(); }
       }
-      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (this.off(q, i) || dist(h.x, h.y, p.x, p.y) > [0, 200, 380][ability('adlerauge')]) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
+      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (this.off(q, i) || dist(h.x, h.y, p.x, p.y) > ABIL_VAL.adlerauge[ability('adlerauge')]) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
     }
     // Hilfe: großer Pfeil + Lichtkegel über dem Versteck
     if (q && q.hint !== null && q.hint !== undefined && !q.got[q.hint]) {
@@ -1467,7 +1467,7 @@ class Play {
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
     if (this.canSearch() && hq && !this.swinging) {
-      const HELP = [150, 90, 45][ability('glueck')], f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
+      const HELP = ABIL_VAL.glueck[ability('glueck')], f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
       const pu = ready ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(pu, pu);
       ell(c, 0, 4, 32, 32); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill();

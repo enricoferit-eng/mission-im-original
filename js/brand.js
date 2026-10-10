@@ -231,27 +231,36 @@ const UNIFORM_LOOKS = [
 ];
 const UNIFORM_NAMES = ['Service-Schürze', 'Koch-Jacke', 'Kellner-Weste', 'Eis-Theke', 'Palmen-Gärtner', 'Chalet-Pulli', 'Barista', 'Chefkoch', 'Limo-Stand', 'Original-Weste', 'Hütten-Pulli', 'Festtags-Service'];
 // Seltenheit: 4 normal, 1 selten, 1 legendär (mit Fähigkeit – nur bei Mittel und Schwer)
-const ABILITIES = {
-  // text = legendär (stark), weak = selten (schwächer)
-  detektor: { name: 'Metalldetektor', text: 'Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge aus fast doppelter Entfernung.', weak: 'Du findest Dinge aus etwas größerer Entfernung.' },
-  adlerauge: { name: 'Adlerauge', text: 'Verstecke in deiner Nähe leuchten golden auf – auch weiter weg.', weak: 'Verstecke ganz in deiner Nähe leuchten golden auf.' },
-  turbo: { name: 'Turbo-Schuhe', text: 'Du läufst viel schneller durch die Welt.', weak: 'Du läufst etwas schneller durch die Welt.' },
-  extraherz: { name: 'Extra-Herz', text: 'In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen.', weak: 'In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.' },
-  zeitplus: { name: 'Zeit-Uhr', text: 'In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit.', weak: 'In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit.' },
-  magnet: { name: 'Sammel-Magnet', text: 'Sammel-Sachen fliegen dir schon aus großer Entfernung zu.', weak: 'Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu.' },
-  jokerplus: { name: 'Joker-Tasche', text: 'Du startest jeden Bereich mit 2 Jokern mehr.', weak: 'Du startest jeden Bereich mit 1 Joker mehr.' },
-  bonuszeit: { name: 'Bonus-Uhr', text: 'Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit.', weak: 'Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit.' },
-  sternschutz: { name: 'Sternen-Schild', text: 'Die Zündschnur brennt bei den Tempo-Sternen viel langsamer.', weak: 'Die Zündschnur brennt bei den Tempo-Sternen etwas langsamer.' },
-  glueck: { name: 'Glücksklee', text: 'Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten.', weak: 'Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten.' },
+// Fähigkeiten haben Stufen 1–4: je später der Bereich, desto stärker die Skins dort
+const ABIL_VAL = {
+  turbo: [180, 215, 245, 270, 300], detektor: [1, 1.3, 1.6, 1.8, 2.1], adlerauge: [0, 200, 290, 380, 470], extraherz: [3, 4, 5, 5, 6],
+  zeitplus: [0, 4, 7, 10, 14], glueck: [150, 90, 65, 45, 30], magnet: [34, 80, 110, 140, 180], jokerplus: [0, 1, 1, 2, 3], bonuszeit: [0, 15, 20, 30, 45], sternschutz: [1, 0.8, 0.7, 0.6, 0.5],
 };
+const ABILITIES = {
+  detektor: { name: 'Metalldetektor', f: l => 'Du findest Dinge aus ' + (l >= 3 ? 'fast doppelter' : 'größerer') + ' Entfernung' + (l >= 2 ? ', und ein Pfeil zeigt dir das nächste Versteck.' : '.') },
+  adlerauge: { name: 'Adlerauge', f: l => 'Verstecke im Umkreis von ' + Math.round(ABIL_VAL.adlerauge[l] / 25) + ' Schritten leuchten golden auf.' },
+  turbo: { name: 'Turbo-Schuhe', f: l => 'Du läufst ' + Math.round((ABIL_VAL.turbo[l] / 180 - 1) * 100) + ' % schneller durch die Welt.' },
+  extraherz: { name: 'Extra-Herz', f: l => 'In Geschicklichkeits-Aufgaben hast du ' + ABIL_VAL.extraherz[l] + ' statt 3 Herzen.' },
+  zeitplus: { name: 'Zeit-Uhr', f: l => 'In Geschicklichkeits-Aufgaben hast du ' + ABIL_VAL.zeitplus[l] + ' Sekunden mehr Zeit.' },
+  glueck: { name: 'Glücksklee', f: l => 'Der Hilfe-Stern lädt sich schon nach ' + ABIL_VAL.glueck[l] + ' Sekunden statt nach 150.' },
+  magnet: { name: 'Sammel-Magnet', f: l => 'Sammel-Sachen fliegen dir aus ' + ['', 'etwas größerer', 'größerer', 'großer', 'sehr großer'][l] + ' Entfernung zu.' },
+  jokerplus: { name: 'Joker-Tasche', f: l => 'Du startest jeden Bereich mit ' + ABIL_VAL.jokerplus[l] + (ABIL_VAL.jokerplus[l] === 1 ? ' Joker' : ' Jokern') + ' mehr.' },
+  bonuszeit: { name: 'Bonus-Uhr', f: l => 'Bei der Bonus-Jagd hast du ' + ABIL_VAL.bonuszeit[l] + ' Sekunden mehr Zeit.' },
+  sternschutz: { name: 'Sternen-Schild', f: l => 'Die Zündschnur bei den Tempo-Sternen brennt ' + Math.round((1 - ABIL_VAL.sternschutz[l]) * 100) + ' % langsamer.' },
+};
+
 const ABIL_KEYS = Object.keys(ABILITIES);
 const RARITY = { common: { name: 'Normal', col: '#e9ecef', w: 1 }, rare: { name: 'Selten', col: '#4dabf7', w: 0.6 }, legend: { name: 'Legendär', col: '#ffc300', w: 0.35 } };
 SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di) => stageSkins(stage, diff).forEach((id, i) => {
   const k = (i * 2 + di + si * 5) % UNIFORM_LOOKS.length;
   const rarity = i === 5 ? 'legend' : i === 4 ? 'rare' : 'common';
   const sk = Object.assign({}, UNIFORM_LOOKS[k], { name: UNIFORM_NAMES[k], rarity });
-  if (rarity === 'rare') { sk.cap = '#4dabf7'; sk.sparkle = '#bde0fe'; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 3 + di + 2) % ABIL_KEYS.length]; }
-  if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Gold-' + UNIFORM_NAMES[k]; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; }
+  // Bereichs-Skins: nur dort zu gewinnen; je später der Bereich (Reihenfolge der Geschichte), desto stärker die Fähigkeit
+  const ord = STAGE_ORDER.indexOf(stage);
+  sk.exclusiveStage = stage;
+  if (rarity === 'rare') { sk.cap = '#4dabf7'; sk.sparkle = '#bde0fe'; if (diff !== 'easy') { sk.ability = ABIL_KEYS[(si * 3 + di + 2) % ABIL_KEYS.length]; sk.lvl = Math.min(3, 1 + Math.floor(ord / 2)); } }
+  if (rarity === 'common' && ord >= 3 && i === 3 && diff !== 'easy') { sk.ability = ABIL_KEYS[(si + di + 5) % ABIL_KEYS.length]; sk.lvl = 1; }
+  if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Gold-' + UNIFORM_NAMES[k]; if (diff !== 'easy') { sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; sk.lvl = Math.min(4, 2 + Math.floor(ord / 2)); } }
   SKINS[id] = sk;
 })));
 // Laden-Skins: mit Talern kaufbar (je seltener, desto teurer; legendäre haben eine Fähigkeit)
@@ -285,13 +294,14 @@ const EXCLUSIVE_SKINS = [
   ['ex_wald', 'Wald-Ranger', 'rare', 260, { uniform: 'latz', uCol: '#386641', uCol2: '#a7c957', cap: '#6a994e', scarf: '#a7c957', leaf: true }, 'adlerauge'],
   ['ex_bonbon', 'Bonbon-Bäcker', 'rare', 260, { uniform: 'koch', uCol: '#ffffff', uCol2: '#ff8fab', cap: '#ff8fab', scarf: '#ffffff', pat: 'dots' }, 'bonuszeit'],
 ];
-EXCLUSIVE_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, exclusive: true, ability: ab }, look); });
-SHOP_SKINS.forEach(([id, name, rarity, price, look, ab], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (ab) SKINS[id].ability = ab; if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
+EXCLUSIVE_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, exclusive: true, ability: ab, lvl: rarity === 'legend' ? 3 : 2 }, look); });
+SHOP_SKINS.forEach(([id, name, rarity, price, look, ab], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (ab) SKINS[id].ability = ab; SKINS[id].lvl = rarity === 'legend' ? 2 : 1; if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
 // Text der Fähigkeit passend zur Stufe des Skins
-function abilityText(sk) { const A = ABILITIES[sk.ability]; return sk.rarity === 'legend' ? A.text : A.weak + ' (Selten – ein legendärer Skin kann es noch besser.)'; }
+function skinLevel(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
+function abilityText(sk) { const A = ABILITIES[sk.ability], l = skinLevel(sk); return A.f(l) + ' (Stufe ' + l + ' von 4)' + (sk.exclusiveStage ? ' – gibt es nur im Bereich ' + ({ kueche: 'Küche', gastraum: 'Innenbereich', aussen: 'Außenbereich', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' })[sk.exclusiveStage] + '.' : ''); }
 // Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)
 // 0 = nicht aktiv, 1 = selten (schwächer), 2 = legendär (stark)
-function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return 0; const sk = SKINS[DP(CUR_DIFF).equip]; if (!sk || sk.ability !== name) return 0; return sk.rarity === 'legend' ? 2 : 1; }
+function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return 0; const sk = SKINS[DP(CUR_DIFF).equip]; if (!sk || sk.ability !== name) return 0; return clamp(skinLevel(sk), 1, 4); }
 // Standard-Look: grünes Helfer-Halstuch mit Blatt
 DEFAULT_LOOK.cap = BRAND.lime; DEFAULT_LOOK.scarf = BRAND.lime; DEFAULT_LOOK.leaf = true;
 

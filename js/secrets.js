@@ -85,6 +85,7 @@ function checkAreaAch(stage) {
   Play.prototype.stageClear = function () {
     const r = clear0.call(this);
     if (!this.mp) {
+      addCoins({ easy: 20, medium: 30, hard: 45 }[this.diff] + STAGE_ORDER.indexOf(this.stage) * 5, 'Bereich geschafft!');
       achieve(this.stage === 'spielplatz' ? 'spielplatz' : 'clear_' + this.stage);
       if (typeof STAGE_ORDER !== 'undefined' && ['easy', 'medium', 'hard'].some(d => STAGE_ORDER.every(id => SP(d, id).clears > 0))) achieve('welt');
     }

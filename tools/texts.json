@@ -2203,123 +2203,291 @@
  },
  {
   "who": "erzaehler",
-  "text": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge aus fast doppelter Entfernung.",
-  "key": "176c288f",
-  "clean": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge aus fast doppelter Entfernung."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. (Stufe 1 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "6cd01b72",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Metalldetektor. Du findest Dinge aus etwas größerer Entfernung. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "5039df1a",
-  "clean": "Metalldetektor. Du findest Dinge aus etwas größerer Entfernung."
+  "text": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf. (Stufe 2 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "0b568565",
+  "clean": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf – auch weiter weg.",
-  "key": "b72e748e",
-  "clean": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf, auch weiter weg."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. (Stufe 1 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "71f49418",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke ganz in deiner Nähe leuchten golden auf. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "4101535c",
-  "clean": "Adlerauge. Verstecke ganz in deiner Nähe leuchten golden auf."
+  "text": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. (Stufe 2 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "3b435533",
+  "clean": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst viel schneller durch die Welt.",
-  "key": "456f92b0",
-  "clean": "Turbo-Schuhe. Du läufst viel schneller durch die Welt."
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu. (Stufe 1 von 4) – gibt es nur im Bereich Küche.",
+  "key": "49dd9e39",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu. , gibt es nur im Bereich Küche."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst etwas schneller durch die Welt. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "5b422b9e",
-  "clean": "Turbo-Schuhe. Du läufst etwas schneller durch die Welt."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. (Stufe 2 von 4) – gibt es nur im Bereich Küche.",
+  "key": "e0e89adf",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. , gibt es nur im Bereich Küche."
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen.",
-  "key": "4cdade06",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen."
+  "text": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr. (Stufe 1 von 4) – gibt es nur im Bereich Küche.",
+  "key": "b033002f",
+  "clean": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr. , gibt es nur im Bereich Küche."
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "1645afc5",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit. (Stufe 2 von 4) – gibt es nur im Bereich Küche.",
+  "key": "fbc8c1db",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit. , gibt es nur im Bereich Küche."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit.",
-  "key": "b204b82e",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. (Stufe 2 von 4) – gibt es nur im Bereich Außenbereich.",
+  "key": "a281ed05",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. , gibt es nur im Bereich Außenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. (Selten – ein legendärer Skin kann es noch besser.)",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150. (Stufe 3 von 4) – gibt es nur im Bereich Außenbereich.",
+  "key": "1d1f19aa",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150. , gibt es nur im Bereich Außenbereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus größerer Entfernung, und ein Pfeil zeigt dir das nächste Versteck. (Stufe 2 von 4) – gibt es nur im Bereich Außenbereich.",
+  "key": "9040f6c6",
+  "clean": "Metalldetektor. Du findest Dinge aus größerer Entfernung, und ein Pfeil zeigt dir das nächste Versteck. , gibt es nur im Bereich Außenbereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus großer Entfernung zu. (Stufe 3 von 4) – gibt es nur im Bereich Außenbereich.",
+  "key": "5d1a03a3",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus großer Entfernung zu. , gibt es nur im Bereich Außenbereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer. (Stufe 1 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "42355896",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer. , gibt es nur im Bereich Chalet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt. (Stufe 3 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "623eff06",
+  "clean": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt. , gibt es nur im Bereich Chalet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Joker-Tasche. Du startest jeden Bereich mit 3 Jokern mehr. (Stufe 4 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "ff990d5e",
+  "clean": "Joker-Tasche. Du startest jeden Bereich mit 3 Jokern mehr. , gibt es nur im Bereich Chalet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus größerer Entfernung. (Stufe 1 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "55a3abc8",
+  "clean": "Metalldetektor. Du findest Dinge aus größerer Entfernung. , gibt es nur im Bereich Chalet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. (Stufe 3 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "d590c406",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. , gibt es nur im Bereich Chalet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 45 Sekunden mehr Zeit. (Stufe 4 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "0de9718c",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 45 Sekunden mehr Zeit. , gibt es nur im Bereich Chalet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus größerer Entfernung. (Stufe 1 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "306d1f3d",
+  "clean": "Metalldetektor. Du findest Dinge aus größerer Entfernung. , gibt es nur im Bereich Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. (Stufe 2 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "7af103f9",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. , gibt es nur im Bereich Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 3 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "7a52a421",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. , gibt es nur im Bereich Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. (Stufe 1 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "b51a033e",
+  "clean": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. , gibt es nur im Bereich Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus größerer Entfernung zu. (Stufe 2 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "8f395e3b",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus größerer Entfernung zu. , gibt es nur im Bereich Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus fast doppelter Entfernung, und ein Pfeil zeigt dir das nächste Versteck. (Stufe 3 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "d1b4164c",
+  "clean": "Metalldetektor. Du findest Dinge aus fast doppelter Entfernung, und ein Pfeil zeigt dir das nächste Versteck. , gibt es nur im Bereich Spielplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. (Stufe 1 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "8d1d9f45",
+  "clean": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. , gibt es nur im Bereich Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit. (Stufe 3 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "f6ed236c",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit. , gibt es nur im Bereich Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Adlerauge. Verstecke im Umkreis von 19 Schritten leuchten golden auf. (Stufe 4 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "812da9a3",
+  "clean": "Adlerauge. Verstecke im Umkreis von 19 Schritten leuchten golden auf. , gibt es nur im Bereich Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. (Stufe 1 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "66fae381",
+  "clean": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. , gibt es nur im Bereich Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 3 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "d7d361f8",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. , gibt es nur im Bereich Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst 67 % schneller durch die Welt. (Stufe 4 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "fafb5c30",
+  "clean": "Turbo-Schuhe. Du läufst 67 % schneller durch die Welt. , gibt es nur im Bereich Parkplatz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt. (Stufe 3 von 4)",
+  "key": "14f41706",
+  "clean": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150. (Stufe 3 von 4)",
+  "key": "b5beca96",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus fast doppelter Entfernung, und ein Pfeil zeigt dir das nächste Versteck. (Stufe 3 von 4)",
+  "key": "e3e78063",
+  "clean": "Metalldetektor. Du findest Dinge aus fast doppelter Entfernung, und ein Pfeil zeigt dir das nächste Versteck."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 3 von 4)",
+  "key": "ae5f2820",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit. (Stufe 2 von 4)",
+  "key": "aa3885fa",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus größerer Entfernung zu. (Stufe 2 von 4)",
+  "key": "3cb7af22",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus größerer Entfernung zu."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf. (Stufe 2 von 4)",
+  "key": "9dcdd6e8",
+  "clean": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 20 Sekunden mehr Zeit. (Stufe 2 von 4)",
+  "key": "09654861",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 20 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. (Stufe 1 von 4)",
+  "key": "797d4109",
+  "clean": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. (Stufe 1 von 4)",
   "key": "2400533b",
   "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
-  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir schon aus großer Entfernung zu.",
-  "key": "b627df3e",
-  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir schon aus großer Entfernung zu."
+  "text": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. (Stufe 1 von 4)",
+  "key": "b2dea6ad",
+  "clean": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf."
  },
  {
   "who": "erzaehler",
-  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "989d8674",
-  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu."
+  "text": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. (Stufe 2 von 4)",
+  "key": "664e0ba6",
+  "clean": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt."
  },
  {
   "who": "erzaehler",
-  "text": "Joker-Tasche. Du startest jeden Bereich mit 2 Jokern mehr.",
-  "key": "2897961f",
-  "clean": "Joker-Tasche. Du startest jeden Bereich mit 2 Jokern mehr."
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. (Stufe 2 von 4)",
+  "key": "b8c99828",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150."
  },
  {
   "who": "erzaehler",
-  "text": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr. (Selten – ein legendärer Skin kann es noch besser.)",
+  "text": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr. (Stufe 1 von 4)",
   "key": "97d6ecf6",
   "clean": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr."
  },
  {
   "who": "erzaehler",
-  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit.",
-  "key": "91af6694",
-  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit."
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu. (Stufe 1 von 4)",
+  "key": "989d8674",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu."
  },
  {
   "who": "erzaehler",
-  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit. (Selten – ein legendärer Skin kann es noch besser.)",
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer. (Stufe 1 von 4)",
+  "key": "fe71d936",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit. (Stufe 1 von 4)",
   "key": "960d514d",
   "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen viel langsamer.",
-  "key": "a3c806f9",
-  "clean": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen viel langsamer."
- },
- {
-  "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen etwas langsamer. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "8bcb4a29",
-  "clean": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen etwas langsamer."
- },
- {
-  "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten.",
-  "key": "4c79671d",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten."
- },
- {
-  "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten. (Selten – ein legendärer Skin kann es noch besser.)",
-  "key": "3c0b167e",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. (Stufe 2 von 4)",
+  "key": "91881f79",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer."
  },
  {
   "who": "erzaehler",

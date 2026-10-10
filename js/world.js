@@ -22,9 +22,9 @@ const OPP = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
 const stageAt = (c, r) => Object.keys(WORLD_POS).find(k => WORLD_POS[k][0] === c && WORLD_POS[k][1] === r);
 function areaCleared(diff, id) { return SP(diff, id).clears > 0; }
 function areaUnlocked(diff, id) {
-  if (typeof ACC === 'function' && ACC() && ACC().admin) return true;
+  if (isGameAdmin()) return true;
   const i = STAGE_ORDER.indexOf(id); if (i <= 0) return true;
-  const s = SP(diff, id); return areaCleared(diff, STAGE_ORDER[i - 1]) || s.clears > 0 || !!s.run;
+  return STAGE_ORDER.slice(0, i).every(k => areaCleared(diff, k));   // streng: alle Bereiche davor müssen geschafft sein
 }
 const linkOpen = (diff, L) => areaUnlocked(diff, L.a) && areaUnlocked(diff, L.b);
 function exitsOf(id) { return LINKS.filter(L => L.a === id || L.b === id).map(L => ({ L, side: L.a === id ? L.side : OPP[L.side], to: L.a === id ? L.b : L.a })); }
@@ -256,3 +256,18 @@ function startArea(diff) {
 Object.assign(Play.prototype, {
   markArea() { const a = ACC(); if (!a || this.mp) return; a.lastArea = a.lastArea || {}; if (a.lastArea[this.diff] !== this.stage) { a.lastArea[this.diff] = this.stage; Save.write(); } },
 });
+
+// Bereichsname immer gut sichtbar oben in der Mitte (Farbe je Bereich)
+const STAGE_COL = { kueche: '#adb5bd', gastraum: '#d27d55', aussen: '#74c69d', spielplatz: '#c19c72', parkplatz: '#868e96', chalet: '#a5d8ff' };
+{
+  const hud0 = Play.prototype.drawHud;
+  Play.prototype.drawHud = function (c) {
+    hud0.call(this, c);
+    const name = STAGE_NAME[this.stage]; if (!name) return;
+    c.font = `900 22px ${FONT}`; const w = c.measureText(name).width + 74, x = W / 2 - w / 2, y = H - 56;
+    rrPath(c, x, y, w, 44, 22); fs(c, 'rgba(255,255,255,.95)', 3.5); ell(c, x + 26, y + 22, 15, 15); fs(c, STAGE_COL[this.stage] || '#fff', 3);
+    drawCollect(c, this.stage, x + 26, y + 22, 1.6, -0.5);
+    txt(c, name, x + 50, y + 23, 22, '#35452F', 'left', null);
+  };
+  if (Play.prototype.drawHud._src === undefined) Play.prototype.drawHud._src = hud0._src || hud0;
+}
