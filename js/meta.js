@@ -351,7 +351,7 @@ class Match {
   get stage() { return this.stages[this.si] || 'spielplatz'; }
   constructor(lob, me) { this.stages = (lob.opts && lob.opts.stages && lob.opts.stages.length ? lob.opts.stages : [(lob.opts && lob.opts.stage) || 'spielplatz']); if (lob.opts && lob.opts.mode === 'team') this.stages = this.stages.slice(0, 1); this.si = 0; this.elapsed = 0; this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts; this.mode = lob.opts.mode || 'duell'; this.other = null; this.otherName = (me === 'host' ? lob.guest : lob.host).name; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop(); }
   // Abgleich ohne Pause: nach jeder Antwort sofort (0,3 s) die nächste Abfrage
-  async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 300)); } }
+  async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 1500)); } }   // sparsam: jeder Abgleich kostet Speicher-Zugriffe
   set(p) { Object.assign(this.prog, p); }
   async sync() {
     if (this.busy || this.over === 'done') return; this.busy = true;
