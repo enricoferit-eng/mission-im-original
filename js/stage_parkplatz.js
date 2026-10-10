@@ -52,8 +52,8 @@ function drawGroundParkplatz(g, R) {
   for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(120,110,95,.06)'; ell(g, R() * WORLD_W, R() * WORLD_H, 70 + R() * 90, 30 + R() * 40, R() * 3); g.fill(); }
   // Reifenspuren
   g.strokeStyle = 'rgba(90,85,75,.08)'; g.lineWidth = 14; for (const [x1, y1, x2, y2] of [[300, 560, 520, 1300], [380, 560, 800, 1340], [520, 450, 880, 1300]]) { g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo((x1 + x2) / 2 + 60, (y1 + y2) / 2, x2, y2); g.stroke(); }
-  // Brühlstraße von links oben in den Kreisverkehr
-  g.save(); g.lineCap = 'butt'; g.strokeStyle = '#8b9196'; g.lineWidth = 150; g.beginPath(); g.moveTo(-60, -40); g.lineTo(RB.x - 80, RB.y - 80); g.stroke(); g.restore();
+  // Brühlstraße von links in den Kreisverkehr
+  g.save(); g.lineCap = 'butt'; g.strokeStyle = '#8b9196'; g.lineWidth = 150; g.beginPath(); g.moveTo(-60, RB.y); g.lineTo(RB.x, RB.y); g.stroke(); g.restore();
   // Kreisverkehr: Asphaltring mit Bordstein, Grasinsel mit Büschen
   ell(g, RB.x, RB.y, RB.r + 6, RB.r + 6); g.fillStyle = '#b8b2a6'; g.fill();
   ell(g, RB.x, RB.y, RB.r, RB.r); g.fillStyle = '#8b9196'; g.fill();
@@ -61,23 +61,17 @@ function drawGroundParkplatz(g, R) {
   g.setLineDash([18, 16]); ell(g, RB.x, RB.y, (RB.r + RB.ri) / 2, (RB.r + RB.ri) / 2); g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.55)'; g.stroke(); g.setLineDash([]);
   ell(g, RB.x, RB.y, RB.ri + 8, RB.ri + 8); g.fillStyle = '#ced4da'; g.fill(); ell(g, RB.x, RB.y, RB.ri, RB.ri); g.fillStyle = '#7fb069'; g.fill();
   for (let i = 0; i < 400; i++) { const a2 = R() * TAU, rr = R() * RB.ri; g.strokeStyle = ['#6a994e', '#8cbf6f', '#a7c957'][i % 3]; g.lineWidth = 1.5; g.beginPath(); g.moveTo(RB.x + Math.cos(a2) * rr, RB.y + Math.sin(a2) * rr); g.lineTo(RB.x + Math.cos(a2) * rr, RB.y + Math.sin(a2) * rr - 5); g.stroke(); }
-  // Spielplatz oben rechts (Hackschnitzel), Zaun mit Durchgang
-  g.fillStyle = CHIP_BASE; g.fillRect(560, 0, 440, 165); for (let i = 0; i < 3000; i++) { g.fillStyle = CHIP_COLS[i % 6]; ell(g, 560 + R() * 440, R() * 165, 2.2, 1.2, R() * 3); g.fill(); }
-  for (let x = 560; x < WORLD_W; x += 22) { if (x > 690 && x < 790) continue; rrPath(g, x - 3, 150, 6, 26, 2); fs(g, '#a0673a', 1.5); }
-  g.fillStyle = '#8d5a3b'; g.fillRect(560, 158, 130, 4); g.fillRect(790, 158, 210, 4);
-  // Weg vom Spielplatz herunter
-  g.save(); g.lineCap = 'round'; g.strokeStyle = '#e8e3d9'; g.lineWidth = 60; g.beginPath(); g.moveTo(740, 150); g.quadraticCurveTo(760, 260, 700, 380); g.stroke(); g.restore();
-  // Dächer rechts: Chalet (braun) + Nebengebäude (dunkel)
-  rrPath(g, 905, 250, 110, 190, 4); fs(g, '#8d5a3b', 3); for (let y = 262; y < 440; y += 14) line(g, 908, y, 1000, y, 1.5, 'rgba(60,35,20,.35)', false); line(g, 905, 345, 1000, 345, 3, '#6f4e37', false);
-  rrPath(g, 905, 470, 110, 300, 4); fs(g, '#495057', 3); for (let y = 490; y < 770; y += 30) line(g, 910, y, 1000, y, 2, 'rgba(255,255,255,.12)', false);
+  // oben: Durchgang vom Spielplatz (heller Weg)
+  g.save(); g.lineCap = 'round'; g.strokeStyle = '#e8e3d9'; g.lineWidth = 90; g.beginPath(); g.moveTo(520, -20); g.lineTo(520, 200); g.stroke(); g.restore();
   // Hecken: links + unten (mit Ausfahrt unten rechts)
-  for (let y = 120; y < 1400; y += 26) { ell(g, 22 + (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 0; y < 1400; y += 26) { if (Math.abs(y - RB.y) < 90) continue; ell(g, 22 + (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 0; y < 1330; y += 26) { ell(g, 978 - (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
   for (let x = 0; x < WORLD_W; x += 26) if (x < 730 || x > 870) { ell(g, x, 1340, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
   g.fillStyle = '#6c757d'; g.fillRect(730, 1350, 140, 50);
   // Pfützen
   for (const [x, y, w] of PUDDLES) { ell(g, x, y, w, w * 0.42); g.fillStyle = 'rgba(70,100,130,.45)'; g.fill(); ell(g, x - w * 0.2, y - w * 0.1, w * 0.4, w * 0.12); g.fillStyle = 'rgba(200,225,245,.5)'; g.fill(); }
 }
-const car = (id, x, cy, a, col) => ({ id, t: 'auto', x, y: cy + 50, cy, a, col, r: 34, x0: x - 31, y0: cy - 54, w: 62, h: 78, bb: [x - 60, cy - 70, 120, 140] });
+const car = (id, x, cy, a, col) => ({ id, t: 'auto', x, y: cy + 58, cy, a, col, r: 34, x0: x - 34 - Math.abs(a) * 40, y0: cy - 60, w: 68 + Math.abs(a) * 80, h: 120, bb: [x - 60, cy - 70, 120, 140] });
 const PDECOR = [
   // am Rand vom Kreisverkehr geparkt (wie auf dem Bild)
   car('a1', 95, 640, 0.25, PCOLS[0]), car('a2', 170, 625, 0.2, PCOLS[3]), car('a3', 360, 625, -0.2, PCOLS[3]), car('a4', 440, 610, -0.25, PCOLS[2]),
@@ -87,7 +81,7 @@ const PDECOR = [
   { id: 'insel', t: 'rbinsel', x: RB.x, y: RB.y + RB.ri, bb: [RB.x - 110, RB.y - 180, 220, 270] },
   { id: 'pflanz', t: 'pflanzinsel', x: 420, y: 810, r: 34, bb: [370, 700, 100, 120] },
   ...PPOSTS.map(([x, y], i) => ({ id: 'po' + i, t: 'poller', x, y, r: 9, bb: [x - 8, y - 26, 16, 30] })),
-  { id: 'lampe1', t: 'lampe_p', x: 520, y: 210, r: 10, bb: [495, 30, 70, 190] },
+  { id: 'lampe1', t: 'lampe_p', x: 640, y: 230, r: 10, bb: [615, 50, 70, 190] },
   { id: 'lampe2', t: 'lampe_p', x: 760, y: 900, r: 10, bb: [735, 720, 70, 190] },
   { id: 'busch1', t: 'busch', x: 70, y: 860, r: 26, bb: [30, 810, 80, 60] },
   { id: 'busch2', t: 'busch', x: 420, y: 1300, r: 26, bb: [380, 1250, 80, 60] },
@@ -127,22 +121,22 @@ const PDRAW = {
   busch(c, d) { for (const [dx, dy, rr] of [[-14, -10, 20], [12, -12, 22], [0, -26, 20]]) { ell(c, d.x + dx, d.y + dy, rr, rr * 0.85); fs(c, '#40916c', 2.5); } },
 };
 function buildGridParkplatz() {
-  cellsIn(55, 175, 895, 1310, i => (G0[i] = 1));
-  cellsIn(690, 140, 790, 180, i => (G0[i] = 1));                       // Durchgang vom Spielplatz
+  cellsIn(55, 30, 945, 1310, i => (G0[i] = 1));
   cellsIn(740, 1300, 860, 1345, i => (G0[i] = 1));                     // Ausfahrt
-  cellsIn(895, 780, 940, 1310, i => (G0[i] = 1));
   cellsCircle(RB.x, RB.y, RB.ri + 10, i => (G0[i] = 0));              // Insel
+  // Pfostenreihen: zwischen benachbarten Pfosten dicht (nur die Lücke in der Mitte ist frei)
+  for (let k = 1; k < PPOSTS.length; k++) { const [x1, y1] = PPOSTS[k - 1], [x2, y2] = PPOSTS[k]; if (dist(x1, y1, x2, y2) > 40) continue; for (let u = 0; u <= 1; u += 0.1) { const i = cellIdx(lerp(x1, x2, u), lerp(y1, y2, u) - 6); if (i >= 0) G0[i] = 0; } }
   for (const d of PDECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + (d.t === 'auto' ? 0 : 6), i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(6, d.r - 6), i => (G0[i] = 0));
   }
 }
 const PSPOTS = [
-  furnSpot(PDECOR, 'a1', 'right', { px: 126, py: 650, sx: 128, sy: 730 }),
-  furnSpot(PDECOR, 'a2', 'left', { px: 140, py: 632, sx: 135, sy: 715 }),
+  furnSpot(PDECOR, 'a1', 'top', { px: 100, py: 588, sx: 110, sy: 560 }),
+  furnSpot(PDECOR, 'a2', 'top', { px: 176, py: 574, sx: 180, sy: 545 }),
   furnSpot(PDECOR, 'a3', 'right', { px: 392, py: 632, sx: 395, sy: 710 }),
   furnSpot(PDECOR, 'a4', 'right', { px: 472, py: 615, sx: 495, sy: 690 }),
-  furnSpot(PDECOR, 'a5', 'left', { px: 268, py: 864, sx: 240, sy: 900 }),
+  furnSpot(PDECOR, 'a5', 'left', { px: 262, py: 864, sx: 236, sy: 935 }),
   furnSpot(PDECOR, 'a6', 'right', { px: 502, py: 1206, sx: 525, sy: 1270 }),
   furnSpot(PDECOR, 'a7', 'left', { px: 608, py: 476, sx: 590, sy: 545 }),
   furnSpot(PDECOR, 'anhaenger', 'right', { px: 112, py: 1100, sx: 140, sy: 1110 }),
@@ -175,13 +169,13 @@ function drawBarrier(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.parkplatz = {
-  id: 'parkplatz', bg: '#40916c', start: { x: 740, y: 205 }, gate: { x: 800, y: 1392, ix: 800, iy: 1320 },
+  id: 'parkplatz', bg: '#40916c', finalExit: true, start: { x: 520, y: 50 }, gate: { x: 800, y: 1392, ix: 800, iy: 1320 },
   npcs: [
     { id: 'p_schmidt', pos: [[560, 520], [300, 790], [620, 1060]] },
     { id: 'p_julia', pos: [[230, 790], [700, 380], [450, 1150]] },
     { id: 'p_karl', pos: [[530, 740], [800, 960], [300, 1180]] },
     { id: 'p_petra', pos: [[820, 620], [660, 1250], [190, 880]] },
-    { id: 'p_tim', pos: [[620, 250], [860, 1080], [440, 990]] },
+    { id: 'p_tim', pos: [[640, 300], [860, 1080], [440, 990]] },
   ],
   decor: PDECOR, spots: PSPOTS, grid: buildGridParkplatz, ground: drawGroundParkplatz, decorDraw: PDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },

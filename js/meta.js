@@ -18,7 +18,7 @@ function ownedAnimals() { const m = META(); return BASE_ANIMALS.concat(m ? m.ani
 const ACHIEVEMENTS = [
   { id: 'erster', name: 'Erste Hilfe', desc: 'Hilf deinem ersten Kind.', coins: 10, stat: 'kids', need: 1 },
   { id: 'kinder25', name: 'Guter Freund', desc: 'Hilf 25 Kindern.', coins: 40, stat: 'kids', need: 25 },
-  { id: 'spielplatz', name: 'Spielplatz-Held', desc: 'Schaffe den Spielplatz.', coins: 30, stat: 'clears', need: 1 },
+  { id: 'spielplatz', name: 'Spielplatz-Held', desc: 'Schaffe den Spielplatz.', coins: 30 },
   { id: 'profi', name: 'Schwer-Profi', desc: 'Schaffe den Spielplatz auf Schwer.', coins: 60 },
   { id: 'ohnejoker', name: 'Ganz ohne Joker', desc: 'Schaffe den Spielplatz, ohne einen Joker zu benutzen.', coins: 50 },
   { id: 'bonus1', name: 'Blitzschnell', desc: 'Hol dir einen Bonus-Joker mit der Bonus-Uhr.', coins: 15, stat: 'bonusJ', need: 1 },

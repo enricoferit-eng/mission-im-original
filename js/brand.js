@@ -30,7 +30,7 @@ function drawGateSign(c, x, y) {
 // Original-Logo (Datei von im-original.de). Bis es geladen ist, zeichnen wir eine Ersatz-Schrift.
 const LOGO = new Image();
 let LOGO_OK = false;
-LOGO.onload = () => { LOGO_OK = true; if (typeof GROUND !== 'undefined') GROUND = null; clearSprites(); LOGO_CACHE.clear(); };
+LOGO.onload = () => { LOGO_OK = true; if (typeof GROUND !== 'undefined') GROUND = null; if (typeof GROUND_CACHE !== 'undefined') for (const k in GROUND_CACHE) delete GROUND_CACHE[k]; clearSprites(); LOGO_CACHE.clear(); };
 const LOGO_CACHE = new Map();
 LOGO.src = 'assets/logo.png';
 const LOGO_RATIO = 1280 / 529;

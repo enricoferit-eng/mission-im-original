@@ -57,7 +57,10 @@ function logWall(g, x, y, w, h, horiz = true) {
 function drawGroundChalet(g, R) {
   snowGround(g, 0, 0, WORLD_W, WORLD_H, R);
   // Wald hinten (oben)
-  for (let x = -20; x < WORLD_W + 40; x += 46) { const h = 90 + (x * 7) % 40; polyPath(g, [[x - 28, 120], [x, 120 - h], [x + 28, 120]]); fs(g, '#2d6a4f', 2.5); polyPath(g, [[x - 16, 120 - h * 0.55], [x, 120 - h], [x + 16, 120 - h * 0.55]]); g.fillStyle = '#fff'; g.fill(); }
+  for (let x = -20; x < WORLD_W + 40; x += 46) { if (x > 880) continue; const h = 90 + (x * 7) % 40; polyPath(g, [[x - 28, 120], [x, 120 - h], [x + 28, 120]]); fs(g, '#2d6a4f', 2.5); polyPath(g, [[x - 16, 120 - h * 0.55], [x, 120 - h], [x + 16, 120 - h * 0.55]]); g.fillStyle = '#fff'; g.fill(); }
+  // Weg von der Terrasse oben rechts herunter (festgetretener Schnee)
+  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(955, -10); g.lineTo(955, 690); g.quadraticCurveTo(940, 760, 700, 800); g.stroke(); g.restore();
+  for (let y = 10; y < 690; y += 28) { ell(g, 948 + (y % 56 ? 12 : 0), y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }
   // Hütte: Holzdielen innen
   planks(g, HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0, ['#b07d4b', '#a0673a', '#bb8a57'], 28);
   g.fillStyle = 'rgba(255,190,90,.08)'; g.fillRect(HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0);
@@ -201,7 +204,7 @@ function buildGridChalet() {
   cellsIn(40, HUT.y1 + 34, 960, 1330, i => (G0[i] = 1));                               // Garten
   cellsIn(455, 1320, 545, 1345, i => (G0[i] = 1));
   cellsIn(440, 150, 560, 240, i => (G0[i] = 0));                                         // Kamin-Vorplatz
-  cellsCircle(760, 1120, 70, () => {});
+  for (let i = 0; i < G0.length; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120) / 80) ** 2 < 1) G0[i] = 0; }   // zugefrorener Teich
   for (const d of CDECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - (d.t === 'huettentafel' ? 34 : 4), d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(8, d.r - 6), i => (G0[i] = 0));
@@ -251,14 +254,14 @@ function drawWoodGate(c, x, y, s, open, locked, t) {
   c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, 0, 4, 76, 12); c.fill();
   rrPath(c, -64, -120, 18, 124, 4); fs(c, '#6f4e37', 3); rrPath(c, 46, -120, 18, 124, 4); fs(c, '#6f4e37', 3);
   ell(c, -55, -122, 14, 7); fs(c, '#fff', 2); ell(c, 55, -122, 14, 7); fs(c, '#fff', 2);
-  rrPath(c, -46, -150, 92, 26, 5); fs(c, '#8d5a3b', 3); ell(c, 0, -152, 46, 8); fs(c, '#fff', 2); txt(c, 'Spielplatz', 0, -136, 13, '#fff', 'center', null);
+  rrPath(c, -46, -150, 92, 26, 5); fs(c, '#8d5a3b', 3); ell(c, 0, -152, 46, 8); fs(c, '#fff', 2); txt(c, 'Chalet', 0, -136, 13, '#fff', 'center', null);
   const o = clamp(open, 0, 1);
   for (const sd of [-1, 1]) { c.save(); c.translate(sd * 46, 0); c.scale(1 - o * 0.85, 1); const x0 = sd > 0 ? -46 : 0; rrPath(c, x0 + 2, -94, 42, 90, 3); fs(c, '#a0673a', 2.5); line(c, x0 + 4, -90, x0 + 42, -8, 4, '#6f4e37'); line(c, x0 + 2, -50, x0 + 44, -50, 3, '#6f4e37', false); for (let k = 1; k < 4; k++) line(c, x0 + k * 11, -92, x0 + k * 11, -6, 1.5, 'rgba(60,35,20,.4)', false); c.restore(); }
   if (locked) { const b = Math.sin(t * 3) * 2; ell(c, 0, -60 + b, 14, 14); fs(c, '#fff', 2.5); icon(c, 'lock', 0, -60 + b, 18); }
   c.restore();
 }
 STAGE_DEFS.chalet = {
-  id: 'chalet', bg: '#dbe4ee', start: { x: 500, y: 330 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
+  id: 'chalet', bg: '#dbe4ee', start: { x: 955, y: 40 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
   npcs: [
     { id: 'c_gerda', pos: [[300, 300], [700, 300], [240, 560]] },
     { id: 'c_felix', pos: [[300, 1000], [460, 1120], [200, 1160]] },
@@ -271,11 +274,11 @@ STAGE_DEFS.chalet = {
   junk: ['zapfen', 'ast', 'schneeball'], junkDraw: CJUNK, items: CHALET_ITEMS, cover: drawChaletCover,
   drawGate: drawWoodGate, gateName: 'Das Holztor', dialogGate: 0.48, gateFace: (c, x, y, s, t) => drawWoodGate(c, x, y, s * 0.38, 0, true, t),
   words: { one: 'Gast', the: 'den Gast', a: 'einen Gast', many: 'Gäste', dat: 'Gästen', back: 'zum Gast', each: 'Jeder Gast',
-    hide: 'unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann', junk: 'ein Tannenzapfen oder ein Schneeball', gate: 'am Holztor zum Spielplatz', gateTap: 'Lauf zum Holztor und tippe es an!',
+    hide: 'unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann', junk: 'ein Tannenzapfen oder ein Schneeball', gate: 'am Holztor unten', gateTap: 'Lauf zum Holztor und tippe es an!',
     opened: 'Das Holztor ist offen!',
-    lock: 'Das Holztor zum Spielplatz geht erst auf, wenn du allen fünf Gästen geholfen hast.',
+    lock: 'Das Holztor geht erst auf, wenn du allen fünf Gästen geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!',
-    gateAsk: 'Das Holztor ist eingefroren! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz.',
+    gateAsk: 'Das Holztor ist eingefroren! Bring mir diese Sachen, dann ist der Weg zum Spielplatz frei.',
     search: 'Schau hinter Tannen und unter Tische – dann tippe auf die Lupe!' },
   pools: {
     easy: ['fondue', 'holzhacken', 'kaminfeuer', 'schneeball', 'eisrutsch', 'eisstock', 'memory', 'limo_mix', 'stack', 'trace', 'lights', 'count_easy', 'cups', 'findall', 'shadow', 'maze_easy', 'connect', 'color', 'sort', 'size_row', 'pop'],

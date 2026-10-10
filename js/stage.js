@@ -8,7 +8,7 @@ let HOUSE = { x: 550, y: 550, w: 200, h: 150, fz: 60 };   // Plattform (Obergesc
 let STAIRS = { x: 625, y: 700, w: 50, h: 125 };
 let SLIDE = { x0: 750, x1: 905, y0: 600, y1: 650 };
 let SWING = { y: 600, x0: 160, x1: 550, top: 118, seats: [270, 430] };
-let START = { x: 500, y: 228 };                            // kommt von der Terrasse herunter
+let START = { x: 880, y: 590 };                            // kommt von der Terrasse (rechts) herein
 let GATE = { x: 520, y: 1214, ix: 520, iy: 1158 };        // Ausgang zum Parkplatz
 
 function hasCap(k, diff = CUR_DIFF) { return !!(ACC() && SP(diff, 'spielplatz').outfit); }   // Kappe = Teil vom Spielplatz
@@ -33,12 +33,10 @@ let DECOR = [
   { id: 'r4', t: 'rock', x: 560, y: 1060, r: 26 }, { id: 'r5', t: 'rock', x: 330, y: 940, r: 26 },
   { id: 'pl', t: 'planter', x: 390, y: 1110 }, { id: 'bench', t: 'bench', x: 690, y: 1020, w: 86, h: 26 },
   { id: 'lamp', t: 'lamp', x: 205, y: 215, r: 9 },
-  { id: 'board', t: 'board', x: 588, y: 242, r: 16 },
+  { id: 'board', t: 'board', x: 870, y: 500, r: 16 },
   { id: 'gsign', t: 'gatesign', x: 640, y: 1188, r: 0 },                                // Schild am Ausgang                                   // Kreidetafel "Willkommen" am Eingang
-  { id: 'pp1', t: 'potpalm', x: 432, y: 166, r: 0 }, { id: 'pp2', t: 'potpalm', x: 568, y: 166, r: 0 },
-  { id: 'pp3', t: 'potpalm', x: 30, y: 166, r: 0 }, { id: 'pp4', t: 'potpalm', x: 975, y: 166, r: 0 },
 ];
-for (let y = 225, k = 0; y < 1180; y += 112, k++) DECOR.push({ id: 'cy' + k, t: 'cypress', x: 968 + (k % 2) * 8, y, r: 0 });
+for (let y = 225, k = 0; y < 1180; y += 112, k++) if (k !== 3) DECOR.push({ id: 'cy' + k, t: 'cypress', x: 968 + (k % 2) * 8, y, r: 0 });
 let DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d));
 
 // Mögliche Verstecke in der Umgebung (zusätzlich kann alles im Hackschnitzel vergraben sein)
@@ -139,46 +137,25 @@ function findPath(sx, sy, sl, tx, ty, tl, exact) {
 // ---------- Boden einmal vorzeichnen ----------
 let GROUND = null;
 function buildGround() {
-  const Q = 1.5, cv2 = document.createElement('canvas'); cv2.width = WORLD_W * Q; cv2.height = WORLD_H * Q;
+  const Q = 1.25, cv2 = document.createElement('canvas'); cv2.width = WORLD_W * Q; cv2.height = WORLD_H * Q;
   const g = cv2.getContext('2d'); g.scale(Q, Q); g.lineJoin = 'round';
   const R = mulberry32(4242);
   SG.ground(g, R);
-  GROUND = cv2;
+  GROUND = cv2; GROUND_CACHE[SG.id] = cv2;
 }
+const GROUND_CACHE = {};
 function drawGroundSpielplatz(g, R) {
   g.fillStyle = '#86a866'; g.fillRect(0, 0, WORLD_W, WORLD_H);
-  // Terrasse + Glashaus (oben)
-  g.fillStyle = '#e3dbcd'; g.fillRect(0, 0, WORLD_W, 178);
-  g.strokeStyle = 'rgba(120,105,90,.22)'; g.lineWidth = 1.5;
-  for (let x = 0; x < WORLD_W; x += 40) { g.beginPath(); g.moveTo(x, 84); g.lineTo(x, 178); g.stroke(); }
-  for (let y = 84; y < 178; y += 30) { g.beginPath(); g.moveTo(0, y); g.lineTo(WORLD_W, y); g.stroke(); }
-  const gl = g.createLinearGradient(0, 0, 0, 84); gl.addColorStop(0, '#9fd3e6'); gl.addColorStop(1, '#d6f0f7');
-  g.fillStyle = gl; g.fillRect(0, 0, WORLD_W, 84);
-  for (let x = 30; x < WORLD_W; x += 120) { // Palmen im Glashaus
-    g.strokeStyle = 'rgba(60,110,70,.55)'; g.lineWidth = 5; g.beginPath(); g.moveTo(x, 84); g.quadraticCurveTo(x + 6, 50, x + 2, 26); g.stroke();
-    for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * 0.55; g.beginPath(); g.moveTo(x + 2, 26); g.quadraticCurveTo(x + 2 + Math.cos(a) * 20, 26 + Math.sin(a) * 20 - 6, x + 2 + Math.cos(a) * 34, 26 + Math.sin(a) * 34 + 6); g.lineWidth = 4; g.stroke(); }
-  }
-  g.strokeStyle = '#f8f9fa'; g.lineWidth = 4;
-  for (let x = 0; x <= WORLD_W; x += 50) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 84); g.stroke(); }
-  g.beginPath(); g.moveTo(0, 40); g.lineTo(WORLD_W, 40); g.stroke();
-  // Logo-Schild am Glashaus über dem Eingang
-  rrPath(g, START.x - 120, 6, 240, 66, 16); fs(g, 'rgba(251,248,242,.95)', 3);
-  drawLogo(g, START.x, 39, 150, false);
-  for (let x = 145; x < WORLD_W; x += 150) if (Math.abs(x - START.x) > 80) drawUmbrella(g, x, 112, 24);
-  g.fillStyle = '#e9ecef'; g.fillRect(0, 80, WORLD_W, 8); g.strokeStyle = OL; g.lineWidth = 2; g.strokeRect(-2, 80, WORLD_W + 4, 8);
-  for (let x = 70; x < WORLD_W; x += 150) { // Tische + Rattanstühle
-    if (Math.abs(x - START.x) < 60) continue;
-    for (const [dx, dy] of [[-24, 0], [24, 0], [0, -22], [0, 22]]) { rrPath(g, x + dx - 9, 128 + dy - 9, 18, 18, 6); fs(g, '#c8a27a', 2); }
-    ell(g, x, 128, 21, 21); fs(g, '#fbf8f2', 2.5); ell(g, x, 128, 16, 16); fs(g, null, 1, 'rgba(53,69,47,.25)');
-    drawFood(g, FOOD6[(x / 150 | 0) % 6], x, 127, 24);
-  }
-  // Natursteinmauer mit Durchgang + Stufen (Eingang)
+  // oben: Wiese mit Hecke und Bäumen (dahinter liegt nur Wiese), Natursteinmauer als Abschluss des Spielplatzes
+  g.fillStyle = '#86a866'; g.fillRect(0, 0, WORLD_W, 194);
+  for (let i = 0; i < 2600; i++) { const px = R() * WORLD_W, py = R() * 170; g.strokeStyle = ['#6a994e', '#8cbf6f', '#a7c957'][i % 3]; g.lineWidth = 1.5; g.beginPath(); g.moveTo(px, py); g.lineTo(px + (R() - 0.5) * 3, py - 6); g.stroke(); }
+  for (let x = 0; x < WORLD_W; x += 26) { ell(g, x, 18, 24, 22); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (const x of [120, 380, 720]) { g.fillStyle = 'rgba(0,0,0,.15)'; ell(g, x + 24, 150, 56, 18); g.fill(); line(g, x, 150, x, 90, 7, '#6f4e37'); for (const [dx, dy, rr] of [[-26, 70, 30], [24, 66, 32], [0, 44, 34]]) { ell(g, x + dx, dy, rr, rr * 0.85); fs(g, '#40916c', 2.5); } }
   g.fillStyle = '#cbbfa8'; g.fillRect(0, 170, WORLD_W, 24);
   for (let x = 0, k = 0; x < WORLD_W; k++) { const w = 34 + R() * 26; rrPath(g, x + 1, 171 + (k % 2), w - 2, 21, 3); fs(g, ['#d6cab3', '#c2b59c', '#ddd3bf'][k % 3], 1.5); x += w; }
-  g.fillStyle = '#e3dbcd'; g.fillRect(START.x - 34, 166, 68, 30);
-  for (let k = 0; k < 3; k++) { rrPath(g, START.x - 34, 168 + k * 9, 68, 9, 2); fs(g, ['#efe7da', '#e3dbcd', '#d8cfc0'][k], 1.5); }
   // Seitenbeete (Kies + Yucca)
   g.fillStyle = '#d6cebf'; g.fillRect(0, 194, 64, 1000); g.fillRect(936, 194, 64, 1000); g.fillRect(0, 1176, WORLD_W, 44);
+  g.fillStyle = '#e3dccd'; g.fillRect(900, 540, 100, 100);
   for (let i = 0; i < 900; i++) { g.fillStyle = ['#c5bcad', '#e6dfd3', '#b3aa9a'][i % 3]; g.fillRect(R() * WORLD_W, 1176 + R() * 44, 2.5, 2.5); g.fillRect(R() * 64, 194 + R() * 990, 2.5, 2.5); g.fillRect(936 + R() * 64, 194 + R() * 990, 2.5, 2.5); }
   // Hackschnitzel (hell, warm)
   rrPath(g, 64, 194, 872, 984, 30); g.fillStyle = CHIP_BASE; g.fill();
@@ -193,14 +170,13 @@ function drawGroundSpielplatz(g, R) {
   const tuft = (x, y) => { for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * 0.28; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * 9, y + Math.sin(a) * 11); g.lineWidth = 2; g.strokeStyle = k % 2 ? '#6f9a4a' : '#8dbb62'; g.stroke(); } };
   for (let i = 0; i < 70; i++) { const side = i % 4; if (side === 0) tuft(55 + R() * 12, 210 + R() * 950); else if (side === 1) tuft(935 + R() * 10, 210 + R() * 950); else tuft(80 + R() * 840, 1172 + R() * 6); }
   // Zaun + Parkplatz (unten), Kiesweg zum Tor
-  g.fillStyle = '#6c757d'; g.fillRect(0, 1232, WORLD_W, WORLD_H - 1232);
-  for (let i = 0; i < 2500; i++) { g.fillStyle = i % 2 ? '#737b83' : '#62696f'; g.fillRect(R() * WORLD_W, 1232 + R() * 170, 2, 2); }
+  g.fillStyle = '#d3cec4'; g.fillRect(0, 1232, WORLD_W, WORLD_H - 1232);
+  for (let i = 0; i < 2500; i++) { g.fillStyle = ['#c9c3b8', '#dcd7ce', '#bfb9ad'][i % 3]; g.fillRect(R() * WORLD_W, 1232 + R() * 170, 2, 2); }
   g.fillStyle = '#d6cebf'; g.fillRect(GATE.x - 48, 1176, 96, 60);
   g.strokeStyle = '#f8f9fa'; g.lineWidth = 4;
-  for (let x = 20; x < WORLD_W; x += 110) { g.beginPath(); g.moveTo(x, 1300); g.lineTo(x, 1400); g.stroke(); }
   const carCols = ['#e9ecef', '#adb5bd', '#e63946', '#343a40', '#4dabf7', '#f8f9fa', '#8d99ae', '#ffd166', '#e9ecef'];
   for (let k = 0; k < 9; k++) {
-    const x = 75 + k * 110, y = 1352;
+    const x = 75 + k * 110, y = 1352; if (Math.abs(x - GATE.x) < 70) continue;
     rrPath(g, x - 26, y - 46, 52, 92, 16); fs(g, carCols[k], 3);
     rrPath(g, x - 20, y - 26, 40, 22, 6); fs(g, '#5a6f7d', 2); rrPath(g, x - 20, y + 14, 40, 16, 6); fs(g, '#5a6f7d', 2);
   }
@@ -242,7 +218,7 @@ let SG = null;
 STAGE_DEFS.spielplatz = {
   id: 'spielplatz', house: HOUSE, stairs: STAIRS, slide: SLIDE, swing: SWING, start: START, gate: GATE,
   npcs: NPC_DEFS, decor: DECOR, spots: SPOTS, grid: buildGridSpielplatz, ground: drawGroundSpielplatz,
-  feat: { swing: true, slide: true, house: true, racer: true, pigeons: true, waiter: true, dig: true }, junk: ['twig', 'leaf', 'pebble', 'cap'],
+  feat: { swing: true, slide: true, house: true, racer: true, pigeons: true, waiter: false, dig: true }, junk: ['twig', 'leaf', 'pebble', 'cap'],
   words: { one: 'Kind', the: 'das Kind', a: 'ein Kind', many: 'Kinder', dat: 'Kindern', back: 'zum Kind', each: 'Jedes Kind',
     hide: 'hinter Steinen und Büschen oder gucken aus dem Boden', junk: 'ein Stöckchen', gate: 'am Tor zum Parkplatz', gateTap: 'Lauf zum Tor und tippe es an!',
     lock: 'Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.',
@@ -257,7 +233,7 @@ function useStage(id) {
   START = D.start; GATE = D.gate; NPC_DEFS = D.npcs; ALL_IDS = NPC_DEFS.map(n => n.id).concat(['gate']);
   DECOR = D.decor; DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d)); SPOTS = D.spots;
   G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); D.grid();
-  GROUND = null; if (typeof clearSprites === 'function') clearSprites();
+  GROUND = GROUND_CACHE[id] || null;
 }
 const W_ = k => (SG ? SG.words[k] : STAGE_DEFS.spielplatz.words[k]);   // Wort für die Auftraggeber (Kind / Mitarbeiter)
 // Aufgaben-Listen pro Bereich (sonst die vom Spielplatz)
@@ -352,7 +328,10 @@ class Play {
   constructor(diff, opt = {}) {
     this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff];
     this.mp = opt.mp || null;   // Mehrspieler: eigener Durchgang (nicht gespeichert), gleiche Zufallswerte für beide
-    this.stage = opt.stage || (opt.mp && opt.mp.stage) || 'spielplatz'; useStage(this.stage);
+    this.stage = opt.stage || (opt.mp && opt.mp.stage) || 'spielplatz';
+    if (!this.mp && typeof worldPrepare === 'function') worldPrepare(this.stage, diff);   // Nachbar-Böden vorbereiten
+    useStage(this.stage);
+    if (!this.mp && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); carveLinks(this.stage, diff); }
     this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, this.stage);
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
     this.st = this.sp.run; this.st.clears = this.sp.clears;
@@ -363,6 +342,9 @@ class Play {
     });
     this.p = { x: START.x, y: START.y, level: 0, dir: 1, t: 0, moving: false, path: null, target: null, slide: null, slideZ: 0 };
     this.camX = START.x; this.camY = START.y; this.zoom = 1;
+    if (opt.enter) { const pt = nearestFree(0, opt.enter.x, opt.enter.y); this.p.x = pt >= 0 ? (pt % GW) * CELL + 12.5 : opt.enter.x; this.p.y = pt >= 0 ? Math.floor(pt / GW) * CELL + 12.5 : opt.enter.y; if (canStand(0, opt.enter.x, opt.enter.y)) { this.p.x = opt.enter.x; this.p.y = opt.enter.y; } this.p.dir = opt.enter.dir || 1; this.camX = this.p.x; this.camY = this.p.y; }
+    if (opt.cam) { this.camX = opt.cam.x; this.camY = opt.cam.y; }
+    this.entered = !!opt.enter;
     this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null;
     this.gateA = this.st.done.gate ? 1 : 0;
     this.idleT = 0; this.coachSaid = {};
@@ -390,6 +372,8 @@ class Play {
     this.pigeons = SG.feat.pigeons ? [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i })) : [];
     if (!SG.feat.racer) this.racer.state = 'off';
     if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
+    if (!this.mp && typeof worldNeighbors === 'function') worldNeighbors(this);
+    if (opt.joy) this.joy = opt.joy;
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
   }
@@ -725,7 +709,7 @@ class Play {
       const raceHold = this.updateRace(dt) || !!this.climb;
       if (raceHold) { if (!this.climb) this.p.moving = false; }
       else if (this.swinging) this.updateSwing(dt);
-      else if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); }
+      else if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); if (this.checkCross && this.checkCross()) return; }
       // Hilfe-Uhr: läuft nur, solange gesucht wird
       const hq = this.st.active;
       if (this.canSearch() && hq) {
@@ -737,12 +721,14 @@ class Play {
     this.updatePigeons(dt);
     // Kellner auf der Terrasse (Deko, ohne Auftrag)
     if (this.extras && this.extras.update) this.extras.update(dt);
+    if (this.nbExtras) this.nbExtras.forEach(e => e.ex.update && e.ex.update(dt));
     const wt = !SG.feat.waiter ? { x: 0, dir: 1 } : this.waiter || (this.waiter = { x: 260, dir: 1, dish: 0 });
     wt.x += wt.dir * 45 * dt;
     if (wt.x > 900 || wt.x < 90) { wt.dir *= -1; wt.dish = (wt.dish + 1) % 6; }
     const z = this.z(), hw = W / 2 / this.zoom, hh = H / 2 / this.zoom;
-    const tx = WORLD_W < hw * 2 ? WORLD_W / 2 : clamp(p.x, hw, WORLD_W - hw);
-    const ty = WORLD_H < hh * 2 ? WORLD_H / 2 : clamp(p.y - z - 30, hh, WORLD_H - hh);
+    const wb = this.wb || { x0: 0, y0: 0, x1: WORLD_W, y1: WORLD_H };
+    const tx = wb.x1 - wb.x0 < hw * 2 ? (wb.x0 + wb.x1) / 2 : clamp(p.x, wb.x0 + hw, wb.x1 - hw);
+    const ty = wb.y1 - wb.y0 < hh * 2 ? (wb.y0 + wb.y1) / 2 : clamp(p.y - z - 30, wb.y0 + hh, wb.y1 - hh);
     const k = Math.min(1, dt * 6); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
   }
   updatePlayer(dt) {
@@ -860,6 +846,7 @@ class Play {
     if (this.exiting) return;
     if (this.swinging) { this.pump(); return; }
     const w = this.s2w(sx, sy);
+    if (this.tapOutside && this.tapOutside(w)) return;
     let best = null, bd = 44;
     for (const T of this.interactables()) {
       const d = dist(w.x, w.y, T.sx, T.sy) * (T.k === 'spot' ? 1.15 : 1);
@@ -899,7 +886,7 @@ class Play {
     const st = this.st, s = this.npcState(id), a = this.npcAnim[id];
     a.wave = 1; Sfx.play('tap');
     if (!ACC().tut.symbol) { ACC().tut.symbol = true; Save.write(); }
-    if (id === 'gate' && st.done.gate) { this.startExit(); return; }
+    if (id === 'gate' && st.done.gate) { if (SG.finalExit) this.startExit(); else a.jump = 0.5; return; }
     if (s === 'done') { a.jump = 0.5; return; }
     if (s === 'locked') { overlay = new QuestDialog({ mode: 'lock', npc: id, done: NPC_DEFS.filter(x => st.done[x.id]).length }); return; }
     if (this.diff === 'easy') { this.startEasy(id); return; }
@@ -988,7 +975,7 @@ class Play {
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: W_('opened') || 'Das Tor ist offen!', t: 0 } : null;
-    if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => this.startExit() };
+    if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => (SG.finalExit || typeof carveLinks !== 'function' ? this.startExit() : this.stageClear()) };
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
   }
   anchor(id) {
@@ -1026,7 +1013,7 @@ class Play {
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: W_('opened') || 'Das Tor ist offen!', t: 0 } : null;
-    if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => this.startExit() };
+    if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => (SG.finalExit || typeof carveLinks !== 'function' ? this.startExit() : this.stageClear()) };
   }
   // Tor geht auf, Figur läuft hinaus zum Parkplatz
   startExit() {
@@ -1067,7 +1054,8 @@ class Play {
     stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
     { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
     const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, have: sp.skins.length, diff: this.diff }, again => {
-      if (again) setScene(new Play(this.diff, { stage: this.stage })); else setScene(new StageMap(this.diff));
+      if (SG.finalExit && !again) { setScene(new StageMap(this.diff)); return; }
+      setScene(new Play(this.diff, SG.finalExit ? { stage: this.stage } : { stage: this.stage, enter: { x: this.p.x, y: this.p.y, dir: this.p.dir } }));
     }); };
     overlay = new WheelOverlay({ kind, diff: this.diff, stage: this.stage, skin, newSkin }, after);
   }
@@ -1083,6 +1071,7 @@ class Play {
     c.fillStyle = SG.bg || '#86a866'; c.fillRect(0, 0, W, H);
     c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z));
     if (!GROUND) buildGround();
+    if (this.drawNbGrounds) this.drawNbGrounds(c);
     c.drawImage(GROUND, 0, 0, WORLD_W, WORLD_H);
     const q = this.st.active;
     // Gegrabene Stellen + vergrabene Hinweise
@@ -1130,8 +1119,8 @@ class Play {
     const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
     const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
     for (const d of DECOR) {
-      if (d.bb ? (d.bb[0] > vx1 || d.bb[0] + d.bb[2] < vx0 || d.bb[1] > vy1 || d.bb[1] + d.bb[3] < vy0 - 260) : !vis(d.x, d.y)) continue;   // hohe/lange Möbel: ganze Fläche zählt
-      const sh = this.shake[d.id] || 0, k = 'd_' + d.id;
+      if (d.bb ? (d.bb[0] - 40 > vx1 || d.bb[0] + d.bb[2] + 40 < vx0 || d.bb[1] - 50 > vy1 || d.bb[1] + d.bb[3] + 40 < vy0 - 260) : !vis(d.x, d.y)) continue;   // hohe/lange Möbel: ganze Fläche zählt
+      const sh = this.shake[d.id] || 0, k = SG.id + '_d_' + d.id;
       if (d.t === 'yucca') L.push({ y: d.y, f: () => sh > 0 ? drawYucca(c, d.x, d.y, 1, t, sh) : drawSprite(c, sprite(k, d.x - 48, d.y - 62, 96, 76, g => drawYucca(g, d.x, d.y, 1, 0, 0))) });
       else if (d.t === 'rock') L.push({ y: d.y, f: () => sh > 0 ? drawRock(c, d.x, d.y, d.r, sh) : drawSprite(c, sprite(k, d.x - d.r - 8, d.y - d.r * 1.25 - 6, d.r * 2 + 16, d.r * 1.25 + 16, g => drawRock(g, d.x, d.y, d.r, 0))) });
       else if (d.t === 'potpalm') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 46, d.y - 92, 92, 102, g => drawPotPalm(g, d.x, d.y, 0.85, 0))) });
@@ -1140,7 +1129,7 @@ class Play {
       else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 232, 84, 246, g => drawCypress(g, d.x, d.y))) });
       else if (d.t === 'planter') L.push({ y: d.y, f: () => sh > 0 ? drawPlanter(c, d.x, d.y, t, sh) : drawSprite(c, sprite(k, d.x - 52, d.y - 72, 104, 90, g => drawPlanter(g, d.x, d.y, 0, 0))) });
       else if (d.t === 'lamp') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 16, d.y - 190, 54, 200, g => lampRaw(g, d))) });
-      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = d.bb; L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0))) : fn(c, d, t, sh)) }); }
+      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = d.bb && (typeof decorBB === 'function' ? decorBB(d) : d.bb); L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0))) : fn(c, d, t, sh)) }); }
       else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => sh > 0 ? benchRaw(c, d, Math.sin(sh * 60) * 2) : drawSprite(c, sprite(k, d.x - 52, d.y - 26, 104, 52, g => benchRaw(g, d, 0))) });
     }
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
@@ -1187,6 +1176,7 @@ class Play {
     else if (this.swinging && !this.swinging.jump) { /* sitzt auf der Schaukel: wird mit dem Sitz gezeichnet */ }
     else if (this.climb) { /* klettert: wird nach dem Dach gezeichnet */ }
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
+    if (this.pushNb) this.pushNb(c, L, t);
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
     if (SG.feat.house) this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
     if (SG.overlay) SG.overlay(c, this, t);   // z. B. Deckenlampen über allem
@@ -1590,7 +1580,7 @@ class QuestDialog {
     c.save(); c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
     panel(c, x, y, w, h, '#fff7e6', 26);
     ell(c, x + 70, y + 110, 52, 52); fs(c, '#d8f3dc', 3);
-    if (o.npc === 'gate') (SG.drawGate || drawGate)(c, x + 70, y + (SG.drawGate ? 146 : 150), SG.drawGate ? (SG.dialogGate || 0.75) : 0.75, 0, o.mode === 'lock', this.t);
+    if (o.npc === 'gate') (SG.dialogDraw || SG.drawGate || drawGate)(c, x + 70, y + (SG.drawGate ? 146 : 150), SG.drawGate ? (SG.dialogGate || 0.75) : 0.75, 0, o.mode === 'lock', this.t);
     else drawCritter(c, o.npc, x + 70, y + 150, 1.9, this.t, { staff: true, wave: true, noShadow: true });
     const bx = x + 135, by = y + 26, bw = w - 155, bh = 170;
     rrPath(c, bx, by, bw, bh, 20); fs(c, '#fff', 3.5);

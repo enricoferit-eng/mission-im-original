@@ -132,6 +132,8 @@ function drawGroundKueche(g, R) {
   for (let k = 0; k < 5; k++) { rrPath(g, 770 + k * 6, 20 - k * 4, 150, 10, 3); fs(g, '#d4a373', 1.5); }   // Holzbretter-Stapel oben drauf
   // Seitenwände
   g.fillStyle = '#e9ecef'; g.fillRect(0, 120, 52, WORLD_H); g.fillRect(948, 120, 52, WORLD_H); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(48, 120, 6, WORLD_H); g.fillRect(946, 120, 6, WORLD_H);
+  // links: offene Tür zum Gastraum
+  g.fillStyle = '#9aa0a6'; g.fillRect(0, 835, 54, 80); line(g, 0, 835, 54, 835, 5, '#6c757d', false); line(g, 0, 915, 54, 915, 5, '#6c757d', false); rrPath(g, 4, 838, 10, 74, 2); fs(g, '#f8f9fa', 2);
   // Trennwand zum Lager mit zwei Durchgängen
   for (const [a, b] of [[52, 380], [480, 760], [850, 948]]) { tiles(g, a, 930, b - a, 52, 26); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(a, 978, b - a, 6); }
   // Lager: anderer Boden (heller), Holzdecke-Andeutung oben an der Trennwand
@@ -144,7 +146,7 @@ function c_glow(g, x, y, w, h) { const gr = g.createLinearGradient(x, y, x, y + 
 
 // ---- Deko-Objekte (mit Tiefensortierung, damit man hinter ihnen vorbeigehen kann) ----
 const KDECOR = [
-  { id: 'herd', t: 'herd', x: 130, y: 860, x0: 60, y0: 300, w: 140, h: 560, bb: [52, 290, 160, 610] },
+  { id: 'herd', t: 'herd', x: 130, y: 800, x0: 60, y0: 300, w: 140, h: 500, bb: [52, 290, 160, 560] },
   { id: 'pass', t: 'pass', x: 520, y: 740, x0: 430, y0: 360, w: 180, h: 380, bb: [418, 300, 205, 485] },
   { id: 'salat', t: 'salat', x: 870, y: 620, x0: 800, y0: 320, w: 140, h: 300, bb: [790, 310, 160, 350] },
   { id: 'regal', t: 'regal', x: 890, y: 900, x0: 840, y0: 700, w: 100, h: 200, bb: [830, 640, 120, 300] },
@@ -166,7 +168,7 @@ const KDRAW = {
   herd(c, d, t) {
     counterBlock(c, d.x0, d.y0, d.w, d.h);
     for (let k = 0; k < 3; k++) { rrPath(c, d.x0 + 18, d.y0 + 30 + k * 120, 104, 90, 6); fs(c, '#212529', 2.5); ell(c, d.x0 + 45, d.y0 + 75 + k * 120, 18, 18); c.lineWidth = 2; c.strokeStyle = 'rgba(255,255,255,.2)'; c.stroke(); ell(c, d.x0 + 95, d.y0 + 75 + k * 120, 18, 18); c.stroke(); }
-    rrPath(c, d.x0 + 18, d.y0 + 400, 104, 120, 6); fs(c, '#868e96', 2.5); rrPath(c, d.x0 + 26, d.y0 + 410, 88, 100, 4); fs(c, '#c99a3b', 2);   // Fritteuse/Bräter
+    rrPath(c, d.x0 + 18, d.y0 + 370, 104, 110, 6); fs(c, '#868e96', 2.5); rrPath(c, d.x0 + 26, d.y0 + 380, 88, 90, 4); fs(c, '#c99a3b', 2);   // Fritteuse/Bräter
     ell(c, d.x0 + 45, d.y0 + 75, 22, 20); fs(c, '#343a40', 3); rrPath(c, d.x0 + 60, d.y0 + 70, 40, 8, 4); fs(c, '#212529', 2); for (let k = 0; k < 6; k++) { ell(c, d.x0 + 38 + (k % 3) * 7, d.y0 + 70 + Math.floor(k / 3) * 9, 3.5, 3); c.fillStyle = k % 2 ? '#f77f00' : '#e63946'; c.fill(); }   // Pfanne mit Gemüse (Foto)
     pot(c, d.x0 + 95, d.y0 + 205, 22, '#ced4da');
   },
@@ -240,7 +242,7 @@ function buildGridKueche() {
 const KSPOTS = [
   furnSpot(KDECOR, 'herd', 'top', { px: 155, py: 492, cut: 501, front: true, sx: 232, sy: 505, tag: 'topf' }),
   furnSpot(KDECOR, 'herd', 'top', { px: 104, py: 366, cut: 380, front: true, sx: 232, sy: 380, tag: 'pfanne', rot: -0.3 }),
-  furnSpot(KDECOR, 'herd', 'top', { px: 128, py: 742, cut: 758, front: true, sx: 232, sy: 750, tag: 'fritteuse', rot: 0.25 }),
+  furnSpot(KDECOR, 'herd', 'top', { px: 128, py: 712, cut: 728, front: true, sx: 232, sy: 720, tag: 'fritteuse', rot: 0.25 }),
   furnSpot(KDECOR, 'pass', 'on', { px: 468, py: 288, sx: 470, sy: 338, tag: 'bruecke', sz: 0.62 }),
   furnSpot(KDECOR, 'pass', 'left', { py: 600, sx: 400, sy: 600 }),
   furnSpot(KDECOR, 'pass', 'right', { py: 520, sx: 640, sy: 520 }),
@@ -270,7 +272,7 @@ function drawKitchenDoor(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.kueche = {
-  id: 'kueche', bg: '#5c636a', start: { x: 300, y: 430 }, gate: { x: 515, y: 1392, ix: 515, iy: 1320 },
+  id: 'kueche', bg: '#5c636a', start: { x: 90, y: 875 }, gate: { x: 515, y: 1392, ix: 515, iy: 1320 },
   npcs: [
     { id: 'k_marco', pos: [[250, 520, 0], [250, 780, 0], [670, 560, 0]] },
     { id: 'k_luca', pos: [[850, 285, 0], [700, 330, 0], [760, 470, 0]] },
@@ -281,13 +283,13 @@ STAGE_DEFS.kueche = {
   decor: KDECOR, spots: KSPOTS, grid: buildGridKueche, ground: drawGroundKueche, decorDraw: KDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['cap', 'nudel', 'zettel', 'salat'], items: KUECHE_ITEMS,
-  drawGate: drawKitchenDoor, gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
+  drawGate: drawKitchenDoor, gateName: 'Die Hintertür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
   words: { one: 'Mitarbeiter', the: 'den Mitarbeiter', a: 'einen Mitarbeiter', many: 'Mitarbeiter', dat: 'Mitarbeitern', back: 'zum Mitarbeiter', each: 'Jeder Mitarbeiter',
-    hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Tür zum Gastraum', gateTap: 'Lauf zur Tür und tippe sie an!',
+    hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Hintertür', gateTap: 'Lauf zur Hintertür und tippe sie an!',
     opened: 'Die Tür ist offen!',
-    lock: 'Die Tür zum Gastraum geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.',
+    lock: 'Die Hintertür geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!',
-    gateAsk: 'Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Gastraum.',
+    gateAsk: 'Die Hintertür klemmt! Bring mir diese Sachen, dann ist der Weg zur Terrasse frei.',
     search: 'Schau in Töpfe, auf Wagen und hinter Kühlschränke – dann tippe auf die Lupe!' },
   pools: {
     easy: ['schnippeln', 'pfannkuchen', 'eier', 'kneten', 'ruehren', 'ueberkochen', 'kuehlpacken', 'pizzaofen', 'belegen', 'spuelen', 'bestellung', 'tisch', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color'],

@@ -108,7 +108,7 @@ class Menu {
         icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
       }
       if (sp.clears > 0) icon(c, 'crown', x + w - 26, y + bob + 24, 30);
-      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); setScene(!sp0.clears && !sp0.run ? new Play(d.id) : new StageMap(d.id)); });
+      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); setScene(!sp0.clears && !sp0.run && !g0.clears && !g0.run ? new Play(d.id, { stage: 'gastraum' }) : new StageMap(d.id)); });
     });
   }
 }
@@ -567,7 +567,9 @@ const AREAS = {
   aussen: { x: 0.85, y: 0.44, w: 0.24, h: 0.24 }, chalet: { x: 0.15, y: 0.33, w: 0.22, h: 0.16 },
   spielplatz: { x: 0.27, y: 0.72, w: 0.4, h: 0.22 }, parkplatz: { x: 0.73, y: 0.84, w: 0.42, h: 0.16 },
 };
-const OPEN_STAGES = ['gastraum', 'kueche', 'aussen', 'chalet', 'spielplatz', 'parkplatz'];
+// offen = freigeschaltet (der vorige Bereich ist geschafft), je Schwierigkeit
+let MAP_DIFF = 'medium';
+const OPEN_STAGES = { includes: id => (typeof areaUnlocked === 'function' ? areaUnlocked(MAP_DIFF, id) : true), map: f => STAGE_ORDER.filter(id => OPEN_STAGES.includes(id)).map(f) };
 function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
   const t = o.t || 0, reveal = o.reveal === undefined ? 6 : o.reveal;
   const A = id => { const a = AREAS[id]; return { x: X + a.x * Wd, y: Y + a.y * Hd, w: a.w * Wd, h: a.h * Hd }; };
@@ -684,7 +686,7 @@ function stageArt(c, id, x, y, w, h, t) {
 
 // Weltkarte wie bei Super Mario: ein Weg, die Figur läuft hüpfend von Bereich zu Bereich
 class StageMap {
-  constructor(diff) {
+  constructor(diff) { MAP_DIFF = diff;
     this.diff = diff; this.t = 0; this.camX = null; this.drag = null;
     this.cur = Math.max(0, STAGE_ORDER.indexOf('spielplatz')); this.sel = this.cur; this.walk = null; this.card = 0;
   }

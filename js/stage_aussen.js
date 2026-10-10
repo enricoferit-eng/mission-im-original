@@ -58,9 +58,9 @@ const CIRC = { x: 150, y: 1330, r: 330 };
 function drawGroundAussen(g, R) {
   lawn(g, 0, 0, WORLD_W, WORLD_H, R);
   // oben links: Parkplatz neben dem Glashaus
-  g.fillStyle = '#7d8489'; g.fillRect(0, 0, 150, 160); for (let i = 0; i < 900; i++) { g.fillStyle = i % 2 ? '#868d92' : '#737a7f'; g.fillRect(R() * 150, R() * 160, 2, 2); }
+  for (const [x, y] of [[50, 70], [110, 120]]) { g.fillStyle = 'rgba(0,0,0,.15)'; ell(g, x + 20, y + 10, 40, 14); g.fill(); for (const [dx, dy, rr] of [[-18, -10, 24], [16, -14, 26], [0, -32, 24]]) { ell(g, x + dx, y + dy, rr, rr * 0.85); fs(g, '#40916c', 2.5); } }
   // Glashaus-Front: Glas, Stahlrahmen, offene Falttüren in der Mitte
-  const sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#a5d8ff'); sky.addColorStop(1, '#e7f5ff'); g.fillStyle = sky; g.fillRect(150, 0, WORLD_W - 150, 150);
+  const sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#d3e9f1'); sky.addColorStop(1, '#eef6f9'); g.fillStyle = sky; g.fillRect(150, 0, WORLD_W - 150, 150);
   for (let x = 170; x < WORLD_W; x += 125) { g.fillStyle = 'rgba(60,110,70,.4)'; ell(g, x + 60, 120, 40, 22); g.fill(); line(g, x + 40, 120, x + 46, 60, 4, 'rgba(80,60,40,.5)', false); for (let k = 0; k < 6; k++) { const a2 = -Math.PI / 2 + (k - 2.5) * 0.5; line(g, x + 46, 60, x + 46 + Math.cos(a2) * 30, 60 + Math.sin(a2) * 26, 3, 'rgba(70,120,60,.5)', false); } }
   g.strokeStyle = '#495057'; g.lineWidth = 5; for (let x = 150; x <= WORLD_W; x += 62) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 150); g.stroke(); } g.beginPath(); g.moveTo(150, 50); g.lineTo(WORLD_W, 50); g.stroke();
   g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 170; x < WORLD_W; x += 186) { polyPath(g, [[x, 150], [x + 30, 150], [x + 90, 0], [x + 60, 0]]); g.fill(); }
@@ -75,23 +75,21 @@ function drawGroundAussen(g, R) {
   g.restore(); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(158, 524, 732, 4);
   // Schatten des Pavillondachs (Sonne von links oben)
   g.fillStyle = 'rgba(70,30,15,.12)'; g.fillRect(PAV.x0 + 30, PAV.y0 + 20, PAV.x1 - PAV.x0, PAV.y1 - PAV.y0 - 10);
-  // Spielplatz (eingezäunt): Hackschnitzel
-  g.save(); g.beginPath(); g.rect(PLAY.x0, PLAY.y0, PLAY.x1 - PLAY.x0, PLAY.y1 - PLAY.y0); g.clip();
-  g.fillStyle = CHIP_BASE; g.fillRect(PLAY.x0, PLAY.y0, PLAY.x1 - PLAY.x0, PLAY.y1 - PLAY.y0);
-  for (let i = 0; i < 5000; i++) { g.fillStyle = CHIP_COLS[i % 6]; ell(g, R() * PLAY.x1, PLAY.y0 + R() * (PLAY.y1 - PLAY.y0), 2.2, 1.2, R() * 3); g.fill(); }
-  g.restore();
-  // Wendehammer unten links (Asphalt) mit Bordstein + Hecke
-  g.save(); ell(g, CIRC.x, CIRC.y, CIRC.r, CIRC.r); g.clip(); g.fillStyle = '#7d8489'; g.fillRect(0, 900, 520, 500); for (let i = 0; i < 4000; i++) { g.fillStyle = i % 2 ? '#868d92' : '#737a7f'; g.fillRect(R() * 520, 960 + R() * 440, 2, 2); } g.restore();
-  for (let a2 = -Math.PI; a2 < 0.2; a2 += 0.09) { const x = CIRC.x + Math.cos(a2) * (CIRC.r + 12), y = CIRC.y + Math.sin(a2) * (CIRC.r + 12); if (y > 1400 || x < -20) continue; ell(g, x, y, 20, 16); fs(g, (a2 * 10 | 0) % 2 ? '#2d6a4f' : '#40916c', 2); }
+  // links: Hecke zum Spielplatz (Durchgang 540–640), unten Hecke mit Gartentor rechts, rechts Hecke zur Straße
+  for (let y = 170; y < 1400; y += 26) { if (y > 520 && y < 660) continue; ell(g, 16 + (y % 52 ? 4 : 0), y, 26, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 170; y < 1330; y += 26) { ell(g, 984 - (y % 52 ? 4 : 0), y, 26, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let x = 0; x < 1000; x += 26) if (x < 905 || x > 1000) { ell(g, x, 1380, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
+  g.fillStyle = '#c8bfae'; g.fillRect(0, 548, 40, 84);
   // geschwungener Kiesweg vom Pavillon zum Gartentor + Abzweig zur Hütte
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
-  const path = (w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(700, 520); g.bezierCurveTo(820, 640, 560, 820, 640, 1000); g.bezierCurveTo(700, 1140, 730, 1250, 720, 1400); g.stroke(); g.beginPath(); g.moveTo(660, 1060); g.quadraticCurveTo(780, 1100, 860, 1170); g.stroke(); };
+  const path = (w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(700, 520); g.bezierCurveTo(820, 640, 560, 820, 640, 1000); g.bezierCurveTo(700, 1140, 900, 1200, 955, 1400); g.stroke(); };
   path(84, '#c8bfae'); path(74, '#e3dccd'); g.restore();
+  g.save(); g.lineCap = 'round'; for (const [w2, col] of [[60, '#c8bfae'], [50, '#e3dccd']]) { g.strokeStyle = col; g.lineWidth = w2; g.beginPath(); g.moveTo(40, 590); g.quadraticCurveTo(260, 600, 420, 560); g.stroke(); } g.restore();
   for (let i = 0; i < 900; i++) { const u = R(), x = 640 + (R() - 0.5) * 60, y = 560 + u * 820; }
   // Zypressen-Schatten + kleine Blumenrabatte vor den Zypressen
   for (let y = 210; y < 500; y += 80) { ell(g, 925, y + 8, 30, 10); g.fillStyle = 'rgba(0,0,0,.18)'; g.fill(); }
 }
-const AGATE = { x: 720, y: 1392, ix: 720, iy: 1320 };
+const AGATE = { x: 955, y: 1392, ix: 955, iy: 1320 };
 const ADECOR = [
   { id: 'topf1', t: 'blumentopf', x: 430, y: 192, r: 18, bb: [400, 132, 60, 66] },
   { id: 'topf2', t: 'blumentopf', x: 570, y: 192, r: 18, bb: [540, 132, 60, 66] },
@@ -105,19 +103,14 @@ const ADECOR = [
   { id: 'kugel1', t: 'kugel', x: 520, y: 548, r: 14, anim: true },
   { id: 'kugel2', t: 'kugel', x: 880, y: 600, r: 14, anim: true },
   { id: 'brunnen', t: 'brunnen', x: 640, y: 700, r: 46, bb: [560, 490, 160, 220] },
-  // Spielplatz-Ecke (hinter dem Zaun, gehört zum Bereich Spielplatz)
-  { id: 'spielturm', t: 'spielturm', x: 120, y: 760, bb: [20, 560, 220, 210] },
-  { id: 'schaukel', t: 'schaukelgerust', x: 330, y: 820, bb: [220, 640, 230, 190] },
-  { id: 'schirmL1', t: 'schirmlila', x: 400, y: 600, bb: [320, 460, 160, 150] },
-  { id: 'zaunP', t: 'spielzaun', x: 245, y: 905, bb: [0, 500, 500, 420] },
+  { id: 'schirmL1', t: 'schirmlila', x: 120, y: 520, bb: [40, 380, 160, 150] },
+  { id: 'baum4', t: 'laubbaum', x: 180, y: 1120, r: 34, bb: [60, 930, 240, 200] },
+  { id: 'baum5', t: 'laubbaum', x: 380, y: 1300, r: 30, bb: [260, 1110, 240, 200] },
+  { id: 'brunnen2', t: 'kissenbox', x: 300, y: 830, r: 28, bb: [250, 760, 100, 70] },
   { id: 'baum1', t: 'laubbaum', x: 620, y: 1010, r: 34, bb: [500, 820, 240, 200] },
   { id: 'baum2', t: 'laubbaum', x: 760, y: 900, r: 34, bb: [640, 710, 240, 200] },
   { id: 'baum3', t: 'laubbaum', x: 950, y: 820, r: 30, bb: [830, 630, 240, 200] },
   { id: 'bank', t: 'gartenbank', x: 590, y: 1150, x0: 520, y0: 1120, w: 140, h: 30, bb: [510, 1070, 160, 90] },
-  { id: 'huette', t: 'huette', x: 920, y: 1330, x0: 840, y0: 1190, w: 160, h: 140, bb: [820, 1020, 200, 320] },
-  { id: 'auto1', t: 'parkauto', x: 70, y: 110, cy: 60, a: 0, col: '#e9ecef', bb: [20, 0, 100, 120] },
-  { id: 'auto2', t: 'parkauto', x: 90, y: 1210, cy: 1160, a: 0.4, col: '#e63946', bb: [30, 1090, 120, 130] },
-  { id: 'auto3', t: 'parkauto', x: 250, y: 1290, cy: 1240, a: -0.3, col: '#343a40', bb: [190, 1170, 120, 130] },
 ];
 const ADRAW = {
   blumentopf(c, d) { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 2, 22, 6); c.fill(); polyPath(c, [[d.x - 18, d.y - 26], [d.x + 18, d.y - 26], [d.x + 13, d.y], [d.x - 13, d.y]]); fs(c, '#d27d55', 2.5); for (let k = 0; k < 7; k++) { ell(c, d.x - 16 + (k % 4) * 11, d.y - 34 - Math.floor(k / 4) * 10, 8, 7); fs(c, '#52b788', 1.5); } for (let k = 0; k < 6; k++) { ell(c, d.x - 14 + (k % 3) * 14, d.y - 40 - Math.floor(k / 3) * 10, 4.5, 4.5); c.fillStyle = '#ef233c'; c.fill(); } },
@@ -255,8 +248,8 @@ Object.assign(ADRAW, {
 function buildGridAussen() {
   cellsIn(160, 160, 990, 1336, i => (G0[i] = 1));
   cellsIn(AGATE.ix - 45, 1320, AGATE.ix + 45, 1345, i => (G0[i] = 1));
-  cellsIn(0, PLAY.y0 - 22, PLAY.x1 + 8, PLAY.y1, i => (G0[i] = 0));                         // Spielplatz-Zaun
-  for (let i = 0; i < G0.length; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (dist(x, y, CIRC.x, CIRC.y) < CIRC.r + 26) G0[i] = 0; }   // Wendehammer + Hecke
+  cellsIn(40, 530, 160, 1336, i => (G0[i] = 1));
+  cellsIn(960, 160, 1000, 1400, i => (G0[i] = 0));
   for (const d of ADECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + (d.t === 'pavtisch' ? 30 : 26), i => (G0[i] = 0));
     else if (d.t === 'cypress') cellsCircle(d.x, d.y - 6, 18, i => (G0[i] = 0));
@@ -280,7 +273,8 @@ const ASPOTS = [
   furnSpot(ADECOR, 'baum1', 'right', { px: 636, py: 970, sx: 668, sy: 1020 }),
   furnSpot(ADECOR, 'baum3', 'left', { px: 936, py: 780, sx: 905, sy: 830 }),
   furnSpot(ADECOR, 'bank', 'top', { px: 590, py: 1132, sx: 590, sy: 1100 }),
-  furnSpot(ADECOR, 'huette', 'left', { px: 846, py: 1290, sx: 815, sy: 1300 }),
+  furnSpot(ADECOR, 'baum4', 'right', { px: 196, py: 1080, sx: 228, sy: 1130 }),
+  furnSpot(ADECOR, 'brunnen2', 'top', { px: 294, py: 788, cut: 796, front: true, sx: 300, sy: 880 }),
 ];
 // Laubhaufen: darunter guckt etwas hervor
 function drawLeafPile(c, x, y, w, seed = 0) {
@@ -307,7 +301,7 @@ STAGE_DEFS.aussen = {
   npcs: [
     { id: 'a_weber', pos: [[300, 490], [520, 495], [740, 490]] },
     { id: 'a_hoffmann', pos: [[410, 325], [630, 325], [240, 330]] },
-    { id: 'a_klaus', pos: [[520, 1240], [320, 960], [870, 900]] },
+    { id: 'a_klaus', pos: [[520, 1240], [320, 960], [860, 900]] },
     { id: 'a_mila', pos: [[560, 620], [800, 660], [720, 770]] },
     { id: 'a_noah', pos: [[600, 840], [820, 1060], [600, 1290]] },
   ],
@@ -316,10 +310,10 @@ STAGE_DEFS.aussen = {
   junk: ['leaf', 'pebble', 'cap'], items: AUSSEN_ITEMS, cover: drawLeafPile,
   drawGate: drawGardenGate, gateName: 'Das Gartentor', dialogGate: 0.44, gateFace: (c, x, y, s, t) => drawGardenGate(c, x, y, s * 0.36, 0, true, t),
   words: { one: 'Gast', the: 'den Gast', a: 'einen Gast', many: 'Gäste', dat: 'Gästen', back: 'zum Gast', each: 'Jeder Gast',
-    hide: 'in Blumentöpfen, unter Tischen und Liegestühlen, im Brunnen und im Lavendel', junk: 'ein Blatt oder ein Kronkorken', gate: 'am Gartentor zum Chalet', gateTap: 'Lauf zum Gartentor und tippe es an!',
+    hide: 'in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen', junk: 'ein Blatt oder ein Kronkorken', gate: 'am Gartentor zum Chalet', gateTap: 'Lauf zum Gartentor und tippe es an!',
     opened: 'Das Gartentor ist offen!',
     lock: 'Das Gartentor zum Chalet geht erst auf, wenn du allen fünf Gästen geholfen hast.',
-    progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!',
+    progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!',
     gateAsk: 'Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Chalet.',
     search: 'Schau in Blumentöpfe und unter Tische – dann tippe auf die Lupe!' },
   pools: {

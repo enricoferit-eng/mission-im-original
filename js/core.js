@@ -468,7 +468,7 @@ function coinPill(c, x, y, n, h = 44) {
 
 // ---------- Vorgezeichnete Bilder (Sprites) für alles, was sich nicht bewegt ----------
 const SPR = {};
-function sprite(key, x0, y0, w, h, draw, q = 2) {
+function sprite(key, x0, y0, w, h, draw, q = 1.6) {
   let s = SPR[key];
   if (!s) {
     const cv = document.createElement('canvas'); cv.width = Math.ceil(w * q); cv.height = Math.ceil(h * q);
