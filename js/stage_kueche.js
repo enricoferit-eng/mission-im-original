@@ -132,15 +132,14 @@ function drawGroundKueche(g, R) {
   for (let k = 0; k < 5; k++) { rrPath(g, 770 + k * 6, 20 - k * 4, 150, 10, 3); fs(g, '#d4a373', 1.5); }   // Holzbretter-Stapel oben drauf
   // Seitenwände
   g.fillStyle = '#e9ecef'; g.fillRect(0, 120, 52, WORLD_H); g.fillRect(948, 120, 52, WORLD_H); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(48, 120, 6, WORLD_H); g.fillRect(946, 120, 6, WORLD_H);
-  // links: offene Tür zum Gastraum
-  g.fillStyle = '#9aa0a6'; g.fillRect(0, 835, 54, 80); line(g, 0, 835, 54, 835, 5, '#6c757d', false); line(g, 0, 915, 54, 915, 5, '#6c757d', false); rrPath(g, 4, 838, 10, 74, 2); fs(g, '#f8f9fa', 2);
   // Trennwand zum Lager mit zwei Durchgängen
   for (const [a, b] of [[52, 380], [480, 760], [850, 948]]) { tiles(g, a, 930, b - a, 52, 26); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(a, 978, b - a, 6); }
   // Lager: anderer Boden (heller), Holzdecke-Andeutung oben an der Trennwand
   g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(52, 984, 896, 356);
   // Unterer Rand mit Schwingtür zum Gastraum
-  g.fillStyle = '#e9ecef'; g.fillRect(0, 1340, 470, 60); g.fillRect(560, 1340, 440, 60); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 1336, 470, 6); g.fillRect(560, 1336, 440, 6);
-  g.fillStyle = '#d6cebf'; g.fillRect(470, 1340, 90, 60);
+  g.fillStyle = '#e9ecef'; g.fillRect(0, 1340, 560, 60); g.fillRect(650, 1340, 350, 60); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 1336, 560, 6); g.fillRect(650, 1336, 350, 6);
+  g.fillStyle = '#d6cebf'; g.fillRect(560, 1340, 90, 60);
+
 }
 function c_glow(g, x, y, w, h) { const gr = g.createLinearGradient(x, y, x, y + h); gr.addColorStop(0, '#495057'); gr.addColorStop(1, '#212529'); g.fillStyle = gr; g.fillRect(x, y, w, h); line(g, x + 6, y + 10, x + w - 6, y + 10, 1.5, 'rgba(255,255,255,.25)', false); line(g, x + 6, y + 22, x + w - 6, y + 22, 1.5, 'rgba(255,255,255,.25)', false); }
 
@@ -157,7 +156,7 @@ const KDECOR = [
   { id: 'kisten1', t: 'kisten', x: 430, y: 1090, r: 34, bb: [390, 990, 84, 120] },
   { id: 'kisten2', t: 'kisten', x: 480, y: 1210, r: 34, bb: [440, 1110, 84, 120] },
   { id: 'kistenregal', t: 'kistenregal', x: 905, y: 1250, x0: 865, y0: 1000, w: 80, h: 250, bb: [850, 910, 100, 360] },
-  { id: 'faesser', t: 'faesser', x: 660, y: 1275, r: 42, bb: [606, 1196, 110, 100] },
+  { id: 'faesser', t: 'faesser', x: 800, y: 1290, r: 42, bb: [746, 1211, 110, 100] },
   { id: 'getraenke', t: 'getraenke', x: 610, y: 1050, x0: 570, y0: 990, w: 80, h: 60, bb: [560, 880, 100, 180] },
   { id: 'stahl', t: 'stahl', x: 715, y: 1050, x0: 680, y0: 990, w: 70, h: 60, bb: [670, 880, 90, 180] },
   { id: 'saecke', t: 'saecke', x: 570, y: 1185, r: 26, bb: [536, 1140, 70, 60] },
@@ -233,7 +232,7 @@ function buildGridKueche() {
   cellsIn(60, 210, 940, 925, i => (G0[i] = 1));        // Küche
   cellsIn(60, 990, 940, 1330, i => (G0[i] = 1));       // Lager
   cellsIn(380, 920, 480, 995, i => (G0[i] = 1)); cellsIn(760, 920, 850, 995, i => (G0[i] = 1));   // Durchgänge
-  cellsIn(470, 1320, 560, 1345, i => (G0[i] = 1));     // vor der Tür
+  cellsIn(565, 1320, 645, 1345, i => (G0[i] = 1));     // Tür zum Gastraum
   cellsIn(60, 200, 340, 225, i => (G0[i] = 0)); cellsIn(560, 200, 720, 225, i => (G0[i] = 0)); cellsIn(760, 200, 940, 245, i => (G0[i] = 0)); cellsIn(360, 200, 460, 220, i => (G0[i] = 0));
   for (const d of KDECOR) { if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0)); else if (d.r) cellsCircle(d.x, d.y - 6, d.r - 6, i => (G0[i] = 0)); }
 }
@@ -254,7 +253,7 @@ const KSPOTS = [
   furnSpot(KDECOR, 'kisten1', 'top', { px: 430, py: 992, sx: 430, sy: 1135 }),
   furnSpot(KDECOR, 'kisten2', 'right', { px: 512, py: 1172, sx: 532, sy: 1215 }),
   furnSpot(KDECOR, 'kistenregal', 'left', { px: 868, py: 1150, sx: 840, sy: 1150 }),
-  furnSpot(KDECOR, 'faesser', 'top', { px: 662, py: 1226, sx: 660, sy: 1318 }),
+  furnSpot(KDECOR, 'faesser', 'top', { px: 802, py: 1241, sx: 720, sy: 1300 }),
   furnSpot(KDECOR, 'getraenke', 'left', { px: 574, py: 960, sx: 545, sy: 1062 }),
   furnSpot(KDECOR, 'stahl', 'right', { px: 746, py: 965, sx: 775, sy: 1062 }),
   furnSpot(KDECOR, 'saecke', 'top', { px: 582, py: 1140, sx: 570, sy: 1228 }),
@@ -271,7 +270,7 @@ function drawKitchenDoor(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.kueche = {
-  id: 'kueche', bg: '#5c636a', start: { x: 90, y: 875 }, gate: { x: 515, y: 1392, ix: 515, iy: 1320 },
+  id: 'kueche', bg: '#5c636a', start: { x: 300, y: 430 }, gate: { x: 605, y: 1392, ix: 605, iy: 1320 },
   npcs: [
     { id: 'k_marco', pos: [[250, 520, 0], [250, 780, 0], [670, 560, 0]] },
     { id: 'k_luca', pos: [[850, 285, 0], [700, 330, 0], [760, 470, 0]] },
@@ -282,13 +281,13 @@ STAGE_DEFS.kueche = {
   decor: KDECOR, spots: KSPOTS, grid: buildGridKueche, ground: drawGroundKueche, decorDraw: KDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['cap', 'nudel', 'zettel', 'salat'], items: KUECHE_ITEMS,
-  drawGate: drawKitchenDoor, gateName: 'Die Hintertür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
+  drawGate: drawKitchenDoor, gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
   words: { one: 'Mitarbeiter', the: 'den Mitarbeiter', a: 'einen Mitarbeiter', many: 'Mitarbeiter', dat: 'Mitarbeitern', back: 'zum Mitarbeiter', each: 'Jeder Mitarbeiter',
-    hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Hintertür', gateTap: 'Lauf zur Hintertür und tippe sie an!',
+    hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Schwingtür zum Innenbereich', gateTap: 'Lauf zur Schwingtür und tippe sie an!',
     opened: 'Die Tür ist offen!',
-    lock: 'Die Hintertür geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.',
+    lock: 'Die Schwingtür zum Innenbereich geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!',
-    gateAsk: 'Die Hintertür klemmt! Bring mir diese Sachen, dann ist der Weg zur Terrasse frei.',
+    gateAsk: 'Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Innenbereich.',
     search: 'Schau in Töpfe, auf Wagen und hinter Kühlschränke – dann tippe auf die Lupe!' },
   pools: {
     easy: ['schnippeln', 'pfannkuchen', 'eier', 'kneten', 'ruehren', 'ueberkochen', 'kuehlpacken', 'pizzaofen', 'belegen', 'spuelen', 'bestellung', 'tisch', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color'],

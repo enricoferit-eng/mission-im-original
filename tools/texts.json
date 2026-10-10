@@ -61,12 +61,6 @@
  },
  {
   "who": "erzaehler",
-  "text": "Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen. Und auf der freien Schaukel darfst du schaukeln: Tippe immer, wenn sie ganz außen ist, dann wird sie höher – und spring weit ab!",
-  "key": "64883001",
-  "clean": "Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen. Und auf der freien Schaukel darfst du schaukeln: Tippe immer, wenn sie ganz außen ist, dann wird sie höher, und spring weit ab!"
- },
- {
-  "who": "erzaehler",
   "text": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen – da starten die Aufgaben sofort.",
   "key": "6e4f3541",
   "clean": "Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen, da starten die Aufgaben sofort."
@@ -145,9 +139,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf Kindern geholfen, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!",
-  "key": "18e59aac",
-  "clean": "Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf Kindern geholfen, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf, und du hast den Bereich geschafft!"
+  "text": "Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf geholfen, wartet am Tor die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!",
+  "key": "220bd988",
+  "clean": "Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf geholfen, wartet am Tor die letzte große Aufgabe. Danach geht das Tor auf, und du hast den Bereich geschafft!"
  },
  {
   "who": "erzaehler",
@@ -967,15 +961,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Lauf zur Tür und tippe sie an!",
-  "key": "ff408baf",
-  "clean": "Lauf zur Tür und tippe sie an!"
+  "text": "Lauf zur Schwingtür und tippe sie an!",
+  "key": "cd7a99be",
+  "clean": "Lauf zur Schwingtür und tippe sie an!"
  },
  {
   "who": "gate",
-  "text": "Die Tür zum Gastraum geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.",
-  "key": "4fcdab6b",
-  "clean": "Die Tür zum Gastraum geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast."
+  "text": "Die Schwingtür zum Innenbereich geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast.",
+  "key": "c245d7fa",
+  "clean": "Die Schwingtür zum Innenbereich geht erst auf, wenn du allen fünf Mitarbeitern geholfen hast."
  },
  {
   "who": "erzaehler",
@@ -985,9 +979,9 @@
  },
  {
   "who": "gate",
-  "text": "Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Gastraum.",
-  "key": "fa771950",
-  "clean": "Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Gastraum."
+  "text": "Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Innenbereich.",
+  "key": "a6d32df0",
+  "clean": "Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Innenbereich."
  },
  {
   "who": "erzaehler",
@@ -1183,33 +1177,33 @@
  },
  {
   "who": "erzaehler",
-  "text": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
-  "key": "1cd0fd29",
-  "clean": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+  "text": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "abb9fd90",
+  "clean": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "889429a0",
-  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "6f275a17",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "699f207b",
-  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Tür zum Gastraum die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "51c6775e",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Lauf zur Küchentür und tippe sie an!",
-  "key": "85636879",
-  "clean": "Lauf zur Küchentür und tippe sie an!"
+  "text": "Lauf zur Glastür und tippe sie an!",
+  "key": "2b268e98",
+  "clean": "Lauf zur Glastür und tippe sie an!"
  },
  {
   "who": "gate",
-  "text": "Die Küchentür geht erst auf, wenn du allen fünf Gästen geholfen hast.",
-  "key": "6beb67df",
-  "clean": "Die Küchentür geht erst auf, wenn du allen fünf Gästen geholfen hast."
+  "text": "Die Glastür zur Terrasse geht erst auf, wenn du allen fünf Gästen geholfen hast.",
+  "key": "b503f586",
+  "clean": "Die Glastür zur Terrasse geht erst auf, wenn du allen fünf Gästen geholfen hast."
  },
  {
   "who": "erzaehler",
@@ -1219,9 +1213,9 @@
  },
  {
   "who": "gate",
-  "text": "Die Küchentür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in die Küche.",
-  "key": "f8ab1910",
-  "clean": "Die Küchentür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in die Küche."
+  "text": "Die Glastür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst auf die Terrasse.",
+  "key": "3ea66001",
+  "clean": "Die Glastür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst auf die Terrasse."
  },
  {
   "who": "erzaehler",
@@ -1429,21 +1423,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet an der Tür zur Küche die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
-  "key": "c862a881",
-  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet an der Tür zur Küche die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "cd34b193",
+  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Tür zur Küche die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "d3e0cd40",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Tür zur Küche die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "a2501f2a",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Tür zur Küche die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "b49b1543",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Tür zur Küche die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "26b63915",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -1453,21 +1447,21 @@
  },
  {
   "who": "gate",
-  "text": "Das Gartentor zum Chalet geht erst auf, wenn du allen fünf Gästen geholfen hast.",
-  "key": "b08e88a1",
-  "clean": "Das Gartentor zum Chalet geht erst auf, wenn du allen fünf Gästen geholfen hast."
+  "text": "Das Gartentor zum Spielplatz geht erst auf, wenn du allen fünf Gästen geholfen hast.",
+  "key": "e624eabe",
+  "clean": "Das Gartentor zum Spielplatz geht erst auf, wenn du allen fünf Gästen geholfen hast."
  },
  {
   "who": "erzaehler",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "15affaeb",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "74244f01",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "gate",
-  "text": "Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Chalet.",
-  "key": "97152e74",
-  "clean": "Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Chalet."
+  "text": "Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz.",
+  "key": "e801a691",
+  "clean": "Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz."
  },
  {
   "who": "erzaehler",
@@ -1483,9 +1477,9 @@
  },
  {
   "who": "a_weber",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "ee9f6866",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "4753a9ca",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "a_weber",
@@ -1519,9 +1513,9 @@
  },
  {
   "who": "a_hoffmann",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "293c9cc6",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "6c55bbaa",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "a_hoffmann",
@@ -1555,9 +1549,9 @@
  },
  {
   "who": "a_klaus",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "eb5e128f",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "3ce7c4d5",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "a_klaus",
@@ -1591,9 +1585,9 @@
  },
  {
   "who": "a_mila",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "324cd408",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "d766ad80",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "a_mila",
@@ -1627,9 +1621,9 @@
  },
  {
   "who": "a_noah",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "ee7c6be5",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "95f8aa47",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "a_noah",
@@ -1657,27 +1651,27 @@
  },
  {
   "who": "gate",
-  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!",
-  "key": "135fec1a",
-  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter Tische und Liegestühle und in den Brunnen!"
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
+  "key": "b0ceddde",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
  },
  {
   "who": "erzaehler",
-  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Chalet die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
-  "key": "08eb9ad0",
-  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Chalet die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "8d63155b",
+  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen und Liegestühlen, im Brunnen und im Lavendel. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Chalet die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "8a06366b",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen und Liegestühlen, im Brunnen und im Lavendel. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Chalet die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "0ada3fc9",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen und Liegestühlen, im Brunnen und im Lavendel. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Chalet die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "bc189746",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen und Liegestühlen, im Brunnen und im Lavendel. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Chalet die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "faf73e40",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -1687,9 +1681,9 @@
  },
  {
   "who": "gate",
-  "text": "Das Holztor zum Spielplatz geht erst auf, wenn du allen fünf Gästen geholfen hast.",
-  "key": "d3556fc8",
-  "clean": "Das Holztor zum Spielplatz geht erst auf, wenn du allen fünf Gästen geholfen hast."
+  "text": "Das Holztor geht erst auf, wenn du allen fünf Gästen geholfen hast.",
+  "key": "e3d35f78",
+  "clean": "Das Holztor geht erst auf, wenn du allen fünf Gästen geholfen hast."
  },
  {
   "who": "erzaehler",
@@ -1699,9 +1693,9 @@
  },
  {
   "who": "gate",
-  "text": "Das Holztor ist eingefroren! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz.",
-  "key": "063f15c5",
-  "clean": "Das Holztor ist eingefroren! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz."
+  "text": "Das Holztor ist eingefroren! Bring mir diese Sachen, dann ist der Weg zum Spielplatz frei.",
+  "key": "dcc21a2e",
+  "clean": "Das Holztor ist eingefroren! Bring mir diese Sachen, dann ist der Weg zum Spielplatz frei."
  },
  {
   "who": "erzaehler",
@@ -1897,21 +1891,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor zum Spielplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
-  "key": "4bd48265",
-  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor zum Spielplatz die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "b05bd917",
+  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "f8b3b785",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "454d2b6b",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "eab1e60c",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "d117b188",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -2209,39 +2203,75 @@
  },
  {
   "who": "erzaehler",
-  "text": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung.",
-  "key": "8c8fa7a9",
-  "clean": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung."
+  "text": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge aus fast doppelter Entfernung.",
+  "key": "176c288f",
+  "clean": "Metalldetektor. Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge aus fast doppelter Entfernung."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf.",
-  "key": "20f37846",
-  "clean": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf."
+  "text": "Metalldetektor. Du findest Dinge aus etwas größerer Entfernung. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "5039df1a",
+  "clean": "Metalldetektor. Du findest Dinge aus etwas größerer Entfernung."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst viel schneller über den Spielplatz.",
-  "key": "0a440115",
-  "clean": "Turbo-Schuhe. Du läufst viel schneller über den Spielplatz."
+  "text": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf – auch weiter weg.",
+  "key": "b72e748e",
+  "clean": "Adlerauge. Verstecke in deiner Nähe leuchten golden auf, auch weiter weg."
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.",
+  "text": "Adlerauge. Verstecke ganz in deiner Nähe leuchten golden auf. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "4101535c",
+  "clean": "Adlerauge. Verstecke ganz in deiner Nähe leuchten golden auf."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst viel schneller durch die Welt.",
+  "key": "456f92b0",
+  "clean": "Turbo-Schuhe. Du läufst viel schneller durch die Welt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Turbo-Schuhe. Du läufst etwas schneller durch die Welt. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "5b422b9e",
+  "clean": "Turbo-Schuhe. Du läufst etwas schneller durch die Welt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen.",
+  "key": "4cdade06",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. (Selten – ein legendärer Skin kann es noch besser.)",
   "key": "1645afc5",
   "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit.",
-  "key": "151be999",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit.",
+  "key": "b204b82e",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 1 Minute statt nach 2,5 Minuten.",
-  "key": "1572d5ec",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 1 Minute statt nach 2,5 Minuten."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "2400533b",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten.",
+  "key": "4c79671d",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "3c0b167e",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten."
  },
  {
   "who": "erzaehler",

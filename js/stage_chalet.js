@@ -61,6 +61,7 @@ function drawGroundChalet(g, R) {
   // Weg von der Terrasse oben rechts herunter (festgetretener Schnee)
   g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(955, -10); g.lineTo(955, 690); g.quadraticCurveTo(940, 760, 700, 800); g.stroke(); g.restore();
   for (let y = 10; y < 690; y += 28) { ell(g, 948 + (y % 56 ? 12 : 0), y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }
+  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(-10, 950); g.quadraticCurveTo(250, 960, 480, 900); g.stroke(); g.restore();
   // Hütte: Holzdielen innen
   planks(g, HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0, ['#b07d4b', '#a0673a', '#bb8a57'], 28);
   g.fillStyle = 'rgba(255,190,90,.08)'; g.fillRect(HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0);

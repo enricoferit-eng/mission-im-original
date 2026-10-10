@@ -52,19 +52,6 @@ const TUT_CHAPTERS = [
     start(S) { S.cx = 450; S.cy = 280; S.dir = -1; },
     press(S, x, y) { S.joy = { x0: x, y0: y }; }, drag(S, x, y) { if (S.joy) { S.joy.x = x; S.joy.y = y; } }, release(S) { S.joy = null; },
     check(S) { return dist(S.cx, S.cy, 110, 120) < 45; } },
-  { title: 'Treppe und Rutsche', dur: 6,
-    say: 'Ins obere Stockwerk vom Spielhaus kommst du nur über die Treppe. Runter geht es über die Treppe oder ganz schnell über die Rutsche. Unter das Spielhaus kann man nicht gehen. Und auf der freien Schaukel darfst du schaukeln: Tippe immer, wenn sie ganz außen ist, dann wird sie höher – und spring weit ab!',
-    draw(c, t, S) {
-      tvGround(c);
-      rrPath(c, 220, 150, 140, 110, 6); fs(c, '#2e2117', 3); rrPath(c, 214, 100, 152, 60, 6); fs(c, '#a06a38', 3);
-      polyPath(c, [[200, 102], [290, 30], [380, 102]]); fs(c, '#9e3b2f', 3);
-      for (let k = 0; k < 6; k++) { rrPath(c, 270, 165 + k * 20, 40, 10, 4); fs(c, '#b07a45', 2); }
-      polyPath(c, [[366, 120], [520, 240], [520, 258], [366, 140]]); fs(c, '#dee2e6', 3);
-      icon(c, 'cross', 240, 215, 34, '#ef476f');
-      const k = (t % 6) / 6; let x, y;
-      if (k < 0.4) { x = 290; y = lerp(300, 130, k / 0.4); } else if (k < 0.55) { x = lerp(290, 360, (k - 0.4) / 0.15); y = 130; } else { x = lerp(370, 520, (k - 0.55) / 0.45); y = lerp(126, 250, (k - 0.55) / 0.45); }
-      drawAnimal(c, S.kind, x, y, 1.3, { t, moving: k < 0.55, tilt: k > 0.55 ? -0.35 : 0 });
-    } },
   { title: 'Die Kinder', dur: 9,
     say: 'Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen – da starten die Aufgaben sofort.',
     try: 'Jetzt du: Tippe das Kind mit dem gelben Ausrufezeichen an!',
@@ -117,10 +104,16 @@ const TUT_CHAPTERS = [
     draw(c, t, S) {
       c.fillStyle = '#cfe8ef'; c.fillRect(0, 0, TV.w, TV.h);
       if (!S.trying) {
-        for (let i = 0; i < 3; i++) icon(c, 'heart', 60 + i * 44, 40, 36);
-        rrPath(c, 200, 26, 340, 28, 14); fs(c, '#1f150e', 3); rrPath(c, 203, 29, 334 * (1 - (t % 8) / 10), 22, 11); c.fillStyle = '#06d6a0'; c.fill(); icon(c, 'clock', 186, 40, 30);
-        for (let k = 0; k < 9; k++) { const x = 220 + (k % 3) * 60, y = 120 + Math.floor(k / 3) * 60; c.save(); c.translate(x, y); c.rotate((Math.floor(t * 1.5 + k) % 4) * Math.PI / 2); rrPath(c, -26, -26, 52, 52, 8); fs(c, '#f8f9fa', 2.5); line(c, 0, 0, 26, 0, 10, k % 2 ? '#ffd43b' : '#ced4da'); line(c, 0, 0, 0, -26, 10, k % 2 ? '#ffd43b' : '#ced4da'); c.restore(); }
-        roundBtn(c, 540, 300, 26, '#bde0fe', 'question', null, '#118ab2');
+        // Ausschnitt aus einer echten Aufgabe (Eier aufschlagen), läuft live mit
+        if (!S.demo) { const env = { diff: 'easy', hard: false, kind: S.kind, slow: 1, r: mulberry32(5), burst() {}, win() {} }; S.demo = { g: GAMES.eier.make(env), last: t, taps: 0 }; }
+        const D = S.demo, dt = clamp(t - D.last, 0, 0.1); D.last = t; D.g.update(dt);
+        c.fillStyle = '#2b2d42'; c.fillRect(0, 0, TV.w, TV.h);
+        const k = TV.h / GAME_H, gx = (TV.w - GAME_W * k) / 2;
+        c.save(); c.translate(gx, 0); c.scale(k, k); rrPath(c, 0, 0, GAME_W, GAME_H, 18); c.clip(); D.g.draw(c); c.restore();
+        rrPath(c, gx, 0, GAME_W * k, TV.h, 12); c.lineWidth = 4; c.strokeStyle = '#fff'; c.stroke();
+        if (Math.floor(t * 0.8) !== D.taps) { D.taps = Math.floor(t * 0.8); D.g.down(200, 300); }
+        tvHand(c, gx + 200 * k, 300 * k, (t * 0.8) % 1 < 0.2);
+        roundBtn(c, gx + GAME_W * k + 40, 300, 26, '#bde0fe', 'question', null, '#118ab2');
       } else {
         (S.balloons || []).forEach(b => { if (b.pop) return; ell(c, b.x, b.y, 28, 34); fs(c, b.col, 3); c.beginPath(); c.moveTo(b.x, b.y + 34); c.quadraticCurveTo(b.x + 8, b.y + 50, b.x, b.y + 66); c.lineWidth = 2; c.strokeStyle = OL; c.stroke(); });
       }
@@ -167,7 +160,7 @@ const TUT_CHAPTERS = [
       for (let k = 0; k < 9; k++) { const x = 230 + (k % 3) * 60, y = 90 + Math.floor(k / 3) * 60; c.save(); c.translate(x, y); c.rotate(((k * 7) % 4) * Math.PI / 2); rrPath(c, -26, -26, 52, 52, 8); fs(c, '#f8f9fa', 2.5); line(c, 0, 0, 26, 0, 10, '#ced4da'); line(c, 0, 0, 0, -26, 10, '#ced4da'); c.restore(); }
       const done = S.trying ? S.ok : t > 7;
       const show = S.trying || t > 2.5, jx = 70, jy = 300;
-      if (!S.trying && !done) { const sec = Math.floor(t * 9); txt(c, 'Zeit: ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'), 520, 30, 18, '#3d2c1f', 'center', null); if (t < 2.5) txt(c, '?', 400 + Math.sin(t * 3) * 6, 70, 40, '#ef476f', 'center', OL); }
+      if (!S.trying && !done) { const sec = 40 + Math.floor(t); txt(c, 'Zeit: ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'), 520, 30, 18, '#3d2c1f', 'center', null); if (t < 2.5) txt(c, '?', 400 + Math.sin(t * 3) * 6, 70, 40, '#ef476f', 'center', OL); }
       if (show && !done) {
         const pop = ease.back(clamp((S.trying ? 1 : t - 2.5) * 3, 0, 1)), pu = 1 + Math.sin(t * 6) * 0.07;
         c.save(); c.translate(jx, jy); c.scale(pop * pu, pop * pu); ell(c, 0, 0, 42, 42); c.fillStyle = 'rgba(255,210,63,.4)'; c.fill(); roundBtn(c, 0, 0, 34, '#fff7e6', 'joker', null);
@@ -234,7 +227,7 @@ const TUT_CHAPTERS = [
     },
     check(S) { return S.ok && S.okT > 1.2; } },
   { title: 'Zurückbringen und das Tor', dur: 9,
-    say: 'Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf Kindern geholfen, wartet am Tor zum Parkplatz die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
+    say: 'Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf geholfen, wartet am Tor die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
     draw(c, t, S) {
       tvGround(c);
       c.fillStyle = '#6c757d'; c.fillRect(0, 300, TV.w, 60);

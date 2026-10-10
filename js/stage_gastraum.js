@@ -96,12 +96,16 @@ function drawGroundGastraum(g, R) {
   rrPath(g, 420, 38, 120, 18, 2); fs(g, '#2b2d2f', 2); txt(g, 'Irish Coffee', 480, 47, 10, '#f8f9fa', 'center', null);
   for (let k = 0; k < 6; k++) { line(g, 548, 40 + k * 18, 552, 40 + k * 18, 2, '#495057', false); ell(g, 552, 46 + k * 18, 5, 4); fs(g, '#c87533', 1.2); }
   // Mitte: Weinberg-Fototapete im Abendlicht
-  { const x0 = 560, w = 180, sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#f9c74f'); sky.addColorStop(0.55, '#f8961e'); sky.addColorStop(1, '#d9480f'); g.fillStyle = sky; g.fillRect(x0, 0, w, 150);
+  { const x0 = 650, w = 110, sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#f9c74f'); sky.addColorStop(0.55, '#f8961e'); sky.addColorStop(1, '#d9480f'); g.fillStyle = sky; g.fillRect(x0, 0, w, 150);
     ell(g, x0 + 120, 46, 18, 18); g.fillStyle = '#fff3bf'; g.fill();
     g.fillStyle = '#9c6644'; g.beginPath(); g.moveTo(x0, 70); g.quadraticCurveTo(x0 + 60, 50, x0 + 110, 66); g.quadraticCurveTo(x0 + 150, 76, x0 + w, 60); g.lineTo(x0 + w, 150); g.lineTo(x0, 150); g.closePath(); g.fill();
     for (let k = 0; k < 9; k++) { g.strokeStyle = k % 2 ? '#386641' : '#4f772d'; g.lineWidth = 4 + k * 0.8; g.beginPath(); g.moveTo(x0 + w * 0.55, 72); g.lineTo(x0 + (k - 1) * 26, 152); g.stroke(); }
     for (const cx of [x0 + 24, x0 + 160]) { g.fillStyle = '#2d4a22'; g.beginPath(); g.moveTo(cx, 30); g.quadraticCurveTo(cx + 9, 50, cx + 6, 72); g.lineTo(cx - 6, 72); g.quadraticCurveTo(cx - 9, 50, cx, 30); g.fill(); }
     g.lineWidth = 3; g.strokeStyle = OL; g.strokeRect(x0, 0, w, 150); }
+  // Durchgang hinter der Bar in die Küche (Rahmen + Fliesen dahinter)
+  g.fillStyle = '#5c636a'; g.fillRect(560, 0, 90, 152); g.fillStyle = '#e9ecef'; g.fillRect(568, 0, 74, 152); g.fillStyle = 'rgba(0,0,0,.08)'; for (let y = 0; y < 152; y += 22) g.fillRect(568, y, 74, 1.5);
+  g.fillStyle = '#9aa0a6'; g.fillRect(568, 120, 74, 32);
+  planks(g, 560, 150, 90, 40, ['#5c4636', '#4e3b2d']);
   // rechts: graue Steintapete + Empore mit Geländer und Kunstrasen
   g.fillStyle = '#ced4da'; g.fillRect(740, 0, 260, 150);
   for (let y = 0, k = 0; y < 150; y += 16, k++) for (let x = 740 + (k % 2) * 14; x < 1000; x += 28) { rrPath(g, x + 1, y + 1, 26, 14, 4); g.fillStyle = ['#d8dde2', '#c5ccd3', '#e1e5e9'][(x + k) % 3]; g.fill(); }
@@ -116,8 +120,6 @@ function drawGroundGastraum(g, R) {
   for (const [x0, x1] of [[0, 440], [560, 1000]]) { const gr = g.createLinearGradient(0, 1340, 0, 1400); gr.addColorStop(0, '#cfe8f3'); gr.addColorStop(1, '#e7f5ff'); g.fillStyle = gr; g.fillRect(x0, 1340, x1 - x0, 60); for (let x = x0; x <= x1; x += 62) line(g, x, 1340, x, 1400, 5, '#868e96', false); }
   g.fillStyle = '#6c757d'; g.fillRect(0, 1336, 440, 6); g.fillRect(560, 1336, 440, 6);
   for (let k = 0; k < 3; k++) { rrPath(g, 440 - 12 - k * 4, 1300 - k * 3, 10, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2); rrPath(g, 562 + k * 4, 1300 - k * 3, 10, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2); }
-  // rechts: Durchgang zur Küche (Holzwand-Stück mit Türöffnung)
-  g.fillStyle = '#8d5a3b'; g.fillRect(948, 800, 52, 140); g.fillStyle = '#d27d55'; g.fillRect(948, 835, 52, 80); line(g, 948, 835, 1000, 835, 4, '#5c3d2e', false); line(g, 948, 915, 1000, 915, 4, '#5c3d2e', false);
 }
 
 // ---- Deko (tiefensortiert) ----
@@ -300,6 +302,15 @@ const GSPOTS = [
   furnSpot(GDECOR, 'kuebel1', 'top', { px: 162, py: 1248, sx: 205, sy: 1300 }),
   furnSpot(GDECOR, 'fass', 'top', { px: 866, py: 1216, sx: 810, sy: 1300 }),
 ];
+// Glas-Falttür zur Terrasse (Boss-Tor des Innenbereichs)
+function drawGlassDoor(c, x, y, s, open, locked, t) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  const o = clamp(open, 0, 1);
+  rrPath(c, -64, -128, 128, 12, 3); fs(c, '#495057', 2.5);
+  for (const sd of [-1, 1]) { c.save(); c.translate(sd * 58, 0); c.scale(1 - o * 0.8, 1); rrPath(c, sd > 0 ? -58 : 0, -116, 58, 116, 3); fs(c, 'rgba(200,230,245,.92)', 3); line(c, sd > 0 ? -29 : 29, -108, sd > 0 ? -29 : 29, -8, 1.5, 'rgba(255,255,255,.8)', false); rrPath(c, sd > 0 ? -12 : 6, -64, 6, 20, 2); fs(c, '#868e96', 1.5); c.restore(); }
+  if (locked) { const b = Math.sin(t * 3) * 2; ell(c, 0, -60 + b, 15, 15); fs(c, '#fff', 2.5); icon(c, 'lock', 0, -60 + b, 20); }
+  c.restore();
+}
 // Tür in der rechten Glaswand (Küche): von oben gesehen ein Durchgang, die Türflügel klappen auf
 function drawSideDoor(c, x, y, s, open, locked, t) {
   c.save(); c.translate(x, y); c.scale(s, s);
@@ -324,7 +335,7 @@ const GJUNK = {
   strohhalm(c) { c.rotate(-0.5); line(c, -12, -3, 12, -3, 3.5, '#e63946'); line(c, -6, -3, -2, -3, 3.5, '#fff', false); line(c, 4, -3, 8, -3, 3.5, '#fff', false); },
 };
 STAGE_DEFS.gastraum = {
-  id: 'gastraum', bg: '#7a4a35', start: { x: 650, y: 380 }, gate: { x: 975, y: 915, ix: 912, iy: 875 },
+  id: 'gastraum', bg: '#7a4a35', start: { x: 605, y: 260 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
   npcs: [
     { id: 'g_rosi', pos: [[420, 1300], [600, 1300], [200, 1185]] },
     { id: 'g_becker', pos: [[250, 615], [845, 760], [420, 930]] },
@@ -335,13 +346,13 @@ STAGE_DEFS.gastraum = {
   decor: GDECOR, spots: GSPOTS, grid: buildGridGastraum, ground: drawGroundGastraum, decorDraw: GDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['korken', 'zucker', 'strohhalm'], junkDraw: GJUNK, items: GAST_ITEMS, cover: drawNapkin,
-  drawGate: drawSideDoor, dialogDraw: drawKitchenDoor, gateName: 'Die Küchentür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
+  drawGate: drawGlassDoor, gateName: 'Die Glastür', dialogGate: 0.55, gateFace: (c, x, y, s, t) => drawGlassDoor(c, x, y, s * 0.42, 0, true, t),
   words: { one: 'Gast', the: 'den Gast', a: 'einen Gast', many: 'Gäste', dat: 'Gästen', back: 'zum Gast', each: 'Jeder Gast',
-    hide: 'unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass', junk: 'ein Korken oder ein Strohhalm', gate: 'an der Küchentür rechts', gateTap: 'Lauf zur Küchentür und tippe sie an!',
-    opened: 'Die Küchentür ist offen!',
-    lock: 'Die Küchentür geht erst auf, wenn du allen fünf Gästen geholfen hast.',
+    hide: 'unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass', junk: 'ein Korken oder ein Strohhalm', gate: 'an der Glastür zur Terrasse', gateTap: 'Lauf zur Glastür und tippe sie an!',
+    opened: 'Die Glastür ist offen!',
+    lock: 'Die Glastür zur Terrasse geht erst auf, wenn du allen fünf Gästen geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!',
-    gateAsk: 'Die Küchentür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in die Küche.',
+    gateAsk: 'Die Glastür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst auf die Terrasse.',
     search: 'Schau unter Tische und hinter Palmen – dann tippe auf die Lupe!' },
   pools: {
     easy: ['servietten', 'tablett', 'fliegen', 'musikbox', 'einschenken', 'sonnenstrahl', 'tisch', 'bestellung', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color', 'pop', 'giessen'],

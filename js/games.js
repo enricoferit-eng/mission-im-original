@@ -19,7 +19,7 @@ class GameOverlay {
     const o = this.opts, self = this;
     this.state = 'play'; this.t = 0; this.endT = 0; this.touched = false; this.flash = 0;
     this.timed = o.diff === 'hard' && !!GAMES[this.id].challenge;   // nur Schwer-Challenges: Leben + Zeit
-    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? 4 : 3; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
+    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? 3 + ability('extraherz') : 3; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
     this.env = {
       diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1,
       r: mulberry32(((o.seed || 7) + this.retries * 977) >>> 0),
@@ -50,10 +50,11 @@ class GameOverlay {
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
     // Beim ersten Mal: kurzer Hinweis über dem Spielfeld (vorgelesen) + Zeigehand – kein Textfenster, das Spiel startet sofort
     this.tip = null; this.lastTouch = 0;
+    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) Voice.say(HELP_TEXT[this.id] || 'Probier es einfach aus!', true);   // bei Leicht jede Aufgabe vorlesen
     if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); Voice.say(this.tip.text, true); }
     this.cdWait = this.tip ? 2.4 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
-    this.timeMax = this.timed ? (this.g.timeLimit || 30) + (ability('zeitplus') ? 6 : 0) : 0;
+    this.timeMax = this.timed ? (this.g.timeLimit || 30) + [0, 4, 10][ability('zeitplus')] : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
   }
   // Joker: wer nicht weiterkommt, darf die Aufgabe überspringen (nur wenige pro Bereich)

@@ -65,7 +65,8 @@ function drawGroundParkplatz(g, R) {
   g.save(); g.lineCap = 'round'; g.strokeStyle = '#e8e3d9'; g.lineWidth = 90; g.beginPath(); g.moveTo(520, -20); g.lineTo(520, 200); g.stroke(); g.restore();
   // Hecken: links + unten (mit Ausfahrt unten rechts)
   for (let y = 0; y < 1400; y += 26) { if (Math.abs(y - RB.y) < 90) continue; ell(g, 22 + (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
-  for (let y = 0; y < 1330; y += 26) { ell(g, 978 - (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 0; y < 1330; y += 26) { if (y > 880 && y < 1020) continue; ell(g, 978 - (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  g.fillStyle = '#e8e3d9'; g.fillRect(950, 905, 50, 90);
   for (let x = 0; x < WORLD_W; x += 26) if (x < 730 || x > 870) { ell(g, x, 1340, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
   g.fillStyle = '#6c757d'; g.fillRect(730, 1350, 140, 50);
   // Pfützen

@@ -27,8 +27,8 @@ const AREA_SECRETS = {
 };
 // Erfolge: je Geheimnis, je Bereich "alle Geheimnisse", je Bereich geschafft, ganze Welt
 {
-  const NAMES = { gastraum: 'Gastraum', kueche: 'Küche', aussen: 'Außenbereich', chalet: 'Chalet', parkplatz: 'Parkplatz' };
-  const HELD = { gastraum: 'Gastraum-Held', kueche: 'Küchen-Held', aussen: 'Terrassen-Held', chalet: 'Chalet-Held', parkplatz: 'Parkplatz-Held' };
+  const NAMES = { gastraum: 'Innenbereich', kueche: 'Küche', aussen: 'Außenbereich', chalet: 'Chalet', parkplatz: 'Parkplatz' };
+  const HELD = { gastraum: 'Innenbereich-Held', kueche: 'Küchen-Held', aussen: 'Terrassen-Held', chalet: 'Chalet-Held', parkplatz: 'Parkplatz-Held' };
   Object.entries(AREA_SECRETS).forEach(([st, list]) => {
     list.forEach(S => { SECRET_NAMES[S.key] = S.name; ACHIEVEMENTS.push({ id: 'g_' + S.key, name: S.ach, desc: 'Geheimnis: ' + S.desc, coins: 20, secret: true }); });
     ACHIEVEMENTS.push({ id: 'geheim_' + st, name: 'Geheimnisse: ' + NAMES[st], desc: 'Finde beide Geheimnisse im Bereich ' + NAMES[st] + '.', coins: 40 });
@@ -39,7 +39,7 @@ const AREA_SECRETS = {
 }
 function checkAreaAch(stage) {
   const m = META(); if (!m) return;
-  const L = AREA_SECRETS[stage]; if (L && L.every(S => m.ach['g_' + S.key])) achieve('geheim_' + stage);
+  const L = AREA_SECRETS[stage]; if (L && L.every(S => m.ach[achKey('g_' + S.key)])) achieve('geheim_' + stage);
 }
 {
   const tap0 = Play.prototype.tap, upd0 = Play.prototype.update, clear0 = Play.prototype.stageClear;

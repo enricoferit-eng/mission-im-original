@@ -232,12 +232,13 @@ const UNIFORM_LOOKS = [
 const UNIFORM_NAMES = ['Service-Schürze', 'Koch-Jacke', 'Kellner-Weste', 'Eis-Theke', 'Palmen-Gärtner', 'Chalet-Pulli', 'Barista', 'Chefkoch', 'Limo-Stand', 'Original-Weste', 'Hütten-Pulli', 'Festtags-Service'];
 // Seltenheit: 4 normal, 1 selten, 1 legendär (mit Fähigkeit – nur bei Mittel und Schwer)
 const ABILITIES = {
-  detektor: { name: 'Metalldetektor', text: 'Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge schon aus größerer Entfernung.' },
-  adlerauge: { name: 'Adlerauge', text: 'Verstecke in deiner Nähe leuchten golden auf.' },
-  turbo: { name: 'Turbo-Schuhe', text: 'Du läufst viel schneller über den Spielplatz.' },
-  extraherz: { name: 'Extra-Herz', text: 'In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.' },
-  zeitplus: { name: 'Zeit-Uhr', text: 'In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit.' },
-  glueck: { name: 'Glücksklee', text: 'Der Hilfe-Stern lädt sich schon nach 1 Minute statt nach 2,5 Minuten.' },
+  // text = legendär (stark), weak = selten (schwächer)
+  detektor: { name: 'Metalldetektor', text: 'Ein Pfeil zeigt dir das nächste Versteck, und du findest Dinge aus fast doppelter Entfernung.', weak: 'Du findest Dinge aus etwas größerer Entfernung.' },
+  adlerauge: { name: 'Adlerauge', text: 'Verstecke in deiner Nähe leuchten golden auf – auch weiter weg.', weak: 'Verstecke ganz in deiner Nähe leuchten golden auf.' },
+  turbo: { name: 'Turbo-Schuhe', text: 'Du läufst viel schneller durch die Welt.', weak: 'Du läufst etwas schneller durch die Welt.' },
+  extraherz: { name: 'Extra-Herz', text: 'In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen.', weak: 'In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.' },
+  zeitplus: { name: 'Zeit-Uhr', text: 'In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit.', weak: 'In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit.' },
+  glueck: { name: 'Glücksklee', text: 'Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten.', weak: 'Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten.' },
 };
 const ABIL_KEYS = Object.keys(ABILITIES);
 const RARITY = { common: { name: 'Normal', col: '#e9ecef', w: 1 }, rare: { name: 'Selten', col: '#4dabf7', w: 0.6 }, legend: { name: 'Legendär', col: '#ffc300', w: 0.35 } };
@@ -245,7 +246,7 @@ SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di)
   const k = (i * 2 + di + si * 5) % UNIFORM_LOOKS.length;
   const rarity = i === 5 ? 'legend' : i === 4 ? 'rare' : 'common';
   const sk = Object.assign({}, UNIFORM_LOOKS[k], { name: UNIFORM_NAMES[k], rarity });
-  if (rarity === 'rare') { sk.cap = '#4dabf7'; sk.sparkle = '#bde0fe'; }
+  if (rarity === 'rare') { sk.cap = '#4dabf7'; sk.sparkle = '#bde0fe'; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 3 + di + 2) % ABIL_KEYS.length]; }
   if (rarity === 'legend') { sk.cap = 'gold'; sk.sparkle = '#ffd60a'; sk.name = 'Gold-' + UNIFORM_NAMES[k]; if (diff !== 'easy') sk.ability = ABIL_KEYS[(si * 2 + di) % ABIL_KEYS.length]; }
   SKINS[id] = sk;
 })));
@@ -261,9 +262,12 @@ const SHOP_SKINS = [
   ['shop_goldchef', 'Goldener Chefkoch', 'legend', 400, { uniform: 'koch', uCol: '#ffffff', uCol2: '#c9a227', cap: 'gold', scarf: 'gold', hat: 'toque', sparkle: '#ffd60a', ability: 'glueck' }],
   ['shop_ninja', 'Nacht-Ninja', 'legend', 400, { uniform: 'pulli', uCol: '#212529', uCol2: '#7209b7', cap: '#212529', scarf: '#7209b7', pat: 'stars', sparkle: '#ffd60a', ability: 'adlerauge' }],
 ];
-SHOP_SKINS.forEach(([id, name, rarity, price, look]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); });
+SHOP_SKINS.forEach(([id, name, rarity, price, look], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
+// Text der Fähigkeit passend zur Stufe des Skins
+function abilityText(sk) { const A = ABILITIES[sk.ability]; return sk.rarity === 'legend' ? A.text : A.weak + ' (Selten – ein legendärer Skin kann es noch besser.)'; }
 // Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)
-function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return false; const sk = SKINS[DP(CUR_DIFF).equip]; return !!(sk && sk.ability === name); }
+// 0 = nicht aktiv, 1 = selten (schwächer), 2 = legendär (stark)
+function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return 0; const sk = SKINS[DP(CUR_DIFF).equip]; if (!sk || sk.ability !== name) return 0; return sk.rarity === 'legend' ? 2 : 1; }
 // Standard-Look: grünes Helfer-Halstuch mit Blatt
 DEFAULT_LOOK.cap = BRAND.lime; DEFAULT_LOOK.scarf = BRAND.lime; DEFAULT_LOOK.leaf = true;
 

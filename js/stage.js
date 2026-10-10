@@ -372,7 +372,7 @@ class Play {
     this.pigeons = SG.feat.pigeons ? [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i })) : [];
     if (!SG.feat.racer) this.racer.state = 'off';
     if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
-    if (!this.mp && typeof worldNeighbors === 'function') worldNeighbors(this);
+    if (!this.mp && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) this.banner = { text: STAGE_NAME[this.stage], t: 0 }; }
     if (opt.joy) this.joy = opt.joy;
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
@@ -387,12 +387,12 @@ class Play {
     const M = this.mp, st = this.st;
     st.jokers = JOKERS_PER_RUN; this.mpT = 0; this.ghost = null;
     ACC().tut.coach = true;
-    this.activeIds = M.mode === 'team' ? ['hase'] : shuffle(NPC_DEFS.map(n => n.id), mulberry32(this.seedFor('kids'))).slice(0, M.opts.kids);
+    this.activeIds = M.mode === 'team' ? [NPC_DEFS[0].id] : shuffle(NPC_DEFS.map(n => n.id), mulberry32(this.seedFor('kids'))).slice(0, M.opts.kids);
     this.npcs = this.npcs.filter(n => this.activeIds.includes(n.id));   // nicht gewählte Kinder sind gar nicht da
     this.racer.state = 'off';   // Leo ist im Mehrspieler nicht da – nur die Kinder mit Aufträgen
     if (M.mode === 'team') {
       // Ein großer gemeinsamer Auftrag von Mia + zwei Teile, die man nur zu zweit schafft
-      const q = this.genQuest('hase', { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chestOpen: false, chest: false, roof: false };
+      const q = this.genQuest(NPC_DEFS[0].id, { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chestOpen: false, chest: false, roof: false };
       q.owner = q.items.map((_, i) => i % 2);   // klar aufgeteilt: jeder sucht nur seine eigenen Sachen
       const extra = ITEM_IDS.filter(i => !q.items.includes(i)); q.coopItems = { chest: extra[0] || ITEM_IDS[0], roof: extra[1] || ITEM_IDS[1] };
       st.active = q;
@@ -401,10 +401,11 @@ class Play {
       for (let i = 0; i < 400 && spots.length < 3; i++) { const x = 90 + r() * 820, y = 320 + r() * 980; if (canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 80) && spots.every(([a, b]) => dist(a, b, x, y) > 420) && dist(x, y, HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2) > 220) spots.push([x, y]); }
       while (spots.length < 3) spots.push(find([[200, 500], [800, 1150], [500, 1000]]));
       this.coop = { chest: { x: spots[0][0], y: spots[0][1] }, sw: [{ x: spots[1][0], y: spots[1][1] }, { x: spots[2][0], y: spots[2][1] }], ladder: { x: HOUSE.x - 26, y: HOUSE.y + HOUSE.h - 30 } };
+      if (!SG.feat.house) { q.coop.roof = true; }   // Leiter + Dach gibt es nur auf dem Spielplatz
       if (!canStand(0, this.coop.ladder.x, this.coop.ladder.y)) this.coop.ladder = { x: HOUSE.x + HOUSE.w + 26, y: HOUSE.y + 40 };
       { const L = this.coop.ladder, side = L.x < HOUSE.x ? -1 : 1, cand = [[L.x + side * 44, L.y + 8], [L.x, L.y + 46], [L.x + side * 30, L.y + 40]]; const h = cand.find(([x, y]) => canStand(0, x, y)) || cand[1]; this.coop.hold = { x: h[0], y: h[1] }; this.coop.side = side; }
       this.swBoth = 0; this.climb = null;
-      this.banner = { text: 'Mia braucht ganz viele Sachen! Grüner Punkt = deine, blauer Punkt = die von ' + M.otherName + '.', t: 0 };
+      this.banner = { text: NPC_NAMES[NPC_DEFS[0].id] + ' braucht ganz viele Sachen! Grüner Punkt = deine, blauer Punkt = die von ' + M.otherName + '.', t: 0 };
     } else {
       // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
       this.pre = {}; if (this.diff !== 'easy') this.activeIds.concat(['gate']).forEach(id => { this.pre[id] = this.genQuest(id); });
@@ -442,7 +443,13 @@ class Play {
       if (o && o.fin && !this.mpOver) this.mpEnd('team');
     } else {
       if (o && o.fin && !this.mpOver) this.mpEnd('lose');
-      else if (this.mpGoal() && !this.mpOver) { M.set({ fin: true, finT: Math.round(this.mpT * 10) / 10 }); M.sync(); this.mpEnd('win'); }
+      else if (this.mpGoal() && !this.mpOver) {
+        if (M.si < M.stages.length - 1) {   // nächster Bereich im Duell
+          M.elapsed += this.mpT; M.si++; M.set({ si: M.si }); this.mpOver = 'next'; Sfx.play('win');
+          this.banner = { text: 'Weiter zum Bereich ' + STAGE_INFO[M.stage].name + '!', t: 0 };
+          this.pending = { t: 1.4, fn: () => setScene(new Play(this.diff, { mp: M })) };
+        } else { const tt = M.elapsed + this.mpT; M.set({ fin: true, finT: Math.round(tt * 10) / 10 }); M.sync(); this.mpT = tt; this.mpEnd('win'); }
+      }
     }
     if (M.over === 'left' || M.over === 'lost') this.mpEnd('gone');
     if (this.toastTeam) { this.toastTeam.t += dt; if (this.toastTeam.t > 2.6) this.toastTeam = null; }
@@ -732,7 +739,7 @@ class Play {
     const k = Math.min(1, dt * 6); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
   }
   updatePlayer(dt) {
-    const p = this.p, spd = ability('turbo') ? 255 : 180;
+    const p = this.p, spd = [180, 215, 270][ability('turbo')];
     if (p.slide) {
       p.slide.t += dt / 0.8; const e = Math.min(1, p.slide.t * p.slide.t);
       p.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); p.slideZ = HOUSE.fz * (1 - (p.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)); p.dir = 1; p.moving = false;
@@ -805,7 +812,7 @@ class Play {
     const q = this.st.active; if (!q) return;
     const onSt = this.onStairs();
     let k = -1, bd = 1e9;
-    q.hidden.forEach((h, i) => { if (this.off(q, i)) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * (ability('detektor') ? 1.6 : 1) && d < bd) { bd = d; k = i; } });
+    q.hidden.forEach((h, i) => { if (this.off(q, i)) return; if (!onSt && h.l !== p.level) return; const pk = peekOf(h); const d = Math.min(dist(p.x, p.y, h.x, h.y), dist(p.x, p.y, pk.x, pk.y) + 4); if (d < h.reach * [1, 1.3, 1.8][ability('detektor')] && d < bd) { bd = d; k = i; } });
     if (k >= 0) {
       const h = q.hidden[k], sc = this.w2s(h.x, h.y, (h.l ? HOUSE.fz : 0) + 20);
       FX.sparkle(sc.x, sc.y, 18); Sfx.play('good');
@@ -992,6 +999,7 @@ class Play {
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
     }
+    if (e.idx === 0) Voice.say(questText({ mode: 'offer', npc: id }), true, id);   // bei Leicht sagt die Person, was sie braucht
     this.runEasyStep(id);
   }
   runEasyStep(id) {
@@ -1311,11 +1319,11 @@ class Play {
     }
     // Fähigkeiten: Metalldetektor (Pfeil zum nächsten Versteck), Adlerauge (Verstecke leuchten)
     if (q && this.diff !== 'easy') {
-      if (ability('detektor')) {
+      if (ability('detektor') === 2) {
         let bh = null, bd2 = 1e9; q.hidden.forEach((h, i) => { if (this.off(q, i)) return; const d = dist(h.x, h.y, p.x, p.y); if (d < bd2) { bd2 = d; bh = h; } });
         if (bh && bd2 > 60) { const a = Math.atan2(bh.y - p.y, bh.x - p.x), pz2 = this.z(); c.save(); c.translate(p.x + Math.cos(a) * 46, p.y - pz2 - 20 + Math.sin(a) * 30); c.rotate(a); polyPath(c, [[14, 0], [-8, -10], [-3, 0], [-8, 10]]); fs(c, '#ffd60a', 2.5); c.restore(); }
       }
-      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (this.off(q, i) || dist(h.x, h.y, p.x, p.y) > 280) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
+      if (ability('adlerauge')) q.hidden.forEach((h, i) => { if (this.off(q, i) || dist(h.x, h.y, p.x, p.y) > [0, 200, 380][ability('adlerauge')]) return; const pk = peekOf(h), pu = 0.5 + 0.5 * Math.sin(t * 4 + i); ell(c, pk.x, pk.y - (h.l ? HOUSE.fz : 0), 26 + pu * 8, 12 + pu * 4); c.lineWidth = 4; c.strokeStyle = `rgba(255,214,10,${0.4 + pu * 0.5})`; c.stroke(); });
     }
     // Hilfe: großer Pfeil + Lichtkegel über dem Versteck
     if (q && q.hint !== null && q.hint !== undefined && !q.got[q.hint]) {
@@ -1459,7 +1467,7 @@ class Play {
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
     if (this.canSearch() && hq && !this.swinging) {
-      const HELP = ability('glueck') ? 60 : 150, f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
+      const HELP = [150, 90, 45][ability('glueck')], f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
       const pu = ready ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(pu, pu);
       ell(c, 0, 4, 32, 32); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill();

@@ -1,20 +1,22 @@
 'use strict';
 // ---------- Offene Welt: die 6 Bereiche liegen nebeneinander wie auf dem Luftbild ----------
-//   (Wiese)      | Gastraum   | Küche
+//   (Wiese)      | Küche      | (Straße)
+//   (Wiese)      | Gastraum   | (Straße)      Küche liegt hinter der Bar
 //   Spielplatz   | Außen      | (Straße)
 //   Parkplatz    | Chalet     | (Straße)
 // Man läuft über Durchgänge nahtlos weiter; Nachbarbereiche sieht man am Rand schon. Ein Bereich ist erst offen,
 // wenn der vorige (Reihenfolge der Geschichte) geschafft ist.
 const TILE_W = WORLD_W, TILE_H = WORLD_H;
-const WORLD_POS = { gastraum: [1, 0], kueche: [2, 0], aussen: [1, 1], spielplatz: [0, 1], chalet: [1, 2], parkplatz: [0, 2] };
-const WORLD_FILL = { '0,0': 'wiese', '2,1': 'strasse', '2,2': 'strasse' };
+const WORLD_POS = { kueche: [1, 0], gastraum: [1, 1], aussen: [1, 2], spielplatz: [0, 2], chalet: [1, 3], parkplatz: [0, 3] };
+const WORLD_FILL = { '0,0': 'wiese', '0,1': 'wiese', '2,0': 'strasse', '2,1': 'strasse', '2,2': 'strasse', '2,3': 'strasse' };
 // Durchgänge: side = Seite von a; r = Bereich entlang der Kante; gate = dort steht das Boss-Tor von a
 const LINKS = [
-  { a: 'gastraum', side: 'right', b: 'kueche', r: [835, 915], gate: true },
-  { a: 'gastraum', side: 'bottom', b: 'aussen', r: [445, 555] },
-  { a: 'aussen', side: 'left', b: 'spielplatz', r: [540, 640] },
-  { a: 'aussen', side: 'bottom', b: 'chalet', r: [925, 985], gate: true },
+  { a: 'kueche', side: 'bottom', b: 'gastraum', r: [565, 645], gate: true },
+  { a: 'gastraum', side: 'bottom', b: 'aussen', r: [445, 555], gate: true },
+  { a: 'aussen', side: 'left', b: 'spielplatz', r: [540, 640], gate: true },
   { a: 'spielplatz', side: 'bottom', b: 'parkplatz', r: [470, 570], gate: true },
+  { a: 'parkplatz', side: 'right', b: 'chalet', r: [900, 1000], bar: 'fence' },
+  { a: 'aussen', side: 'bottom', b: 'chalet', r: [925, 985], bar: 'garden' },
 ];
 const OPP = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
 const stageAt = (c, r) => Object.keys(WORLD_POS).find(k => WORLD_POS[k][0] === c && WORLD_POS[k][1] === r);
@@ -78,6 +80,7 @@ function worldNeighbors(play) {
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
     if (!dx && !dy) continue;
     const sid = stageAt(c0 + dx, r0 + dy), fill = WORLD_FILL[(c0 + dx) + ',' + (r0 + dy)], ox = dx * TILE_W, oy = dy * TILE_H;
+    if (sid && !areaUnlocked(play.diff, sid)) { play.nb.push({ fog: sid, ox, oy }); continue; }   // noch nicht freigeschaltet: Nebel
     if (sid) {
       const N = { id: sid, ox, oy, D: STAGE_DEFS[sid] };
       const run = SP(play.diff, sid).run, lay = run && run.layout;
@@ -124,6 +127,7 @@ Object.assign(Play.prototype, {
   drawNbGrounds(c) {
     for (const N of this.nb || []) {
       if (!this.tileVisible(N.ox, N.oy)) continue;
+      if (N.fog) { drawFog(c, N.ox, N.oy, N.fog, this.t); continue; }
       const img = N.fill ? fillGround(N.fill) : GROUND_CACHE[N.id];
       if (img) c.drawImage(img, N.ox, N.oy, TILE_W, TILE_H);
     }
@@ -135,10 +139,11 @@ Object.assign(Play.prototype, {
   pushNb(c, L, t) {
     const z = this.zoom, vx0 = this.camX - W / 2 / z - 160, vx1 = this.camX + W / 2 / z + 160, vy0 = this.camY - H / 2 / z - 80, vy1 = this.camY + H / 2 / z + 320;
     const inView = (x0, y0, w, h) => !(x0 > vx1 || x0 + w < vx0 || y0 > vy1 || y0 + h < vy0);
-    // eigene Durchgangs-Sperren
+    // eigene Durchgangs-Sperren + Wegweiser
     pushLinkBarriers(c, L, this.stage, 0, 0, this.diff, t);
+    pushSigns(c, L, this.stage, this.diff, t);
     for (const N of this.nb || []) {
-      if (N.fill || !this.tileVisible(N.ox, N.oy)) continue;
+      if (N.fill || N.fog || !this.tileVisible(N.ox, N.oy)) continue;
       const { ox, oy, D } = N, tr = f => () => { c.save(); c.translate(ox, oy); f(); c.restore(); };
       for (const d of D.decor) {
         const bb = decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3])) continue;
@@ -195,8 +200,10 @@ function pushLinkBarriers(c, L, sid, ox, oy, diff, t) {
   for (const Lk of LINKS) {
     if (Lk.a !== sid || Lk.gate || linkOpen(diff, Lk)) continue;
     const [r0, r1] = Lk.r, m = (r0 + r1) / 2;
-    if (Lk.side === 'bottom') L.push({ y: TILE_H - 4 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedDoors(c, m, TILE_H - 4, r1 - r0 + 20, t); c.restore(); } });
+    if (Lk.bar === 'garden') L.push({ y: TILE_H - 8 + oy, f: () => { c.save(); c.translate(ox, oy); drawGardenGate(c, m, TILE_H - 8, 0.8, 0, true, t, 'Chalet'); c.restore(); } });
+    else if (Lk.side === 'bottom') L.push({ y: TILE_H - 4 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedDoors(c, m, TILE_H - 4, r1 - r0 + 20, t); c.restore(); } });
     else if (Lk.side === 'left') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, 14, r0 - 10, r1 + 10, t); c.restore(); } });
+    else if (Lk.side === 'right') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, TILE_W - 14, r0 - 10, r1 + 10, t); c.restore(); } });
   }
 }
 function drawLockedDoors(c, x, y, w, t) {
@@ -209,3 +216,43 @@ function drawLockedFence(c, x, y0, y1, t) {
   line(c, x, y0 - 30, x, y1 - 30, 4, '#8d5a3b'); line(c, x, y0 - 12, x, y1 - 12, 4, '#8d5a3b');
   const b = Math.sin(t * 3) * 2, m = (y0 + y1) / 2; ell(c, x + 26, m - 50 + b, 15, 15); fs(c, '#fff', 2.5); icon(c, 'lock', x + 26, m - 50 + b, 20);
 }
+
+// Nebel über noch gesperrten Bereichen (die Welt wächst mit jedem geschafften Bereich)
+const STAGE_NAME = { gastraum: 'Innenbereich', kueche: 'Küche', aussen: 'Außenbereich', chalet: 'Chalet', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz' };
+function drawFog(c, ox, oy, id, t) {
+  const g = c.createLinearGradient(ox, oy, ox + TILE_W, oy + TILE_H); g.addColorStop(0, '#dfe7ea'); g.addColorStop(1, '#c9d4d8');
+  c.fillStyle = g; c.fillRect(ox - 2, oy - 2, TILE_W + 4, TILE_H + 4);
+  for (let k = 0; k < 26; k++) { const x = ox + ((k * 173 + t * 12 * (k % 3 + 1)) % (TILE_W + 300)) - 150, y = oy + (k * 211) % TILE_H; ell(c, x, y, 140 + (k % 4) * 30, 70 + (k % 3) * 20); c.fillStyle = 'rgba(255,255,255,.45)'; c.fill(); }
+  const cx = ox + TILE_W / 2, cy = oy + TILE_H / 2;
+  ell(c, cx, cy, 70, 70); fs(c, 'rgba(255,255,255,.9)', 4); icon(c, 'lock', cx, cy - 6, 70);
+  txt(c, STAGE_NAME[id] || '', cx, cy + 100, 40, '#495057', 'center', '#fff');
+}
+// Wegweiser an jedem Durchgang: Name des Nachbarbereichs + Pfeil (gesperrt: Schloss)
+function pushSigns(c, L, id, diff, t) {
+  for (const E of exitsOf(id)) {
+    const [r0, r1] = E.L.r, m = (r0 + r1) / 2, open = linkOpen(diff, E.L), name = STAGE_NAME[E.to];
+    let x, y, arrow;
+    if (E.side === 'top') { x = r1 + 60; y = 230; arrow = '↑'; }
+    else if (E.side === 'bottom') { x = r0 - 70; y = TILE_H - 90; arrow = '↓'; }
+    else if (E.side === 'left') { x = 110; y = r0 - 30; arrow = '←'; }
+    else { x = TILE_W - 110; y = r0 - 30; arrow = '→'; }
+    x = clamp(x, 90, TILE_W - 90);
+    L.push({ y, f: () => {
+      c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 2, 16, 5); c.fill(); line(c, x, y, x, y - 70, 5, '#8d5a3b');
+      c.font = `900 15px ${FONT}`; const w = Math.max(96, c.measureText(arrow + ' ' + name).width + 26);
+      rrPath(c, x - w / 2, y - 100, w, 34, 8); fs(c, open ? '#fbf8f2' : '#dee2e6', 3);
+      txt(c, arrow + ' ' + name, x, y - 83, 15, open ? '#35452F' : '#868e96', 'center', null);
+      if (!open) { ell(c, x + w / 2, y - 100, 13, 13); fs(c, '#fff', 2.5); icon(c, 'lock', x + w / 2, y - 100, 16); }
+    } });
+  }
+}
+// wo man weiterspielt: der Bereich, in dem man zuletzt war (wenn frei), sonst der neueste freie
+function startArea(diff) {
+  const a = ACC(), last = a && a.lastArea && a.lastArea[diff];
+  if (last && areaUnlocked(diff, last)) return last;
+  let best = STAGE_ORDER[0]; for (const id of STAGE_ORDER) if (areaUnlocked(diff, id)) best = id; return best;
+}
+{ const c0 = Play.prototype.constructor; }
+Object.assign(Play.prototype, {
+  markArea() { const a = ACC(); if (!a || this.mp) return; a.lastArea = a.lastArea || {}; if (a.lastArea[this.diff] !== this.stage) { a.lastArea[this.diff] = this.stage; Save.write(); } },
+});

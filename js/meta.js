@@ -42,17 +42,19 @@ const ACHIEVEMENTS = [
   { id: 'einkauf', name: 'Shopping-Tour', desc: 'Kauf etwas im Laden.', coins: 10 },
 ];
 const SECRET_NAMES = { swing: 'Weitsprung von der Schaukel', race: 'Wettlauf gegen Leo gewonnen', pigeons: 'Alle Tauben aufgescheucht', slide: 'Dreimal schnell gerutscht', leaves: 'Alle Original-Blätter gefunden', bonus: 'Kind schnell geholfen' };
+// Erfolge zählen je Schwierigkeitsstufe getrennt (Schlüssel 'id@stufe')
+const achKey = (id, d = CUR_DIFF || 'medium') => id + '@' + d;
 function achieve(id) {
-  const a = ACC(), m = META(a); if (!m || m.ach[id]) return;
+  const a = ACC(), m = META(a), k = achKey(id); if (!m || m.ach[k]) return;
   const A = ACHIEVEMENTS.find(x => x.id === id); if (!A) return;
-  m.ach[id] = Date.now(); m.coins += A.coins; Save.write();
+  m.ach[k] = Date.now(); m.coins += A.coins; Save.write();
   toast('Erfolg: ' + A.name, '+' + A.coins + ' Taler', 'trophy');
-  if (['g_swing', 'g_race', 'g_pigeons', 'g_slide'].every(k => m.ach[k])) achieve('geheim');
+  if (['g_swing', 'g_race', 'g_pigeons', 'g_slide'].every(x => m.ach[achKey(x)])) achieve('geheim');
 }
 function stat(key, inc = 1) {
   const m = META(); if (!m) return;
-  m.st[key] = (m.st[key] || 0) + inc; Save.write();
-  ACHIEVEMENTS.forEach(A => { if (A.stat === key && m.st[key] >= A.need) achieve(A.id); });
+  const sk = achKey(key); m.st[sk] = (m.st[sk] || 0) + inc; Save.write();
+  ACHIEVEMENTS.forEach(A => { if (A.stat === key && m.st[sk] >= A.need) achieve(A.id); });
 }
 function addCoins(n, why) { const m = META(); if (!m) return; m.coins += n; Save.write(); toast(why, '+' + n + ' Taler', 'coin'); }
 
@@ -140,7 +142,7 @@ class Shop {
 // ---------- Info zu einem Skin: Seltenheit + was die Fähigkeit kann ----------
 function skinInfoBtn(c, x, y, sid, r = 12) { icon(c, 'info', x, y, r * 2); UI.btn(x - r - 6, y - r - 6, (r + 6) * 2, (r + 6) * 2, () => { overlay = new SkinInfo(sid, overlay); Sfx.play('tap'); }); }
 class SkinInfo {
-  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; Voice.say(sk.ability ? ABILITIES[sk.ability].name + '. ' + ABILITIES[sk.ability].text : 'Dieser Skin hat keine besondere Fähigkeit.', true); }
+  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; Voice.say(sk.ability ? ABILITIES[sk.ability].name + '. ' + abilityText(sk) : 'Dieser Skin hat keine besondere Fähigkeit.', true); }
   update(dt) { this.t += dt; }
   close() { Voice.stop(); overlay = this.back || null; }
   draw(c) {
@@ -156,7 +158,7 @@ class SkinInfo {
     if (sk.ability) {
       const A = ABILITIES[sk.ability];
       txt(c, 'Fähigkeit: ' + A.name, x + 150, y + 112, 16, '#c9762f', 'left', null);
-      wrapLines(c, A.text, w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
+      wrapLines(c, abilityText(sk), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
       wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei Mittel und Schwer.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
     } else wrapLines(c, 'Dieser Skin hat keine besondere Fähigkeit – er sieht einfach gut aus! Fähigkeiten haben nur legendäre Skins.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
     c.restore();
@@ -167,35 +169,41 @@ SkinInfo.prototype.freezeBg = true;
 
 // ---------- Erfolge ansehen ----------
 class Achievements {
-  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.scroll = 0; this.drag = null; }
-  enter() { FX.clear(); }
-  update(dt) { this.t += dt; }
+  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.scroll = 0; this.drag = null; this.tab = CUR_DIFF || 'medium'; this.vel = 0; }
+  enter() { FX.clear(); this.wheel = e => { this.scroll += e.deltaY; e.preventDefault(); }; try { cv.addEventListener('wheel', this.wheel, { passive: false }); } catch (e) { /* egal */ } }
+  leave() { try { cv.removeEventListener('wheel', this.wheel); } catch (e) { /* egal */ } }
+  update(dt) { this.t += dt; if (!this.drag && Math.abs(this.vel) > 5) { this.scroll += this.vel * dt; this.vel *= Math.pow(0.04, dt); } }
   draw(c) {
     skyBg(c);
     const m = META(); if (!m) return;
-    topBar(c, this.back);
-    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + Object.keys(m.ach).length + '/' + ACHIEVEMENTS.length, 130, 44, 22, '#fff', 'left', BRAND.olive);
+    topBar(c, () => { this.leave(); this.back(); });
+    const tab = this.tab, has = A => !!m.ach[achKey(A.id, tab)] || (tab === 'medium' && !!m.ach[A.id]);
+    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + ACHIEVEMENTS.filter(has).length + '/' + ACHIEVEMENTS.length, 130, 44, 20, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
-    const cols = W > 700 ? 2 : 1, gap = 10, cw = Math.min(420, (W - 30 - gap * (cols - 1)) / cols), ch = 64, x0 = (W - (cw * cols + gap * (cols - 1))) / 2, top = 84;
+    // Reiter: Leicht / Mittel / Schwer
+    const tw = Math.min(110, (W - 40) / 3), tx0 = W / 2 - tw * 1.5, ty = 74;
+    [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']].forEach(([d, n], i) => { const x = tx0 + i * tw, sel = d === tab; rrPath(c, x + 3, ty, tw - 6, 30, 14); fs(c, sel ? '#ffd166' : 'rgba(255,255,255,.8)', 2.5); txt(c, n, x + tw / 2, ty + 15, 14, '#3d2c1f', 'center', null); UI.btn(x + 3, ty, tw - 6, 30, () => { this.tab = d; this.scroll = 0; }); });
+    const cols = W > 700 ? 2 : 1, gap = 10, cw = Math.min(420, (W - 30 - gap * (cols - 1)) / cols), ch = 64, x0 = (W - (cw * cols + gap * (cols - 1))) / 2, top = 116;
     const rows = Math.ceil(ACHIEVEMENTS.length / cols), maxScroll = Math.max(0, top + rows * (ch + gap) - H + 16);
     this.scroll = clamp(this.scroll, 0, maxScroll);
     c.save(); c.beginPath(); c.rect(0, top - 4, W, H - top + 4); c.clip();
     ACHIEVEMENTS.forEach((A, i) => {
-      const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap) - this.scroll, done = !!m.ach[A.id];
+      const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap) - this.scroll, done = has(A);
       if (y > H || y + ch < top - 4) return;
       rrPath(c, x, y, cw, ch, 18); fs(c, done ? '#fff7e6' : 'rgba(255,255,255,.75)', 3);
       ell(c, x + 32, y + ch / 2, 22, 22); fs(c, done ? '#ffd166' : '#dee2e6', 2.5); icon(c, done ? 'trophy' : (A.secret ? 'question' : 'lock'), x + 32, y + ch / 2, 26, done ? undefined : '#868e96');
-      const hidden = A.secret && !done;
+      const hidden = A.secret && !done, st = m.st[achKey(A.stat, tab)] || (tab === 'medium' ? m.st[A.stat] : 0) || 0;
       txt(c, hidden ? 'Geheimer Erfolg' : A.name, x + 64, y + 22, 15, done ? BRAND.olive : '#495057', 'left', null);
-      const desc = hidden ? 'Entdecke es selbst auf dem Spielplatz …' : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, m.st[A.stat] || 0) + '/' + A.need + ')' : '');
+      const desc = hidden ? 'Entdecke es selbst …' : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, st) + '/' + A.need + ')' : '');
       wrapLines(c, desc, cw - 140, 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null));
       icon(c, 'coin', x + cw - 50, y + ch / 2, 18); txt(c, String(A.coins), x + cw - 38, y + ch / 2 + 1, 14, '#8d5a3b', 'left', null);
       if (done) icon(c, 'check', x + cw - 14, y + 14, 16, '#06d6a0');
     });
     c.restore();
+    if (maxScroll > 0) { const h = (H - top) * (H - top) / (H - top + maxScroll), y = top + (H - top - h) * (this.scroll / maxScroll); rrPath(c, W - 8, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); }
   }
-  down(x, y) { this.drag = { y0: y, s0: this.scroll }; }
-  move(x, y) { if (this.drag) this.scroll = this.drag.s0 - (y - this.drag.y0); }
+  down(x, y) { this.drag = { y0: y, s0: this.scroll, ly: y, lt: performance.now() }; this.vel = 0; }
+  move(x, y) { if (!this.drag) return; this.scroll = this.drag.s0 - (y - this.drag.y0); const now = performance.now(), dt = Math.max(1, now - this.drag.lt) / 1000; this.vel = -(y - this.drag.ly) / dt; this.drag.ly = y; this.drag.lt = now; }
   up() { this.drag = null; }
 }
 
@@ -215,7 +223,7 @@ function needOnline(c, back) {
 function api(body) { const a = ACC(); return Net.call(Object.assign({ login: a.login, token: a.token }, body)); }
 
 class MultiScene {
-  constructor() { this.t = 0; this.data = null; this.err = ''; this.busy = false; this.mode = 'menu'; this.opts = { mode: 'duell', diff: CUR_DIFF || 'medium', kids: 3, boss: false, live: true }; this.pollT = 0; }
+  constructor() { this.t = 0; this.data = null; this.err = ''; this.busy = false; this.mode = 'menu'; this.opts = { mode: 'duell', diff: CUR_DIFF || 'medium', kids: 3, boss: false, live: true, stage: 'spielplatz', stages: ['spielplatz'] }; this.pollT = 0; }
   enter() { FX.clear(); nameInput.value = ''; if (ACC() && ACC().token) this.refresh(); }
   async refresh() { const r = await api({ action: 'friends' }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Keine Verbindung zum Server.'; }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 8 && ACC() && ACC().token) { this.pollT = 0; this.refresh(); } }
@@ -240,6 +248,16 @@ class MultiScene {
     icon(c, 'friends', 104, 44, 40); txt(c, 'Freunde & Mehrspieler', 130, 44, 20, '#fff', 'left', BRAND.olive);
     if (needOnline(c)) return;
     const land = W > H, top = 86;
+    if (this.mode === 'stages') {   // Bereiche auswählen (Duell: mehrere nacheinander, Zusammen: einer)
+      const o = this.opts, w = Math.min(W - 30, 460), x = (W - w) / 2, y = top + 4, team = o.mode === 'team';
+      panel(c, x, y, w, Math.min(H - top - 12, 260), '#fff7e6', 24);
+      txt(c, team ? 'In welchem Bereich spielt ihr?' : 'Welche Bereiche spielt ihr nacheinander?', W / 2, y + 26, 15, '#3d2c1f', 'center', null);
+      const bw = (w - 40) / 3;
+      STAGE_ORDER.forEach((id, i) => { const bx = x + 14 + (i % 3) * (bw + 6), by = y + 50 + Math.floor(i / 3) * 56, on = o.stages.includes(id); rrPath(c, bx, by, bw, 46, 14); fs(c, on ? '#ffd166' : '#fff', 2.5); txt(c, STAGE_INFO[id].name, bx + bw / 2, by + 23, 13, '#3d2c1f', 'center', null); if (on && !team) txt(c, String(o.stages.indexOf(id) + 1), bx + 14, by + 12, 11, '#c9762f', 'center', null);
+        UI.btn(bx, by, bw, 46, () => { if (team) o.stages = [id]; else if (on) { if (o.stages.length > 1) o.stages = o.stages.filter(s => s !== id); } else o.stages = STAGE_ORDER.filter(s => s === id || o.stages.includes(s)); o.stage = o.stages[0]; Sfx.play('tap'); }); });
+      roundBtn(c, W / 2, y + 196, 26, '#06d6a0', 'check', () => { this.mode = 'menu'; });
+      return;
+    }
     if (this.mode === 'add' || this.mode === 'code') {
       const w = Math.min(W - 30, 420), x = (W - w) / 2, y = top + 10;
       panel(c, x, y, w, 220, '#fff7e6', 24);
@@ -284,7 +302,13 @@ class MultiScene {
     };
     seg(ry + 22, 'Modus', [['duell', 'Gegeneinander'], ['team', 'Zusammen']], o.mode, v => (o.mode = v));
     seg(ry + 74, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], o.diff, v => (o.diff = v));
-    if (o.mode === 'duell') { seg(ry + 126, 'Wie vielen Kindern wollt ihr helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], o.kids, v => (o.kids = v)); seg(ry + 178, 'Boss-Level am Ende · Gegner sehen', [['b', o.boss ? 'Boss-Level: ja' : 'Boss-Level: nein'], ['l', o.live ? 'live: ja' : 'live: nein']], null, v => (v === 'b' ? (o.boss = !o.boss) : (o.live = !o.live))); }
+    { const cw = 190, cx = rx + rw - cw - 14, cy = ry + 64, st = o.mode === 'team' ? [o.stages[0]] : o.stages, nm = st.length === 1 ? STAGE_INFO[st[0]].name : st.length + ' Bereiche'; rrPath(c, cx, cy, cw, 20, 10); fs(c, '#caffbf', 2); txt(c, (st.length === 1 ? 'Bereich: ' : 'Bereiche: ') + nm + ' ▸', cx + cw / 2, cy + 10, 12, '#2b9348', 'center', null); UI.btn(cx, cy - 4, cw, 28, () => { this.mode = 'stages'; Sfx.play('tap'); }); }
+    if (o.mode === 'duell') { seg(ry + 126, 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], o.kids, v => (o.kids = v)); { const hw = (rw - 44) / 2, y = ry + 178;   // zwei getrennte Felder: Boss-Level | Gegner live sehen
+      [['Boss-Level am Ende', o.boss, () => (o.boss = !o.boss)], ['Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
+        const bx = rx + 14 + i * (hw + 16); rrPath(c, bx, y - 12, hw, 66, 14); fs(c, 'rgba(255,255,255,.55)', 2, 'rgba(61,44,31,.35)');
+        txt(c, lab, bx + hw / 2, y + 4, 12, '#6b5a48', 'center', null);
+        const tw2 = Math.min(64, hw / 2 - 10); [['Ja', true], ['Nein', false]].forEach(([n, v], k) => { const tx = bx + hw / 2 - tw2 - 3 + k * (tw2 + 6), sel = on === v; rrPath(c, tx, y + 16, tw2, 30, 12); fs(c, sel ? (v ? '#06d6a0' : '#ffd166') : '#fff', 2.5); txt(c, n, tx + tw2 / 2, y + 31, 13, '#3d2c1f', 'center', null); UI.btn(tx, y + 16, tw2, 30, () => { if (on !== v) fn(); Sfx.play('tap'); }); });
+      }); } }
     else wrapLines(c, 'Ein großer gemeinsamer Auftrag: Was einer findet, zählt für beide. Zwei Sachen schafft ihr nur zusammen!', rw - 32, 13).forEach((l, i) => txt(c, l, rx + 16, ry + 140 + i * 18, 13, '#3d2c1f', 'left', null));
     const by = ry + rh - 34, bw2 = (rw - 42) / 2;
     rrPath(c, rx + 14, by - 22, bw2, 44, 16); fs(c, '#06d6a0', 3); txt(c, this.busy ? '…' : 'Spiel erstellen', rx + 14 + bw2 / 2, by, 15, '#fff', 'center', BRAND.ink); UI.btn(rx + 14, by - 22, bw2, 44, () => { if (!this.busy) this.create(); });
@@ -324,7 +348,8 @@ class LobbyScene {
 
 // ---------- Laufendes Mehrspieler-Spiel: Fortschritt senden/abholen ----------
 class Match {
-  constructor(lob, me) { this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts; this.mode = lob.opts.mode || 'duell'; this.other = null; this.otherName = (me === 'host' ? lob.guest : lob.host).name; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop(); }
+  get stage() { return this.stages[this.si] || 'spielplatz'; }
+  constructor(lob, me) { this.stages = (lob.opts && lob.opts.stages && lob.opts.stages.length ? lob.opts.stages : [(lob.opts && lob.opts.stage) || 'spielplatz']); if (lob.opts && lob.opts.mode === 'team') this.stages = this.stages.slice(0, 1); this.si = 0; this.elapsed = 0; this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts; this.mode = lob.opts.mode || 'duell'; this.other = null; this.otherName = (me === 'host' ? lob.guest : lob.host).name; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop(); }
   // Abgleich ohne Pause: nach jeder Antwort sofort (0,3 s) die nächste Abfrage
   async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 300)); } }
   set(p) { Object.assign(this.prog, p); }

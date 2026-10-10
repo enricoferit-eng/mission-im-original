@@ -89,7 +89,7 @@ function drawGroundAussen(g, R) {
   // Zypressen-Schatten + kleine Blumenrabatte vor den Zypressen
   for (let y = 210; y < 500; y += 80) { ell(g, 925, y + 8, 30, 10); g.fillStyle = 'rgba(0,0,0,.18)'; g.fill(); }
 }
-const AGATE = { x: 955, y: 1392, ix: 955, iy: 1320 };
+const AGATE = { x: 62, y: 655, ix: 110, iy: 590 };
 const ADECOR = [
   { id: 'topf1', t: 'blumentopf', x: 430, y: 192, r: 18, bb: [400, 132, 60, 66] },
   { id: 'topf2', t: 'blumentopf', x: 570, y: 192, r: 18, bb: [540, 132, 60, 66] },
@@ -284,13 +284,13 @@ function drawLeafPile(c, x, y, w, seed = 0) {
   c.restore();
 }
 // Gartentor mit Holzbogen und Schild "Chalet" (Boss-Level)
-function drawGardenGate(c, x, y, s, open, locked, t) {
+function drawGardenGate(c, x, y, s, open, locked, t, label = 'Spielplatz') {
   c.save(); c.translate(x, y); c.scale(s, s);
   c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, 0, 4, 76, 12); c.fill();
   rrPath(c, -62, -130, 16, 134, 4); fs(c, '#8d5a3b', 3); rrPath(c, 46, -130, 16, 134, 4); fs(c, '#8d5a3b', 3);
   c.beginPath(); c.moveTo(-66, -122); c.quadraticCurveTo(0, -176, 66, -122); c.lineWidth = 14; c.strokeStyle = OL; c.stroke(); c.lineWidth = 9; c.strokeStyle = '#a0673a'; c.stroke();
   for (let k = 0; k < 8; k++) { const u = k / 7, xx = -60 + u * 120, yy = -122 - Math.sin(u * Math.PI) * 30; ell(c, xx, yy, 7, 5); fs(c, k % 2 ? '#52b788' : '#74c69d', 1.5); }
-  rrPath(c, -34, -162, 68, 24, 5); fs(c, '#fbf8f2', 2.5); txt(c, 'Chalet', 0, -150, 14, '#6f4e37', 'center', null);
+  rrPath(c, -34, -162, 68, 24, 5); fs(c, '#fbf8f2', 2.5); txt(c, label, 0, -150, 13, '#6f4e37', 'center', null);
   const o = clamp(open, 0, 1);
   for (const sd of [-1, 1]) { c.save(); c.translate(sd * 46, 0); c.scale(1 - o * 0.85, 1); const x0 = sd > 0 ? -46 : 0; for (let k = 0; k < 4; k++) { rrPath(c, x0 + 3 + k * 11, -86 + (sd > 0 ? 3 - k : k) * 2, 9, 84, 3); fs(c, '#c08b55', 2); } line(c, x0 + 2, -66, x0 + 44, -66, 4, '#8d5a3b'); line(c, x0 + 2, -22, x0 + 44, -22, 4, '#8d5a3b'); c.restore(); }
   if (locked) { const b = Math.sin(t * 3) * 2; ell(c, 0, -104 + b, 14, 14); fs(c, '#fff', 2.5); icon(c, 'lock', 0, -104 + b, 18); }
@@ -310,11 +310,11 @@ STAGE_DEFS.aussen = {
   junk: ['leaf', 'pebble', 'cap'], items: AUSSEN_ITEMS, cover: drawLeafPile,
   drawGate: drawGardenGate, gateName: 'Das Gartentor', dialogGate: 0.44, gateFace: (c, x, y, s, t) => drawGardenGate(c, x, y, s * 0.36, 0, true, t),
   words: { one: 'Gast', the: 'den Gast', a: 'einen Gast', many: 'Gäste', dat: 'Gästen', back: 'zum Gast', each: 'Jeder Gast',
-    hide: 'in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen', junk: 'ein Blatt oder ein Kronkorken', gate: 'am Gartentor zum Chalet', gateTap: 'Lauf zum Gartentor und tippe es an!',
+    hide: 'in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen', junk: 'ein Blatt oder ein Kronkorken', gate: 'am Gartentor zum Spielplatz', gateTap: 'Lauf zum Gartentor und tippe es an!',
     opened: 'Das Gartentor ist offen!',
-    lock: 'Das Gartentor zum Chalet geht erst auf, wenn du allen fünf Gästen geholfen hast.',
+    lock: 'Das Gartentor zum Spielplatz geht erst auf, wenn du allen fünf Gästen geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!',
-    gateAsk: 'Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Chalet.',
+    gateAsk: 'Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz.',
     search: 'Schau in Blumentöpfe und unter Tische – dann tippe auf die Lupe!' },
   pools: {
     easy: ['schirme', 'wespen', 'tauben', 'werfen', 'kissen', 'giessen', 'fegen', 'limo_mix', 'eisbecher_r', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color', 'pop'],

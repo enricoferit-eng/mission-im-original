@@ -108,7 +108,7 @@ class Menu {
         icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
       }
       if (sp.clears > 0) icon(c, 'crown', x + w - 26, y + bob + 24, 30);
-      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); setScene(!sp0.clears && !sp0.run && !g0.clears && !g0.run ? new Play(d.id, { stage: 'gastraum' }) : new StageMap(d.id)); });
+      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); setScene(!sp0.clears && !sp0.run && !g0.clears && !g0.run ? new Play(d.id, { stage: startArea(d.id) }) : new StageMap(d.id)); });
     });
   }
 }
@@ -623,10 +623,10 @@ function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
 
 // ---------- Stage-Auswahl: 6 klare Karten in der Reihenfolge der Geschichte ----------
 const STAGE_INFO = {
-  gastraum: { name: 'Gastraum', sub: 'Das Glashaus mit Palmen' },
+  gastraum: { name: 'Innenbereich', sub: 'Das Glashaus mit Palmen' },
   kueche: { name: 'Küche', sub: 'Blick hinter die Kulissen' },
   aussen: { name: 'Außenbereich', sub: 'Terrasse unter Palmen' },
-  chalet: { name: 'Chalet', sub: 'Fondue & Hüttenzauber im Winter' },
+  chalet: { name: 'Chalet', sub: 'Bonus-Level: Fondue & Hüttenzauber' },
   spielplatz: { name: 'Spielplatz', sub: 'Spielhaus, Rutsche & Schaukel' },
   parkplatz: { name: 'Parkplatz', sub: 'Der Weg nach Hause' },
 };
@@ -729,7 +729,13 @@ class StageMap {
     if (i === this.cur) { this.card = 0; return; }
     this.walk = { to: this.pts.at[i], node: i }; Sfx.play('jump');
   }
-  play() { const id = STAGE_ORDER[this.cur]; if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); return; } Sfx.play('win'); setScene(new Play(this.diff, { stage: id })); }
+  play() {
+    const id = STAGE_ORDER[this.cur]; if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); return; }
+    // nur der Admin springt direkt hin – alle anderen spielen dort weiter, wo sie in der Welt sind, und laufen selbst hin
+    const go = isAdmin() ? id : startArea(this.diff);
+    if (go !== id) toast('Lauf in der Welt zum Bereich ' + STAGE_INFO[id].name + '!', 'Du startest im Bereich ' + STAGE_INFO[go].name, 'search');
+    Sfx.play('win'); setScene(new Play(this.diff, { stage: go }));
+  }
   draw(c) {
     const G = this.geo(), P = this.pts, t = this.t, kind = ANIMAL_OF[this.diff], d = DIFFS.find(q => q.id === this.diff);
     // Himmel + Hügel mit Parallaxe
@@ -1001,7 +1007,7 @@ class WheelOverlay {
       if (sk.ability) {
         const A = ABILITIES[sk.ability];
         rrPath(c, -pw / 2 + 120, -ph / 2 + 88, pw - 136, 26, 13); fs(c, '#ffd60a', 2); txt(c, 'Fähigkeit: ' + A.name, -pw / 2 + 132, -ph / 2 + 101, 14, BRAND.ink, 'left', null);
-        wrapLines(c, A.text, pw - 140, 13).forEach((l, i) => txt(c, l, -pw / 2 + 122, -ph / 2 + 134 + i * 18, 13, '#3d2c1f', 'left', null));
+        wrapLines(c, abilityText(sk), pw - 140, 13).forEach((l, i) => txt(c, l, -pw / 2 + 122, -ph / 2 + 134 + i * 18, 13, '#3d2c1f', 'left', null));
       }
       c.restore();
       if (this.wt > 1) roundBtn(c, px, py + (sk.ability ? 125 : 95) * k + 6, 30, '#06d6a0', 'play', () => this.close());

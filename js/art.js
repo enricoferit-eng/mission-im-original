@@ -435,7 +435,7 @@ const CHIP_BASE = '#c19c72';
 const CHIP_COLS = ['#d2ad83', '#ad875f', '#e1c39b', '#a27c55', '#e9d0ab', '#c8a27a'];
 
 // ---------- Geschichte "Der neue Helfer": ein Ausrüstungsteil pro Bereich ----------
-const STAGE_ORDER = ['gastraum', 'kueche', 'aussen', 'chalet', 'spielplatz', 'parkplatz'];
+const STAGE_ORDER = ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'];   // Chalet = Bonus-Level
 const OUTFIT_OF = { gastraum: 'fliege', kueche: 'schuerze', aussen: 'brille', chalet: 'schal', spielplatz: 'kappe', parkplatz: 'weste' };
 function drawOutfitIcon(c, id, x, y, s, sil) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k); c.lineJoin = 'round'; c.lineCap = 'round';

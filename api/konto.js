@@ -28,7 +28,7 @@ async function writeJSON(path, obj) {
   await put(path, JSON.stringify(obj), { ...PRIV, allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json', cacheControlMaxAge: 60 });
 }
 function publicAcc(login, acc) {
-  return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, code: acc.code, avatar: acc.avatar, created: acc.created, data: acc.data || {} };
+  return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, code: acc.code, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };
 }
 
 async function register(b) {
@@ -132,7 +132,8 @@ async function lobby_new(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   let code = '';
   for (let i = 0; i < 10; i++) { code = Array.from(crypto.randomBytes(4), x => LOBBY_CHARS[x % LOBBY_CHARS.length]).join(''); if (!(await readJSON(lobbyFile(code)))) break; }
-  const o = b.opts || {}, opts = { mode: o.mode === 'team' ? 'team' : 'duell', diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 2, 3, 4, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false };
+  const o = b.opts || {}, opts = { mode: o.mode === 'team' ? 'team' : 'duell', diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 2, 3, 4, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false, stage: ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].includes(o.stage) ? o.stage : 'spielplatz', stages: Array.isArray(o.stages) ? ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].filter(s => o.stages.includes(s)) : [] };
+  if (!opts.stages.length) opts.stages = [opts.stage]; opts.stage = opts.stages[0];
   const lob = { code, host: pub(a.l, a.acc), guest: null, opts, seed: crypto.randomBytes(4).readUInt32BE(0), status: 'wait', created: Date.now(), started: 0 };
   await writeJSON(lobbyFile(code), lob);
   if (b.invite) { const t = cleanLogin(b.invite), inv = (await readJSON(invFile(t))) || { list: [] }; inv.list = inv.list.filter(i => Date.now() - i.at < 15 * 60000).concat([{ code, from: lob.host, at: Date.now() }]).slice(-5); await writeJSON(invFile(t), inv); }
@@ -174,6 +175,14 @@ async function admin(b) {
   const byPass = sameStr(String(b.user || ''), U) && sameStr(String(b.pass || ''), P);
   const byDevice = !!b.device && sameStr(String(b.device), adminDeviceToken(U, P));
   if (!byPass && !byDevice) return [401, { error: 'auth' }];
+  if (b.promote) {   // Konto zum Admin machen (wird angelegt, falls es den Namen noch nicht gibt)
+    const name = String(b.promote).trim().slice(0, 14), nk = nameKey(name); if (nk.length < 2) return [400, { error: 'name_short' }];
+    let idx = await readJSON(nameFile(nk)), login, acc;
+    if (idx) { login = idx.login; acc = await readJSON(accFile(login)); }
+    if (!acc) { login = Array.from(crypto.randomBytes(8), x => CODE_CHARS[x % CODE_CHARS.length]).join(''); acc = { name, nk, code: [0, 1, 2, 3], avatar: 5, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 }; await writeJSON(nameFile(nk), { login }); }
+    acc.admin = true; await writeJSON(accFile(login), acc);
+    return [200, { login: fmtLogin(login), name: acc.name, code: acc.code }];
+  }
   const files = []; let cursor;
   do { const r = await list({ prefix: 'accounts/', cursor, limit: 1000 }); files.push(...r.blobs); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
   const now = Date.now(), DAY = 86400000;
