@@ -930,7 +930,7 @@ class Wardrobe {
     txt(c, totalSkins() + '/108', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
     // Stage-Reiter
     const tw = (w - 30) / 7;
-    { const tx = x + 15 + 6 * tw, sel = this.stage === 'laden'; rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3); icon(c, 'shop', tx + tw / 2, y + 86, Math.min(30, tw * 0.5)); const m = META(); txt(c, (m ? m.skins.length : 0) + '/' + SHOP_SKINS.length, tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null); UI.btn(tx, y + 64, tw, 52, () => { this.stage = 'laden'; Sfx.play('tap'); }); }
+    { const tx = x + 15 + 6 * tw, sel = this.stage === 'laden'; rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3); icon(c, 'shop', tx + tw / 2, y + 86, Math.min(30, tw * 0.5)); const m = META(); txt(c, (m ? m.skins.length : 0) + '/' + (SHOP_SKINS.length + EXCLUSIVE_SKINS.length), tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null); UI.btn(tx, y + 64, tw, 52, () => { this.stage = 'laden'; Sfx.play('tap'); }); }
     STAGE_ORDER.forEach((id, i) => {
       const tx = x + 15 + i * tw, sel = id === this.stage, open = OPEN_STAGES.includes(id);
       rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3);
@@ -938,10 +938,14 @@ class Wardrobe {
       const n = SP(this.diff, id).skins.length; txt(c, n + '/6', tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null);
       UI.btn(tx, y + 64, tw, 52, () => { this.stage = id; Sfx.play('tap'); });
     });
-    const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), ids = shop ? SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]).filter(id => META().skins.includes(id))) : stageSkins(this.stage, this.diff);
-    const cols = land ? (shop ? 9 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / (shop ? 3 : 2));
+    const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), allIds = shop ? SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)) : stageSkins(this.stage, this.diff);
+    const cols = land ? (shop ? 7 : 6) : 3, rowsN = shop ? 2 : (land ? 1 : 2), cw = (w - 30 - (cols - 1) * 10) / cols - (shop ? 6 : 0), ch = shop ? Math.min(140, (h - 214) / rowsN - 8) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
+    const per = cols * rowsN, pages = Math.max(1, Math.ceil(allIds.length / per)); this.page = shop ? clamp(this.page || 0, 0, pages - 1) : 0;
+    const ids = allIds.slice(this.page * per, this.page * per + per);
+    if (shop && !allIds.length) wrapLines(c, 'Noch keine Laden-Skins. Kauf welche im Laden, hol sie im Tages-Shop oder am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
+    if (shop && pages > 1) { if (this.page > 0) roundBtn(c, x + 22, y + h / 2 + 40, 18, '#fff', 'back', () => { this.page--; }); if (this.page < pages - 1) { c.save(); c.translate(x + w - 22, y + h / 2 + 40); c.scale(-1, 1); roundBtn(c, 0, 0, 18, '#fff', 'back', null); c.restore(); UI.btn(x + w - 42, y + h / 2 + 20, 40, 40, () => { this.page++; }); } txt(c, (this.page + 1) + ' / ' + pages, x + w / 2, y + h - 12, 12, '#6b5a48', 'center', null); }
     ids.forEach((sid, i) => {
-      const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10);
+      const cx = x + 15 + (shop ? 21 : 0) + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10);
       const own = sp.skins.includes(sid), eq = d.equip === sid;
       rrPath(c, cx, cy, cw, ch, 18); fs(c, eq ? '#d8f5e3' : own ? '#fff' : '#dee2e6', 3.5, eq ? '#2b9348' : OL);
       if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });

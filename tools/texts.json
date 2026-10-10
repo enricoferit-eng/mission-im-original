@@ -2431,6 +2431,36 @@
  },
  {
   "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. (Stufe 3 von 4)",
+  "key": "4cdade06",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit. (Stufe 3 von 4)",
+  "key": "b204b82e",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Joker-Tasche. Du startest jeden Bereich mit 2 Jokern mehr. (Stufe 3 von 4)",
+  "key": "2897961f",
+  "clean": "Joker-Tasche. Du startest jeden Bereich mit 2 Jokern mehr."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. (Stufe 2 von 4)",
+  "key": "b8c99828",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus größerer Entfernung, und ein Pfeil zeigt dir das nächste Versteck. (Stufe 2 von 4)",
+  "key": "b4519552",
+  "clean": "Metalldetektor. Du findest Dinge aus größerer Entfernung, und ein Pfeil zeigt dir das nächste Versteck."
+ },
+ {
+  "who": "erzaehler",
   "text": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. (Stufe 1 von 4)",
   "key": "797d4109",
   "clean": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt."
@@ -2452,12 +2482,6 @@
   "text": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. (Stufe 2 von 4)",
   "key": "664e0ba6",
   "clean": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt."
- },
- {
-  "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. (Stufe 2 von 4)",
-  "key": "b8c99828",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150."
  },
  {
   "who": "erzaehler",
@@ -2488,6 +2512,24 @@
   "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. (Stufe 2 von 4)",
   "key": "91881f79",
   "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Metalldetektor. Du findest Dinge aus größerer Entfernung. (Stufe 1 von 4)",
+  "key": "4a7369e4",
+  "clean": "Metalldetektor. Du findest Dinge aus größerer Entfernung."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. (Stufe 1 von 4)",
+  "key": "1645afc5",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 90 Sekunden statt nach 150. (Stufe 1 von 4)",
+  "key": "553d3b20",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 90 Sekunden statt nach 150."
  },
  {
   "who": "erzaehler",

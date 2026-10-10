@@ -101,7 +101,7 @@ class Shop {
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     const tabs = [['joker', 'Tages-Shop'], ['joker2', 'Joker'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere']], tw = Math.min(140, (W - 40) / 5 - 8);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; Sfx.play('tap'); }); });
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
@@ -135,14 +135,21 @@ class Shop {
       });
     } else if (this.tab === 'rad') {
       // Glücksrad: zufälliger Skin aus dem Laden (selten/legendär seltener). Schon gehabt = halber Preis zurück.
-      const SPIN = 120, cx = W / 2, cy = top + (bottom - top) / 2 - 10, R = Math.min((bottom - top) / 2 - 22, 130), pool = this.radPool || (this.radPool = shuffle(SHOP_SKINS.concat(EXCLUSIVE_SKINS), mulberry32(7)).slice(0, 8));
-      const sp = this.spin; let ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 3.2), 3)) : (this.radA || 0);
-      pool.forEach((o, i) => { const a0 = ang + i * TAU / 8, a1 = a0 + TAU / 8; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + TAU / 16) * R * 0.62, cy + Math.sin(a0 + TAU / 16) * R * 0.62); drawAnimal(c, ACC().char || 'cat', 0, 14, R / 150, { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
-      ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
-      if (sp && this.t - sp.t0 > 3.3 && !sp.done) { sp.done = true; this.radA = ang; const id = pool[sp.k][0], mm = META(); if (mm.skins.includes(id)) { mm.coins += SPIN / 2; this.say('Den hattest du schon – ' + SPIN / 2 + ' Taler zurück!'); } else { mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); } Save.write(); this.spin = null; }
-      const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
-      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin) return; this.buy(SPIN, () => { const ws = pool.map(o => RARITY[o[2]].w), tot = ws.reduce((a, b) => a + b, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * TAU / 8 + TAU / 16); const base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; }); });
-      wrapLines(c, 'Dreh das Rad und gewinne einen zufälligen Skin – legendäre sind seltener!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
+      const SPIN = 120, cx = W / 2, cy = top + (bottom - top) / 2 - 10, R = Math.min((bottom - top) / 2 - 22, 130);
+      // jedes Mal neu gemischt: nur Skins, die man noch nicht hat (bis zu 8 Felder)
+      if (!this.radPool) { const free = SHOP_SKINS.concat(EXCLUSIVE_SKINS).filter(o => !m.skins.includes(o[0])); this.radPool = shuffle(free).slice(0, 8); this.radA = 0; }
+      const pool = this.radPool, n = pool.length, seg = TAU / Math.max(1, n);
+      if (!n) { panel(c, W / 2 - 170, cy - 50, 340, 100, '#fff7e6', 22); txt(c, 'Du hast schon alle Skins!', W / 2, cy - 10, 18, BRAND.olive, 'center', null); txt(c, 'Bald gibt es neue im Tages-Shop.', W / 2, cy + 18, 13, '#6b5a48', 'center', null); }
+      else {
+        const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 3.2), 3)) : (this.radA || 0);
+        pool.forEach((o, i) => { const a0 = ang + i * seg, a1 = a0 + seg; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + seg / 2) * R * 0.62, cy + Math.sin(a0 + seg / 2) * R * 0.62); drawAnimal(c, ACC().char || 'cat', 0, 14, R / 150, { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
+        ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
+        if (sp && this.t - sp.t0 > 3.3 && !sp.done) { sp.done = true; const id = pool[sp.k][0], mm = META(); mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6; }
+        if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
+        const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
+        UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => RARITY[o[2]].w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * seg + seg / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
+        wrapLines(c, 'Dreh das Rad und gewinne einen Skin, den du noch nicht hast – legendäre sind seltener!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
+      }
     } else if (this.tab === 'skins') {
       const cols = W > H ? 5 : 3, gap = 10, cw = Math.min(160, (W - 110 - gap * (cols - 1)) / cols), ch = Math.min(170, (bottom - top - gap) / 2 - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
       const kind = ACC().char || 'cat', per = cols * 2, pages = Math.ceil(SHOP_SKINS.length / per); this.page = clamp(this.page || 0, 0, pages - 1);
