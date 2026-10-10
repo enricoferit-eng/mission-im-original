@@ -16,8 +16,8 @@ function ownedAnimals() { const m = META(); return BASE_ANIMALS.concat(m ? m.ani
 
 // ---- Erfolge ----
 const ACHIEVEMENTS = [
-  { id: 'erster', name: 'Erste Hilfe', desc: 'Hilf deinem ersten Kind.', coins: 10, stat: 'kids', need: 1 },
-  { id: 'kinder25', name: 'Guter Freund', desc: 'Hilf 25 Kindern.', coins: 40, stat: 'kids', need: 25 },
+  { id: 'erster', name: 'Erste Hilfe', desc: 'Hilf deiner ersten Person.', coins: 10, stat: 'kids', need: 1 },
+  { id: 'kinder25', name: 'Guter Freund', desc: 'Hilf 25 Leuten.', coins: 40, stat: 'kids', need: 25 },
   { id: 'spielplatz', name: 'Spielplatz-Held', desc: 'Schaffe den Spielplatz.', coins: 30 },
   { id: 'profi', name: 'Schwer-Profi', desc: 'Schaffe einen Bereich auf Schwer.', coins: 60 },
   { id: 'ohnejoker', name: 'Ganz ohne Joker', desc: 'Schaffe einen Bereich, ohne einen Joker zu benutzen.', coins: 50 },
@@ -93,6 +93,14 @@ class Shop {
   enter() { FX.clear(); }
   update(dt) { this.t += dt; this.msgT = Math.max(0, this.msgT - dt); }
   say(m) { this.msg = m; this.msgT = 2.5; }
+  down(x, y) { if (this.tab === 'skins') this.drag = { y0: y, s0: this.sc || 0, moved: false, x, y }; }
+  move(x, y) { if (this.drag) { if (Math.abs(y - this.drag.y0) > 8) this.drag.moved = true; this.sc = this.drag.s0 - (y - this.drag.y0); } }
+  up(x, y) {
+    const d = this.drag; this.drag = null; if (!d || d.moved || this.tab !== 'skins') return;
+    const h = (this.skinHit || []).find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h); if (!h) return;
+    if (h.own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; }
+    this.buy(h.price, mm => { mm.skins.push(h.id); this.say(h.name + ' liegt jetzt im Kleiderschrank.'); });
+  }
   buy(price, fn) { const m = META(); if (m.coins < price) { Sfx.play('bad'); this.say('Dafür fehlen dir noch ' + (price - m.coins) + ' Taler.'); return; } m.coins -= price; fn(m); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 40); achieve('einkauf'); }
   draw(c) {
     skyBg(c);
@@ -164,20 +172,30 @@ class Shop {
         wrapLines(c, 'Dreh das Rad und gewinne einen Skin, den du noch nicht hast – legendäre sind seltener!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
       }
     } else if (this.tab === 'skins') {
-      const cols = W > H ? 5 : 3, gap = 10, cw = Math.min(160, (W - 110 - gap * (cols - 1)) / cols), ch = Math.min(170, (bottom - top - gap) / 2 - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
-      const kind = ACC().char || 'cat', per = cols * 2, pages = Math.ceil(SHOP_SKINS.length / per); this.page = clamp(this.page || 0, 0, pages - 1);
-      if (pages > 1) { const my = top + ch + gap / 2; if (this.page > 0) roundBtn(c, x0 - 30, my, 22, '#fff', 'back', () => { this.page--; }); if (this.page < pages - 1) { c.save(); c.translate(x0 + cols * (cw + gap) + 20, my); c.scale(-1, 1); roundBtn(c, 0, 0, 22, '#fff', 'back', null); c.restore(); UI.btn(x0 + cols * (cw + gap) - 2, my - 22, 44, 44, () => { this.page++; }); } txt(c, (this.page + 1) + ' / ' + pages, W / 2, bottom + 8, 12, '#fff', 'center', BRAND.olive); }
-      SHOP_SKINS.slice(this.page * per, this.page * per + per).forEach(([id, name, rarity, price], i) => {
-        const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap), own = m.skins.includes(id), sk = SKINS[id];
+      // alle Skins auf einer Seite untereinander, sortiert: Normal → Selten → Legendär, dann nach Preis
+      const RO = { common: 0, rare: 1, legend: 2 }, list = this.skinList || (this.skinList = SHOP_SKINS.slice().sort((a, b) => RO[a[2]] - RO[b[2]] || a[3] - b[3] || a[1].localeCompare(b[1])));
+      const cols = W > H ? 6 : 3, gap = 10, cw = Math.min(150, (W - 40 - gap * (cols - 1)) / cols), ch = Math.min(150, cw * 1.05), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
+      const kind = ACC().char || 'cat', rows = Math.ceil(list.length / cols), headH = 28;
+      // Abschnitte je Seltenheit
+      const groups = [['common', 'Normal'], ['rare', 'Selten'], ['legend', 'Legendär']].map(([r, n]) => [n, list.filter(o => o[2] === r)]);
+      let yy = 0; const pos = []; groups.forEach(([n, L]) => { pos.push({ head: n, y: yy }); yy += headH; L.forEach((o, i) => { pos.push({ o, x: x0 + (i % cols) * (cw + gap), y: yy + Math.floor(i / cols) * (ch + gap) }); }); yy += Math.ceil(L.length / cols) * (ch + gap) + 8; });
+      const maxS = Math.max(0, yy - (bottom - top)); this.sc = clamp(this.sc || 0, 0, maxS); this.skinHit = [];
+      c.save(); c.beginPath(); c.rect(0, top - 4, W, bottom - top + 8); c.clip();
+      pos.forEach(P => {
+        const y = top + P.y - this.sc; if (y > bottom || y + ch < top - 40) return;
+        if (P.head) { txt(c, P.head, x0, y + 14, 16, '#fff', 'left', BRAND.olive); return; }
+        const [id, name, rarity, price] = P.o, x = P.x, own = m.skins.includes(id), sk = SKINS[id];
         rrPath(c, x, y, cw, ch, 16); fs(c, own ? '#d8f5e3' : '#fff', 3, rarity === 'legend' ? '#c9a227' : rarity === 'rare' ? '#118ab2' : OL);
-        drawAnimal(c, kind, x + cw / 2, y + ch * 0.62, Math.min(1.5, ch / 110), { look: sk, cap: true, t: this.t + i });
-        rrPath(c, x + 8, y + 6, cw - 16, 18, 9); c.fillStyle = RARITY[rarity].col; c.fill(); txt(c, RARITY[rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + 16, 10, '#3d2c1f', 'center', null);
-        txt(c, name, x + cw / 2, y + ch - 30, 12, '#3d2c1f', 'center', null);
+        drawAnimal(c, kind, x + cw / 2, y + ch * 0.66, Math.min(1.4, ch / 115), { look: sk, cap: true, t: this.t });
+        rrPath(c, x + 6, y + 6, cw - 12, 18, 9); c.fillStyle = RARITY[rarity].col; c.fill(); txt(c, sk.ability ? ABILITIES[sk.ability].name : RARITY[rarity].name, x + cw / 2, y + 15, 10, '#3d2c1f', 'center', null);
+        txt(c, name, x + cw / 2, y + ch - 30, 11, '#3d2c1f', 'center', null);
         if (own) txt(c, 'gekauft', x + cw / 2, y + ch - 12, 12, '#2b9348', 'center', null);
-        else { icon(c, 'coin', x + cw / 2 - 22, y + ch - 12, 16); txt(c, String(price), x + cw / 2 + 4, y + ch - 11, 13, '#8d5a3b', 'center', null); }
-        UI.btn(x, y, cw, ch, () => { if (own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; } this.buy(price, mm => { mm.skins.push(id); this.say(name + ' liegt jetzt im Kleiderschrank.'); }); });
-        skinInfoBtn(c, x + cw - 18, y + ch - 46, id);
+        else { icon(c, 'coin', x + cw / 2 - 20, y + ch - 12, 15); txt(c, String(price), x + cw / 2 + 6, y + ch - 11, 13, '#8d5a3b', 'center', null); }
+        skinInfoBtn(c, x + cw - 16, y + ch - 50, id);
+        this.skinHit.push({ x, y, w: cw, h: ch, id, name, price, own });
       });
+      c.restore();
+      if (maxS > 0) { const h = (bottom - top) * (bottom - top) / (bottom - top + maxS), y = top + (bottom - top - h) * (this.sc / maxS); rrPath(c, W - 9, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill(); }
     } else {
       const all = BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS), cols = W > H ? 6 : 3, gap = 10, cw = Math.min(140, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(180, (bottom - top - gap) / Math.ceil(all.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
       all.forEach(([k, price], i) => {
@@ -394,7 +412,7 @@ class LobbyScene {
     const w = Math.min(W - 30, 460), h = Math.min(H - 150, 290), x = (W - w) / 2, y = 76, py = y + Math.min(190, h - 60);
     panel(c, x, y, w, h, '#fff7e6', 24);
     const o = this.lob.opts, stars = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff];
-    txt(c, o.mode === 'team' ? 'Zusammen spielen · ' + stars : 'Duell · ' + o.kids + (o.kids === 1 ? ' Kind' : ' Kinder') + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars, W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
+    txt(c, o.mode === 'team' ? 'Zusammen spielen · ' + stars : 'Duell · ' + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars, W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
     txt(c, 'Spiel-Code', W / 2, y + 62, 13, '#6b5a48', 'center', null);
     this.lob.code.split('').forEach((ch, i) => { const cx = W / 2 + (i - 1.5) * 52; rrPath(c, cx - 22, y + 74, 44, 52, 12); fs(c, '#fff', 3); txt(c, ch, cx, y + 101, 30, '#118ab2', 'center', null); });
     const ppl = [this.lob.host, this.lob.guest];

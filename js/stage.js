@@ -410,7 +410,7 @@ class Play {
     } else {
       // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
       this.pre = {}; if (this.diff !== 'easy') this.activeIds.concat(['gate']).forEach(id => { this.pre[id] = this.genQuest(id); });
-      this.banner = { text: 'Duell! Hilf ' + M.opts.kids + (M.opts.kids === 1 ? ' Kind' : ' Kindern') + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
+      this.banner = { text: 'Duell! Hilf ' + M.opts.kids + ' ' + (M.opts.kids === 1 ? W_('one') : W_('dat')) + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
     }
   }
   mpKidsDone() { return NPC_DEFS.filter(n => this.st.done[n.id]).length; }
