@@ -82,18 +82,19 @@ function drawGroundGastraum(g, R) {
   for (let k = 0; k < 9; k++) { g.fillStyle = 'rgba(40,20,10,.05)'; g.fillRect(52, 300 + k * 130, 896, 8); }
   for (let i = 0; i < 18; i++) { g.fillStyle = 'rgba(255,240,200,.08)'; polyPath(g, [[R() * 900, 200 + R() * 1100], [0, 0], [0, 0]].map((p, k, a) => k ? [a[0][0] + (k === 1 ? 90 : 60), a[0][1] + (k === 1 ? 30 : 90)] : p)); g.fill(); }
   g.restore();
-  // Rückwand links: Bar-Regalwand aus Holz mit Flaschen, Gläsern, Kreidetafel
-  g.fillStyle = '#6f4e37'; g.fillRect(0, 0, 560, 150);
-  for (let x = 0; x < 560; x += 24) { g.fillStyle = x % 48 ? '#7a5640' : '#6a4a35'; g.fillRect(x, 0, 24, 150); }
-  rrPath(g, 60, 12, 430, 132, 4); fs(g, '#4e3b2d', 3);
-  for (let k = 0; k < 3; k++) {
-    const y = 48 + k * 40; rrPath(g, 66, y, 418, 6, 2); fs(g, '#a0673a', 2);
-    for (let m = 0; m < 17; m++) { const x = 74 + m * 24, kind = (m + k * 3) % 5;
-      if (kind < 2 || k === 2) { rrPath(g, x, y - 26, 9, 26, 3); fs(g, ['#2b9348', '#9d0208', '#e9c46a', '#1d3557', '#f77f00'][(m * 7 + k) % 5], 1.5); rrPath(g, x + 2.5, y - 33, 4, 8, 1.5); fs(g, '#343a40', 1); }
-      else { rrPath(g, x - 2, y - 18, 13, 18, 3); g.fillStyle = 'rgba(210,235,250,.85)'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = 'rgba(30,30,30,.6)'; g.stroke(); } }
+  // Rückwand links: Bar-Regalwand aus Altholz (Foto): Kreidetafel-Leiste, große Tafel, Regale mit Flaschen + Gläsern, Kupferbecher
+  for (let y = 0, k = 0; y < 150; y += 12, k++) for (let x = (k % 3) * -20; x < 560; x += 60 + (k * 13) % 30) { g.fillStyle = ['#6f4e37', '#7a5a43', '#5c4636', '#8a7262', '#6b5847', '#4e3b2d'][(k * 7 + x) % 6]; g.fillRect(x, y, 62, 12); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(x, y + 11, 62, 1); }
+  rrPath(g, 40, 6, 500, 24, 2); fs(g, '#2b2d2f', 2.5); txt(g, 'PESTO  ·  KAFFEE  ·  Lange Rede, kurzer Gin', 290, 18, 11, '#f1f3f5', 'center', null);
+  rrPath(g, 160, 38, 120, 78, 3); fs(g, '#2b2d2f', 3); rrPath(g, 156, 34, 128, 86, 4); fs(g, null, 4, '#8d5a3b');
+  txt(g, 'Pumpkin Spice Latte', 220, 54, 9, '#f8f9fa', 'center', null); txt(g, 'Kürbissuppe', 220, 76, 10, '#f8f9fa', 'center', null); txt(g, 'Neuer Süßer', 220, 98, 10, '#f8f9fa', 'center', null); ell(g, 266, 104, 6, 5); g.fillStyle = '#f77f00'; g.fill();
+  for (const [x0, w] of [[40, 110], [290, 250]]) for (let k = 0; k < 3; k++) {
+    const y = 58 + k * 30; rrPath(g, x0, y, w, 5, 2); fs(g, '#a0673a', 1.5);
+    for (let m = 0; m < Math.floor(w / 13); m++) { const x = x0 + 6 + m * 13, kind = (m * 3 + k) % 4;
+      if (kind < 2) { rrPath(g, x, y - 20, 7, 20, 2); fs(g, ['#2b9348', '#9d0208', '#e9c46a', '#1d3557', '#f77f00', '#adb5bd'][(m * 5 + k) % 6], 1.2); rrPath(g, x + 2, y - 26, 3, 7, 1); fs(g, '#343a40', 0.8); }
+      else { rrPath(g, x - 1, y - 13, 9, 13, 2); g.fillStyle = 'rgba(210,235,250,.85)'; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(30,30,30,.6)'; g.stroke(); } }
   }
-  rrPath(g, 80, 16, 120, 26, 3); fs(g, '#212529', 2.5); txt(g, 'Original Kaffee', 140, 29, 11, '#f8f9fa', 'center', null);
-  rrPath(g, 500, 14, 52, 70, 3); fs(g, '#95C11F', 2.5); rrPath(g, 510, 26, 32, 40, 2); fs(g, '#c1121f', 2); leaf(g, 526, 46, 0.5, '#fff');
+  rrPath(g, 420, 38, 120, 18, 2); fs(g, '#2b2d2f', 2); txt(g, 'Irish Coffee', 480, 47, 10, '#f8f9fa', 'center', null);
+  for (let k = 0; k < 6; k++) { line(g, 548, 40 + k * 18, 552, 40 + k * 18, 2, '#495057', false); ell(g, 552, 46 + k * 18, 5, 4); fs(g, '#c87533', 1.2); }
   // Mitte: Weinberg-Fototapete im Abendlicht
   { const x0 = 560, w = 180, sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#f9c74f'); sky.addColorStop(0.55, '#f8961e'); sky.addColorStop(1, '#d9480f'); g.fillStyle = sky; g.fillRect(x0, 0, w, 150);
     ell(g, x0 + 120, 46, 18, 18); g.fillStyle = '#fff3bf'; g.fill();
@@ -149,21 +150,27 @@ function flowerChair(c, x, y, back) {
 }
 const GDRAW = {
   bar(c, d, t) {
-    rrPath(c, d.x0, d.y0 + d.h - 6, d.w, 42, 4); fs(c, '#4e3b2d', 3);
-    for (let x = d.x0 + 6; x < d.x0 + d.w - 6; x += 22) { rrPath(c, x, d.y0 + d.h, 18, 32, 2); c.fillStyle = (x / 22) % 2 ? '#5c4636' : '#66503f'; c.fill(); }
-    rrPath(c, d.x0 - 6, d.y0, d.w + 12, d.h, 6); fs(c, '#d4a373', 3); line(c, d.x0, d.y0 + 6, d.x0 + d.w, d.y0 + 6, 2, 'rgba(255,255,255,.35)', false);
-    // Zapfanlage, Kasse, Gläser, Zitronen
-    rrPath(c, d.x0 + 40, d.y0 - 30, 50, 34, 6); fs(c, '#ced4da', 2.5); for (let k = 0; k < 3; k++) { rrPath(c, d.x0 + 48 + k * 14, d.y0 - 44, 6, 16, 3); fs(c, '#212529', 1.5); }
-    rrPath(c, d.x0 + 330, d.y0 - 26, 50, 30, 4); fs(c, '#212529', 2.5); rrPath(c, d.x0 + 336, d.y0 - 20, 38, 14, 2); c.fillStyle = '#4dabf7'; c.fill();
-    for (let k = 0; k < 5; k++) drawGlass(c, d.x0 + 140 + k * 26, d.y0 + 20, 0.36, k % 2 ? 0.6 : 0, ['#ff9f1c', '#e63946', '#ffd166', '#06d6a0', '#f4a261'][k]);
-    ell(c, d.x0 + 290, d.y0 + 14, 18, 8); fs(c, '#fff', 2); for (let k = 0; k < 4; k++) { ell(c, d.x0 + 282 + (k % 2) * 14, d.y0 + 10 + Math.floor(k / 2) * 6, 5, 4); c.fillStyle = '#ffd60a'; c.fill(); }
-    rrPath(c, d.x0 + 410, d.y0 - 18, 26, 22, 6); fs(c, '#c1121f', 2); leaf(c, d.x0 + 423, d.y0 - 7, 0.4, '#fff');
+    // Theke wie auf dem Foto: Front aus Altholz (bunt gemischt), schwarze Platte, Siebträgermaschine, Kuchenvitrine, Kürbis
+    rrPath(c, d.x0, d.y0 + d.h - 6, d.w, 42, 4); fs(c, '#5c4636', 3);
+    c.save(); rrPath(c, d.x0, d.y0 + d.h - 6, d.w, 42, 4); c.clip();
+    for (let y = d.y0 + d.h - 6, k = 0; y < d.y0 + d.h + 36; y += 9, k++) for (let x = d.x0 - (k * 17) % 40; x < d.x0 + d.w; x += 44 + (k * 11) % 20) { c.fillStyle = ['#6f4e37', '#8a7262', '#5c4636', '#a08672', '#4e3b2d', '#7d6b5d'][(k + Math.floor(x / 7)) % 6]; c.fillRect(x, y, 46, 9); }
+    c.restore(); rrPath(c, d.x0, d.y0 + d.h - 6, d.w, 42, 4); fs(c, null, 3);
+    rrPath(c, d.x0 - 6, d.y0, d.w + 12, d.h, 4); fs(c, '#2b2d2f', 3); line(c, d.x0, d.y0 + 6, d.x0 + d.w, d.y0 + 6, 2, 'rgba(255,255,255,.18)', false);
+    // Kuchenvitrine (Glas) links, Siebträger rechts
+    rrPath(c, d.x0 + 20, d.y0 - 44, 70, 52, 4); c.fillStyle = 'rgba(220,240,250,.7)'; c.fill(); c.lineWidth = 2.5; c.strokeStyle = OL; c.stroke(); for (let k = 0; k < 2; k++) { line(c, d.x0 + 24, d.y0 - 24 + k * 18, d.x0 + 86, d.y0 - 24 + k * 18, 2, '#adb5bd', false); for (let m = 0; m < 3; m++) { rrPath(c, d.x0 + 28 + m * 20, d.y0 - 34 + k * 18, 14, 9, 3); c.fillStyle = ['#e9c46a', '#f8f9fa', '#c1121f'][(m + k) % 3]; c.fill(); } }
+    rrPath(c, d.x0 + 300, d.y0 - 36, 70, 40, 8); fs(c, '#ced4da', 2.5); rrPath(c, d.x0 + 306, d.y0 - 30, 58, 10, 3); fs(c, '#868e96', 1.5); for (let k = 0; k < 2; k++) { rrPath(c, d.x0 + 314 + k * 26, d.y0 - 16, 14, 12, 2); fs(c, '#343a40', 1.5); }
+    rrPath(c, d.x0 + 300, d.y0 - 52, 40, 16, 4); fs(c, '#f8f9fa', 2);
+    for (let k = 0; k < 4; k++) drawGlass(c, d.x0 + 150 + k * 28, d.y0 + 20, 0.36, k % 2 ? 0.6 : 0, ['#ff9f1c', '#e63946', '#ffd166', '#06d6a0'][k]);
+    ell(c, d.x0 + 260, d.y0 + 14, 12, 10); fs(c, '#f77f00', 2.5); line(c, d.x0 + 260, d.y0 + 4, d.x0 + 262, d.y0, 3, '#2d6a4f', false); line(c, d.x0 + 260, d.y0 + 5, d.x0 + 260, d.y0 + 22, 1.2, 'rgba(0,0,0,.25)', false);
+    ell(c, d.x0 + 410, d.y0 + 14, 18, 8); fs(c, '#fff', 2); for (let k = 0; k < 4; k++) { ell(c, d.x0 + 402 + (k % 2) * 14, d.y0 + 10 + Math.floor(k / 2) * 6, 5, 4); c.fillStyle = k % 2 ? '#ffd60a' : '#f77f00'; c.fill(); }
+    ell(c, d.x0 + 440, d.y0 + 8, 9, 9); fs(c, '#212529', 1.5); ell(c, d.x0 + 440, d.y0 + 4, 7, 3); c.fillStyle = '#74c69d'; c.fill();
   },
   hocker(c, d) {
+    // dunkler Holz-Barhocker mit X-Lehne und grauem Sitzpolster (Foto)
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 2, 16, 5); c.fill();
-    line(c, d.x - 11, d.y, d.x - 8, d.y - 30, 3, '#212529', false); line(c, d.x + 11, d.y, d.x + 8, d.y - 30, 3, '#212529', false); line(c, d.x - 10, d.y - 12, d.x + 10, d.y - 12, 2, '#212529', false);
-    rrPath(c, d.x - 13, d.y - 38, 26, 10, 4); fs(c, '#343a40', 2.5);
-    line(c, d.x - 11, d.y - 38, d.x - 11, d.y - 66, 3, '#212529'); line(c, d.x + 11, d.y - 38, d.x + 11, d.y - 66, 3, '#212529'); line(c, d.x - 11, d.y - 40, d.x + 11, d.y - 64, 2.5, '#212529', false); line(c, d.x + 11, d.y - 40, d.x - 11, d.y - 64, 2.5, '#212529', false);
+    line(c, d.x - 11, d.y, d.x - 8, d.y - 30, 3, '#4e3b2d', false); line(c, d.x + 11, d.y, d.x + 8, d.y - 30, 3, '#4e3b2d', false); line(c, d.x - 10, d.y - 12, d.x + 10, d.y - 12, 2, '#4e3b2d', false);
+    rrPath(c, d.x - 13, d.y - 38, 26, 10, 4); fs(c, '#6c757d', 2.5);
+    line(c, d.x - 11, d.y - 38, d.x - 11, d.y - 66, 3, '#5c3d2e'); line(c, d.x + 11, d.y - 38, d.x + 11, d.y - 66, 3, '#5c3d2e'); line(c, d.x - 11, d.y - 40, d.x + 11, d.y - 64, 2.5, '#5c3d2e', false); line(c, d.x + 11, d.y - 40, d.x - 11, d.y - 64, 2.5, '#5c3d2e', false); line(c, d.x - 12, d.y - 66, d.x + 12, d.y - 66, 3, '#5c3d2e');
   },
   treppe(c, d) {
     // Holzstufen mit Stahlwangen, unten breit, oben schmaler (läuft nach hinten zur Empore)
