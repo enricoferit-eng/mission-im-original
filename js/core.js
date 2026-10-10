@@ -477,6 +477,20 @@ function sprite(key, x0, y0, w, h, draw, q = 1.6) {
   }
   return s;
 }
+// Bildrahmen automatisch messen: einmal auf eine große Fläche zeichnen und die sichtbaren Pixel suchen
+const BB_CACHE = {};
+function measureBB(key, cx, cy, draw) {
+  if (BB_CACHE[key]) return BB_CACHE[key];
+  const S = 0.35, RW = 1400, RH = 1400, x0 = cx - RW / 2, y0 = cy - RH * 0.8;
+  const cv = document.createElement('canvas'); cv.width = RW * S; cv.height = RH * S;
+  const g = cv.getContext('2d'); g.scale(S, S); g.translate(-x0, -y0); g.lineJoin = 'round'; g.lineCap = 'round';
+  try { draw(g); } catch (e) { /* egal */ }
+  let D; try { D = g.getImageData(0, 0, cv.width, cv.height).data; } catch (e) { return (BB_CACHE[key] = [cx - 220, cy - 420, 440, 470]); }   // Bild nicht lesbar (z. B. Logo bei file://): großzügiger Rahmen
+  let mx = cv.width, my = cv.height, Mx = -1, My = -1;
+  for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (D[(y * cv.width + x) * 4 + 3] > 8) { if (x < mx) mx = x; if (x > Mx) Mx = x; if (y < my) my = y; if (y > My) My = y; }
+  const bb = Mx < 0 ? [cx - 10, cy - 10, 20, 20] : [x0 + mx / S - 6, y0 + my / S - 6, (Mx - mx) / S + 14, (My - my) / S + 14];
+  return (BB_CACHE[key] = bb);
+}
 function drawSprite(c, s, alpha = 1) {
   if (alpha < 1) { const a = c.globalAlpha; c.globalAlpha = a * alpha; c.drawImage(s.cv, s.x0, s.y0, s.w, s.h); c.globalAlpha = a; }
   else c.drawImage(s.cv, s.x0, s.y0, s.w, s.h);

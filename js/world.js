@@ -146,7 +146,7 @@ Object.assign(Play.prototype, {
       if (N.fill || N.fog || !this.tileVisible(N.ox, N.oy)) continue;
       const { ox, oy, D } = N, tr = f => () => { c.save(); c.translate(ox, oy); f(); c.restore(); };
       for (const d of D.decor) {
-        const bb = decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3])) continue;
+        const bb = BB_CACHE[N.id + '_d_' + d.id] || decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3] + 100)) continue;
         const fn = decorStatic(N.id, D, d); if (fn) L.push({ y: d.y + (d.zy || 0) + (d.t === 'bench' ? 10 : 0) + oy, f: tr(() => fn(c, t)) });
       }
       if (N.id === 'spielplatz') pushPlaygroundProps(c, L, ox, oy, inView);
@@ -180,7 +180,7 @@ function decorStatic(sid, D, d) {
     bench: g => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); },
   }[d.t] || (D.decorDraw && D.decorDraw[d.t] ? g => D.decorDraw[d.t](g, d, 0, 0) : null);
   if (!raw) return null;
-  return (c, t) => { if (d.anim && D.decorDraw && D.decorDraw[d.t]) D.decorDraw[d.t](c, d, t, 0); else drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], raw)); };
+  return (c, t) => { if (d.anim && D.decorDraw && D.decorDraw[d.t]) D.decorDraw[d.t](c, d, t, 0); else { const B = measureBB(k, d.x, d.y, raw); drawSprite(c, sprite(k, B[0], B[1], B[2], B[3], raw)); } };
 }
 // Spielhaus, Rutsche, Schaukel des Spielplatzes als Nachbar (ohne Bewegung)
 function pushPlaygroundProps(c, L, ox, oy, inView) {

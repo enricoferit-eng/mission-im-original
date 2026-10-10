@@ -371,6 +371,7 @@ class Play {
     this.npcAnim = {}; ALL_IDS.forEach((id, i) => (this.npcAnim[id] = { ph: i * 1.7, wave: 0, jump: 0 }));
     this.pigeons = SG.feat.pigeons ? [0, 1, 2].map(i => ({ x: 300 + i * 200, y: 950 + i * 40, tx: 0, ty: 0, wait: i, fly: 0, dir: 1, t: i })) : [];
     if (!SG.feat.racer) this.racer.state = 'off';
+    for (const d of DECOR) if (SG.decorDraw && SG.decorDraw[d.t]) measureBB(SG.id + '_d_' + d.id, d.x, d.y, g => SG.decorDraw[d.t](g, d, 0, 0));   // Bildrahmen einmal vorab messen
     if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
     if (!this.mp && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) this.banner = { text: STAGE_NAME[this.stage], t: 0 }; }
     if (opt.joy) this.joy = opt.joy;
@@ -1127,7 +1128,7 @@ class Play {
     const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
     const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
     for (const d of DECOR) {
-      if (d.bb ? (d.bb[0] - 40 > vx1 || d.bb[0] + d.bb[2] + 40 < vx0 || d.bb[1] - 50 > vy1 || d.bb[1] + d.bb[3] + 40 < vy0 - 260) : !vis(d.x, d.y)) continue;   // hohe/lange Möbel: ganze Fläche zählt
+      { const B = BB_CACHE[SG.id + '_d_' + d.id] || d.bb; if (B ? (B[0] > vx1 || B[0] + B[2] < vx0 || B[1] > vy1 + 100 || B[1] + B[3] < vy0 - 200) : !vis(d.x, d.y)) continue; }   // hohe/lange Möbel: ganze Fläche zählt
       const sh = this.shake[d.id] || 0, k = SG.id + '_d_' + d.id;
       if (d.t === 'yucca') L.push({ y: d.y, f: () => sh > 0 ? drawYucca(c, d.x, d.y, 1, t, sh) : drawSprite(c, sprite(k, d.x - 48, d.y - 62, 96, 76, g => drawYucca(g, d.x, d.y, 1, 0, 0))) });
       else if (d.t === 'rock') L.push({ y: d.y, f: () => sh > 0 ? drawRock(c, d.x, d.y, d.r, sh) : drawSprite(c, sprite(k, d.x - d.r - 8, d.y - d.r * 1.25 - 6, d.r * 2 + 16, d.r * 1.25 + 16, g => drawRock(g, d.x, d.y, d.r, 0))) });
@@ -1137,7 +1138,7 @@ class Play {
       else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 232, 84, 246, g => drawCypress(g, d.x, d.y))) });
       else if (d.t === 'planter') L.push({ y: d.y, f: () => sh > 0 ? drawPlanter(c, d.x, d.y, t, sh) : drawSprite(c, sprite(k, d.x - 52, d.y - 72, 104, 90, g => drawPlanter(g, d.x, d.y, 0, 0))) });
       else if (d.t === 'lamp') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 16, d.y - 190, 54, 200, g => lampRaw(g, d))) });
-      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = d.bb && (typeof decorBB === 'function' ? decorBB(d) : d.bb); L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0))) : fn(c, d, t, sh)) }); }
+      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = measureBB(k, d.x, d.y, g => fn(g, d, 0, 0)); L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0))) : fn(c, d, t, sh)) }); }
       else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => sh > 0 ? benchRaw(c, d, Math.sin(sh * 60) * 2) : drawSprite(c, sprite(k, d.x - 52, d.y - 26, 104, 52, g => benchRaw(g, d, 0))) });
     }
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });

@@ -122,7 +122,7 @@ function drawGroundKueche(g, R) {
   ell(g, 255, 165, 40, 26); fs(g, '#868e96', 3); ell(g, 255, 165, 30, 18); fs(g, '#adb5bd', 2); rrPath(g, 238, 120, 6, 30, 3); fs(g, '#ced4da', 2);
   for (let k = 0; k < 2; k++) { rrPath(g, 92 + k * 60, 140, 52, 50, 3); fs(g, 'rgba(250,250,250,.9)', 2); g.strokeStyle = '#adb5bd'; g.lineWidth = 1; for (let a = 0; a < 6; a++) { g.beginPath(); g.moveTo(96 + k * 60 + a * 8, 142); g.lineTo(96 + k * 60 + a * 8, 188); g.stroke(); } }
   // Kombidämpfer mit roter Anzeige
-  steel(g, 360, 120, 100, 92, 6); rrPath(g, 368, 128, 84, 18, 3); fs(g, '#495057', 2); txt(g, '180°', 392, 137, 9, '#ff4d4d', 'center', null); txt(g, '0:25', 428, 137, 9, '#ff4d4d', 'center', null); rrPath(g, 372, 152, 76, 52, 6); fs(g, '#343a40', 2.5); rrPath(g, 380, 160, 60, 36, 4); c_glow(g, 380, 160, 60, 36);
+  steel(g, 360, 120, 100, 92, 6); rrPath(g, 368, 128, 84, 18, 3); fs(g, '#495057', 2);   rrPath(g, 372, 152, 76, 52, 6); fs(g, '#343a40', 2.5); rrPath(g, 380, 160, 60, 36, 4); c_glow(g, 380, 160, 60, 36);
   // Mikrowelle + Fritteuse
   steel(g, 560, 128, 160, 82, 4); rrPath(g, 572, 80, 70, 46, 4); fs(g, '#dee2e6', 2.5); rrPath(g, 578, 86, 44, 34, 3); fs(g, '#343a40', 2); rrPath(g, 626, 86, 10, 34, 2); fs(g, '#495057', 1.5);
   for (let k = 0; k < 2; k++) { rrPath(g, 650 + k * 32, 138, 28, 44, 3); fs(g, '#e9c46a', 2); rrPath(g, 654 + k * 32, 130, 20, 10, 2); fs(g, '#adb5bd', 1.5); }
@@ -203,7 +203,7 @@ const KDRAW = {
     for (let k = 1; k < 5; k++) line(c, d.x0 + k * d.w / 5, d.y0 - 76, d.x0 + k * d.w / 5, d.y0 + d.h - 4, 2, 'rgba(0,0,0,.08)', false);
     rrPath(c, d.x0, d.y0 + d.h - 100, d.w, 100, 6); fs(c, '#e9ecef', 3);   // Vorderseite
     rrPath(c, d.x0 + d.w - 110, d.y0 + d.h - 96, 96, 92, 4); fs(c, '#f8f9fa', 2.5); rrPath(c, d.x0 + d.w - 30, d.y0 + d.h - 64, 10, 34, 4); fs(c, '#343a40', 2);
-    rrPath(c, d.x0 + 18, d.y0 + d.h - 90, 120, 50, 4); fs(c, '#ffd60a', 2.5); txt(c, 'Kühlraum', d.x0 + 78, d.y0 + d.h - 74, 13, OL, 'center', null); txt(c, 'Tür offen lassen', d.x0 + 78, d.y0 + d.h - 56, 9, OL, 'center', null);
+    rrPath(c, d.x0 + 18, d.y0 + d.h - 90, 120, 50, 4); fs(c, '#ffd60a', 2.5);  
     for (let k = 0; k < 4; k++) { const fx = d.x0 + 30 + k * 60, fy = d.y0 - 40 + ((k * 23) % 30); ell(c, fx, fy, 3, 3); c.fillStyle = 'rgba(160,210,255,.6)'; c.fill(); }   // Kälte
   },
   kisten(c, d) {
@@ -213,18 +213,18 @@ const KDRAW = {
   kistenregal(c, d) {
     rrPath(c, d.x0, d.y0 - 60, d.w, d.h + 60, 3); fs(c, '#ced4da', 2.5);
     const cols = ['#1c4fd8', '#e63946', '#1c4fd8', '#2b9348', '#2b9348', '#212529'];
-    for (let k = 0; k < 6; k++) { rrPath(c, d.x0 - 10, d.y0 - 52 + k * 48, d.w + 6, 40, 5); fs(c, cols[k], 2.5); txt(c, k < 3 ? (k === 1 ? 'Paulaner' : 'PAULANER') : k < 5 ? 'JEVER' : '', d.x0 + d.w / 2 - 2, d.y0 - 32 + k * 48, 9, '#fff', 'center', null); }
+    for (let k = 0; k < 6; k++) { rrPath(c, d.x0 - 10, d.y0 - 52 + k * 48, d.w + 6, 40, 5); fs(c, cols[k], 2.5);  }
   },
   faesser(c, d) {
     c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, d.x, d.y + 2, 54, 14); c.fill();
     for (const [dx, dy] of [[-30, -16], [0, -22], [30, -16], [-15, 0], [15, 0]]) { rrPath(c, d.x + dx - 13, d.y + dy - 38, 26, 38, 5); fs(c, '#ced4da', 2.5); rrPath(c, d.x + dx - 13, d.y + dy - 8, 26, 7, 3); fs(c, '#1c4fd8', 1.5); ell(c, d.x + dx, d.y + dy - 38, 13, 5); fs(c, '#adb5bd', 2); }
   },
   getraenke(c, d) {
-    rrPath(c, d.x0, d.y0 - 110, d.w, d.h + 110, 4); fs(c, '#212529', 3); rrPath(c, d.x0 + 4, d.y0 - 106, d.w - 8, 18, 3); c.fillStyle = '#1c4fd8'; c.fill(); txt(c, 'Alkoholfrei', d.x0 + d.w / 2, d.y0 - 97, 8, '#fff', 'center', null);
+    rrPath(c, d.x0, d.y0 - 110, d.w, d.h + 110, 4); fs(c, '#212529', 3); rrPath(c, d.x0 + 4, d.y0 - 106, d.w - 8, 18, 3); c.fillStyle = '#1c4fd8'; c.fill(); 
     rrPath(c, d.x0 + 6, d.y0 - 84, d.w - 12, d.h + 70, 3); c.fillStyle = 'rgba(160,210,255,.25)'; c.fill(); for (let k = 0; k < 5; k++) { line(c, d.x0 + 8, d.y0 - 70 + k * 24, d.x0 + d.w - 8, d.y0 - 70 + k * 24, 2, '#4dabf7', false); rrPath(c, d.x0 + 12, d.y0 - 84 + k * 24, d.w - 24, 12, 2); c.fillStyle = ['#f77f00', '#fff', '#e63946', '#ffd166', '#fff'][k]; c.fill(); }
   },
   stahl(c, d) { steel(c, d.x0, d.y0 - 110, d.w, d.h + 110, 4); rrPath(c, d.x0 + 6, d.y0 - 104, d.w - 12, 14, 2); fs(c, '#212529', 1.5); rrPath(c, d.x0 + 18, d.y0 - 70, 34, 44, 2); fs(c, '#fff', 1.5); rrPath(c, d.x0 + d.w - 12, d.y0 - 60, 5, 40, 2); fs(c, '#495057', 1.5); },
-  saecke(c, d) { for (const [dx, dy] of [[-12, 0], [10, -4]]) { rrPath(c, d.x + dx - 16, d.y + dy - 36, 32, 38, 10); fs(c, '#f1e3c8', 2.5); txt(c, 'Mehl', d.x + dx, d.y + dy - 18, 8, '#8d5a3b', 'center', null); } },
+  saecke(c, d) { for (const [dx, dy] of [[-12, 0], [10, -4]]) { rrPath(c, d.x + dx - 16, d.y + dy - 36, 32, 38, 10); fs(c, '#f1e3c8', 2.5);  } },
   kanister(c, d) { rrPath(c, d.x - 13, d.y - 30, 26, 30, 4); fs(c, '#1c7ed6', 2.5); rrPath(c, d.x - 4, d.y - 36, 9, 7, 2); fs(c, '#e63946', 2); rrPath(c, d.x - 8, d.y - 22, 16, 12, 2); fs(c, '#fff', 1.2); },
   lagerregal(c, d) { rrPath(c, d.x0, d.y0 - 90, d.w, d.h + 90, 3); fs(c, '#adb5bd', 2.5); for (let k = 0; k < 3; k++) { rrPath(c, d.x0 - 2, d.y0 - 84 + k * 44, d.w + 4, 6, 2); fs(c, '#868e96', 1.5); for (let m = 0; m < 3; m++) { rrPath(c, d.x0 + 6 + m * 37, d.y0 - 112 + k * 44 + 28, 32, 26, 3); fs(c, ['#d4a373', '#e9c46a', '#fff'][(m + k) % 3], 2); } } },
 };
