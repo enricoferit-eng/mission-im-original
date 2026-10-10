@@ -1000,7 +1000,6 @@ class Play {
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
     }
-    if (e.idx === 0) Voice.say(questText({ mode: 'offer', npc: id }), true, id);   // bei Leicht sagt die Person, was sie braucht
     this.runEasyStep(id);
   }
   runEasyStep(id) {
@@ -1518,7 +1517,7 @@ class Play {
       const T = this.diff === 'easy' ? [
         `Tippe auf die ${W_('many')} mit dem gelben Ausrufezeichen. ${W_('each')} hat 4 Aufgaben für dich.`,
         `Wenn du allen 5 ${W_('dat')} geholfen hast, wartet ${W_('gate')} die letzte Aufgabe.`,
-        'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
+        `Lauf über die leuchtenden ${(typeof COLLECT_NAME !== 'undefined' && COLLECT_NAME[this.stage]) || 'Sammel-Sachen'}: Wer alle 8 findet, bekommt einen Extra-Joker.`,
         'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
@@ -1530,8 +1529,9 @@ class Play {
         `Hast du alles, bring es zurück ${W_('back')}. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.`,
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
         `Wenn du allen 5 ${W_('dat')} geholfen hast, wartet ${W_('gate')} die letzte große Aufgabe.`,
-        'Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker.',
+        `Lauf über die leuchtenden ${(typeof COLLECT_NAME !== 'undefined' && COLLECT_NAME[this.stage]) || 'Sammel-Sachen'}: Wer alle 8 findet, bekommt einen Extra-Joker.`,
         'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
+        'Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen.',
         'Die ganze Anleitung findest du im Menü unter dem Buch.',
       ];
       if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }

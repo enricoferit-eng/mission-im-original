@@ -50,8 +50,8 @@ class GameOverlay {
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
     // Beim ersten Mal: kurzer Hinweis über dem Spielfeld (vorgelesen) + Zeigehand – kein Textfenster, das Spiel startet sofort
     this.tip = null; this.lastTouch = 0;
-    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) Voice.say(HELP_TEXT[this.id] || 'Probier es einfach aus!', true);   // bei Leicht jede Aufgabe vorlesen
-    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); Voice.say(this.tip.text, true); }
+    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(HELP_TEXT[me.id] || 'Probier es einfach aus!', true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
+    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
     this.cdWait = this.tip ? 2.4 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + ABIL_VAL.zeitplus[ability('zeitplus')] : 0;

@@ -26,7 +26,7 @@ const puppeteer = require('puppeteer-core');
     // Texte jedes Bereichs (Hinweise, Tor, Auftraggeber)
     Object.keys(STAGE_DEFS).forEach(sid => { useStage(sid); ['gateTap', 'lock', 'progress', 'gateAsk', 'search'].forEach(k => add(W_(k), k === 'lock' || k === 'gateAsk' ? 'gate' : 'erzaehler')); add('Bring die Sachen zurück – tippe ' + W_('the') + ' an!'); add('Tippe ' + W_('a') + ' mit ! an.');
       const ids = STAGE_DEFS[sid].npcs.map(n => n.id); ids.concat(['gate']).forEach(n => { add(questText({ mode: 'offer', npc: n }), n); add(questText({ mode: 'progress', npc: n }), n); ids.filter(o => o !== n).forEach(o => n !== 'gate' && add(questText({ mode: 'busy', npc: n, other: o }), n)); });
-      ['easy', 'medium', 'hard'].forEach(d => { const src = (Play.prototype.drawHud._src || Play.prototype.drawHud).toString(); const m = src.match(/const T = this\.diff === 'easy' \? \[([\s\S]*?)\] : \[([\s\S]*?)\];/); const T = d === 'easy' ? eval('[' + m[1] + ']') : (function () { return eval('[' + m[2] + ']'); }).call({ diff: d }); add(T.join(' ')); }); });
+      ['easy', 'medium', 'hard'].forEach(d => { const src = (Play.prototype.drawHud._src || Play.prototype.drawHud).toString(); const m = src.match(/const T = this\.diff === 'easy' \? \[([\s\S]*?)\] : \[([\s\S]*?)\];/); const T = (function () { return eval('[' + m[d === 'easy' ? 1 : 2] + ']'); }).call({ diff: d, stage: sid }); add(T.join(' ')); }); });
     useStage('spielplatz');
     const npcs = ['hase', 'fuchs', 'igel', 'waschbaer', 'eule', 'gate'];
     npcs.forEach(n => {

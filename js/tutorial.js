@@ -52,9 +52,9 @@ const TUT_CHAPTERS = [
     start(S) { S.cx = 450; S.cy = 280; S.dir = -1; },
     press(S, x, y) { S.joy = { x0: x, y0: y }; }, drag(S, x, y) { if (S.joy) { S.joy.x = x; S.joy.y = y; } }, release(S) { S.joy = null; },
     check(S) { return dist(S.cx, S.cy, 110, 120) < 45; } },
-  { title: 'Die Kinder', dur: 9,
-    say: 'Auf dem Spielplatz spielen fünf Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für dieses Kind. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen – da starten die Aufgaben sofort.',
-    try: 'Jetzt du: Tippe das Kind mit dem gelben Ausrufezeichen an!',
+  { title: 'Wer braucht Hilfe?', dur: 9,
+    say: 'In jedem Bereich gibt es fünf Leute, die deine Hilfe brauchen – in der Küche die Mitarbeiter, draußen die Gäste, auf dem Spielplatz die Kinder. Wer ein gelbes Ausrufezeichen hat, braucht deine Hilfe. Eine blaue Lupe heißt: Du suchst gerade für diese Person. Eine grüne Tasche heißt: Du hast alles gefunden, bring es zurück. Ein grüner Haken heißt: erledigt. Bei Leicht musst du nichts suchen – da starten die Aufgaben sofort.',
+    try: 'Jetzt du: Tippe die Person mit dem gelben Ausrufezeichen an!',
     draw(c, t, S) {
       tvGround(c);
       const staff = [['hase', 'neu'], ['fuchs', 'sucht'], ['igel', 'fertig'], ['waschbaer', 'erledigt']];
@@ -68,7 +68,7 @@ const TUT_CHAPTERS = [
     tap(S, x, y) { if (dist(x, y, 90, 220) < 60) { S.ok = true; Sfx.play('good'); } },
     check(S) { return S.ok; } },
   { title: 'Suchen mit der Lupe', dur: 8,
-    say: 'Die Sachen liegen hinter Steinen und Büschen oder gucken aus den Hackschnitzeln. Geh nah heran und tippe auf die Lupe. Aber Vorsicht: Manchmal ist es nur ein Stöckchen, ein Blatt oder ein Kronkorken!',
+    say: 'Die Sachen stecken in, hinter und unter Möbeln, Töpfen, Pflanzen und Autos – auf dem Spielplatz gucken sie auch aus den Hackschnitzeln. Geh nah heran und tippe auf die Lupe. Aber Vorsicht: Manchmal ist es nur ein Stöckchen, ein Blatt oder ein Kronkorken!',
     try: 'Jetzt du: Dein Tier steht am Stein. Tippe auf die Lupe!',
     draw(c, t, S) {
       tvGround(c);
@@ -227,7 +227,7 @@ const TUT_CHAPTERS = [
     },
     check(S) { return S.ok && S.okT > 1.2; } },
   { title: 'Zurückbringen und das Tor', dur: 9,
-    say: 'Hast du alles gefunden, bring es zurück zum Kind und tippe es an. Hast du allen fünf geholfen, wartet am Tor die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
+    say: 'Hast du alles gefunden, bring es zurück zur Person und tippe sie an. Hast du allen fünf geholfen, wartet am Tor die letzte große Aufgabe. Danach geht das Tor auf – und du hast den Bereich geschafft!',
     draw(c, t, S) {
       tvGround(c);
       c.fillStyle = '#6c757d'; c.fillRect(0, 300, TV.w, 60);
@@ -240,7 +240,7 @@ const TUT_CHAPTERS = [
       if (t > 2.2 && t < 5) { const k = ease.back(clamp((t - 2.2) * 3, 0, 1)); c.save(); c.translate(300, 70); c.scale(k, k); claimBand(c, 'Danke für deine Hilfe!', 0, 0, 18); c.restore(); }
     } },
   { title: 'Deine Belohnung', dur: 8,
-    say: 'Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform. Und das Glücksrad dreht sich: Du gewinnst einen Skin – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank.',
+    say: 'Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, ein paar Taler und der nächste Bereich geht auf. Und das Glücksrad dreht sich: Du gewinnst einen Skin – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank.',
     draw(c, t, S) {
       c.fillStyle = BRAND.olive; c.fillRect(0, 0, TV.w, TV.h);
       const ang = t < 4 ? (1 - Math.pow(1 - t / 4, 3)) * TAU * 4 : TAU * 4;
@@ -251,7 +251,7 @@ const TUT_CHAPTERS = [
       if (t > 6) roundBtn(c, 540, 310, 30, '#ffd166', 'hanger', null);
     } },
   { title: 'Die Knöpfe', dur: 8,
-    say: 'Der rote Stopp-Knopf beendet das Spiel sofort – alles ist gespeichert. Das Fragezeichen erklärt dir alles. Mit dem Lautsprecher schaltest du Ton und Vorlesen an oder aus. Das Buch im Menü öffnet diese Anleitung, und der Bügel ist dein Kleiderschrank.',
+    say: 'Der rote Stopp-Knopf beendet das Spiel sofort – alles ist gespeichert. Das Fragezeichen erklärt dir alles. Mit dem Lautsprecher schaltest du Ton und Vorlesen an oder aus. Die Karte oben rechts zeigt dir die ganze Welt. Das Buch im Menü öffnet diese Anleitung, und der Bügel ist dein Kleiderschrank.',
     try: 'Jetzt du: Tippe auf den Lautsprecher!',
     draw(c, t, S) {
       c.fillStyle = '#9fd3e6'; c.fillRect(0, 0, TV.w, TV.h);
