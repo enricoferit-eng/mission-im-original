@@ -100,18 +100,18 @@ class Shop {
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
-    const tabs = [['joker', 'Tages-Shop'], ['joker2', 'Joker'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere']], tw = Math.min(140, (W - 40) / 5 - 8);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
+    const tabs = [['joker', 'Tages-Shop'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere']], tw = Math.min(150, (W - 40) / 4 - 8);
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 1.5) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
-      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 26, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
+      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length + 2, gap = 12, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 26, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
       const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;
       txt(c, 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min', W / 2, top + 4, 13, '#fff', 'center', BRAND.olive);
       D.forEach((o, i) => {
         const x = x0 + i * (cw + gap), y = top + 20, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
         rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : o.ex ? '#fff3bf' : '#fff', 3.5, o.ex ? '#c9a227' : OL);
-        rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = o.ex ? '#ef476f' : '#06d6a0'; c.fill(); txt(c, o.ex ? 'NUR HEUTE · exklusiv' : '-' + o.off + ' % Rabatt', x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
+        rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = o.ex ? '#ef476f' : '#06d6a0'; c.fill(); txt(c, o.ex ? (cw < 170 ? 'Nur heute!' : 'NUR HEUTE · exklusiv') : '-' + o.off + ' % Rabatt', x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
         drawAnimal(c, kind, x + cw / 2, y + bob + ch * 0.62, Math.min(1.6, ch / 120), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name, x + cw / 2, y + bob + ch - 52, 13, '#3d2c1f', 'center', null);
         txt(c, RARITY[sk.rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + bob + ch - 34, 10, '#6b5a48', 'center', null);
@@ -120,6 +120,19 @@ class Shop {
         UI.btn(x, y + bob, cw, ch, () => { if (own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); this.say(sk.name + ' liegt jetzt im Kleiderschrank.'); }); });
         skinInfoBtn(c, x + cw - 18, y + bob + ch - 70, o.id);
       });
+      { const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
+        [['Aufgaben-Joker', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }, 'Schafft eine Aufgabe sofort.'],
+         ['Such-Joker', 'search', 20, 5 - (m.dayS || 0), m.hint || 0, mm => { mm.hint = (mm.hint || 0) + 1; mm.dayS = (mm.dayS || 0) + 1; }, 'Zeigt sofort ein Versteck.']].forEach(([name, ic, price, left, have, give, desc], j) => {
+          const i = D.length + j, x = x0 + i * (cw + gap), y = top + 20, bob = Math.sin(this.t * 2 + i) * 2, ok = left > 0;
+          rrPath(c, x, y + bob, cw, ch, 18); fs(c, '#e7f5ff', 3.5);
+          rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = '#118ab2'; c.fill(); txt(c, 'Heute noch ' + Math.max(0, left), x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
+          icon(c, ic, x + cw / 2, y + bob + ch * 0.4, Math.min(70, cw * 0.5));
+          txt(c, name, x + cw / 2, y + bob + ch - 66, 13, '#3d2c1f', 'center', null);
+          wrapLines(c, desc, cw - 14, 10).slice(0, 2).forEach((l, k) => txt(c, l, x + cw / 2, y + bob + ch - 48 + k * 12, 10, '#6b5a48', 'center', null));
+          txt(c, 'Du hast: ' + have, x + cw / 2, y + bob + ch - 24, 10, '#2b9348', 'center', null);
+          icon(c, 'coin', x + cw / 2 - 14, y + bob + ch - 9, 14); txt(c, String(price), x + cw / 2 + 8, y + bob + ch - 8, 13, '#8d5a3b', 'center', null);
+          UI.btn(x, y + bob, cw, ch, () => { if (!ok) { this.say('Morgen gibt es wieder welche.'); Sfx.play('bad'); return; } this.buy(price, give); });
+        }); }
     } else if (this.tab === 'joker2') {
       const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
       const J = [['Aufgaben-Joker', 'Schafft eine Aufgabe sofort, wenn du nicht weiterkommst.', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }],
