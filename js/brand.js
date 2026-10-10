@@ -238,6 +238,10 @@ const ABILITIES = {
   turbo: { name: 'Turbo-Schuhe', text: 'Du läufst viel schneller durch die Welt.', weak: 'Du läufst etwas schneller durch die Welt.' },
   extraherz: { name: 'Extra-Herz', text: 'In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen.', weak: 'In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen.' },
   zeitplus: { name: 'Zeit-Uhr', text: 'In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit.', weak: 'In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit.' },
+  magnet: { name: 'Sammel-Magnet', text: 'Sammel-Sachen fliegen dir schon aus großer Entfernung zu.', weak: 'Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu.' },
+  jokerplus: { name: 'Joker-Tasche', text: 'Du startest jeden Bereich mit 2 Jokern mehr.', weak: 'Du startest jeden Bereich mit 1 Joker mehr.' },
+  bonuszeit: { name: 'Bonus-Uhr', text: 'Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit.', weak: 'Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit.' },
+  sternschutz: { name: 'Sternen-Schild', text: 'Die Zündschnur brennt bei den Tempo-Sternen viel langsamer.', weak: 'Die Zündschnur brennt bei den Tempo-Sternen etwas langsamer.' },
   glueck: { name: 'Glücksklee', text: 'Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten.', weak: 'Der Hilfe-Stern lädt sich nach 1,5 Minuten statt nach 2,5 Minuten.' },
 };
 const ABIL_KEYS = Object.keys(ABILITIES);
@@ -260,9 +264,29 @@ const SHOP_SKINS = [
   ['shop_feuer', 'Feuerwehr-Look', 'rare', 150, { uniform: 'weste', uCol: '#d00000', uCol2: '#ffd166', cap: '#d00000', scarf: '#ffd166', sparkle: '#bde0fe' }],
   ['shop_regenbogen', 'Regenbogen-Look', 'legend', 400, { uniform: 'schuerze', uCol: '#ffffff', uCol2: '#9b5de5', cap: 'rainbow', scarf: 'rainbow', sparkle: '#ffd60a', ability: 'turbo' }],
   ['shop_goldchef', 'Goldener Chefkoch', 'legend', 400, { uniform: 'koch', uCol: '#ffffff', uCol2: '#c9a227', cap: 'gold', scarf: 'gold', hat: 'toque', sparkle: '#ffd60a', ability: 'glueck' }],
+  ['shop_koch', 'Mini-Koch', 'rare', 160, { uniform: 'koch', uCol: '#ffffff', uCol2: '#ef476f', cap: '#ffffff', scarf: '#ef476f', pat: 'dots' }, 'jokerplus'],
+  ['shop_gaertner', 'Sonnen-Gärtner', 'rare', 160, { uniform: 'latz', uCol: '#ffd166', uCol2: '#2d6a4f', cap: '#ffd166', scarf: '#2d6a4f', leaf: true }, 'magnet'],
+  ['shop_schnee', 'Schnee-Prinz', 'rare', 160, { uniform: 'pulli', uCol: '#d0ebff', uCol2: '#ffffff', cap: '#ffffff', scarf: '#74c0fc', pat: 'stars' }, 'sternschutz'],
+  ['shop_rennfahrer', 'Rennfahrer', 'rare', 160, { uniform: 'weste', uCol: '#e63946', uCol2: '#ffffff', cap: '#212529', scarf: '#e63946', pat: 'stripes' }, 'bonuszeit'],
+  ['shop_zauberer', 'Zauberer', 'legend', 450, { uniform: 'pulli', uCol: '#3a0ca3', uCol2: '#ffd60a', cap: '#3a0ca3', scarf: '#ffd60a', pat: 'stars', sparkle: '#ffd60a' }, 'jokerplus'],
+  ['shop_detektiv', 'Meister-Detektiv', 'legend', 450, { uniform: 'weste', uCol: '#8d5a3b', uCol2: '#e9c46a', cap: '#6c584c', scarf: '#e9c46a', sparkle: '#ffd60a' }, 'magnet'],
+  ['shop_blitz', 'Blitz-Läufer', 'legend', 450, { uniform: 'pulli', uCol: '#ffd60a', uCol2: '#212529', cap: '#ffd60a', scarf: '#212529', pat: 'stripes', sparkle: '#fff3bf' }, 'bonuszeit'],
+  ['shop_stern', 'Sternen-Held', 'legend', 450, { uniform: 'schuerze', uCol: '#ffffff', uCol2: '#118ab2', cap: 'gold', scarf: '#118ab2', pat: 'stars', sparkle: '#bde0fe' }, 'sternschutz'],
   ['shop_ninja', 'Nacht-Ninja', 'legend', 400, { uniform: 'pulli', uCol: '#212529', uCol2: '#7209b7', cap: '#212529', scarf: '#7209b7', pat: 'stars', sparkle: '#ffd60a', ability: 'adlerauge' }],
 ];
-SHOP_SKINS.forEach(([id, name, rarity, price, look], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
+// Exklusive Skins: gibt es nur im Tages-Shop, an manchen Tagen
+const EXCLUSIVE_SKINS = [
+  ['ex_drache', 'Drachen-Ritter', 'legend', 520, { uniform: 'weste', uCol: '#2b9348', uCol2: '#ffd60a', cap: '#2b9348', scarf: 'gold', pat: 'stars', sparkle: '#80ed99' }, 'turbo'],
+  ['ex_einhorn', 'Einhorn-Traum', 'legend', 520, { uniform: 'pulli', uCol: '#ffc8dd', uCol2: '#cdb4db', cap: 'rainbow', scarf: 'rainbow', sparkle: '#ffafcc' }, 'glueck'],
+  ['ex_pirat', 'Kapitän Goldbart', 'legend', 520, { uniform: 'weste', uCol: '#3d2c1f', uCol2: '#c9a227', cap: '#212529', scarf: 'gold', sparkle: '#ffd60a' }, 'detektor'],
+  ['ex_weltall', 'Sternen-Pilot', 'legend', 520, { uniform: 'pulli', uCol: '#1d3557', uCol2: '#a8dadc', cap: '#1d3557', scarf: '#a8dadc', pat: 'stars', sparkle: '#bde0fe' }, 'sternschutz'],
+  ['ex_lava', 'Lava-Held', 'rare', 260, { uniform: 'pulli', uCol: '#d00000', uCol2: '#ffba08', cap: '#370617', scarf: '#ffba08', pat: 'stripes' }, 'zeitplus'],
+  ['ex_ozean', 'Ozean-Taucher', 'rare', 260, { uniform: 'weste', uCol: '#0077b6', uCol2: '#90e0ef', cap: '#0077b6', scarf: '#90e0ef', pat: 'dots' }, 'magnet'],
+  ['ex_wald', 'Wald-Ranger', 'rare', 260, { uniform: 'latz', uCol: '#386641', uCol2: '#a7c957', cap: '#6a994e', scarf: '#a7c957', leaf: true }, 'adlerauge'],
+  ['ex_bonbon', 'Bonbon-Bäcker', 'rare', 260, { uniform: 'koch', uCol: '#ffffff', uCol2: '#ff8fab', cap: '#ff8fab', scarf: '#ffffff', pat: 'dots' }, 'bonuszeit'],
+];
+EXCLUSIVE_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, exclusive: true, ability: ab }, look); });
+SHOP_SKINS.forEach(([id, name, rarity, price, look, ab], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (ab) SKINS[id].ability = ab; if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
 // Text der Fähigkeit passend zur Stufe des Skins
 function abilityText(sk) { const A = ABILITIES[sk.ability]; return sk.rarity === 'legend' ? A.text : A.weak + ' (Selten – ein legendärer Skin kann es noch besser.)'; }
 // Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)

@@ -327,8 +327,8 @@ class AccountPanel {
     fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
-    rrPath(c, x + 14, y + 14, 112, 36, 14); fs(c, '#caffbf', 2.5); drawAnimal(c, a.char || 'cat', x + 34, y + 46, 0.55, { noShadow: true }); txt(c, 'Figur ändern', x + 50, y + 33, 12, BRAND.olive, 'left', null);
-    UI.btn(x + 14, y + 14, 112, 36, () => { this.close(); setScene(new CharSelect(() => setScene(new Menu()))); });
+    rrPath(c, x + 14, y + 14, 112, 36, 14); fs(c, '#caffbf', 2.5); drawAnimal(c, a.char || 'cat', x + 34, y + 46, 0.55, { noShadow: true }); txt(c, 'Figur gestalten', x + 50, y + 33, 11, BRAND.olive, 'left', null);
+    UI.btn(x + 14, y + 14, 112, 36, () => { this.close(); setScene(new CharEditor(() => setScene(new Menu()))); });
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
     txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
     const st = Net.status(a); ell(c, W / 2 - 70, y + 160, 6, 6); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - 58, y + 161, 13, '#8d5a3b', 'left', null);
@@ -927,7 +927,7 @@ class Wardrobe {
       const n = SP(this.diff, id).skins.length; txt(c, n + '/6', tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null);
       UI.btn(tx, y + 64, tw, 52, () => { this.stage = id; Sfx.play('tap'); });
     });
-    const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), ids = shop ? SHOP_SKINS.map(x => x[0]) : stageSkins(this.stage, this.diff);
+    const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), ids = shop ? SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]).filter(id => META().skins.includes(id))) : stageSkins(this.stage, this.diff);
     const cols = land ? (shop ? 9 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / (shop ? 3 : 2));
     ids.forEach((sid, i) => {
       const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10);

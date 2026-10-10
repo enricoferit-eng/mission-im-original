@@ -2263,6 +2263,54 @@
  },
  {
   "who": "erzaehler",
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir schon aus großer Entfernung zu.",
+  "key": "b627df3e",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir schon aus großer Entfernung zu."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "989d8674",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus etwas größerer Entfernung zu."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Joker-Tasche. Du startest jeden Bereich mit 2 Jokern mehr.",
+  "key": "2897961f",
+  "clean": "Joker-Tasche. Du startest jeden Bereich mit 2 Jokern mehr."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "97d6ecf6",
+  "clean": "Joker-Tasche. Du startest jeden Bereich mit 1 Joker mehr."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit.",
+  "key": "91af6694",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "960d514d",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen viel langsamer.",
+  "key": "a3c806f9",
+  "clean": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen viel langsamer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen etwas langsamer. (Selten – ein legendärer Skin kann es noch besser.)",
+  "key": "8bcb4a29",
+  "clean": "Sternen-Schild. Die Zündschnur brennt bei den Tempo-Sternen etwas langsamer."
+ },
+ {
+  "who": "erzaehler",
   "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten.",
   "key": "4c79671d",
   "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 2,5 Minuten."

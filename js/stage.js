@@ -521,12 +521,12 @@ class Play {
   updateLeaves() {
     const p = this.p; if (p.level !== 0 || p.slide) return;
     for (const lf of this.st.leaves) {
-      if (lf.got || dist(lf.x, lf.y, p.x, p.y) > 34) continue;
+      if (lf.got || dist(lf.x, lf.y, p.x, p.y) > [34, 80, 140][ability('magnet')]) continue;
       lf.got = true; const n = this.st.leaves.filter(o => o.got).length, s = this.w2s(lf.x, lf.y, 20);
       FX.sparkle(s.x, s.y, 18, '#c7f464'); Sfx.note(587 * Math.pow(2, n / 12), 0.18, 'triangle', 0.08, 1.6); buzz(25); this.leafPop = 1;
       if (n === this.st.leaves.length) {
         this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
-        FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); this.banner = { text: 'Alle Blätter gefunden: +1 Joker!', t: 0 }; if (!this.mp) achieve('blaetter');
+        FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); this.banner = { text: 'Alle ' + (COLLECT_NAME[this.stage] || 'Blätter') + ' gefunden: +1 Joker!', t: 0 }; if (!this.mp) achieve('blaetter');
       }
       Save.write();
     }
@@ -536,7 +536,7 @@ class Play {
     if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
     return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
   }
-  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0); }
+  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0) + [0, 15, 30][ability('bonuszeit')]; }
   bonusLeft() { const bq = this.bonusQuest(); return bq ? { left: this.bonusLimit(bq.npc) - (bq.q.tt || 0), limit: this.bonusLimit(bq.npc) } : null; }
   // Große Ankündigung, sobald ein Auftrag startet: jetzt zählt jede Sekunde
   bonusStart(npc) {
@@ -1069,7 +1069,7 @@ class Play {
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----
-  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN; if (ACC() && ACC().admin) return { left: () => 99, use: () => {} }; return { left: () => st.jokers + (this.mp ? 0 : jokerBank()), use: () => { st.jokersUsed = (st.jokersUsed || 0) + 1; if (st.jokers > 0) st.jokers--; else { const m = META(); if (m && m.bank > 0) m.bank--; } Save.write(); } }; }
+  jokerApi() { const st = this.st; if (st.jokers === undefined) st.jokers = JOKERS_PER_RUN + (this.mp ? 0 : ability('jokerplus')); if (ACC() && ACC().admin) return { left: () => 99, use: () => {} }; return { left: () => st.jokers + (this.mp ? 0 : jokerBank()), use: () => { st.jokersUsed = (st.jokersUsed || 0) + 1; if (st.jokers > 0) st.jokers--; else { const m = META(); if (m && m.bank > 0) m.bank--; } Save.write(); } }; }
   down(x, y, id) { this.idleT = 0; if (this.joy || this.helpOpen) return; this.joy = { id, x0: x, y0: y, x, y, t: this.t, moved: false }; }
   move(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; j.x = x; j.y = y; if (!j.moved && dist(x, y, j.x0, j.y0) > 14) j.moved = true; }
   up(x, y, id) { const j = this.joy; if (!j || j.id !== id) return; if (!j.moved && this.t - j.t < 0.4 && !this.searching) this.tap(x, y); this.joy = null; }
@@ -1173,7 +1173,7 @@ class Play {
       const b = Math.sin(t * 3 + lf.x) * 5, gl = 0.5 + 0.5 * Math.sin(t * 4 + lf.y);
       c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, lf.x, lf.y + 2, 12, 4); c.fill();
       ell(c, lf.x, lf.y - 18 + b, 16 + gl * 4, 16 + gl * 4); c.fillStyle = `rgba(199,244,100,${0.25 + gl * 0.25})`; c.fill();
-      leaf(c, lf.x, lf.y - 18 + b, 2.6, BRAND.lime, -0.5 + Math.sin(t * 2 + lf.x) * 0.3);
+      drawCollect(c, this.stage, lf.x, lf.y - 18 + b, 2.6, -0.5 + Math.sin(t * 2 + lf.x) * 0.3);
     } });
     if (SG.feat.swing) { L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) }); SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); }); }
     if (SG.feat.slide) L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
@@ -1375,7 +1375,7 @@ class Play {
     soundBtn(c, W - 40, 46);
     { const n = this.st.leaves.filter(o => o.got).length, k = 1 + this.leafPop * 0.35;
       rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
-      c.save(); c.translate(174, 46); c.scale(k, k); leaf(c, 0, 0, 2.2, BRAND.lime, -0.5); c.restore();
+      c.save(); c.translate(174, 46); c.scale(k, k); drawCollect(c, this.stage, 0, 0, 2.2, -0.5); c.restore();
       txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
     const narrow = W < 640, rowY = narrow ? 92 : 46;
@@ -1476,7 +1476,9 @@ class Play {
       c.globalAlpha = ready ? 1 : 0.55; icon(c, 'star', 0, 0, 34, ready ? '#fff' : '#adb5bd'); c.globalAlpha = 1;
       c.restore();
       txt(c, 'Hilfe', hx, hy + 44, 13, '#fff');
-      if (ready) UI.btn(hx - 40, hy - 40, 80, 90, () => {
+      const hb = (META() && META().hint) || 0; if (!ready && hb > 0 && !this.mp) { ell(c, hx + 24, hy - 24, 12, 12); fs(c, '#118ab2', 2); txt(c, String(hb), hx + 24, hy - 24, 12, '#fff', 'center', null); }
+      if (ready || (hb > 0 && !this.mp)) UI.btn(hx - 40, hy - 40, 80, 90, () => {
+        if (!ready) { const mm = META(); if (!mm.hint) return; mm.hint--; }   // Such-Joker eingesetzt
         let k = -1, bd = 1e9; hq.hidden.forEach((h, i) => { if (this.off(hq, i)) return; const d = dist(h.x, h.y, this.p.x, this.p.y); if (d < bd) { bd = d; k = i; } });
         if (k >= 0) { hq.hint = k; hq.helpT = 0; Save.write(); Sfx.play('good'); FX.sparkle(hx, hy, 16, '#ffd23f'); }
       });
@@ -1546,6 +1548,18 @@ class Play {
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
 const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
+// Sammel-Sachen je Bereich (statt immer nur Blätter)
+const COLLECT_NAME = { spielplatz: 'Original-Blätter', kueche: 'Kochmützen', gastraum: 'Kaffeebohnen', aussen: 'Sonnenblumen', parkplatz: 'Sterne', chalet: 'Schneeflocken' };
+function drawCollect(c, stage, x, y, s, rot) {
+  if (stage === 'spielplatz' || !COLLECT_NAME[stage]) { leaf(c, x, y, s, BRAND.lime, rot); return; }
+  c.save(); c.translate(x, y); c.scale(s / 2.6, s / 2.6); c.rotate(rot * 0.4);
+  if (stage === 'kueche') { rrPath(c, -10, -2, 20, 12, 3); fs(c, '#fff', 2.5); for (const [dx, dy, r] of [[-8, -6, 7], [0, -10, 8], [8, -6, 7]]) { ell(c, dx, dy, r, r); fs(c, '#fff', 2.5); } rrPath(c, -9, -3, 18, 6, 2); c.fillStyle = '#fff'; c.fill(); leaf(c, 0, 5, 0.35, BRAND.lime); }
+  else if (stage === 'gastraum') { ell(c, 0, 0, 9, 12, 0.4); fs(c, '#6f4e37', 2.5); c.beginPath(); c.moveTo(-3, -9); c.quadraticCurveTo(4, 0, -2, 9); c.lineWidth = 2; c.strokeStyle = '#3d2c1f'; c.stroke(); }
+  else if (stage === 'aussen') { for (let k = 0; k < 10; k++) { const a = k * TAU / 10; ell(c, Math.cos(a) * 9, Math.sin(a) * 9, 6, 3, a); fs(c, '#ffd60a', 1.5); } ell(c, 0, 0, 6, 6); fs(c, '#6f4e37', 2); }
+  else if (stage === 'parkplatz') { starPath(c, 0, 0, 12, 5); fs(c, '#ffd60a', 2.5); ell(c, -3, -3, 2, 2); c.fillStyle = '#fff'; c.fill(); }
+  else if (stage === 'chalet') { for (let k = 0; k < 6; k++) { const a = k * TAU / 6; line(c, 0, 0, Math.cos(a) * 12, Math.sin(a) * 12, 2.5, '#a5d8ff'); line(c, Math.cos(a) * 7, Math.sin(a) * 7, Math.cos(a + 0.5) * 10, Math.sin(a + 0.5) * 10, 1.5, '#a5d8ff', false); } ell(c, 0, 0, 3, 3); fs(c, '#fff', 1.5); }
+  c.restore();
+}
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
 const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schnell geholfen = +1 Joker (Tor: +30 s)
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal

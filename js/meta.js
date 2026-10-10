@@ -19,14 +19,14 @@ const ACHIEVEMENTS = [
   { id: 'erster', name: 'Erste Hilfe', desc: 'Hilf deinem ersten Kind.', coins: 10, stat: 'kids', need: 1 },
   { id: 'kinder25', name: 'Guter Freund', desc: 'Hilf 25 Kindern.', coins: 40, stat: 'kids', need: 25 },
   { id: 'spielplatz', name: 'Spielplatz-Held', desc: 'Schaffe den Spielplatz.', coins: 30 },
-  { id: 'profi', name: 'Schwer-Profi', desc: 'Schaffe den Spielplatz auf Schwer.', coins: 60 },
-  { id: 'ohnejoker', name: 'Ganz ohne Joker', desc: 'Schaffe den Spielplatz, ohne einen Joker zu benutzen.', coins: 50 },
+  { id: 'profi', name: 'Schwer-Profi', desc: 'Schaffe einen Bereich auf Schwer.', coins: 60 },
+  { id: 'ohnejoker', name: 'Ganz ohne Joker', desc: 'Schaffe einen Bereich, ohne einen Joker zu benutzen.', coins: 50 },
   { id: 'bonus1', name: 'Blitzschnell', desc: 'Hol dir einen Bonus-Joker mit der Bonus-Uhr.', coins: 15, stat: 'bonusJ', need: 1 },
   { id: 'bonus5', name: 'Bonus-Jäger', desc: 'Hol dir 5 Bonus-Joker.', coins: 40, stat: 'bonusJ', need: 5 },
   { id: 'sterne1', name: 'Volle Sterne', desc: 'Schaffe eine Aufgabe mit allen drei Tempo-Sternen.', coins: 10, stat: 'stars3', need: 1 },
   { id: 'sterne25', name: 'Sternen-Sammler', desc: 'Schaffe 25 Aufgaben mit drei Tempo-Sternen.', coins: 40, stat: 'stars3', need: 25 },
   { id: 'combo5', name: 'Combo-König', desc: 'Schaffe eine Combo x5.', coins: 20 },
-  { id: 'blaetter', name: 'Blätter-Sammler', desc: 'Finde alle 8 Original-Blätter in einem Durchgang.', coins: 20 },
+  { id: 'blaetter', name: 'Blätter-Sammler', desc: 'Finde alle 8 Sammel-Sachen in einem Bereich (Blätter, Kochmützen, Sterne …).', coins: 20 },
   { id: 'g_swing', name: 'Weitspringer', desc: 'Geheimnis: Spring von der Schaukel über 4 Meter weit.', coins: 20, secret: true },
   { id: 'g_race', name: 'Schneller als Leo', desc: 'Geheimnis: Gewinne den Wettlauf gegen Leo.', coins: 20, secret: true },
   { id: 'g_pigeons', name: 'Tauben-Schreck', desc: 'Geheimnis: Scheuch alle drei Tauben schnell hintereinander auf.', coins: 20, secret: true },
@@ -43,7 +43,8 @@ const ACHIEVEMENTS = [
 ];
 const SECRET_NAMES = { swing: 'Weitsprung von der Schaukel', race: 'Wettlauf gegen Leo gewonnen', pigeons: 'Alle Tauben aufgescheucht', slide: 'Dreimal schnell gerutscht', leaves: 'Alle Original-Blätter gefunden', bonus: 'Kind schnell geholfen' };
 // Erfolge zählen je Schwierigkeitsstufe getrennt (Schlüssel 'id@stufe')
-const achKey = (id, d = CUR_DIFF || 'medium') => id + '@' + d;
+const GENERAL_ACH = new Set(['profi', 'skins10', 'freund', 'duell1', 'sieg1', 'sieg10', 'team1', 'einkauf', 'entdecker', 'welt', 'duels', 'wins', 'teams']);
+const achKey = (id, d = CUR_DIFF || 'medium') => (GENERAL_ACH.has(id) ? id : id + '@' + d);
 function achieve(id) {
   const a = ACC(), m = META(a), k = achKey(id); if (!m || m.ach[k]) return;
   const A = ACHIEVEMENTS.find(x => x.id === id); if (!A) return;
@@ -81,6 +82,12 @@ function coinChip(c, x, y) {
 function jokerBank() { const m = META(); return m ? m.bank : 0; }
 
 // ---------- Laden ----------
+// Tagesangebote: für alle gleich (aus dem Datum gewürfelt)
+function dailyOffers() {
+  const day = new Date().toISOString().slice(0, 10); let h = 2166136261; for (const ch of day) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const r = mulberry32(h), ex = pick(EXCLUSIVE_SKINS, r), offs = shuffle(SHOP_SKINS, r).slice(0, 3);
+  return [{ id: ex[0], price: ex[3], ex: true, off: 0 }].concat(offs.map(o => { const off = pick([20, 30, 40, 50], r); return { id: o[0], off, price: Math.round(o[3] * (100 - off) / 100 / 5) * 5 }; }));
+}
 class Shop {
   constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'joker'; this.msg = ''; this.msgT = 0; }
   enter() { FX.clear(); }
@@ -93,25 +100,54 @@ class Shop {
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
-    const tabs = [['joker', 'Joker'], ['skins', 'Skins'], ['tiere', 'Tiere']], tw = Math.min(150, (W - 40) / 3);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 1) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; Sfx.play('tap'); }); });
+    const tabs = [['joker', 'Tages-Shop'], ['joker2', 'Joker'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere']], tw = Math.min(140, (W - 40) / 5 - 8);
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
-      const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; }
-      const left = JOKERS_PER_DAY - m.dayJ, w = Math.min(W - 40, 420), x = (W - w) / 2, h = Math.min(bottom - top, 230);
-      panel(c, x, top, w, h, '#fff7e6', 24);
-      icon(c, 'joker', x + 70, top + 70, 80);
-      txt(c, 'Extra-Joker', x + 130, top + 44, 22, BRAND.olive, 'left', null);
-      txt(c, 'Gilt in jedem Durchgang zusätzlich.', x + 130, top + 70, 13, '#6b5a48', 'left', null);
-      txt(c, 'Heute noch ' + left + ' von ' + JOKERS_PER_DAY, x + 130, top + 92, 14, left ? '#2b9348' : '#c1121f', 'left', null);
-      txt(c, 'Du hast: ' + m.bank, x + 130, top + 114, 14, '#3d2c1f', 'left', null);
-      const ok = left > 0, bx = x + w / 2, by = top + h - 44;
-      c.save(); if (!ok) c.globalAlpha = 0.45; rrPath(c, bx - 100, by - 24, 200, 48, 20); fs(c, '#06d6a0', 3); icon(c, 'coin', bx - 60, by, 24); txt(c, JOKER_PRICE + ' Taler', bx + 10, by + 1, 18, '#fff', 'center', BRAND.ink); c.restore();
-      UI.btn(bx - 100, by - 24, 200, 48, () => { if (!ok) { this.say('Morgen kannst du wieder Joker kaufen.'); Sfx.play('bad'); return; } this.buy(JOKER_PRICE, mm => { mm.bank++; mm.dayJ++; }); });
+      // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
+      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 26, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
+      const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;
+      txt(c, 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min', W / 2, top + 4, 13, '#fff', 'center', BRAND.olive);
+      D.forEach((o, i) => {
+        const x = x0 + i * (cw + gap), y = top + 20, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
+        rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : o.ex ? '#fff3bf' : '#fff', 3.5, o.ex ? '#c9a227' : OL);
+        rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = o.ex ? '#ef476f' : '#06d6a0'; c.fill(); txt(c, o.ex ? 'NUR HEUTE · exklusiv' : '-' + o.off + ' % Rabatt', x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
+        drawAnimal(c, kind, x + cw / 2, y + bob + ch * 0.62, Math.min(1.6, ch / 120), { look: sk, cap: true, t: this.t + i });
+        txt(c, sk.name, x + cw / 2, y + bob + ch - 52, 13, '#3d2c1f', 'center', null);
+        txt(c, RARITY[sk.rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + bob + ch - 34, 10, '#6b5a48', 'center', null);
+        if (own) txt(c, 'gekauft', x + cw / 2, y + bob + ch - 14, 13, '#2b9348', 'center', null);
+        else { if (o.off) { txt(c, String(sk.price), x + cw / 2 - 30, y + bob + ch - 14, 11, '#adb5bd', 'center', null); line(c, x + cw / 2 - 42, y + bob + ch - 14, x + cw / 2 - 18, y + bob + ch - 14, 1.5, '#adb5bd', false); } icon(c, 'coin', x + cw / 2 - 2, y + bob + ch - 14, 16); txt(c, String(o.price), x + cw / 2 + 24, y + bob + ch - 13, 14, '#8d5a3b', 'center', null); }
+        UI.btn(x, y + bob, cw, ch, () => { if (own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); this.say(sk.name + ' liegt jetzt im Kleiderschrank.'); }); });
+        skinInfoBtn(c, x + cw - 18, y + bob + ch - 70, o.id);
+      });
+    } else if (this.tab === 'joker2') {
+      const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
+      const J = [['Aufgaben-Joker', 'Schafft eine Aufgabe sofort, wenn du nicht weiterkommst.', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }],
+        ['Such-Joker', 'Zeigt sofort, wo ein gesuchtes Ding versteckt ist – der Hilfe-Stern muss nicht erst laden.', 'search', 20, 5 - (m.dayS || 0), m.hint || 0, mm => { mm.hint = (mm.hint || 0) + 1; mm.dayS = (mm.dayS || 0) + 1; }]];
+      const w = Math.min((W - 50) / 2, 380), h = Math.min(bottom - top, 230);
+      J.forEach(([name, desc, ic, price, left, have, give], i) => {
+        const x = W / 2 + (i ? 8 : -8 - w), y = top; panel(c, x, y, w, h, '#fff7e6', 24);
+        icon(c, ic, x + 52, y + 56, 64); txt(c, name, x + 100, y + 36, 18, BRAND.olive, 'left', null);
+        wrapLines(c, desc, w - 116, 12).slice(0, 3).forEach((l, k) => txt(c, l, x + 100, y + 60 + k * 16, 12, '#6b5a48', 'left', null));
+        txt(c, 'Heute noch ' + Math.max(0, left) + ' · Du hast: ' + have, x + w / 2, y + h - 84, 13, left > 0 ? '#2b9348' : '#c1121f', 'center', null);
+        const ok = left > 0, bx = x + w / 2, by = y + h - 40; c.save(); if (!ok) c.globalAlpha = 0.45; rrPath(c, bx - 90, by - 22, 180, 44, 18); fs(c, '#06d6a0', 3); icon(c, 'coin', bx - 50, by, 22); txt(c, price + ' Taler', bx + 12, by + 1, 16, '#fff', 'center', BRAND.ink); c.restore();
+        UI.btn(bx - 90, by - 22, 180, 44, () => { if (!ok) { this.say('Morgen gibt es wieder welche.'); Sfx.play('bad'); return; } this.buy(price, give); });
+      });
+    } else if (this.tab === 'rad') {
+      // Glücksrad: zufälliger Skin aus dem Laden (selten/legendär seltener). Schon gehabt = halber Preis zurück.
+      const SPIN = 120, cx = W / 2, cy = top + (bottom - top) / 2 - 10, R = Math.min((bottom - top) / 2 - 22, 130), pool = this.radPool || (this.radPool = shuffle(SHOP_SKINS.concat(EXCLUSIVE_SKINS), mulberry32(7)).slice(0, 8));
+      const sp = this.spin; let ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 3.2), 3)) : (this.radA || 0);
+      pool.forEach((o, i) => { const a0 = ang + i * TAU / 8, a1 = a0 + TAU / 8; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + TAU / 16) * R * 0.62, cy + Math.sin(a0 + TAU / 16) * R * 0.62); drawAnimal(c, ACC().char || 'cat', 0, 14, R / 150, { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
+      ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
+      if (sp && this.t - sp.t0 > 3.3 && !sp.done) { sp.done = true; this.radA = ang; const id = pool[sp.k][0], mm = META(); if (mm.skins.includes(id)) { mm.coins += SPIN / 2; this.say('Den hattest du schon – ' + SPIN / 2 + ' Taler zurück!'); } else { mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); } Save.write(); this.spin = null; }
+      const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
+      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin) return; this.buy(SPIN, () => { const ws = pool.map(o => RARITY[o[2]].w), tot = ws.reduce((a, b) => a + b, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * TAU / 8 + TAU / 16); const base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; }); });
+      wrapLines(c, 'Dreh das Rad und gewinne einen zufälligen Skin – legendäre sind seltener!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
     } else if (this.tab === 'skins') {
-      const cols = W > H ? 5 : 3, gap = 10, cw = Math.min(160, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(170, (bottom - top - gap) / Math.ceil(SHOP_SKINS.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
-      const kind = ACC().char || 'cat';
-      SHOP_SKINS.forEach(([id, name, rarity, price], i) => {
+      const cols = W > H ? 5 : 3, gap = 10, cw = Math.min(160, (W - 110 - gap * (cols - 1)) / cols), ch = Math.min(170, (bottom - top - gap) / 2 - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
+      const kind = ACC().char || 'cat', per = cols * 2, pages = Math.ceil(SHOP_SKINS.length / per); this.page = clamp(this.page || 0, 0, pages - 1);
+      if (pages > 1) { const my = top + ch + gap / 2; if (this.page > 0) roundBtn(c, x0 - 30, my, 22, '#fff', 'back', () => { this.page--; }); if (this.page < pages - 1) { c.save(); c.translate(x0 + cols * (cw + gap) + 20, my); c.scale(-1, 1); roundBtn(c, 0, 0, 22, '#fff', 'back', null); c.restore(); UI.btn(x0 + cols * (cw + gap) - 2, my - 22, 44, 44, () => { this.page++; }); } txt(c, (this.page + 1) + ' / ' + pages, W / 2, bottom + 8, 12, '#fff', 'center', BRAND.olive); }
+      SHOP_SKINS.slice(this.page * per, this.page * per + per).forEach(([id, name, rarity, price], i) => {
         const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap), own = m.skins.includes(id), sk = SKINS[id];
         rrPath(c, x, y, cw, ch, 16); fs(c, own ? '#d8f5e3' : '#fff', 3, rarity === 'legend' ? '#c9a227' : rarity === 'rare' ? '#118ab2' : OL);
         drawAnimal(c, kind, x + cw / 2, y + ch * 0.62, Math.min(1.5, ch / 110), { look: sk, cap: true, t: this.t + i });
@@ -178,21 +214,22 @@ class Achievements {
     const m = META(); if (!m) return;
     topBar(c, () => { this.leave(); this.back(); });
     const tab = this.tab, has = A => !!m.ach[achKey(A.id, tab)] || (tab === 'medium' && !!m.ach[A.id]);
-    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + ACHIEVEMENTS.filter(has).length + '/' + ACHIEVEMENTS.length, 130, 44, 20, '#fff', 'left', BRAND.olive);
+    const LIST = ACHIEVEMENTS.filter(A => (tab === 'all') === GENERAL_ACH.has(A.id)).sort((a, b) => a.coins - b.coins || a.name.localeCompare(b.name));
+    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + LIST.filter(has).length + '/' + LIST.length, 130, 44, 20, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     // Reiter: Leicht / Mittel / Schwer
-    const tw = Math.min(110, (W - 40) / 3), tx0 = W / 2 - tw * 1.5, ty = 74;
-    [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']].forEach(([d, n], i) => { const x = tx0 + i * tw, sel = d === tab; rrPath(c, x + 3, ty, tw - 6, 30, 14); fs(c, sel ? '#ffd166' : 'rgba(255,255,255,.8)', 2.5); txt(c, n, x + tw / 2, ty + 15, 14, '#3d2c1f', 'center', null); UI.btn(x + 3, ty, tw - 6, 30, () => { this.tab = d; this.scroll = 0; }); });
+    const tw = Math.min(110, (W - 40) / 4), tx0 = W / 2 - tw * 2, ty = 74;
+    [['all', 'Allgemein'], ['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']].forEach(([d, n], i) => { const x = tx0 + i * tw, sel = d === tab; rrPath(c, x + 3, ty, tw - 6, 30, 14); fs(c, sel ? '#ffd166' : 'rgba(255,255,255,.8)', 2.5); txt(c, n, x + tw / 2, ty + 15, 14, '#3d2c1f', 'center', null); UI.btn(x + 3, ty, tw - 6, 30, () => { this.tab = d; this.scroll = 0; }); });
     const cols = W > 700 ? 2 : 1, gap = 10, cw = Math.min(420, (W - 30 - gap * (cols - 1)) / cols), ch = 64, x0 = (W - (cw * cols + gap * (cols - 1))) / 2, top = 116;
-    const rows = Math.ceil(ACHIEVEMENTS.length / cols), maxScroll = Math.max(0, top + rows * (ch + gap) - H + 16);
+    const rows = Math.ceil(LIST.length / cols), maxScroll = Math.max(0, top + rows * (ch + gap) - H + 16);
     this.scroll = clamp(this.scroll, 0, maxScroll);
     c.save(); c.beginPath(); c.rect(0, top - 4, W, H - top + 4); c.clip();
-    ACHIEVEMENTS.forEach((A, i) => {
+    LIST.forEach((A, i) => {
       const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap) - this.scroll, done = has(A);
       if (y > H || y + ch < top - 4) return;
       rrPath(c, x, y, cw, ch, 18); fs(c, done ? '#fff7e6' : 'rgba(255,255,255,.75)', 3);
       ell(c, x + 32, y + ch / 2, 22, 22); fs(c, done ? '#ffd166' : '#dee2e6', 2.5); icon(c, done ? 'trophy' : (A.secret ? 'question' : 'lock'), x + 32, y + ch / 2, 26, done ? undefined : '#868e96');
-      const hidden = A.secret && !done, st = m.st[achKey(A.stat, tab)] || (tab === 'medium' ? m.st[A.stat] : 0) || 0;
+      const hidden = A.secret && !done, st = m.st[A.stat && GENERAL_ACH.has(A.stat) ? A.stat : achKey(A.stat, tab)] || (tab === 'medium' ? m.st[A.stat] : 0) || 0;
       txt(c, hidden ? 'Geheimer Erfolg' : A.name, x + 64, y + 22, 15, done ? BRAND.olive : '#495057', 'left', null);
       const desc = hidden ? 'Entdecke es selbst …' : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, st) + '/' + A.need + ')' : '');
       wrapLines(c, desc, cw - 140, 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null));

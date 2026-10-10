@@ -3,7 +3,7 @@
 function adminBoost() {
   const a = ACC(); if (!a || !a.admin) return;
   const m = META(a); m.coins = 999999; m.bank = 999;
-  if (typeof SHOP_SKINS !== 'undefined') m.skins = Object.keys(SHOP_SKINS);
+  if (typeof SHOP_SKINS !== 'undefined') m.skins = SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]));
   if (typeof ANIMALS !== 'undefined') m.animals = Object.keys(ANIMALS);
   ['easy', 'medium', 'hard'].forEach(d => STAGE_ORDER.forEach(id => { const sp = SP(d, id); stageSkins(id, d).forEach(s => { if (!sp.skins.includes(s)) sp.skins.push(s); }); }));
 }

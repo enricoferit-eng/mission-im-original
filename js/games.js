@@ -130,7 +130,7 @@ class GameOverlay {
       if (after !== before && before > 0) { if (after > 0) Sfx.note(660, 0.12, 'square', 0.05); else { Sfx.note(990, 0.35, 'square', 0.06, 1.2); buzz(40); } }
       if (this.cd > 0) return false;
     }
-    Music.start(); this.fuse += dt;
+    Music.start(); this.fuse += dt * [1, 0.8, 0.6][typeof ability === 'function' ? ability('sternschutz') : 0];
     if (this.starsOn() && this.stars > 1) {
       const thr = this.thr[3 - this.stars], rem = thr - this.fuse;
       Music.tempo(110 + clamp((8 - rem) / 8, 0, 1) * 70);
