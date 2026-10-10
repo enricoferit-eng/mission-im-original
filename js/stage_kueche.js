@@ -243,7 +243,6 @@ const KSPOTS = [
   furnSpot(KDECOR, 'herd', 'top', { px: 155, py: 492, cut: 501, front: true, sx: 232, sy: 505, tag: 'topf' }),
   furnSpot(KDECOR, 'herd', 'top', { px: 104, py: 366, cut: 380, front: true, sx: 232, sy: 380, tag: 'pfanne', rot: -0.3 }),
   furnSpot(KDECOR, 'herd', 'top', { px: 128, py: 712, cut: 728, front: true, sx: 232, sy: 720, tag: 'fritteuse', rot: 0.25 }),
-  furnSpot(KDECOR, 'pass', 'on', { px: 468, py: 288, sx: 470, sy: 338, tag: 'bruecke', sz: 0.62 }),
   furnSpot(KDECOR, 'pass', 'left', { py: 600, sx: 400, sy: 600 }),
   furnSpot(KDECOR, 'pass', 'right', { py: 520, sx: 640, sy: 520 }),
   furnSpot(KDECOR, 'salat', 'left', { py: 480, sx: 772, sy: 480 }),
