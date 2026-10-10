@@ -10,6 +10,17 @@ function adminBoost() {
 {
   const ctor0 = Play.prototype.bossOpen;
   Play.prototype.bossOpen = function () { return isGameAdmin() && !this.mp ? true : ctor0.call(this); };
+  // Admin darf jede Person jederzeit ansprechen: fertige nochmal, und ein laufender Auftrag wird dafür beendet
+  const talk0 = Play.prototype.talk;
+  Play.prototype.talk = function (id) {
+    if (isGameAdmin() && !this.mp) {
+      const st = this.st;
+      if (st.done[id]) { delete st.done[id]; if (st.easy) delete st.easy[id]; if (id === 'gate') this.gateA = 0; }
+      if (st.active && st.active.npc !== id && this.diff !== 'easy') { st.active = null; this.toast = null; }
+      Save.write();
+    }
+    return talk0.call(this, id);
+  };
   const hud0 = Play.prototype.drawHud;
   Play.prototype.drawHud = function (c) {
     hud0.call(this, c);
@@ -17,6 +28,9 @@ function adminBoost() {
     const on = !!this.showSpots, x = W - 46, y = H - 150;
     roundBtn(c, x, y, 24, on ? '#ffd166' : '#e9ecef', 'search', () => { this.showSpots = !this.showSpots; Sfx.play('tap'); }, '#3d2c1f');
     txt(c, 'Verstecke', x, y + 34, 11, '#fff', 'center', BRAND.olive);
+    // Auftrag sofort erledigen: alle Sachen des laufenden Auftrags bekommen
+    const q = this.st.active;
+    if (q && q.got.some(g => !g)) { const y2 = y - 66; roundBtn(c, x, y2, 24, '#06d6a0', 'check', () => { q.got = q.got.map(() => true); if (q.coop) { q.coop.chestOpen = q.coop.chest = q.coop.roof = true; } Save.write(); Sfx.play('win'); this.banner = { text: 'Admin: alles gefunden – bring es zurück!', t: 0 }; }, '#fff'); txt(c, 'Auftrag fertig', x, y2 + 34, 11, '#fff', 'center', BRAND.olive); }
   };
   Play.prototype.drawHud._src = hud0._src || hud0;
   const mark0 = Play.prototype.drawMarkers;

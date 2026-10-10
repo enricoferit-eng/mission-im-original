@@ -62,6 +62,7 @@ class GameOverlay {
   jokerReady() {
     if (this.state === 'won' || this.help || this.jokerLeft() <= 0) return false;
     if (this.state === 'lost') return true;
+    if (typeof isGameAdmin === 'function' && isGameAdmin()) return this.state === 'play';   // Admin: Joker sofort
     const wait = this.opts.diff === 'easy' ? 40 : this.opts.diff === 'medium' ? 60 : 75;
     return this.retries >= 2 || this.t > wait;
   }
