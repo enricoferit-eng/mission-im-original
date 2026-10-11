@@ -642,7 +642,7 @@ function drawGrounds(c, X, Y, Wd, Hd, o = {}) {
     const earned = o.kind && ACC() && SP(CUR_DIFF, id).outfit;
     ell(c, R * 0.85, R * 0.75, R * 0.45, R * 0.45); fs(c, earned ? '#ffd166' : '#fff', 3);
     drawOutfitIcon(c, OUTFIT_OF[id], R * 0.85, R * 0.75, R * 0.7, !earned && !o.trailer);
-    if (!open && !o.trailer) { ell(c, -R * 0.75, -R * 0.75, R * 0.36, R * 0.36); fs(c, '#fff', 3); icon(c, 'hourglass', -R * 0.75, -R * 0.75, R * 0.45); }
+    if (!open && !o.trailer) { ell(c, -R * 0.75, -R * 0.75, R * 0.36, R * 0.36); fs(c, '#fff', 3); icon(c, 'lock', -R * 0.75, -R * 0.75, R * 0.45); }
     c.restore();
   });
   return nodes;
@@ -794,7 +794,7 @@ class StageMap {
       line(c, sx, sy + 20, sx, n.y - 8 + bob, 5, '#8d5a3b');
       c.save(); if (!open) c.globalAlpha = 0.65; ell(c, sx, sy, 30, 30); fs(c, '#fff7e6', 4); stageIcon(c, n.id, sx, sy, 36); c.restore();
       ell(c, sx - 26, sy - 22, 12, 12); fs(c, open ? BRAND.lime : '#adb5bd', 2.5); txt(c, String(i + 1), sx - 26, sy - 21, 13, '#fff', 'center', null);
-      if (!open) { ell(c, sx + 26, sy - 22, 13, 13); fs(c, '#fff', 2.5); icon(c, 'hourglass', sx + 26, sy - 22, 16); }
+      if (!open) { ell(c, sx + 26, sy - 22, 13, 13); fs(c, '#fff', 2.5); icon(c, 'lock', sx + 26, sy - 22, 16); }
       if (sp.clears) icon(c, 'crown', sx + 26, sy - 24, 24);
       txt(c, STAGE_INFO[n.id].name, n.x, n.y + 40, 15, '#fff', 'center', BRAND.ink);
       UI.btn(n.x - 50, n.y - 115, 100, 170, () => this.goTo(i));   // UI.btn rechnet die Verschiebung selbst um
@@ -820,11 +820,10 @@ class StageMap {
       if (open) {
         const done = ALL_IDS.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
         for (let q = 0; q < 6; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); }
-        icon(c, 'hanger', tx + 110, cy + 78, 18); txt(c, sp.skins.length + '/6', tx + 122, cy + 79, 13, '#6b5a48', 'left', null);
         const pu = 1 + Math.sin(t * 6) * 0.07;
         c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 34, '#06d6a0', 'play', null); c.restore();
         UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
-      } else { rrPath(c, tx, cy + 64, 120, 28, 14); fs(c, '#fff', 2); icon(c, 'hourglass', tx + 16, cy + 78, 18); txt(c, 'kommt bald', tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
+      } else { const prev = STAGE_ORDER[STAGE_ORDER.indexOf(id) - 1], lab = prev ? 'Schaffe zuerst: ' + STAGE_INFO[prev].name : 'gesperrt'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 44; rrPath(c, tx, cy + 64, lw, 28, 14); fs(c, '#fff', 2); icon(c, 'lock', tx + 16, cy + 78, 18); txt(c, lab, tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
     }
     roundBtn(c, W - 50, H - 60, 30, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
   }
