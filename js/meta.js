@@ -98,8 +98,8 @@ class Shop {
   up(x, y) {
     const d = this.drag; this.drag = null; if (!d || d.moved || this.tab !== 'skins') return;
     const h = (this.skinHit || []).find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h); if (!h) return;
-    if (h.own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; }
-    this.buy(h.price, mm => { mm.skins.push(h.id); this.say(h.name + ' liegt jetzt im Kleiderschrank.'); });
+    if (h.own) { wearSkin(h.id); this.say(h.name + ' hast du jetzt an!'); return; }
+    this.buy(h.price, mm => { mm.skins.push(h.id); wearSkin(h.id); this.say(h.name + ' gekauft und gleich angezogen!'); });
   }
   buy(price, fn) { const m = META(); if (m.coins < price) { Sfx.play('bad'); this.say('Dafür fehlen dir noch ' + (price - m.coins) + ' Taler.'); return; } m.coins -= price; fn(m); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 40); achieve('einkauf'); }
   draw(c) {
@@ -108,6 +108,7 @@ class Shop {
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
+    roundBtn(c, W - 230, 44, 24, '#d8f5e3', 'hanger', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; });
     const tabs = [['joker', 'Tages-Shop'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere'], ['figur', 'Figur']], tw = Math.min(140, (W - 40) / 5 - 8);
     tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'figur') { const back = () => setScene(new Shop(this.back)); setScene(new CharEditor(back)); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
@@ -125,7 +126,7 @@ class Shop {
         txt(c, RARITY[sk.rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + bob + ch - 34, 10, '#6b5a48', 'center', null);
         if (own) txt(c, 'gekauft', x + cw / 2, y + bob + ch - 14, 13, '#2b9348', 'center', null);
         else { if (o.off) { txt(c, String(sk.price), x + cw / 2 - 30, y + bob + ch - 14, 11, '#adb5bd', 'center', null); line(c, x + cw / 2 - 42, y + bob + ch - 14, x + cw / 2 - 18, y + bob + ch - 14, 1.5, '#adb5bd', false); } icon(c, 'coin', x + cw / 2 - 2, y + bob + ch - 14, 16); txt(c, String(o.price), x + cw / 2 + 24, y + bob + ch - 13, 14, '#8d5a3b', 'center', null); }
-        UI.btn(x, y + bob, cw, ch, () => { if (own) { this.say('Anziehen kannst du ihn im Kleiderschrank.'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); this.say(sk.name + ' liegt jetzt im Kleiderschrank.'); }); });
+        UI.btn(x, y + bob, cw, ch, () => { if (own) { wearSkin(o.id); this.say(sk.name + ' hast du jetzt an!'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); wearSkin(o.id); this.say(sk.name + ' gekauft und gleich angezogen!'); }); });
         skinInfoBtn(c, x + cw - 18, y + bob + ch - 70, o.id);
       });
       { const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
@@ -189,7 +190,7 @@ class Shop {
         drawAnimal(c, kind, x + cw / 2, y + ch * 0.66, Math.min(1.4, ch / 115), { look: sk, cap: true, t: this.t });
         rrPath(c, x + 6, y + 6, cw - 12, 18, 9); c.fillStyle = RARITY[rarity].col; c.fill(); txt(c, sk.ability ? ABILITIES[sk.ability].name : RARITY[rarity].name, x + cw / 2, y + 15, 10, '#3d2c1f', 'center', null);
         txt(c, name, x + cw / 2, y + ch - 30, 11, '#3d2c1f', 'center', null);
-        if (own) txt(c, 'gekauft', x + cw / 2, y + ch - 12, 12, '#2b9348', 'center', null);
+        if (own) txt(c, DP(CUR_DIFF || 'medium').equip === id ? '✓ an' : 'antippen = anziehen', x + cw / 2, y + ch - 12, cw < 120 ? 10 : 12, '#2b9348', 'center', null);
         else { icon(c, 'coin', x + cw / 2 - 20, y + ch - 12, 15); txt(c, String(price), x + cw / 2 + 6, y + ch - 11, 13, '#8d5a3b', 'center', null); }
         skinInfoBtn(c, x + cw - 16, y + ch - 50, id);
         this.skinHit.push({ x, y, w: cw, h: ch, id, name, price, own });
@@ -301,6 +302,7 @@ function needOnline(c, back) {
   UI.btn(W / 2 - 110, y + h - 56, 220, 44, () => setScene(new NewAccount({ migrate: Save.data.current })));
   return true;
 }
+function wearSkin(id) { ['easy', 'medium', 'hard'].forEach(d => { DP(d).equip = id; }); Save.write(); Sfx.play('good'); }
 function api(body) { const a = ACC(); return Net.call(Object.assign({ login: a.login, token: a.token }, body)); }
 
 class MultiScene {

@@ -84,9 +84,9 @@ class Menu {
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
-    { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())]];
-      const bw = Math.min(170, (W - 60) / 3), by = H - (land ? 38 : 46);
-      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - 1) * (bw + 10) - bw / 2; rrPath(c, x, by - 24, bw, 48, 20); fs(c, col, 3); icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); UI.btn(x, by - 24, bw, 48, fn); });
+    { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }]];
+      const bw = Math.min(170, (W - 70) / 4), by = H - (land ? 38 : 46);
+      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - 1.5) * (bw + 10) - bw / 2; rrPath(c, x, by - 24, bw, 48, 20); fs(c, col, 3); icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); UI.btn(x, by - 24, bw, 48, fn); });
     }
     { const cw = accountChip.lastW || 0; coinChip(c, 12 + (cw || 170) + 10, 40); }
     DIFFS.forEach((d, i) => {
@@ -986,7 +986,7 @@ class Wardrobe {
   up(px, py) {
     const g = this.drag; this.drag = null; if (!g || g.moved) return;
     const hh = (this.hits || []).find(o => px >= o.x && px <= o.x + o.w && py >= o.y && py <= o.y + o.h); if (!hh) return;
-    DP(this.diff).equip = hh.sid; Save.write(); Sfx.play('good');
+    wearSkin(hh.sid);
   }
 }
 
