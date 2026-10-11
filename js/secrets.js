@@ -5,29 +5,29 @@
 // visit: eine Runde laufen (alle Punkte der Reihe nach in der Zeit erreichen)
 const AREA_SECRETS = {
   gastraum: [
-    { key: 'weinfass', kind: 'tap', x: 860, y: 1240, r: 50, n: 4, time: 3, name: 'Auf das Weinfass geklopft', ach: 'Fass-Klopfer', desc: 'Klopf viermal schnell auf das Weinfass.' },
+    { key: 'weinfass', kind: 'tap', x: 1410, y: 600, r: 50, n: 4, time: 3, name: 'Auf das Weinfass geklopft', ach: 'Fass-Klopfer', desc: 'Klopf viermal schnell auf das Weinfass.' },
     { key: 'glocke', kind: 'tap', x: 470, y: 205, r: 46, n: 5, time: 3, name: 'Fünfmal die Barglocke geläutet', ach: 'Barglocken-Profi', desc: 'Läute an der Bar fünfmal schnell hintereinander.' },
     { key: 'olive', kind: 'visit', pts: [[310, 690], [430, 790], [310, 900], [190, 790]], time: 7, name: 'Einmal um den Olivenbaum gerannt', ach: 'Olivenbaum-Runde', desc: 'Lauf einmal schnell um einen Olivenbaum herum.' },
   ],
   kueche: [
-    { key: 'ofen', kind: 'tap', x: 850, y: 140, r: 70, n: 3, time: 3, name: 'Den Flammkuchenofen angeheizt', ach: 'Ofen-Heizer', desc: 'Tippe dreimal schnell auf den großen schwarzen Ofen.' },
-    { key: 'toepfe', kind: 'tap', x: 155, y: 480, r: 50, n: 4, time: 3, name: 'Auf dem Topf getrommelt', ach: 'Topf-Trommler', desc: 'Trommle viermal schnell auf dem großen Topf.' },
-    { key: 'lager', kind: 'visit', pts: [[430, 900], [430, 1030], [805, 1030], [805, 900]], time: 8, name: 'Lager-Sprint geschafft', ach: 'Lager-Sprinter', desc: 'Renn durch beide Lager-Durchgänge in einer Runde.' },
+    { key: 'ofen', kind: 'tap', x: 1250, y: 140, r: 70, n: 3, time: 3, name: 'Den Flammkuchenofen angeheizt', ach: 'Ofen-Heizer', desc: 'Tippe dreimal schnell auf den großen schwarzen Ofen.' },
+    { key: 'toepfe', kind: 'tap', x: 555, y: 480, r: 50, n: 4, time: 3, name: 'Auf dem Topf getrommelt', ach: 'Topf-Trommler', desc: 'Trommle viermal schnell auf dem großen Topf.' },
+    { key: 'lager', kind: 'visit', pts: [[340, 250], [480, 250], [480, 845], [340, 845]], time: 8, name: 'Lager-Sprint geschafft', ach: 'Lager-Sprinter', desc: 'Renn durch beide Lager-Durchgänge in einer Runde.' },
   ],
   aussen: [
-    { key: 'brunnenrunde', kind: 'visit', pts: [[640, 560], [770, 690], [640, 820], [510, 690]], time: 8, name: 'Einmal um den Brunnen gelaufen', ach: 'Brunnen-Runde', desc: 'Lauf einmal schnell um den Wunschbrunnen.' },
-    { key: 'brunnen', kind: 'tap', x: 640, y: 660, r: 56, n: 3, time: 3, name: 'Drei Wünsche in den Brunnen geworfen', ach: 'Wunschbrunnen', desc: 'Wirf drei Wünsche schnell in den Brunnen.' },
-    { key: 'kugeln', kind: 'seq', pts: [[520, 535], [880, 585], [520, 535]], r: 40, time: 9, name: 'Die Leuchtkugeln zum Leuchten gebracht', ach: 'Lichtzauber', desc: 'Tippe die Leuchtkugeln abwechselnd an.' },
+    { key: 'brunnenrunde', kind: 'visit', pts: [[1250, 160], [1390, 300], [1250, 440], [1110, 300]], time: 8, name: 'Einmal um den Brunnen gelaufen', ach: 'Brunnen-Runde', desc: 'Lauf einmal schnell um den Wunschbrunnen.' },
+    { key: 'brunnen', kind: 'tap', x: 1250, y: 260, r: 56, n: 3, time: 3, name: 'Drei Wünsche in den Brunnen geworfen', ach: 'Wunschbrunnen', desc: 'Wirf drei Wünsche schnell in den Brunnen.' },
+    { key: 'kugeln', kind: 'seq', pts: [[520, 535], [1150, 625], [520, 535]], r: 40, time: 9, name: 'Die Leuchtkugeln zum Leuchten gebracht', ach: 'Lichtzauber', desc: 'Tippe die Leuchtkugeln abwechselnd an.' },
   ],
   chalet: [
-    { key: 'christbaum', kind: 'tap', x: 830, y: 180, r: 60, n: 5, time: 3, name: 'Den Christbaum zum Leuchten gebracht', ach: 'Lichterbaum', desc: 'Tippe den Christbaum fünfmal schnell an.' },
-    { key: 'schneemann', kind: 'tap', x: 300, y: 830, r: 50, n: 5, time: 3, name: 'Dem Schneemann die Mütze gerichtet', ach: 'Schneemann-Freund', desc: 'Tippe den Schneemann fünfmal schnell an.' },
-    { key: 'teich', kind: 'visit', pts: [[760, 1010], [940, 1120], [760, 1230], [585, 1120]], time: 11, name: 'Einmal um den Eisteich gelaufen', ach: 'Eisteich-Runde', desc: 'Lauf einmal um den zugefrorenen Teich.' },
+    { key: 'christbaum', kind: 'tap', x: 830, y: 380, r: 60, n: 5, time: 3, name: 'Den Christbaum zum Leuchten gebracht', ach: 'Lichterbaum', desc: 'Tippe den Christbaum fünfmal schnell an.' },
+    { key: 'schneemann', kind: 'tap', x: 300, y: 1030, r: 50, n: 5, time: 3, name: 'Dem Schneemann die Mütze gerichtet', ach: 'Schneemann-Freund', desc: 'Tippe den Schneemann fünfmal schnell an.' },
+    { key: 'teich', kind: 'visit', pts: [[760, 1210], [940, 1320], [760, 1430], [585, 1320]], time: 11, name: 'Einmal um den Eisteich gelaufen', ach: 'Eisteich-Runde', desc: 'Lauf einmal um den zugefrorenen Teich.' },
   ],
   parkplatz: [
-    { key: 'laternen', kind: 'seq', pts: [[640, 140], [760, 810], [640, 140]], r: 50, time: 14, name: 'Die Laternen angeknipst', ach: 'Laternen-Wärter', desc: 'Tippe die Laternen abwechselnd an.' },
-    { key: 'hupe', kind: 'tap', x: 440, y: 590, r: 50, n: 4, time: 3, name: 'Das rote Auto hat gehupt', ach: 'Hup-Hup', desc: 'Tippe das rote Auto viermal schnell an.' },
-    { key: 'kreisel', kind: 'visit', pts: [[300, 174], [456, 330], [300, 486], [144, 330]], time: 10, name: 'Einmal um den Kreisverkehr', ach: 'Kreisel-Runde', desc: 'Lauf einmal um den ganzen Kreisverkehr.' },
+    { key: 'laternen', kind: 'seq', pts: [[1760, 150], [2200, 730], [1760, 150]], r: 50, time: 14, name: 'Die Laternen angeknipst', ach: 'Laternen-Wärter', desc: 'Tippe die Laternen abwechselnd an.' },
+    { key: 'hupe', kind: 'tap', x: 1240, y: 500, r: 50, n: 4, time: 3, name: 'Das rote Auto hat gehupt', ach: 'Hup-Hup', desc: 'Tippe das rote Auto viermal schnell an.' },
+    { key: 'kreisel', kind: 'visit', pts: [[760, 204], [916, 360], [760, 516], [604, 360]], time: 10, name: 'Einmal um den Kreisverkehr', ach: 'Kreisel-Runde', desc: 'Lauf einmal um den ganzen Kreisverkehr.' },
   ],
 };
 // Erfolge: je Geheimnis, je Bereich "alle Geheimnisse", je Bereich geschafft, ganze Welt

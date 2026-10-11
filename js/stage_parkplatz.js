@@ -41,17 +41,19 @@ const PCOLS = ['#e9ecef', '#adb5bd', '#e63946', '#343a40', '#4dabf7', '#f8f9fa',
 // (dort kommt man her), rechts die Dächer von Chalet und Nebengebäude, darunter der große helle Platz mit zwei schrägen
 // Pfostenreihen und einer Pflanzinsel in der Mitte, Hecken mit Bäumen links und unten, Anhänger + Transporter unten links,
 // Ausfahrt mit Schranke unten rechts.
-const RB = { x: 300, y: 330, r: 235, ri: 78 };
-const PROWS = [[[60, 760], [620, 590]], [[90, 1020], [720, 830]]];
+const PW = 2900, PH = 1500, PSX = PW / 1000, PSY = PH / 1400, PX = x => Math.round(x * PSX), PY = y => Math.round(y * PSY);
+// Kreisel links oben (links neben dem Spielplatz), Brühlstraße kommt von links
+const RB = { x: 760, y: 360, r: 235, ri: 78 };
+const PROWS = [[[1200, 760], [2600, 600]], [[300, 1080], [2200, 880]]];
 const PPOSTS = []; PROWS.forEach(([a, b], ri) => { const n = Math.floor(dist(a[0], a[1], b[0], b[1]) / 30); for (let k = 0; k <= n; k++) { if (Math.abs(k - n / 2) < 1.6) continue; const u = k / n; PPOSTS.push([Math.round(lerp(a[0], b[0], u)), Math.round(lerp(a[1], b[1], u))]); } });
-const PUDDLES = [[640, 700, 34], [260, 1180, 40]];
+const PUDDLES = [[1500, 700, 34], [700, 1250, 40], [2400, 1100, 38]];
 function drawGroundParkplatz(g, R) {
-  // heller Beton/Kies-Platz überall
+  // heller Beton/Kies-Platz überall (Größe wie auf dem Luftbild)
   g.fillStyle = '#d3cec4'; g.fillRect(0, 0, WORLD_W, WORLD_H);
   for (let i = 0; i < 26000; i++) { g.fillStyle = ['#c9c3b8', '#dcd7ce', '#bfb9ad', '#e3dfd7'][i % 4]; g.fillRect(R() * WORLD_W, R() * WORLD_H, 2, 2); }
   for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(120,110,95,.06)'; ell(g, R() * WORLD_W, R() * WORLD_H, 70 + R() * 90, 30 + R() * 40, R() * 3); g.fill(); }
   // Reifenspuren
-  g.strokeStyle = 'rgba(90,85,75,.08)'; g.lineWidth = 14; for (const [x1, y1, x2, y2] of [[300, 560, 520, 1300], [380, 560, 800, 1340], [520, 450, 880, 1300]]) { g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo((x1 + x2) / 2 + 60, (y1 + y2) / 2, x2, y2); g.stroke(); }
+  g.strokeStyle = 'rgba(90,85,75,.08)'; g.lineWidth = 14; for (const [x1, y1, x2, y2] of [[900, 560, 1400, 1450], [1600, 200, 2300, 1450], [1000, 560, 2700, 900]]) { g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo((x1 + x2) / 2 + 60, (y1 + y2) / 2, x2, y2); g.stroke(); }
   // Brühlstraße von links in den Kreisverkehr
   g.save(); g.lineCap = 'butt'; g.strokeStyle = '#8b9196'; g.lineWidth = 150; g.beginPath(); g.moveTo(-60, RB.y); g.lineTo(RB.x, RB.y); g.stroke(); g.restore();
   // Kreisverkehr: Asphaltring mit Bordstein, Grasinsel mit Büschen
@@ -62,34 +64,39 @@ function drawGroundParkplatz(g, R) {
   ell(g, RB.x, RB.y, RB.ri + 8, RB.ri + 8); g.fillStyle = '#ced4da'; g.fill(); ell(g, RB.x, RB.y, RB.ri, RB.ri); g.fillStyle = '#7fb069'; g.fill();
   for (let i = 0; i < 400; i++) { const a2 = R() * TAU, rr = R() * RB.ri; g.strokeStyle = ['#6a994e', '#8cbf6f', '#a7c957'][i % 3]; g.lineWidth = 1.5; g.beginPath(); g.moveTo(RB.x + Math.cos(a2) * rr, RB.y + Math.sin(a2) * rr); g.lineTo(RB.x + Math.cos(a2) * rr, RB.y + Math.sin(a2) * rr - 5); g.stroke(); }
   // oben: Durchgang vom Spielplatz (heller Weg)
-  g.save(); g.lineCap = 'round'; g.strokeStyle = '#e8e3d9'; g.lineWidth = 90; g.beginPath(); g.moveTo(520, -20); g.lineTo(520, 200); g.stroke(); g.restore();
-  // Hecken: links + unten (mit Ausfahrt unten rechts)
-  for (let y = 0; y < 1400; y += 26) { if (Math.abs(y - RB.y) < 90) continue; ell(g, 22 + (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
-  for (let y = 0; y < 1330; y += 26) { if (y > 880 && y < 1020) continue; ell(g, 978 - (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
-  g.fillStyle = '#e8e3d9'; g.fillRect(950, 905, 50, 90);
-  for (let x = 0; x < WORLD_W; x += 26) if (x < 730 || x > 870) { ell(g, x, 1340, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
-  g.fillStyle = '#6c757d'; g.fillRect(730, 1350, 140, 50);
+  g.save(); g.lineCap = 'round'; g.strokeStyle = '#e8e3d9'; g.lineWidth = 90; g.beginPath(); g.moveTo(PK_IN, -20); g.lineTo(PK_IN, 200); g.stroke(); g.restore();
+  // Parkbuchten-Linien in Reihen (wie auf dem Luftbild)
+  for (const [y0, x0, x1] of [[640, 1150, 2650], [1180, 250, 2650]]) for (let x = x0; x < x1; x += 110) { line(g, x, y0, x + 40, y0 + 120, 3, 'rgba(255,255,255,.55)', false); }
+  // Hecke oben (zum Gelände), links mit Lücke für die Brühlstraße, unten mit Ausfahrt, rechts mit Durchgang zum Chalet
+  for (let x = 0; x < PW; x += 26) { if ((x > 1100 && x < 2100) || Math.abs(x - PK_IN) < 70) continue; ell(g, x, 14, 22, 18); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 0; y < PH; y += 26) { if (Math.abs(y - RB.y) < 90) continue; ell(g, 22 + (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 0; y < PH - 70; y += 26) { if (y > PK_CH - 70 && y < PK_CH + 70) continue; ell(g, PW - 22 - (y % 52 ? 4 : 0), y, 30, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  g.fillStyle = '#e8e3d9'; g.fillRect(PW - 50, PK_CH - 45, 50, 90);
+  for (let x = 0; x < PW; x += 26) if (Math.abs(x - PK_GATE) > 70) { ell(g, x, PH - 60, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
+  g.fillStyle = '#6c757d'; g.fillRect(PK_GATE - 70, PH - 50, 140, 50);
   // Pfützen
   for (const [x, y, w] of PUDDLES) { ell(g, x, y, w, w * 0.42); g.fillStyle = 'rgba(70,100,130,.45)'; g.fill(); ell(g, x - w * 0.2, y - w * 0.1, w * 0.4, w * 0.12); g.fillStyle = 'rgba(200,225,245,.5)'; g.fill(); }
 }
+const PK_IN = 1610, PK_CH = 560, PK_GATE = 2300;   // Weg vom Spielplatz (oben), Durchgang zum Chalet (rechts), Schranke (unten)
 const car = (id, x, cy, a, col) => ({ id, t: 'auto', x, y: cy + 58, cy, a, col, r: 34, x0: x - 34 - Math.abs(a) * 40, y0: cy - 60, w: 68 + Math.abs(a) * 80, h: 120, bb: [x - 60, cy - 70, 120, 140] });
 const PDECOR = [
-  // am Rand vom Kreisverkehr geparkt (wie auf dem Bild)
-  car('a1', 95, 640, 0.25, PCOLS[0]), car('a2', 170, 625, 0.2, PCOLS[3]), car('a3', 360, 625, -0.2, PCOLS[3]), car('a4', 440, 610, -0.25, PCOLS[2]),
-  car('a5', 300, 858, 0.05, PCOLS[4]), car('a6', 470, 1200, 0.1, PCOLS[3]), car('a7', 640, 470, 0, PCOLS[1]),
-  { id: 'anhaenger', t: 'anhaenger', x: 90, y: 1150, x0: 70, y0: 1010, w: 44, h: 140, bb: [55, 990, 80, 170] },
-  { id: 'transporter', t: 'transporter', x: 92, y: 1290, x0: 64, y0: 1180, w: 56, h: 110, bb: [50, 1160, 90, 140] },
+  // am Rand vom Kreisverkehr + in den Reihen geparkt (wie auf dem Bild)
+  car('a1', 520, 700, 0.25, PCOLS[0]), car('a2', 610, 690, 0.2, PCOLS[3]), car('a3', 1020, 690, -0.2, PCOLS[3]), car('a4', 1240, 520, -0.25, PCOLS[2]),
+  car('a5', 700, 1020, 0.05, PCOLS[4]), car('a6', 1450, 1260, 0.1, PCOLS[3]), car('a7', 1880, 470, 0, PCOLS[1]),
+  car('a8', 2050, 520, 0.2, PCOLS[5]), car('a9', 2380, 470, 0.15, PCOLS[6]), car('a10', 1700, 1010, 0.1, PCOLS[7]), car('a11', 2150, 1000, 0.15, PCOLS[8]), car('a12', 2550, 980, -0.1, PCOLS[9]), car('a13', 1000, 1260, 0.1, PCOLS[2]),
+  { id: 'anhaenger', t: 'anhaenger', x: 170, y: 1250, x0: 150, y0: 1110, w: 44, h: 140, bb: [135, 1090, 80, 170] },
+  { id: 'transporter', t: 'transporter', x: 300, y: 1390, x0: 272, y0: 1280, w: 56, h: 110, bb: [258, 1260, 90, 140] },
   { id: 'insel', t: 'rbinsel', x: RB.x, y: RB.y + RB.ri, bb: [RB.x - 110, RB.y - 180, 220, 270] },
-  { id: 'pflanz', t: 'pflanzinsel', x: 420, y: 810, r: 34, bb: [370, 700, 100, 120] },
+  { id: 'pflanz', t: 'pflanzinsel', x: 1500, y: 860, r: 34, bb: [1450, 750, 100, 120] },
   ...PPOSTS.map(([x, y], i) => ({ id: 'po' + i, t: 'poller', x, y, r: 9, bb: [x - 8, y - 26, 16, 30] })),
-  { id: 'lampe1', t: 'lampe_p', x: 640, y: 230, r: 10, bb: [615, 50, 70, 190] },
-  { id: 'lampe2', t: 'lampe_p', x: 760, y: 900, r: 10, bb: [735, 720, 70, 190] },
-  { id: 'busch1', t: 'busch', x: 70, y: 860, r: 26, bb: [30, 810, 80, 60] },
-  { id: 'busch2', t: 'busch', x: 420, y: 1300, r: 26, bb: [380, 1250, 80, 60] },
-  { id: 'busch3', t: 'busch', x: 880, y: 1290, r: 26, bb: [840, 1240, 80, 60] },
-  { id: 'baum1', t: 'baum', x: 60, y: 520, r: 30, bb: [-50, 340, 220, 186] },
-  { id: 'baum2', t: 'baum', x: 660, y: 1330, r: 30, bb: [550, 1150, 220, 186] },
-  { id: 'pylon', t: 'pylon', x: 880, y: 1200, r: 22, bb: [840, 1010, 90, 196] },
+  { id: 'lampe1', t: 'lampe_p', x: 1760, y: 240, r: 10, bb: [1735, 60, 70, 190] },
+  { id: 'lampe2', t: 'lampe_p', x: 2200, y: 820, r: 10, bb: [2175, 640, 70, 190] },
+  { id: 'busch1', t: 'busch', x: 120, y: 900, r: 26, bb: [80, 850, 80, 60] },
+  { id: 'busch2', t: 'busch', x: 1200, y: 1400, r: 26, bb: [1160, 1350, 80, 60] },
+  { id: 'busch3', t: 'busch', x: 2620, y: 1380, r: 26, bb: [2580, 1330, 80, 60] },
+  { id: 'baum1', t: 'baum', x: 130, y: 600, r: 30, bb: [20, 420, 220, 186] },
+  { id: 'baum2', t: 'baum', x: 1900, y: 1420, r: 30, bb: [1790, 1240, 220, 186] },
+  { id: 'pylon', t: 'pylon', x: 2560, y: 1260, r: 22, bb: [2520, 1070, 90, 196] },
 ];
 const PDRAW = {
   auto(c, d) { c.fillStyle = 'rgba(0,0,0,.18)'; rrPath(c, d.x - 28, d.cy - 48, 64, 108, 18); c.fill(); drawCar(c, d.x, d.cy, d.a, d.col, 1.12); },
@@ -122,8 +129,8 @@ const PDRAW = {
   busch(c, d) { for (const [dx, dy, rr] of [[-14, -10, 20], [12, -12, 22], [0, -26, 20]]) { ell(c, d.x + dx, d.y + dy, rr, rr * 0.85); fs(c, '#40916c', 2.5); } },
 };
 function buildGridParkplatz() {
-  cellsIn(55, 30, 945, 1310, i => (G0[i] = 1));
-  cellsIn(740, 1300, 860, 1345, i => (G0[i] = 1));                     // Ausfahrt
+  cellsIn(55, 40, PW - 55, PH - 90, i => (G0[i] = 1));
+  cellsIn(PK_GATE - 60, PH - 100, PK_GATE + 60, PH - 55, i => (G0[i] = 1));   // Ausfahrt
   cellsCircle(RB.x, RB.y, RB.ri + 10, i => (G0[i] = 0));              // Insel
   // Pfostenreihen: zwischen benachbarten Pfosten dicht (nur die Lücke in der Mitte ist frei)
   for (let k = 1; k < PPOSTS.length; k++) { const [x1, y1] = PPOSTS[k - 1], [x2, y2] = PPOSTS[k]; if (dist(x1, y1, x2, y2) > 40) continue; for (let u = 0; u <= 1; u += 0.1) { const i = cellIdx(lerp(x1, x2, u), lerp(y1, y2, u) - 6); if (i >= 0) G0[i] = 0; } }
@@ -133,23 +140,25 @@ function buildGridParkplatz() {
   }
 }
 const PSPOTS = [
-  furnSpot(PDECOR, 'a1', 'top', { px: 100, py: 588, sx: 110, sy: 560 }),
-  furnSpot(PDECOR, 'a2', 'top', { px: 176, py: 574, sx: 180, sy: 545 }),
-  furnSpot(PDECOR, 'a3', 'right', { px: 392, py: 632, sx: 395, sy: 710 }),
-  furnSpot(PDECOR, 'a4', 'right', { px: 472, py: 615, sx: 495, sy: 690 }),
-  furnSpot(PDECOR, 'a5', 'left', { px: 262, py: 864, sx: 236, sy: 935 }),
-  furnSpot(PDECOR, 'a6', 'right', { px: 502, py: 1206, sx: 525, sy: 1270 }),
-  furnSpot(PDECOR, 'a7', 'left', { px: 608, py: 476, sx: 590, sy: 545 }),
-  furnSpot(PDECOR, 'anhaenger', 'right', { px: 112, py: 1100, sx: 140, sy: 1110 }),
-  furnSpot(PDECOR, 'transporter', 'right', { px: 118, py: 1250, sx: 148, sy: 1260 }),
+  furnSpot(PDECOR, 'a1', 'top', { px: 525, py: 648, sx: 535, sy: 620 }),
+  furnSpot(PDECOR, 'a2', 'top', { px: 616, py: 640, sx: 620, sy: 610 }),
+  furnSpot(PDECOR, 'a3', 'right', { px: 1052, py: 697, sx: 1055, sy: 775 }),
+  furnSpot(PDECOR, 'a4', 'right', { px: 1272, py: 525, sx: 1295, sy: 600 }),
+  furnSpot(PDECOR, 'a5', 'left', { px: 662, py: 1026, sx: 636, sy: 1095 }),
+  furnSpot(PDECOR, 'a6', 'right', { px: 1482, py: 1266, sx: 1505, sy: 1330 }),
+  furnSpot(PDECOR, 'a7', 'left', { px: 1848, py: 476, sx: 1830, sy: 545 }),
+  furnSpot(PDECOR, 'a9', 'right', { px: 2412, py: 476, sx: 2435, sy: 545 }),
+  furnSpot(PDECOR, 'a11', 'left', { px: 2118, py: 1006, sx: 2095, sy: 1075 }),
+  furnSpot(PDECOR, 'anhaenger', 'right', { px: 192, py: 1200, sx: 220, sy: 1210 }),
+  furnSpot(PDECOR, 'transporter', 'right', { px: 326, py: 1350, sx: 356, sy: 1360 }),
   furnSpot(PDECOR, 'insel', 'top', { px: RB.x + 60, py: RB.y + 26, sx: RB.x + 115, sy: RB.y + 60 }),
-  furnSpot(PDECOR, 'pflanz', 'top', { px: 434, py: 784, sx: 420, sy: 850 }),
-  furnSpot(PDECOR, 'lampe2', 'left', { px: 752, py: 880, sx: 735, sy: 920 }),
-  furnSpot(PDECOR, 'busch1', 'right', { px: 88, py: 846, sx: 112, sy: 870 }),
-  furnSpot(PDECOR, 'busch2', 'top', { px: 424, py: 1262, sx: 420, sy: 1240 }),
-  furnSpot(PDECOR, 'busch3', 'top', { px: 884, py: 1252, sx: 850, sy: 1240 }),
-  furnSpot(PDECOR, 'baum1', 'right', { px: 76, py: 470, sx: 100, sy: 520 }),
-  furnSpot(PDECOR, 'pylon', 'left', { px: 860, py: 1130, sx: 835, sy: 1180 }),
+  furnSpot(PDECOR, 'pflanz', 'top', { px: 1514, py: 834, sx: 1500, sy: 900 }),
+  furnSpot(PDECOR, 'lampe2', 'left', { px: 2192, py: 800, sx: 2175, sy: 840 }),
+  furnSpot(PDECOR, 'busch1', 'right', { px: 138, py: 886, sx: 162, sy: 910 }),
+  furnSpot(PDECOR, 'busch2', 'top', { px: 1204, py: 1362, sx: 1200, sy: 1340 }),
+  furnSpot(PDECOR, 'busch3', 'top', { px: 2624, py: 1342, sx: 2590, sy: 1320 }),
+  furnSpot(PDECOR, 'baum1', 'right', { px: 146, py: 550, sx: 170, sy: 600 }),
+  furnSpot(PDECOR, 'pylon', 'left', { px: 2540, py: 1190, sx: 2515, sy: 1240 }),
 ];
 // flach gedrückter Pappkarton – darunter guckt etwas hervor
 function drawCardboard(c, x, y, w, seed = 0) {
@@ -170,13 +179,13 @@ function drawBarrier(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.parkplatz = {
-  id: 'parkplatz', bg: '#40916c', finalExit: true, start: { x: 520, y: 50 }, gate: { x: 800, y: 1392, ix: 800, iy: 1320 },
+  id: 'parkplatz', w: PW, h: PH, bg: '#40916c', finalExit: true, start: { x: PK_IN, y: 60 }, gate: { x: PK_GATE, y: PH - 8, ix: PK_GATE, iy: PH - 80 },
   npcs: [
-    { id: 'p_schmidt', pos: [[560, 520], [300, 790], [620, 1060]] },
-    { id: 'p_julia', pos: [[230, 790], [700, 380], [450, 1150]] },
-    { id: 'p_karl', pos: [[530, 740], [800, 960], [300, 1180]] },
-    { id: 'p_petra', pos: [[820, 620], [660, 1250], [190, 880]] },
-    { id: 'p_tim', pos: [[640, 300], [860, 1080], [440, 990]] },
+    { id: 'p_schmidt', pos: [[1300, 380], [800, 880], [1800, 1150]] },
+    { id: 'p_julia', pos: [[500, 900], [2000, 300], [1250, 1150]] },
+    { id: 'p_karl', pos: [[1550, 760], [2400, 700], [600, 1300]] },
+    { id: 'p_petra', pos: [[2600, 380], [2050, 1350], [400, 760]] },
+    { id: 'p_tim', pos: [[1900, 760], [2700, 1100], [1100, 900]] },
   ],
   decor: PDECOR, spots: PSPOTS, grid: buildGridParkplatz, ground: drawGroundParkplatz, decorDraw: PDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },

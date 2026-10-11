@@ -9,7 +9,7 @@ let HOUSE = { x: 550, y: 550, w: 200, h: 150, fz: 60 };   // Plattform (Obergesc
 let STAIRS = { x: 625, y: 700, w: 50, h: 125 };
 let SLIDE = { x0: 750, x1: 905, y0: 600, y1: 650 };
 let SWING = { y: 600, x0: 160, x1: 550, top: 118, seats: [270, 430] };
-let START = { x: 880, y: 590 };                            // kommt von der Terrasse (rechts) herein
+let START = { x: 900, y: 380 };                            // kommt von der Terrasse (rechts, Durchgang 320–440) herein
 let GATE = { x: 520, y: 1214, ix: 520, iy: 1158 };        // Ausgang zum Parkplatz
 
 function hasCap(k, diff = CUR_DIFF) { return !!(ACC() && SP(diff, 'spielplatz').outfit); }   // Kappe = Teil vom Spielplatz
@@ -1087,7 +1087,7 @@ class Play {
       p.moving = true;
       if (E.t > 8) { E.phase = 'out'; E.t = 0; }
     } else {
-      p.y += spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); p.moving = true;
+      if (GATE.side === 'right') { p.x += spd * 0.7 * dt; p.y = lerp(p.y, GATE.iy, Math.min(1, dt * 5)); p.dir = 1; } else { p.y += spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); } p.moving = true;
       if (E.t > 1.6 && !E.done) { E.done = true; this.exiting = null; this.stageClear(); }
     }
   }

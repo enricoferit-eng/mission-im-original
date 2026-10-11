@@ -40,7 +40,10 @@ Object.assign(ITEMS, {
 const CHALET_ITEMS = ['handschuhe', 'muetze', 'schal', 'fonduegabel', 'laterne', 'tannenzapfen', 'holzscheit', 'schlittschuh', 'kakao', 'lebkuchen', 'schneekugel', 'kuhglocke'];
 
 // Hütte: Innenraum x 110–890, y 150–640; Blockwände ringsum, Tür unten in der Mitte
-const HUT = { x0: 110, x1: 890, y0: 150, y1: 640, door0: 455, door1: 545 };
+// Neue Größe wie auf dem Luftbild: oben ein Schneeweg von der Terrasse, links die Hütte, rechts das große Haus, unten der Garten.
+const CW = 1600, CH = 1600, CY = 200;   // CY: alles von früher rückt um 200 nach unten (oben ist jetzt der Weg)
+const HUT0 = { x0: 110, x1: 890, y0: 150, y1: 640, door0: 455, door1: 545 }, HUT = Object.assign({}, HUT0, { y0: HUT0.y0 + CY, y1: HUT0.y1 + CY });
+const BIGHOUSE = { x0: 1060, y0: 300, x1: 1560, y1: 900 };
 function snowGround(g, x, y, w, h, R) {
   g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
   g.fillStyle = '#f1f5f9'; g.fillRect(x, y, w, h);
@@ -56,12 +59,18 @@ function logWall(g, x, y, w, h, horiz = true) {
 }
 function drawGroundChalet(g, R) {
   snowGround(g, 0, 0, WORLD_W, WORLD_H, R);
-  // oben grenzt der Außenbereich an: Schnee-Hecke als Übergang (rechts Lücke für den Weg)
-  for (let x = 0; x < WORLD_W; x += 26) { if (x > 905) continue; ell(g, x, 12, 22, 20); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); ell(g, x, 2, 16, 7); g.fillStyle = '#fff'; g.fill(); }
+  // oben: Schnee-Hecke zur Terrasse mit Lücke fürs Gartentor, darunter ein getretener Weg quer
+  for (let x = 0; x < WORLD_W; x += 26) { if (Math.abs(x - 640) < 60) continue; ell(g, x, 12, 22, 20); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); ell(g, x, 2, 16, 7); g.fillStyle = '#fff'; g.fill(); }
+  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(640, -10); g.lineTo(640, 120); g.quadraticCurveTo(640, 150, 680, 150); g.lineTo(1580, 150); g.stroke(); g.restore();
+  drawBigHouse(g);
+  // rechts unten: Garten neben dem großen Haus
+  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 50; g.beginPath(); g.moveTo(1010, 160); g.lineTo(1010, 1000); g.quadraticCurveTo(1010, 1100, 1300, 1150); g.stroke(); g.restore();
+  g.save(); g.translate(0, CY);   // ab hier alles wie früher, nur 200 tiefer
+  const HUT = HUT0;
   // Weg von der Terrasse oben rechts herunter (festgetretener Schnee)
   g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(955, -10); g.lineTo(955, 690); g.quadraticCurveTo(940, 760, 700, 800); g.stroke(); g.restore();
   for (let y = 10; y < 690; y += 28) { ell(g, 948 + (y % 56 ? 12 : 0), y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }
-  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(-10, 950); g.quadraticCurveTo(250, 960, 480, 900); g.stroke(); g.restore();
+  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(-10, 1160); g.quadraticCurveTo(250, 1150, 480, 1000); g.stroke(); g.restore();   // vom Parkplatz (links)
   // Hütte: Holzdielen innen
   planks(g, HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0, ['#b07d4b', '#a0673a', '#bb8a57'], 28);
   g.fillStyle = 'rgba(255,190,90,.08)'; g.fillRect(HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0);
@@ -104,7 +113,8 @@ function drawGroundChalet(g, R) {
   ell(g, 720, 1100, 30, 8); g.fillStyle = 'rgba(255,255,255,.6)'; g.fill();
   // Zaun unten links/rechts vom Tor + seitlich
   for (let x = 10; x < WORLD_W; x += 40) if (Math.abs(x - 500) > 70) { rrPath(g, x - 5, 1338, 10, 50, 3); fs(g, '#8d5a3b', 2); ell(g, x, 1338, 7, 4); g.fillStyle = '#fff'; g.fill(); }
-  g.fillStyle = '#6f4e37'; g.fillRect(0, 1350, 430, 6); g.fillRect(570, 1350, 430, 6); g.fillRect(0, 1370, 430, 6); g.fillRect(570, 1370, 430, 6);
+  g.fillStyle = '#6f4e37'; g.fillRect(0, 1350, 430, 6); g.fillRect(570, 1350, WORLD_W - 570, 6); g.fillRect(0, 1370, 430, 6); g.fillRect(570, 1370, WORLD_W - 570, 6);
+  g.restore();
 }
 const CDECOR = [
   // innen
@@ -132,6 +142,21 @@ const CDECOR = [
   { id: 'wagenrad', t: 'wagenrad', x: 620, y: 1290, r: 22, bb: [570, 1220, 100, 76] },
   { id: 'schneehaufen', t: 'schneehaufen', x: 180, y: 920, r: 30, bb: [130, 880, 100, 46] },
 ];
+// das große dunkle Haus rechts (gehört zum Chalet, wie auf dem Luftbild): Dach von oben, vorne Holzwand mit Fenstern und Tür
+function drawBigHouse(g) {
+  const B = BIGHOUSE, fy = B.y1 - 130;
+  g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(B.x0 + 14, B.y0 + 14, B.x1 - B.x0, B.y1 - B.y0);
+  rrPath(g, B.x0, B.y0, B.x1 - B.x0, fy - B.y0, 6); fs(g, '#4a4e55', 3);
+  for (let y = B.y0 + 18; y < fy; y += 22) line(g, B.x0 + 4, y, B.x1 - 4, y, 1.5, 'rgba(255,255,255,.08)', false);
+  line(g, B.x0, (B.y0 + fy) / 2, B.x1, (B.y0 + fy) / 2, 5, '#343a40');
+  for (let x = B.x0 + 10; x < B.x1; x += 30) { ell(g, x, B.y0 + 6, 16, 7); g.fillStyle = '#fff'; g.fill(); ell(g, x + 12, fy - 4, 15, 6); g.fill(); }   // Schnee am Dachrand
+  rrPath(g, B.x0 + 70, B.y0 + 60, 50, 70, 4); fs(g, '#adb5bd', 2.5); for (let k = 0; k < 3; k++) { ell(g, B.x0 + 95, B.y0 + 40 - k * 16, 10 + k * 4, 8 + k * 3); g.fillStyle = 'rgba(220,225,230,.5)'; g.fill(); }   // Kamin
+  rrPath(g, B.x0, fy, B.x1 - B.x0, 130, 4); fs(g, '#6f4e37', 3);
+  for (let y = fy + 16; y < B.y1; y += 16) line(g, B.x0 + 3, y, B.x1 - 3, y, 1.5, 'rgba(40,20,5,.35)', false);
+  for (const wx of [B.x0 + 80, B.x0 + 190, B.x1 - 80]) { rrPath(g, wx - 34, fy + 26, 68, 56, 4); fs(g, '#5c3d2e', 3); rrPath(g, wx - 28, fy + 32, 56, 44, 2); g.fillStyle = '#ffe8a3'; g.fill(); line(g, wx, fy + 32, wx, fy + 76, 3, '#5c3d2e', false); }
+  rrPath(g, B.x1 - 210, fy + 30, 70, 100, 4); fs(g, '#3d2c1f', 3); ell(g, B.x1 - 152, fy + 82, 4, 4); g.fillStyle = '#ffd166'; g.fill();
+  ell(g, B.x1 - 175, fy + 18, 16, 16); g.lineWidth = 6; g.strokeStyle = '#2d6a4f'; g.stroke(); ell(g, B.x1 - 175, fy + 30, 4, 4); g.fillStyle = '#c1121f'; g.fill();   // Kranz
+}
 const CDRAW = {
   huettentafel(c, d) {
     // lange Holztafel (Foto): Holzbänke mit roten Sitzkissen, weißer Läufer, grüne Servietten, Windlichter, Fondue-Topf, Weihnachtsstern
@@ -200,12 +225,14 @@ const CDRAW = {
   schneehaufen(c, d) { for (const [dx, dy, r2] of [[-18, -6, 20], [14, -8, 22], [0, -20, 18]]) { ell(c, d.x + dx, d.y + dy, r2, r2 * 0.7); fs(c, '#fff', 2.5); } ell(c, d.x - 4, d.y - 26, 8, 4); c.fillStyle = 'rgba(190,215,235,.6)'; c.fill(); },
 };
 function buildGridChalet() {
-  cellsIn(HUT.x0 + 8, 168, HUT.x1 - 8, HUT.y1 - 6, i => (G0[i] = 1));                 // innen
-  cellsIn(HUT.door0 + 6, HUT.y1 - 10, HUT.door1 - 6, HUT.y1 + 40, i => (G0[i] = 1));   // Tür
-  cellsIn(40, HUT.y1 + 34, 960, 1330, i => (G0[i] = 1));                               // Garten
-  cellsIn(455, 1320, 545, 1345, i => (G0[i] = 1));
-  cellsIn(440, 150, 560, 240, i => (G0[i] = 0));                                         // Kamin-Vorplatz
-  for (let i = 0; i < GW * GH; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120) / 80) ** 2 < 1) G0[i] = 0; }   // zugefrorener Teich
+  cellsIn(30, 40, CW - 30, CH - 70, i => (G0[i] = 1));                                   // draußen überall
+  cellsIn(HUT.x0 - 34, HUT.y0 - 130, HUT.x1 + 34, HUT.y1 + 30, i => (G0[i] = 0));         // Hütte (Wände)
+  cellsIn(HUT.x0 + 8, HUT.y0 + 18, HUT.x1 - 8, HUT.y1 - 6, i => (G0[i] = 1));             // innen
+  cellsIn(HUT.door0 + 6, HUT.y1 - 10, HUT.door1 - 6, HUT.y1 + 40, i => (G0[i] = 1));      // Tür
+  cellsIn(BIGHOUSE.x0 - 4, BIGHOUSE.y0 - 4, BIGHOUSE.x1 + 4, BIGHOUSE.y1 + 6, i => (G0[i] = 0));   // großes Haus
+  cellsIn(455, CH - 80, 545, CH - 55, i => (G0[i] = 1));
+  cellsIn(440, 150 + CY, 560, 240 + CY, i => (G0[i] = 0));                                // Kamin-Vorplatz
+  for (let i = 0; i < GW * GH; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120 - CY) / 80) ** 2 < 1) G0[i] = 0; }   // zugefrorener Teich
   for (const d of CDECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - (d.t === 'huettentafel' ? 34 : 4), d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(8, d.r - 6), i => (G0[i] = 0));
@@ -232,6 +259,15 @@ const CSPOTS = [
   furnSpot(CDECOR, 'wagenrad', 'left', { px: 598, py: 1270, sx: 580, sy: 1302 }),
   furnSpot(CDECOR, 'schneehaufen', 'top', { px: 190, py: 896, cut: 906, front: true, sx: 180, sy: 960 }),
 ];
+// alles von früher 200 tiefer setzen (oben ist jetzt der Weg von der Terrasse)
+CSPOTS.forEach(q => { q.y += CY; q.py += CY; if (q.cut) q.cut += CY; });
+CDECOR.forEach(d => { d.y += CY; if (d.y0 != null) d.y0 += CY; if (d.bb) d.bb[1] += CY; });
+CDECOR.push(
+  { id: 'tanne5', t: 'tanne', x: 1200, y: 1150, r: 30, bb: [1120, 930, 160, 230] },
+  { id: 'tanne6', t: 'tanne', x: 1480, y: 1300, r: 30, bb: [1400, 1080, 160, 230] },
+  { id: 'schneehaufen2', t: 'schneehaufen', x: 1380, y: 1000, r: 30, bb: [1330, 960, 100, 46] },
+);
+CSPOTS.push(furnSpot(CDECOR, 'tanne5', 'right', { px: 1218, py: 1110, sx: 1250, sy: 1160 }), furnSpot(CDECOR, 'schneehaufen2', 'top', { px: 1390, py: 976, cut: 986, front: true, sx: 1380, sy: 1040 }));
 // innen: rot karierte Wolldecke, draußen: Schneehaufen
 function drawChaletCover(c, x, y, w, seed = 0) {
   if (y < HUT.y1 && x > HUT.x0 && x < HUT.x1) {
@@ -262,13 +298,13 @@ function drawWoodGate(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.chalet = {
-  id: 'chalet', bg: '#dbe4ee', start: { x: 90, y: 950 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
+  id: 'chalet', w: CW, h: CH, bg: '#dbe4ee', start: { x: 70, y: 1360 }, gate: { x: 500, y: CH - 8, ix: 500, iy: CH - 80 },
   npcs: [
-    { id: 'c_gerda', pos: [[300, 300], [700, 300], [240, 560]] },
-    { id: 'c_felix', pos: [[300, 1000], [460, 1120], [200, 1160]] },
-    { id: 'c_berger', pos: [[500, 520], [760, 560], [600, 300]] },
-    { id: 'c_toni', pos: [[860, 700], [880, 880], [640, 740]] },
-    { id: 'c_anna', pos: [[380, 880], [600, 1220], [770, 1300]] },
+    { id: 'c_gerda', pos: [[300, 500], [700, 500], [240, 760]] },
+    { id: 'c_felix', pos: [[300, 1200], [1250, 1300], [200, 1360]] },
+    { id: 'c_berger', pos: [[500, 720], [760, 760], [1300, 160]] },
+    { id: 'c_toni', pos: [[1000, 600], [1450, 1050], [640, 940]] },
+    { id: 'c_anna', pos: [[380, 1080], [600, 1420], [1150, 1000]] },
   ],
   decor: CDECOR, spots: CSPOTS, grid: buildGridChalet, ground: drawGroundChalet, decorDraw: CDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
@@ -290,22 +326,23 @@ STAGE_DEFS.chalet = {
   },
   extras(play) {
     // Schneefall draußen, Kaminfeuer flackert, Wirt Sepp rührt im großen Fondue-Topf, Rauch aus dem Kamin
-    const flakes = [...Array(90)].map((_, i) => ({ x: Math.random() * 1000, y: Math.random() * 1400, s: 1.5 + Math.random() * 2.5, v: 30 + Math.random() * 40, ph: Math.random() * 6 }));
+    const flakes = [...Array(90)].map((_, i) => ({ x: Math.random() * CW, y: Math.random() * CH - CY, s: 1.5 + Math.random() * 2.5, v: 30 + Math.random() * 40, ph: Math.random() * 6 }));
     return {
-      update(dt) { flakes.forEach(f => { f.y += f.v * dt; f.ph += dt; f.x += Math.sin(f.ph) * 12 * dt; if (f.y > 1400) { f.y = -10; f.x = Math.random() * 1000; } }); },
-      draw(c, L, vis, t) {
+      update(dt) { flakes.forEach(f => { f.y += f.v * dt; f.ph += dt; f.x += Math.sin(f.ph) * 12 * dt; if (f.y > CH - CY) { f.y = -CY - 10; f.x = Math.random() * CW; } }); },
+      draw(c, L0, vis0, t) {
+        const L = { push: o => L0.push({ y: o.y + CY, f: () => { c.save(); c.translate(0, CY); o.f(); c.restore(); } }) }, vis = (x, y) => vis0(x, y + CY);
         L.push({ y: 151, f: () => { for (let k = 0; k < 6; k++) { const fx = 470 + k * 12, h = 26 + Math.sin(t * 9 + k * 1.7) * 9; c.beginPath(); c.moveTo(fx - 10, 150); c.quadraticCurveTo(fx - 6, 150 - h * 0.6, fx + Math.sin(t * 7 + k) * 4, 150 - h); c.quadraticCurveTo(fx + 8, 150 - h * 0.6, fx + 10, 150); c.closePath(); c.fillStyle = k % 2 ? '#f77f00' : '#ffd166'; c.fill(); } ell(c, 500, 150, 60, 14); c.fillStyle = `rgba(255,140,40,${0.25 + 0.1 * Math.sin(t * 5)})`; c.fill(); } });
         const sx = 260 + Math.sin(t * 0.3) * 24;
         if (vis(sx, 225)) L.push({ y: 225, f: () => { drawPerson(c, 'c_sepp', sx, 225, 1.05, t, {}); c.save(); c.translate(sx + 22, 220); line(c, 0, -24, -8 + Math.sin(t * 4) * 6, -6, 3, '#8d5a3b'); c.restore(); } });
         L.push({ y: 99996, f: () => {
           // Tannengirlanden mit Lichtern an den Balken + hängende Laternen über den Tafeln (Foto)
-          for (const gy of [175, 330]) { if (!vis(500, gy + 80)) continue; c.beginPath(); c.moveTo(HUT.x0, gy); for (let x = HUT.x0; x <= HUT.x1; x += 30) c.lineTo(x, gy + Math.sin(x * 0.05) * 4); c.lineWidth = 9; c.strokeStyle = '#2d6a4f'; c.stroke(); c.lineWidth = 4; c.strokeStyle = '#40916c'; c.stroke();
-            for (let x = HUT.x0 + 10; x < HUT.x1; x += 26) { ell(c, x, gy + Math.sin(x * 0.05) * 4 + 3, 2.6, 2.6); c.fillStyle = `rgba(255,220,120,${0.7 + 0.3 * Math.sin(t * 3 + x)})`; c.fill(); } }
+          for (const gy of [175, 330]) { if (!vis(500, gy + 80)) continue; c.beginPath(); c.moveTo(HUT0.x0, gy); for (let x = HUT0.x0; x <= HUT0.x1; x += 30) c.lineTo(x, gy + Math.sin(x * 0.05) * 4); c.lineWidth = 9; c.strokeStyle = '#2d6a4f'; c.stroke(); c.lineWidth = 4; c.strokeStyle = '#40916c'; c.stroke();
+            for (let x = HUT0.x0 + 10; x < HUT0.x1; x += 26) { ell(c, x, gy + Math.sin(x * 0.05) * 4 + 3, 2.6, 2.6); c.fillStyle = `rgba(255,220,120,${0.7 + 0.3 * Math.sin(t * 3 + x)})`; c.fill(); } }
           for (const [lx, ly] of [[300, 300], [700, 300], [300, 430], [700, 430]]) { if (!vis(lx, ly + 60)) continue; line(c, lx, ly - 140, lx, ly - 100, 1.5, '#3d2c1f', false); rrPath(c, lx - 9, ly - 100, 18, 26, 3); fs(c, '#343a40', 2); rrPath(c, lx - 6, ly - 96, 12, 18, 2); c.fillStyle = `rgba(255,214,110,${0.85 + 0.15 * Math.sin(t * 5 + lx)})`; c.fill(); ell(c, lx, ly - 86, 26, 26); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
         } });
         L.push({ y: 99997, f: () => {
           c.save(); c.fillStyle = 'rgba(255,255,255,.92)';
-          flakes.forEach(f => { if (f.y < HUT.y1 + 30 && f.y > HUT.y0 - 120 && f.x > HUT.x0 - 30 && f.x < HUT.x1 + 30) return; if (!vis(f.x, f.y)) return; ell(c, f.x, f.y, f.s, f.s); c.fill(); });
+          flakes.forEach(f => { if (f.y < HUT0.y1 + 30 && f.y > HUT0.y0 - 120 && f.x > HUT0.x0 - 30 && f.x < HUT0.x1 + 30) return; if (!vis(f.x, f.y)) return; ell(c, f.x, f.y, f.s, f.s); c.fill(); });
           for (let k = 0; k < 4; k++) { const p = ((t * 0.25 + k / 4) % 1); ell(c, 500 + Math.sin(p * 6 + k) * 14, 10 - p * 120, 10 + p * 18, 8 + p * 14); c.fillStyle = `rgba(220,225,230,${0.5 * (1 - p)})`; c.fill(); }
           c.restore();
         } });

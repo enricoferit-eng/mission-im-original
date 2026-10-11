@@ -104,7 +104,22 @@ function counterBlock(c, x, y, w, h) {
 }
 
 // ---- Boden + Wände (fest, wird einmal gezeichnet) ----
+// Neue Größe wie auf dem Luftbild: links das Lager, rechts die Küche, rechts in der Wand die Schwingtür zum Glashaus (hinter der Bar)
+const KW = 1400, KH = 900, KX = 400, KDOOR = [220, 300];
 function drawGroundKueche(g, R) {
+  // Lager links: heller Boden, Fliesen-Rückwand
+  g.fillStyle = '#a7adb2'; g.fillRect(0, 0, KX + 10, KH);
+  for (let i = 0; i < 9000; i++) { g.fillStyle = ['#9aa0a6', '#b8bdc1', '#adb3b8', '#c5c9cc'][i % 4]; g.fillRect(R() * KX, 120 + R() * (KH - 120), 2.2, 2.2); }
+  tiles(g, 0, 0, KX + 10, 128); g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 120, KX, 8);
+  g.save(); g.translate(KX, 0); drawGroundKuecheAlt(g, R); g.restore();
+  // Trennwand Lager | Küche mit zwei Durchgängen (die alte linke Küchenwand)
+  for (const [a, b] of [[215, 290], [815, 875]]) { g.fillStyle = '#a7adb2'; g.fillRect(KX - 6, a, 64, b - a); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(KX - 6, a, 64, 4); }
+  // Schwingtür rechts (Rahmen) + Wände links und unten
+  g.fillStyle = '#9aa0a6'; g.fillRect(KW - 54, KDOOR[0], 54, KDOOR[1] - KDOOR[0]);
+  g.fillStyle = '#e9ecef'; g.fillRect(0, 120, 52, KH); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(48, 120, 6, KH);
+  g.fillStyle = '#e9ecef'; g.fillRect(0, KH - 22, KW, 22); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, KH - 26, KW, 4);
+}
+function drawGroundKuecheAlt(g, R) {
   // grauer Sprenkelboden
   g.fillStyle = '#9aa0a6'; g.fillRect(0, 0, WORLD_W, WORLD_H);
   for (let i = 0; i < 26000; i++) { g.fillStyle = ['#8d939a', '#b1b6bb', '#a5abb0', '#7e848a', '#c3c7cb'][i % 5]; g.fillRect(R() * WORLD_W, 120 + R() * (WORLD_H - 120), 2.2, 2.2); }
@@ -227,11 +242,10 @@ const KDRAW = {
   lagerregal(c, d) { rrPath(c, d.x0, d.y0 - 90, d.w, d.h + 90, 3); fs(c, '#adb5bd', 2.5); for (let k = 0; k < 3; k++) { rrPath(c, d.x0 - 2, d.y0 - 84 + k * 44, d.w + 4, 6, 2); fs(c, '#868e96', 1.5); for (let m = 0; m < 3; m++) { rrPath(c, d.x0 + 6 + m * 37, d.y0 - 112 + k * 44 + 28, 32, 26, 3); fs(c, ['#d4a373', '#e9c46a', '#fff'][(m + k) % 3], 2); } } },
 };
 function buildGridKueche() {
-  cellsIn(60, 210, 940, 925, i => (G0[i] = 1));        // Küche
-  cellsIn(60, 990, 940, 1330, i => (G0[i] = 1));       // Lager
-  cellsIn(380, 920, 480, 995, i => (G0[i] = 1)); cellsIn(760, 920, 850, 995, i => (G0[i] = 1));   // Durchgänge
-  cellsIn(565, 1320, 645, 1345, i => (G0[i] = 1));     // Tür zum Gastraum
-  cellsIn(60, 200, 340, 225, i => (G0[i] = 0)); cellsIn(560, 200, 720, 225, i => (G0[i] = 0)); cellsIn(760, 200, 940, 245, i => (G0[i] = 0)); cellsIn(360, 200, 460, 220, i => (G0[i] = 0));
+  cellsIn(KX + 60, 210, KX + 940, KH - 30, i => (G0[i] = 1));   // Küche
+  cellsIn(58, 150, KX - 10, KH - 30, i => (G0[i] = 1));          // Lager
+  cellsIn(KX - 20, 215, KX + 70, 290, i => (G0[i] = 1)); cellsIn(KX - 20, 815, KX + 70, 875, i => (G0[i] = 1));   // Durchgänge
+  cellsIn(KX + 60, 200, KX + 340, 225, i => (G0[i] = 0)); cellsIn(KX + 560, 200, KX + 720, 225, i => (G0[i] = 0)); cellsIn(KX + 760, 200, KX + 940, 245, i => (G0[i] = 0)); cellsIn(KX + 360, 200, KX + 460, 220, i => (G0[i] = 0));
   for (const d of KDECOR) { if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0)); else if (d.r) cellsCircle(d.x, d.y - 6, d.r - 6, i => (G0[i] = 0)); }
 }
 // Verstecke an den Möbeln: im Topf, in der Pfanne, auf der Wärmebrücke, hinterm Kühlschrank, auf den Servierwagen, im Eimer,
@@ -258,6 +272,14 @@ const KSPOTS = [
   furnSpot(KDECOR, 'kanister', 'left', { px: 757, py: 1158, sx: 742, sy: 1210 }),
   furnSpot(KDECOR, 'lagerregal', 'left', { px: 304, py: 1288, sx: 272, sy: 1300 }),
 ];
+// Küchenmöbel rücken um KX nach rechts, die Lager-Möbel bekommen neue Plätze im Lager links (Verstecke wandern mit)
+{
+  const LAGER = { kuehlraum: [170, 860], kisten1: [300, 560], kisten2: [130, 560], kistenregal: [100, 420], faesser: [300, 330], getraenke: [240, 230], stahl: [335, 230], saecke: [230, 690], kanister: [340, 690], lagerregal: [300, 860], wagen1: [330, 850] };
+  const dlt = {}; for (const d of KDECOR) { const m = LAGER[d.id]; const dx = m ? m[0] - d.x : KX, dy = m ? m[1] - d.y : 0; dlt[d.id] = [dx, dy]; d.x += dx; d.y += dy; if (d.x0 != null) { d.x0 += dx; d.y0 += dy; } if (d.bb) { d.bb[0] += dx; d.bb[1] += dy; } }
+  for (const q of KSPOTS) { const m = dlt[q.decor]; if (!m) continue; q.x += m[0]; q.y += m[1]; q.px += m[0]; q.py += m[1]; if (q.cut) q.cut += m[1]; }
+  // Regale stehen jetzt an der Wand: Versteck von rechts erreichbar
+  for (const q of KSPOTS) if (q.decor === 'kistenregal' || q.decor === 'lagerregal') { const d = KDECOR.find(e => e.id === q.decor); q.px = d.x0 + d.w - 8; q.py = d.y0 + 40; q.x = d.x0 + d.w + 26; q.y = d.y0 + 50; q.rot = 0.4; }
+}
 // Schwingtür zum Gastraum = Boss-Level am Ende
 function drawKitchenDoor(c, x, y, s, open, locked, t) {
   c.save(); c.translate(x, y); c.scale(s, s);
@@ -268,18 +290,18 @@ function drawKitchenDoor(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.kueche = {
-  id: 'kueche', bg: '#5c636a', start: { x: 300, y: 430 }, gate: { x: 605, y: 1392, ix: 605, iy: 1320 },
+  id: 'kueche', w: KW, h: KH, bg: '#5c636a', start: { x: KX + 300, y: 430 }, gate: { x: KW - 26, y: KDOOR[1] + 4, ix: KW - 90, iy: (KDOOR[0] + KDOOR[1]) / 2, side: 'right' },
   npcs: [
-    { id: 'k_marco', pos: [[250, 520, 0], [250, 780, 0], [670, 560, 0]] },
-    { id: 'k_luca', pos: [[850, 285, 0], [700, 330, 0], [760, 470, 0]] },
-    { id: 'k_tom', pos: [[160, 260, 0], [400, 270, 0], [380, 860, 0]] },
-    { id: 'k_nina', pos: [[560, 1110, 0], [770, 1260, 0], [400, 1300, 0]] },
-    { id: 'k_lea', pos: [[520, 820, 0], [700, 800, 0], [350, 650, 0]] },
+    { id: 'k_marco', pos: [[650, 520, 0], [650, 780, 0], [1070, 560, 0]] },
+    { id: 'k_luca', pos: [[1250, 285, 0], [1100, 330, 0], [1160, 470, 0]] },
+    { id: 'k_tom', pos: [[560, 260, 0], [800, 270, 0], [780, 840, 0]] },
+    { id: 'k_nina', pos: [[200, 300, 0], [220, 640, 0], [330, 780, 0]] },
+    { id: 'k_lea', pos: [[920, 820, 0], [1100, 800, 0], [750, 650, 0]] },
   ],
   decor: KDECOR, spots: KSPOTS, grid: buildGridKueche, ground: drawGroundKueche, decorDraw: KDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['cap', 'nudel', 'zettel', 'salat'], items: KUECHE_ITEMS,
-  drawGate: drawKitchenDoor, gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
+  drawGate: (...a) => drawSideDoor(...a), gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
   words: { one: 'Mitarbeiter', the: 'den Mitarbeiter', a: 'einen Mitarbeiter', many: 'Mitarbeiter', dat: 'Mitarbeitern', back: 'zum Mitarbeiter', each: 'Jeder Mitarbeiter',
     hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Schwingtür zum Innenbereich', gateTap: 'Lauf zur Schwingtür und tippe sie an!',
     opened: 'Die Tür ist offen!',

@@ -1,13 +1,15 @@
 'use strict';
 // ---------- Offene Welt: die 6 Bereiche liegen nebeneinander wie auf dem Luftbild ----------
-//   (Wiese)      | Küche      | (Straße)
-//   (Wiese)      | Gastraum   | (Straße)      Küche liegt hinter der Bar
-//   Spielplatz   | Außen      | (Straße)
-//   Parkplatz    | Chalet     | (Straße)
+//            [Küche][ Innenbereich ]
+//                [   Außenbereich    ]
+//      [Spielplatz]            [ Chalet ]
+//  [ Kreisel + Parkplatz      ]
 // Man läuft über Durchgänge nahtlos weiter; Nachbarbereiche sieht man am Rand schon. Ein Bereich ist erst offen,
 // wenn der vorige (Reihenfolge der Geschichte) geschafft ist.
 // Jeder Bereich liegt an seiner echten Stelle (linke obere Ecke in Welt-Koordinaten) und hat seine eigene Größe.
-const WORLD_XY = { kueche: [1000, 0], gastraum: [1000, 1400], aussen: [1000, 2800], spielplatz: [0, 2800], chalet: [1000, 4200], parkplatz: [0, 4200] };
+// Lage wie auf dem Luftbild (Gebäude-Achse waagerecht): oben Küche + Glashaus, darunter Terrasse, links unten Spielplatz,
+// darunter Kreisel + Parkplatz, rechts unten das Chalet mit dem großen Haus. Dazwischen und rundherum: Gelände.
+const WORLD_XY = { kueche: [1000, 0], gastraum: [2400, 0], aussen: [2100, 1000], spielplatz: [1100, 1200], parkplatz: [0, 2600], chalet: [2900, 1800] };
 const areaW = id => (STAGE_DEFS[id] && STAGE_DEFS[id].w) || 1000, areaH = id => (STAGE_DEFS[id] && STAGE_DEFS[id].h) || 1400;
 const offOf = (from, to) => [WORLD_XY[to][0] - WORLD_XY[from][0], WORLD_XY[to][1] - WORLD_XY[from][1]];
 function worldBox() { const ids = Object.keys(WORLD_XY); return { x0: Math.min(...ids.map(k => WORLD_XY[k][0])) - TERRAIN_PAD, y0: Math.min(...ids.map(k => WORLD_XY[k][1])) - TERRAIN_PAD, x1: Math.max(...ids.map(k => WORLD_XY[k][0] + areaW(k))) + TERRAIN_PAD, y1: Math.max(...ids.map(k => WORLD_XY[k][1] + areaH(k))) + TERRAIN_PAD }; }
@@ -16,12 +18,12 @@ const TERRAIN_PAD = 1000;
 const nearAreas = id => Object.keys(WORLD_XY).filter(k => k !== id && WORLD_XY[k][0] < WORLD_XY[id][0] + areaW(id) + 400 && WORLD_XY[k][0] + areaW(k) > WORLD_XY[id][0] - 400 && WORLD_XY[k][1] < WORLD_XY[id][1] + areaH(id) + 400 && WORLD_XY[k][1] + areaH(k) > WORLD_XY[id][1] - 400);
 // Durchgänge: side = Seite von a; r = Bereich entlang der Kante; gate = dort steht das Boss-Tor von a
 const LINKS = [
-  { a: 'kueche', side: 'bottom', b: 'gastraum', r: [565, 645], gate: true },
-  { a: 'gastraum', side: 'bottom', b: 'aussen', r: [445, 555], gate: true },
-  { a: 'aussen', side: 'left', b: 'spielplatz', r: [540, 640], gate: true },
-  { a: 'spielplatz', side: 'bottom', b: 'parkplatz', r: [470, 570], gate: true },
-  { a: 'parkplatz', side: 'right', b: 'chalet', r: [900, 1000], bar: 'fence' },
-  { a: 'aussen', side: 'bottom', b: 'chalet', r: [925, 985], bar: 'garden' },
+  { a: 'kueche', side: 'right', b: 'gastraum', r: [220, 300], gate: true },
+  { a: 'gastraum', side: 'bottom', b: 'aussen', r: [650, 780], gate: true },
+  { a: 'aussen', side: 'left', b: 'spielplatz', r: [520, 640], gate: true },
+  { a: 'spielplatz', side: 'bottom', b: 'parkplatz', r: [450, 570], gate: true },
+  { a: 'parkplatz', side: 'right', b: 'chalet', r: [500, 620], bar: 'fence' },
+  { a: 'aussen', side: 'bottom', b: 'chalet', r: [1400, 1480], bar: 'garden' },
 ];
 const OPP = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
 function areaCleared(diff, id) { return SP(diff, id).clears > 0; }
@@ -31,12 +33,19 @@ function areaUnlocked(diff, id) {
   return STAGE_ORDER.slice(0, i).every(k => areaCleared(diff, k));   // streng: alle Bereiche davor müssen geschafft sein
 }
 const linkOpen = (diff, L) => areaUnlocked(diff, L.a) && areaUnlocked(diff, L.b);
-function exitsOf(id) { return LINKS.filter(L => L.a === id || L.b === id).map(L => ({ L, side: L.a === id ? L.side : OPP[L.side], to: L.a === id ? L.b : L.a })); }
+// Durchgänge eines Bereichs; r = Lage entlang der Kante in den Koordinaten DIESES Bereichs (die Bereiche liegen versetzt)
+function exitsOf(id) {
+  return LINKS.filter(L => L.a === id || L.b === id).map(L => {
+    const side = L.a === id ? L.side : OPP[L.side], to = L.a === id ? L.b : L.a, horiz = side === 'top' || side === 'bottom';
+    const sh = L.a === id ? 0 : (horiz ? WORLD_XY[L.a][0] - WORLD_XY[id][0] : WORLD_XY[L.a][1] - WORLD_XY[id][1]);
+    return { L, side, to, r: [L.r[0] + sh, L.r[1] + sh] };
+  });
+}
 
 // Durchgänge ins Raster schneiden (offen) bzw. am Rand dicht machen (gesperrt)
 function carveLinks(id, diff) {
   for (const E of exitsOf(id)) {
-    const open = linkOpen(diff, E.L), [r0, r1] = E.L.r, horiz = E.side === 'top' || E.side === 'bottom';
+    const open = linkOpen(diff, E.L), [r0, r1] = E.r, horiz = E.side === 'top' || E.side === 'bottom';
     for (let k = 0; k < (horiz ? GW : GH); k++) {
       const mid = k * CELL + CELL / 2; if (mid < r0 || mid > r1) continue;
       for (let d = 0; d < 44; d++) {
@@ -62,10 +71,30 @@ function terrainImage() {
 }
 function terrainTree(g, x, y, rr, col) { g.fillStyle = 'rgba(0,0,0,.18)'; ell(g, x + rr * 0.5, y + rr * 0.35, rr * 1.1, rr * 0.5); g.fill(); rrPath(g, x - 6, y - rr * 0.6, 12, rr * 0.7, 4); fs(g, '#8d5a3b', 2.5);
   for (const [dx, dy, k] of [[-rr * 0.55, -rr * 1.0, 0.7], [rr * 0.55, -rr * 1.05, 0.72], [0, -rr * 1.45, 0.8]]) { ell(g, x + dx, y + dy, rr * k, rr * k * 0.9); fs(g, col, 2.5); } }
-// wird im Luftbild-Layout überschrieben; Standard: Wiese
+// Umgebung wie auf dem Luftbild: Wiesen + Bäume, links die Brühlstraße in den Kreisel, rechts und unten die L114
 function paintTerrain(g, B, R) {
-  g.fillStyle = '#7fb069'; g.fillRect(B.x0, B.y0, B.x1 - B.x0, B.y1 - B.y0);
-  for (let i = 0; i < (B.x1 - B.x0) * (B.y1 - B.y0) / 9000; i++) { const x = B.x0 + R() * (B.x1 - B.x0), y = B.y0 + R() * (B.y1 - B.y0); g.fillStyle = ['#6a994e', '#8cbf6f', '#a7c957'][i % 3]; g.fillRect(x, y, 6, 6); }
+  const W0 = B.x1 - B.x0, H0 = B.y1 - B.y0;
+  g.fillStyle = '#7fb069'; g.fillRect(B.x0, B.y0, W0, H0);
+  for (let i = 0; i < W0 * H0 / 7000; i++) { const x = B.x0 + R() * W0, y = B.y0 + R() * H0; g.fillStyle = ['#6a994e', '#8cbf6f', '#a7c957', '#5b8c45'][i % 4]; g.fillRect(x, y, 7, 7); }
+  const road = (pts, w, mark) => { g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+    const pathIt = () => { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let k = 1; k < pts.length; k++) g.lineTo(pts[k][0], pts[k][1]); };
+    pathIt(); g.strokeStyle = '#b8b2a6'; g.lineWidth = w + 24; g.stroke(); pathIt(); g.strokeStyle = '#6c7177'; g.lineWidth = w; g.stroke();
+    if (mark) { pathIt(); g.setLineDash([60, 50]); g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 8; g.stroke(); g.setLineDash([]); }
+    g.restore(); };
+  // L114: rechts am Glashaus vorbei nach unten, dann quer unter allem durch (mit Zebrastreifen-Markierung oben)
+  road([[4900, B.y0], [4900, 3700], [4500, 4500], [3000, 4700], [B.x0, 4700]], 300, true);
+  g.save(); g.fillStyle = 'rgba(255,255,255,.8)'; for (let k = 0; k < 6; k++) g.fillRect(4770 + k * 46, 200, 24, 260); g.restore();
+  // Brühlstraße: von links oben in den Kreisel (Kreisel liegt im Parkplatz bei 760 / 2960)
+  road([[B.x0, 1600], [-300, 2300], [0, 2960]], 150, false);
+  // Feld oben links + Nachbar-Parkplatz oben (wie auf dem Luftbild)
+  g.fillStyle = '#c9c3b8'; g.fillRect(-200, -800, 1100, 700); for (let k = 0; k < 7; k++) { g.save(); g.translate(-100 + k * 150, -500); drawCar(g, 0, 0, 0.2, ['#adb5bd', '#343a40', '#e9ecef', '#4dabf7'][k % 4], 1.1); g.restore(); }
+  g.fillStyle = '#b5a46a'; g.fillRect(2600, -1000, 2100, 900); for (let y = -980; y < -120; y += 40) { g.fillStyle = 'rgba(120,100,40,.25)'; g.fillRect(2600, y, 2100, 6); }
+  // Hecken + Bäume rund um die Anlage (nicht auf den Bereichen)
+  const inArea = (x, y, m = 120) => Object.keys(WORLD_XY).some(k => x > WORLD_XY[k][0] - m && x < WORLD_XY[k][0] + areaW(k) + m && y > WORLD_XY[k][1] - m && y < WORLD_XY[k][1] + areaH(k) + 200);
+  const onRoad = (x, y) => (x > 4650 && x < 5150) || (y > 4450 && y < 4950) || (x < 100 && y > 1500 && y < 3100);
+  for (let k = 0; k < 260; k++) { const x = B.x0 + R() * W0, y = B.y0 + R() * H0; if (inArea(x, y) || onRoad(x, y)) continue; terrainTree(g, x, y, 50 + R() * 30, ['#40916c', '#52b788', '#2d6a4f'][k % 3]); }
+  // Wiese zwischen Spielplatz, Terrasse, Chalet und Parkplatz: Hecke mit kleinem Weg
+  for (let x = 2100; x < 2900; x += 30) { ell(g, x, 2560, 26, 22); fs(g, x % 60 ? '#2d6a4f' : '#40916c', 2); }
 }
 function worldPrepare(id, diff) {
   for (const nb of nearAreas(id)) if (!GROUND_CACHE[nb] && areaUnlocked(diff, nb)) withStage(nb, () => buildGround());
@@ -100,7 +129,7 @@ Object.assign(Play.prototype, {
     const p = this.p; if (this.exiting || p.level || this.mp) return false;
     for (const E of exitsOf(this.stage)) {
       if (!linkOpen(this.diff, E.L)) continue;
-      const [r0, r1] = E.L.r, along = E.side === 'top' || E.side === 'bottom' ? p.x : p.y;
+      const [r0, r1] = E.r, along = E.side === 'top' || E.side === 'bottom' ? p.x : p.y;
       if (along < r0 - 20 || along > r1 + 20) continue;
       if ((E.side === 'bottom' && p.y > WORLD_H - 16) || (E.side === 'top' && p.y < 16) || (E.side === 'left' && p.x < 16) || (E.side === 'right' && p.x > WORLD_W - 16)) { this.crossTo(E); return true; }
     }
@@ -119,7 +148,7 @@ Object.assign(Play.prototype, {
     const side = w.y > WORLD_H ? 'bottom' : w.y < 0 ? 'top' : w.x < 0 ? 'left' : 'right';
     const E = exitsOf(this.stage).filter(e => linkOpen(this.diff, e.L)).sort((a, b) => (a.side === side ? 0 : 1) - (b.side === side ? 0 : 1))[0];
     if (!E) { Sfx.play('bad'); return true; }
-    const [r0, r1] = E.L.r, horiz = E.side === 'top' || E.side === 'bottom', al = clamp(horiz ? w.x : w.y, r0 + 10, r1 - 10);
+    const [r0, r1] = E.r, horiz = E.side === 'top' || E.side === 'bottom', al = clamp(horiz ? w.x : w.y, r0 + 10, r1 - 10);
     const tx = horiz ? al : (E.side === 'left' ? 12 : WORLD_W - 12), ty = horiz ? (E.side === 'top' ? 12 : WORLD_H - 12) : al;
     const path = findPath(this.p.x, this.p.y, this.p.level, tx, ty, 0, false);
     if (path) { this.p.path = path; this.p.target = null; this.tapMark = { x: tx, y: ty, l: 0, t: 0 }; }
@@ -233,7 +262,7 @@ function drawFog(c, ox, oy, id, t) {
 // Wegweiser an jedem Durchgang: Name des Nachbarbereichs + Pfeil (gesperrt: Schloss)
 function pushSigns(c, L, id, diff, t) {
   for (const E of exitsOf(id)) {
-    const [r0, r1] = E.L.r, m = (r0 + r1) / 2, open = linkOpen(diff, E.L), name = STAGE_NAME[E.to];
+    const [r0, r1] = E.r, m = (r0 + r1) / 2, open = linkOpen(diff, E.L), name = STAGE_NAME[E.to];
     let x, y, arrow;
     if (E.side === 'top') { x = r1 + 60; y = 230; arrow = '↑'; }
     else if (E.side === 'bottom') { x = r0 - 70; y = WORLD_H - 90; arrow = '↓'; }

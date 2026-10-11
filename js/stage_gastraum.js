@@ -71,16 +71,17 @@ Object.assign(ITEMS, {
 const GAST_ITEMS = ['speisekarte', 'salzstreuer', 'pfeffermuehle', 'teelicht', 'vase', 'brotkorb', 'gabel', 'tischglocke', 'kellnerblock', 'zuckerdose', 'saftglas', 'luftballon'];
 
 // ---- Boden + Wände ----
+const GW2 = 1500, GH2 = 1000, GDOOR = [220, 300], GEXIT = [650, 780];   // breites Glashaus wie auf dem Luftbild; Küchentür links, Glastür unten
 function drawGroundGastraum(g, R) {
   brickFloor(g, 0, 0, WORLD_W, WORLD_H, R);
   // dunkler Holzboden an der Bar und an der Treppe (wie auf den Fotos)
-  planks(g, 52, 150, 560, 200); planks(g, 720, 150, 228, 300);
-  g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(52, 346, 560, 4); g.fillRect(720, 446, 228, 4); g.fillRect(612, 150, 4, 200); g.fillRect(716, 150, 4, 300);
+  planks(g, 52, 150, 560, 200); planks(g, 1220, 150, 228, 300); planks(g, 0, GDOOR[0], 60, GDOOR[1] - GDOOR[0]);
+  g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(52, 346, 560, 4); g.fillRect(1220, 446, 228, 4); g.fillRect(612, 150, 4, 200); g.fillRect(1216, 150, 4, 300);
   // Schatten der Glasdach-Streben + Sonnenflecken
-  g.save(); g.beginPath(); g.rect(52, 150, 896, 1190); g.clip();
+  g.save(); g.beginPath(); g.rect(52, 150, GW2 - 104, GH2 - 210); g.clip();
   for (let k = -6; k < 12; k++) { g.fillStyle = 'rgba(40,20,10,.07)'; polyPath(g, [[k * 150, 150], [k * 150 + 14, 150], [k * 150 + 14 + 500, 1340], [k * 150 + 500, 1340]]); g.fill(); }
-  for (let k = 0; k < 9; k++) { g.fillStyle = 'rgba(40,20,10,.05)'; g.fillRect(52, 300 + k * 130, 896, 8); }
-  for (let i = 0; i < 18; i++) { g.fillStyle = 'rgba(255,240,200,.08)'; polyPath(g, [[R() * 900, 200 + R() * 1100], [0, 0], [0, 0]].map((p, k, a) => k ? [a[0][0] + (k === 1 ? 90 : 60), a[0][1] + (k === 1 ? 30 : 90)] : p)); g.fill(); }
+  for (let k = 0; k < 6; k++) { g.fillStyle = 'rgba(40,20,10,.05)'; g.fillRect(52, 300 + k * 130, GW2 - 104, 8); }
+  for (let i = 0; i < 24; i++) { g.fillStyle = 'rgba(255,240,200,.08)'; polyPath(g, [[R() * 1400, 200 + R() * 700], [0, 0], [0, 0]].map((p, k, a) => k ? [a[0][0] + (k === 1 ? 90 : 60), a[0][1] + (k === 1 ? 30 : 90)] : p)); g.fill(); }
   g.restore();
   // Rückwand links: Bar-Regalwand aus Altholz (Foto): Kreidetafel-Leiste, große Tafel, Regale mit Flaschen + Gläsern, Kupferbecher
   for (let y = 0, k = 0; y < 150; y += 12, k++) for (let x = (k % 3) * -20; x < 560; x += 60 + (k * 13) % 30) { g.fillStyle = ['#6f4e37', '#7a5a43', '#5c4636', '#8a7262', '#6b5847', '#4e3b2d'][(k * 7 + x) % 6]; g.fillRect(x, y, 62, 12); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(x, y + 11, 62, 1); }
@@ -102,23 +103,23 @@ function drawGroundGastraum(g, R) {
     for (let k = 0; k < 9; k++) { g.strokeStyle = k % 2 ? '#386641' : '#4f772d'; g.lineWidth = 4 + k * 0.8; g.beginPath(); g.moveTo(x0 + w * 0.55, 72); g.lineTo(x0 + (k - 1) * 26, 152); g.stroke(); }
     for (const cx of [x0 + 24, x0 + 160]) { g.fillStyle = '#2d4a22'; g.beginPath(); g.moveTo(cx, 30); g.quadraticCurveTo(cx + 9, 50, cx + 6, 72); g.lineTo(cx - 6, 72); g.quadraticCurveTo(cx - 9, 50, cx, 30); g.fill(); }
     g.lineWidth = 3; g.strokeStyle = OL; g.strokeRect(x0, 0, w, 150); }
-  // Durchgang hinter der Bar in die Küche (Rahmen + Fliesen dahinter)
-  g.fillStyle = '#5c636a'; g.fillRect(560, 0, 90, 152); g.fillStyle = '#e9ecef'; g.fillRect(568, 0, 74, 152); g.fillStyle = 'rgba(0,0,0,.08)'; for (let y = 0; y < 152; y += 22) g.fillRect(568, y, 74, 1.5);
-  g.fillStyle = '#9aa0a6'; g.fillRect(568, 120, 74, 32);
-  planks(g, 560, 150, 90, 40, ['#5c4636', '#4e3b2d']);
+  // zwischen Bar-Regal und Weinberg-Tapete: Altholz-Wand (die Küche liegt jetzt links hinter der Bar)
+  for (let y = 0, k = 0; y < 150; y += 12, k++) { g.fillStyle = ['#6f4e37', '#7a5a43', '#5c4636', '#8a7262'][k % 4]; g.fillRect(560, y, 90, 12); }
   // rechts: graue Steintapete + Empore mit Geländer und Kunstrasen
-  g.fillStyle = '#ced4da'; g.fillRect(740, 0, 260, 150);
-  for (let y = 0, k = 0; y < 150; y += 16, k++) for (let x = 740 + (k % 2) * 14; x < 1000; x += 28) { rrPath(g, x + 1, y + 1, 26, 14, 4); g.fillStyle = ['#d8dde2', '#c5ccd3', '#e1e5e9'][(x + k) % 3]; g.fill(); }
-  g.fillStyle = '#74c69d'; g.fillRect(740, 0, 260, 26); for (let x = 744; x < 1000; x += 6) line(g, x, 26, x + 2, 18, 1.5, '#40916c', false);
-  for (let x = 744; x <= 1000; x += 16) line(g, x, 26, x, 64, 2.5, '#868e96', false); line(g, 740, 26, 1000, 26, 5, '#6c757d'); line(g, 740, 64, 1000, 64, 3, '#868e96', false);
+  g.fillStyle = '#ced4da'; g.fillRect(740, 0, GW2 - 740, 150);
+  for (let y = 0, k = 0; y < 150; y += 16, k++) for (let x = 740 + (k % 2) * 14; x < GW2; x += 28) { rrPath(g, x + 1, y + 1, 26, 14, 4); g.fillStyle = ['#d8dde2', '#c5ccd3', '#e1e5e9'][(x + k) % 3]; g.fill(); }
+  g.fillStyle = '#74c69d'; g.fillRect(740, 0, GW2 - 740, 26); for (let x = 744; x < GW2; x += 6) line(g, x, 26, x + 2, 18, 1.5, '#40916c', false);
+  for (let x = 744; x <= GW2; x += 16) line(g, x, 26, x, 64, 2.5, '#868e96', false); line(g, 740, 26, GW2, 26, 5, '#6c757d'); line(g, 740, 64, GW2, 64, 3, '#868e96', false);
   // Glaswände links/rechts mit Stahlstützen
-  glassWall(g, 0, 150, 52, 1190, R, 0); glassWall(g, 948, 150, 52, 1190, R, 1);
-  for (let y = 150; y < 1340; y += 238) { steelPost(g, 50, y, y + 60); steelPost(g, 950, y, y + 60); }
-  g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(52, 150, 6, 1190); g.fillRect(942, 150, 6, 1190); g.fillRect(0, 146, WORLD_W, 6);
-  // unten: Glasfront zur Terrasse mit Falttüren in der Mitte (dahinter liegt der Außenbereich)
-  for (const [x0, x1] of [[0, 440], [560, 1000]]) { const gr = g.createLinearGradient(0, 1340, 0, 1400); gr.addColorStop(0, '#cfe8f3'); gr.addColorStop(1, '#e7f5ff'); g.fillStyle = gr; g.fillRect(x0, 1340, x1 - x0, 60); for (let x = x0; x <= x1; x += 62) line(g, x, 1340, x, 1400, 5, '#868e96', false); }
-  g.fillStyle = '#6c757d'; g.fillRect(0, 1336, 440, 6); g.fillRect(560, 1336, 440, 6);
-  for (let k = 0; k < 3; k++) { rrPath(g, 440 - 12 - k * 4, 1300 - k * 3, 10, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2); rrPath(g, 562 + k * 4, 1300 - k * 3, 10, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2); }
+  glassWall(g, 0, 150, 52, GDOOR[0] - 150, R, 0); glassWall(g, 0, GDOOR[1], 52, GH2 - 60 - GDOOR[1], R, 0); glassWall(g, GW2 - 52, 150, 52, GH2 - 210, R, 1);
+  for (let y = 150; y < GH2 - 60; y += 238) { if (y < GDOOR[1] + 10 && y + 60 > GDOOR[0]) continue; steelPost(g, 50, y, y + 60); steelPost(g, GW2 - 50, y, y + 60); }
+  g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(52, 150, 6, GH2 - 210); g.fillRect(GW2 - 58, 150, 6, GH2 - 210); g.fillRect(0, 146, WORLD_W, 6);
+  // Tür zur Küche links (Rahmen)
+  g.fillStyle = '#5c636a'; g.fillRect(0, GDOOR[0] - 10, 58, 10); g.fillRect(0, GDOOR[1], 58, 10);
+  // unten: Glasfront zur Terrasse mit Falttüren (dahinter liegt der Außenbereich)
+  const fy = GH2 - 60;
+  for (const [x0, x1] of [[0, GEXIT[0] - 10], [GEXIT[1] + 10, GW2]]) { const gr = g.createLinearGradient(0, fy, 0, GH2); gr.addColorStop(0, '#cfe8f3'); gr.addColorStop(1, '#e7f5ff'); g.fillStyle = gr; g.fillRect(x0, fy, x1 - x0, 60); for (let x = x0; x <= x1; x += 80) line(g, x, fy, x, GH2, 3, '#868e96', false); }
+  g.fillStyle = '#6c757d'; g.fillRect(0, fy - 4, GEXIT[0] - 10, 6); g.fillRect(GEXIT[1] + 10, fy - 4, GW2, 6);
 }
 
 // ---- Deko (tiefensortiert) ----
@@ -269,8 +270,7 @@ const GDRAW = {
   },
 };
 function buildGridGastraum() {
-  cellsIn(58, 180, 942, 1334, i => (G0[i] = 1));
-  cellsIn(455, 1320, 545, 1345, i => (G0[i] = 1));
+  cellsIn(58, 180, GW2 - 58, GH2 - 66, i => (G0[i] = 1));
   for (const d of GDECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + (d.t === 'tafel' || d.t === 'tisch4' ? 30 : 26), i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(8, d.r - 6), i => (G0[i] = 0));
@@ -301,6 +301,12 @@ const GSPOTS = [
   furnSpot(GDECOR, 'kuebel1', 'top', { px: 162, py: 1248, sx: 205, sy: 1300 }),
   furnSpot(GDECOR, 'fass', 'top', { px: 866, py: 1216, sx: 810, sy: 1300 }),
 ];
+// Möbel vom früheren Hochformat an ihre neue Stelle im breiten Glashaus (Verstecke wandern mit)
+{
+  const MOVE = { treppe: [1330, 430], palme3: [1410, 400], palme4: [1410, 900], tisch3: [1110, 500], tisch4: [1300, 700], tafel: [1100, 900], kuebel1: [140, 900], fass: [1410, 640] };
+  const dlt = {}; for (const d of GDECOR) { const m = MOVE[d.id]; if (!m) continue; const dx = m[0] - d.x, dy = m[1] - d.y; dlt[d.id] = [dx, dy]; d.x += dx; d.y += dy; if (d.x0 != null) { d.x0 += dx; d.y0 += dy; } if (d.bb) { d.bb[0] += dx; d.bb[1] += dy; } }
+  for (const q of GSPOTS) { const m = dlt[q.decor]; if (!m) continue; q.x += m[0]; q.y += m[1]; q.px += m[0]; q.py += m[1]; if (q.cut) q.cut += m[1]; }
+}
 // Glas-Falttür zur Terrasse (Boss-Tor des Innenbereichs)
 function drawGlassDoor(c, x, y, s, open, locked, t) {
   c.save(); c.translate(x, y); c.scale(s, s);
@@ -334,12 +340,12 @@ const GJUNK = {
   strohhalm(c) { c.rotate(-0.5); line(c, -12, -3, 12, -3, 3.5, '#e63946'); line(c, -6, -3, -2, -3, 3.5, '#fff', false); line(c, 4, -3, 8, -3, 3.5, '#fff', false); },
 };
 STAGE_DEFS.gastraum = {
-  id: 'gastraum', bg: '#7a4a35', start: { x: 605, y: 260 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
+  id: 'gastraum', w: GW2, h: GH2, bg: '#7a4a35', start: { x: 70, y: 260 }, gate: { x: 715, y: GH2 - 8, ix: 715, iy: GH2 - 80 },
   npcs: [
-    { id: 'g_rosi', pos: [[420, 1300], [600, 1300], [200, 1185]] },
-    { id: 'g_becker', pos: [[250, 615], [845, 760], [420, 930]] },
-    { id: 'g_lina', pos: [[500, 900], [170, 880], [850, 930]] },
-    { id: 'g_schulz', pos: [[740, 1110], [260, 1110], [860, 1210]] },
+    { id: 'g_rosi', pos: [[880, 760], [1180, 590], [600, 900]] },
+    { id: 'g_becker', pos: [[250, 615], [845, 760], [420, 900]] },
+    { id: 'g_lina', pos: [[500, 900], [170, 860], [1250, 520]] },
+    { id: 'g_schulz', pos: [[1300, 790], [1060, 600], [1100, 300]] },
     { id: 'g_ben', pos: [[300, 305], [450, 305], [175, 305]] },
   ],
   decor: GDECOR, spots: GSPOTS, grid: buildGridGastraum, ground: drawGroundGastraum, decorDraw: GDRAW,
@@ -362,7 +368,7 @@ STAGE_DEFS.gastraum = {
   },
   extras(play) {
     // Kellnerin Sophie läuft mit Tablett ihre Runde, Barkeeper Jonas poliert Gläser, Lichterketten schaukeln
-    const route = [[650, 360], [620, 660], [500, 700], [500, 1110], [860, 1150], [850, 880], [620, 660]];
+    const route = [[650, 360], [620, 660], [500, 700], [880, 900], [1200, 800], [1000, 400], [620, 660]];
     const S = { x: 650, y: 360, i: 1, pause: 0, dir: 1 };
     return {
       update(dt) {
@@ -378,10 +384,10 @@ STAGE_DEFS.gastraum = {
         if (vis(jx, 150)) L.push({ y: 150, f: () => { drawPerson(c, 'g_jonas', jx, 150, 1.05, t, { sit: true, noShadow: true }); drawGlass(c, jx + 16, 112 + Math.sin(t * 6) * 3, 0.35, 0, '#fff'); } });
         L.push({ y: 99999, f: () => {
           c.save(); c.globalAlpha = 0.95;
-          for (const [y0, ph] of [[300, 0], [560, 1], [840, 2], [1120, 3]]) {
+          for (const [y0, ph] of [[300, 0], [560, 1], [840, 2]]) {
             const sag = 34 + Math.sin(t * 0.9 + ph) * 4, yy = y0 - 170;
-            c.beginPath(); c.moveTo(52, yy); c.quadraticCurveTo(500, yy + sag * 2, 948, yy); c.lineWidth = 1.5; c.strokeStyle = 'rgba(40,30,20,.6)'; c.stroke();
-            for (let k = 1; k < 18; k++) { const u = k / 18, bx = 52 + 896 * u, by = yy + sag * 2 * 2 * u * (1 - u) + 6; if (!vis(bx, by + 170)) continue; line(c, bx, by - 6, bx, by, 1, 'rgba(40,30,20,.6)', false); ell(c, bx, by + 4, 4, 5.5); c.fillStyle = `rgba(255,214,110,${0.75 + 0.25 * Math.sin(t * 2 + k + ph)})`; c.fill(); ell(c, bx, by + 4, 10, 10); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
+            c.beginPath(); c.moveTo(52, yy); c.quadraticCurveTo(GW2 / 2, yy + sag * 2, GW2 - 52, yy); c.lineWidth = 1.5; c.strokeStyle = 'rgba(40,30,20,.6)'; c.stroke();
+            for (let k = 1; k < 26; k++) { const u = k / 26, bx = 52 + (GW2 - 104) * u, by = yy + sag * 2 * 2 * u * (1 - u) + 6; if (!vis(bx, by + 170)) continue; line(c, bx, by - 6, bx, by, 1, 'rgba(40,30,20,.6)', false); ell(c, bx, by + 4, 4, 5.5); c.fillStyle = `rgba(255,214,110,${0.75 + 0.25 * Math.sin(t * 2 + k + ph)})`; c.fill(); ell(c, bx, by + 4, 10, 10); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
           }
           c.restore();
         } });

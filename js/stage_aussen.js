@@ -52,37 +52,32 @@ function lawn(g, x, y, w, h, R) {
 // Aufbau wie auf dem Luftbild (gedreht, Glashaus-Wand oben): Pavillon mit Glasdach direkt vor dem Glashaus (orange – weiß – orange),
 // darunter links der eingezäunte Spielplatz (Hackschnitzel, Schaukel, Turm mit Rutsche), rechts Rasen; rechts Zypressenreihe,
 // in der Mitte der geschwungene Kiesweg, Bäume, unten rechts die Holzhütte (Chalet), unten links der Wendehammer mit Autos.
+const AW = 1800, AH = 800;   // wie auf dem Luftbild: breite Terrasse unter dem Glashaus, rechts der Rasen bis zum Chalet
 const PAV = { x0: 200, x1: 840, y0: 150, y1: 470, H: 150, secs: [[200, 450, '#f26b3a'], [450, 590, '#f1ebdc'], [590, 840, '#f26b3a']] };
 const PLAY = { x0: 0, x1: 490, y0: 535, y1: 905 };
 const CIRC = { x: 150, y: 1330, r: 330 };
 function drawGroundAussen(g, R) {
   lawn(g, 0, 0, WORLD_W, WORLD_H, R);
-  // oben links: Parkplatz neben dem Glashaus
-  for (const [x, y] of [[50, 70], [110, 120]]) { g.fillStyle = 'rgba(0,0,0,.15)'; ell(g, x + 20, y + 10, 40, 14); g.fill(); for (const [dx, dy, rr] of [[-18, -10, 24], [16, -14, 26], [0, -32, 24]]) { ell(g, x + dx, y + dy, rr, rr * 0.85); fs(g, '#40916c', 2.5); } }
-  // oben grenzt direkt der Innenbereich an (dessen Glasfront mit Falttüren): hier nur Pflaster bis zur Kante
-  g.fillStyle = '#8a7f78'; g.fillRect(150, 0, WORLD_W - 150, 160); for (let y = 0, k = 0; y < 160; y += 18, k++) for (let x = 150 - (k % 2) * 18; x < WORLD_W; x += 36) { g.fillStyle = ['#9c918a', '#a69b93', '#938880', '#ada39b'][Math.floor(R() * 4)]; g.fillRect(x + 1, y + 1, 34, 16); }
-  g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 0, WORLD_W, 6);
-  // Pflaster unter und vor dem Pavillon (wie auf dem Foto: graue Betonpflaster im Verband)
-  g.save(); g.beginPath(); g.rect(158, 154, 732, 372); g.clip();
-  g.fillStyle = '#8a7f78'; g.fillRect(158, 154, 732, 372);
-  for (let y = 154, k = 0; y < 530; y += 18, k++) for (let x = 158 - (k % 2) * 18; x < 890; x += 36) { g.fillStyle = ['#9c918a', '#a69b93', '#938880', '#ada39b'][Math.floor(R() * 4)]; g.fillRect(x + 1, y + 1, 34, 16); }
-  for (let i = 0; i < 20; i++) { g.fillStyle = 'rgba(255,255,255,.05)'; ell(g, 158 + R() * 732, 154 + R() * 372, 60, 30); g.fill(); }
-  g.restore(); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(158, 524, 732, 4);
+  // oben grenzt das Glashaus an: Pflaster entlang der Glasfront (Ausgang oben bei x 950–1080)
+  const pave = (x0, y0, w, h) => { g.save(); g.beginPath(); g.rect(x0, y0, w, h); g.clip(); g.fillStyle = '#8a7f78'; g.fillRect(x0, y0, w, h);
+    for (let y = y0, k = 0; y < y0 + h; y += 18, k++) for (let x = x0 - (k % 2) * 18; x < x0 + w; x += 36) { g.fillStyle = ['#9c918a', '#a69b93', '#938880', '#ada39b'][Math.floor(R() * 4)]; g.fillRect(x + 1, y + 1, 34, 16); }
+    for (let i = 0; i < 20; i++) { g.fillStyle = 'rgba(255,255,255,.05)'; ell(g, x0 + R() * w, y0 + R() * h, 60, 30); g.fill(); } g.restore(); };
+  pave(150, 0, 1150, 150); pave(158, 150, 900, 380);
+  g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(150, 0, 1150, 6); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(158, 528, 900, 4);
   // Schatten des Pavillondachs (Sonne von links oben)
   g.fillStyle = 'rgba(70,30,15,.12)'; g.fillRect(PAV.x0 + 30, PAV.y0 + 20, PAV.x1 - PAV.x0, PAV.y1 - PAV.y0 - 10);
-  // links: Hecke zum Spielplatz (Durchgang 540–640), unten Hecke mit Gartentor rechts, rechts Hecke zur Straße
-  for (let y = 170; y < 1400; y += 26) { if (y > 520 && y < 660) continue; ell(g, 16 + (y % 52 ? 4 : 0), y, 26, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
-  for (let y = 170; y < 1330; y += 26) { ell(g, 984 - (y % 52 ? 4 : 0), y, 26, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
-  for (let x = 0; x < 1000; x += 26) if (x < 905 || x > 1000) { ell(g, x, 1380, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
+  // Hecken: links mit Durchgang zum Spielplatz (520–640), unten mit Gartentor zum Chalet (1400–1480), rechts zur Straße
+  for (let y = 150; y < AH; y += 26) { if (y > 520 && y < 660) continue; ell(g, 16 + (y % 52 ? 4 : 0), y, 26, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let y = 0; y < AH - 40; y += 26) { ell(g, AW - 16 - (y % 52 ? 4 : 0), y, 26, 20); fs(g, y % 52 ? '#2d6a4f' : '#40916c', 2); }
+  for (let x = 0; x < AW; x += 26) if (x < 1380 || x > 1500) { ell(g, x, AH - 20, 22, 24); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); }
   g.fillStyle = '#c8bfae'; g.fillRect(0, 548, 40, 84);
-  // geschwungener Kiesweg vom Pavillon zum Gartentor + Abzweig zur Hütte
+  // geschwungener Kiesweg vom Pavillon über den Rasen zum Gartentor + Weg zum Spielplatz
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
-  const path = (w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(700, 520); g.bezierCurveTo(820, 640, 560, 820, 640, 1000); g.bezierCurveTo(700, 1140, 900, 1200, 955, 1400); g.stroke(); };
+  const path = (w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(900, 520); g.bezierCurveTo(1100, 640, 1150, 300, 1300, 420); g.bezierCurveTo(1420, 520, 1440, 640, 1440, 810); g.stroke(); };
   path(84, '#c8bfae'); path(74, '#e3dccd'); g.restore();
-  g.save(); g.lineCap = 'round'; for (const [w2, col] of [[60, '#c8bfae'], [50, '#e3dccd']]) { g.strokeStyle = col; g.lineWidth = w2; g.beginPath(); g.moveTo(40, 590); g.quadraticCurveTo(260, 600, 420, 560); g.stroke(); } g.restore();
-  for (let i = 0; i < 900; i++) { const u = R(), x = 640 + (R() - 0.5) * 60, y = 560 + u * 820; }
-  // Zypressen-Schatten + kleine Blumenrabatte vor den Zypressen
-  for (let y = 210; y < 500; y += 80) { ell(g, 925, y + 8, 30, 10); g.fillStyle = 'rgba(0,0,0,.18)'; g.fill(); }
+  g.save(); g.lineCap = 'round'; for (const [w2, col] of [[60, '#c8bfae'], [50, '#e3dccd']]) { g.strokeStyle = col; g.lineWidth = w2; g.beginPath(); g.moveTo(40, 590); g.quadraticCurveTo(160, 600, 260, 540); g.stroke(); } g.restore();
+  // Zypressen-Schatten
+  for (let y = 210; y < 500; y += 80) { ell(g, 1080, y + 8, 30, 10); g.fillStyle = 'rgba(0,0,0,.18)'; g.fill(); }
 }
 const AGATE = { x: 62, y: 655, ix: 110, iy: 590 };
 const ADECOR = [
@@ -94,7 +89,7 @@ const ADECOR = [
   ...[[300, 250], [520, 250], [740, 250], [300, 400], [520, 400], [740, 400]].map(([x, y], i) => ({ id: 'tisch' + (i + 1), t: 'pavtisch', x, y: y + 34, cy: y, x0: x - 54, y0: y - 30, w: 108, h: 38, bb: [x - 70, y - 70, 140, 120] })),
   ...[[200, 310], [450, 310], [590, 310], [840, 310], [200, 470], [450, 470], [590, 470], [840, 470]].map(([x, y], i) => ({ id: 'pf' + i, t: 'pfosten', x, y, r: 9, bb: [x - 14, y - PAV.H - 12, 28, PAV.H + 20] })),
   { id: 'lounge', t: 'lounge', x: 185, y: 410, r: 18, bb: [155, 350, 60, 66] },
-  ...[220, 300, 380, 460].map((y, i) => ({ id: 'cyp' + i, t: 'cypress', x: 905, y })),
+  ...[220, 300, 380, 460].map((y, i) => ({ id: 'cyp' + i, t: 'cypress', x: 1060, y })),
   { id: 'kugel1', t: 'kugel', x: 520, y: 548, r: 14, anim: true },
   { id: 'kugel2', t: 'kugel', x: 880, y: 600, r: 14, anim: true },
   { id: 'brunnen', t: 'brunnen', x: 640, y: 700, r: 46, bb: [560, 490, 160, 220] },
@@ -243,10 +238,9 @@ Object.assign(ADRAW, {
   parkauto(c, d) { drawCar(c, d.x, d.cy, d.a, d.col, 1.05); },
 });
 function buildGridAussen() {
-  cellsIn(160, 160, 990, 1336, i => (G0[i] = 1));
-  cellsIn(AGATE.ix - 45, 1320, AGATE.ix + 45, 1345, i => (G0[i] = 1));
-  cellsIn(40, 530, 160, 1336, i => (G0[i] = 1));
-  cellsIn(960, 160, 1000, 1400, i => (G0[i] = 0));
+  cellsIn(40, 30, AW - 40, AH - 46, i => (G0[i] = 1));
+  cellsIn(0, 0, 150, 150, i => (G0[i] = 0)); cellsIn(1300, 0, AW, 30, i => (G0[i] = 0));
+  cellsIn(1395, AH - 50, 1485, AH, i => (G0[i] = 1));   // Gartentor zum Chalet
   for (const d of ADECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + (d.t === 'pavtisch' ? 30 : 26), i => (G0[i] = 0));
     else if (d.t === 'cypress') cellsCircle(d.x, d.y - 6, 18, i => (G0[i] = 0));
@@ -273,6 +267,13 @@ const ASPOTS = [
   furnSpot(ADECOR, 'baum4', 'right', { px: 196, py: 1080, sx: 228, sy: 1130 }),
   furnSpot(ADECOR, 'brunnen2', 'top', { px: 294, py: 788, cut: 796, front: true, sx: 300, sy: 880 }),
 ];
+// Rasen-Objekte vom früheren Hochformat an ihre neue Stelle rechts/unten neben der Terrasse
+{
+  const MOVE = { kugel2: [1150, 640], brunnen: [1250, 300], baum4: [980, 760], baum5: [1700, 760], brunnen2: [560, 680], baum1: [1520, 320], baum2: [1690, 170], baum3: [1620, 560], bank: [760, 700] };
+  const dlt = {}; for (const d of ADECOR) { const m = MOVE[d.id]; if (!m) continue; const dx = m[0] - d.x, dy = m[1] - d.y; dlt[d.id] = [dx, dy]; d.x += dx; d.y += dy; if (d.x0 != null) { d.x0 += dx; d.y0 += dy; } if (d.bb) { d.bb[0] += dx; d.bb[1] += dy; } }
+  for (const q of ASPOTS) { const m = dlt[q.decor]; if (!m) continue; q.x += m[0]; q.y += m[1]; q.px += m[0]; q.py += m[1]; if (q.cut) q.cut += m[1]; }
+  for (const q of ASPOTS) if (q.decor && q.decor.startsWith('cyp')) { q.x += 155; q.px += 155; }
+}
 // Laubhaufen: darunter guckt etwas hervor
 function drawLeafPile(c, x, y, w, seed = 0) {
   c.save(); c.translate(x, y);
@@ -294,13 +295,13 @@ function drawGardenGate(c, x, y, s, open, locked, t, label = 'Spielplatz') {
   c.restore();
 }
 STAGE_DEFS.aussen = {
-  id: 'aussen', bg: '#5b8c45', start: { x: 500, y: 200 }, gate: AGATE,
+  id: 'aussen', w: AW, h: AH, bg: '#5b8c45', start: { x: 1015, y: 60 }, gate: AGATE,
   npcs: [
     { id: 'a_weber', pos: [[300, 490], [520, 495], [740, 490]] },
     { id: 'a_hoffmann', pos: [[410, 325], [630, 325], [240, 330]] },
-    { id: 'a_klaus', pos: [[520, 1240], [320, 960], [860, 900]] },
-    { id: 'a_mila', pos: [[560, 620], [800, 660], [720, 770]] },
-    { id: 'a_noah', pos: [[600, 840], [820, 1060], [600, 1290]] },
+    { id: 'a_klaus', pos: [[1350, 620], [1150, 450], [1650, 400]] },
+    { id: 'a_mila', pos: [[560, 600], [900, 620], [1250, 720]] },
+    { id: 'a_noah', pos: [[1450, 180], [1600, 680], [300, 700]] },
   ],
   decor: ADECOR, spots: ASPOTS, grid: buildGridAussen, ground: drawGroundAussen, decorDraw: ADRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
@@ -324,11 +325,11 @@ STAGE_DEFS.aussen = {
     // Pavillon-Dach (Glas + Sonnensegel, wie auf dem Luftbild orange – weiß – orange): wird durchsichtig, sobald man darunter steht.
     // Kellner läuft zwischen den Tischen, Heizstrahler unter dem Dach, Schmetterlinge über dem Rasen.
     const route = [[500, 200], [410, 330], [630, 330], [740, 470], [520, 470], [300, 470]], K = { x: 500, y: 200, i: 1, pause: 0 };
-    const flies = [0, 1, 2].map(i => ({ x: 700, y: 760, ph: i * 2.1 }));
+    const flies = [0, 1, 2].map(i => ({ x: 1400, y: 500, ph: i * 2.1 }));
     let fade = 0.95;
     return {
       update(dt) {
-        flies.forEach(f => { f.ph += dt; f.x = 760 + Math.sin(f.ph * 0.7) * 140; f.y = 760 + Math.sin(f.ph * 1.3) * 60; });
+        flies.forEach(f => { f.ph += dt; f.x = 1450 + Math.sin(f.ph * 0.7) * 160; f.y = 480 + Math.sin(f.ph * 1.3) * 80; });
         const p = play.p, under = p.x > PAV.x0 - 30 && p.x < PAV.x1 + 30 && p.y > PAV.y0 && p.y < PAV.y1 + 60;
         fade = lerp(fade, under ? 0.14 : 0.95, Math.min(1, dt * 6));
         if (K.pause > 0) { K.pause -= dt; return; } if (dist(p.x, p.y, K.x, K.y) < 60) return;
