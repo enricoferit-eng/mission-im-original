@@ -35,8 +35,14 @@ const ANIMALS = {
   tiger: { body: '#f08a24', light: '#fff1de', dark: '#3d2c1f' },
   raccoon: { body: '#8e939a', light: '#e9ecef', dark: '#343a40' },
   wolf: { body: '#7d8792', light: '#eef1f4', dark: '#3f4752' },
+  pig: { body: '#f7b6c2', light: '#ffd6de', dark: '#d6738a', inner: '#e5899e' },
+  cow: { body: '#f8f9fa', light: '#ffffff', dark: '#343a40', inner: '#f7b6c2' },
+  monkey: { body: '#8d5a3b', light: '#f1d3b0', dark: '#5a3620' },
+  polar: { body: '#f4f1ea', light: '#ffffff', dark: '#c9c2b4', inner: '#e3dccd' },
+  frog: { body: '#70c45a', light: '#c7ef9f', dark: '#3f8a35' },
+  elefant: { body: '#a9b1bb', light: '#d6dbe0', dark: '#6c7580', inner: '#f1c0cb' },
 };
-const ANIMAL_NAMES = { cat: 'Katze', dog: 'Hund', lion: 'Löwe', bunny: 'Hase', panda: 'Panda', fox: 'Fuchs', bear: 'Bär', koala: 'Koala', mouse: 'Maus', tiger: 'Tiger', raccoon: 'Waschbär', wolf: 'Wolf' };
+const ANIMAL_NAMES = { cat: 'Katze', dog: 'Hund', lion: 'Löwe', bunny: 'Hase', panda: 'Panda', fox: 'Fuchs', bear: 'Bär', koala: 'Koala', mouse: 'Maus', tiger: 'Tiger', raccoon: 'Waschbär', wolf: 'Wolf', pig: 'Schwein', cow: 'Kuh', monkey: 'Affe', polar: 'Eisbär', frog: 'Frosch', elefant: 'Elefant' };
 function lookOf(kind) { const s = ACC() ? DP(CUR_DIFF).equip : null; return SKINS[s] || DEFAULT_LOOK; }
 function paint(c, col, x0, x1) {
   if (col === 'gold') { const g = c.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, '#b8860b'); g.addColorStop(0.5, '#ffe066'); g.addColorStop(1, '#c9a227'); return g; }
@@ -67,10 +73,16 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   else if (kind === 'dog') { const w = Math.sin(t * 14); c.moveTo(-11, -16); c.quadraticCurveTo(-21, -19, -20 + w * 4, -29); }
   else if (kind === 'fox' || kind === 'raccoon' || kind === 'wolf') { c.moveTo(-11, -14); c.quadraticCurveTo(-30, -14 + Math.sin(t * 3) * 2, -27, -32); }
   else if (kind === 'mouse') { c.moveTo(-11, -10); c.bezierCurveTo(-26, -6, -30, -22 + Math.sin(t * 3) * 3, -22, -28); }
-  else if (kind !== 'bunny' && kind !== 'panda' && kind !== 'bear' && kind !== 'koala') { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -12, -26, -26 + Math.sin(t * 3) * 2); }
+  else if (kind === 'pig') { c.moveTo(-11, -15); c.bezierCurveTo(-20, -24, -24, -10, -17, -12); c.bezierCurveTo(-13, -14, -18, -20, -21, -18); }
+  else if (kind === 'monkey') { c.moveTo(-11, -12); c.bezierCurveTo(-34, -10, -30, -44 + Math.sin(t * 3) * 3, -18, -40); }
+  else if (kind !== 'bunny' && kind !== 'panda' && kind !== 'bear' && kind !== 'koala' && kind !== 'polar' && kind !== 'frog') { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -12, -26, -26 + Math.sin(t * 3) * 2); }
   if (kind === 'bunny') { ell(c, -13, -12, 5, 5); fs(c, '#fff', 2.5); }
   else if (kind === 'panda') { ell(c, -12, -11, 4, 4); fs(c, A.dark, 2.5); }
-  else if (kind === 'bear' || kind === 'koala') { ell(c, -12, -12, 4, 4); fs(c, A.body, 2.5); }
+  else if (kind === 'bear' || kind === 'koala' || kind === 'polar') { ell(c, -12, -12, 4, 4); fs(c, A.body, 2.5); }
+  else if (kind === 'frog') { /* kein Schwanz */ }
+  else if (kind === 'pig') { c.lineWidth = 5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 2.5; c.strokeStyle = A.body; c.stroke(); }
+  else if (kind === 'monkey') { c.lineWidth = 7.5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 3.5; c.strokeStyle = A.body; c.stroke(); }
+  else if (kind === 'cow' || kind === 'elefant') { c.lineWidth = 5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 2.5; c.strokeStyle = A.body; c.stroke(); ell(c, -26, -26 + Math.sin(t * 3) * 2, 3.5, 4.5); fs(c, A.dark, 2); }
   else if (kind === 'mouse') { c.lineWidth = 4.5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 2; c.strokeStyle = A.inner; c.stroke(); }
   else if (kind === 'raccoon' || kind === 'wolf') { c.lineWidth = 13; c.strokeStyle = OL; c.stroke(); c.lineWidth = 8.5; c.strokeStyle = A.body; c.stroke(); if (kind === 'raccoon') { for (const [rx, ry] of [[-19, -16], [-25, -22], [-27, -29]]) { ell(c, rx, ry, 3.6, 3.6); c.fillStyle = A.dark; c.fill(); } } else { ell(c, -27, -32, 4.5, 4.5); fs(c, A.light, 2.5); } }
   else if (kind === 'fox') { c.lineWidth = 13; c.strokeStyle = OL; c.stroke(); c.lineWidth = 8.5; c.strokeStyle = A.body; c.stroke(); ell(c, -27, -32, 4.5, 4.5); fs(c, '#fff', 2.5); }
@@ -79,6 +91,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   // Körper
   ell(c, 0, -15, 13, 12); fs(c, A.body); shadeEll(c, 0, -15, 13, 12);
   ell(c, 3, -13, 7, 7.5); fs(c, A.light, 0);
+  if (kind === 'cow') { ell(c, -6, -18, 4.5, 3.5, 0.4); c.fillStyle = A.dark; c.fill(); ell(c, 6, -9, 3, 2.5); c.fill(); }
   if (L.uniform) drawUniform(c, L, A);
   // Uniform-Teil aus der Küche: Schürze (sobald die Küche geschafft ist)
   if (!L.uniform && !o.noOutfit && typeof SP === 'function' && ACC() && SP(CUR_DIFF, 'kueche').outfit) { rrPath(c, -5, -24, 15, 19, 4); fs(c, '#fbf8f2', 2); line(c, -4, -24, -9, -30, 1.5, '#fbf8f2', false); leaf(c, 2.5, -14, 0.5, BRAND.lime); }
@@ -103,6 +116,19 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
     ell(c, -8, -47, 5.5, 5.5); fs(c, A.dark); ell(c, 10, -47, 5.5, 5.5); fs(c, A.dark);
   } else if (kind === 'bear') {
     ell(c, -8, -47, 5.5, 5.5); fs(c, A.body); ell(c, 10, -47, 5.5, 5.5); fs(c, A.body); ell(c, 10, -47, 2.8, 2.8); fs(c, A.inner, 0);
+  } else if (kind === 'polar') {
+    ell(c, -8, -47, 5, 5); fs(c, A.body); ell(c, 10, -47, 5, 5); fs(c, A.body); ell(c, 10, -47, 2.5, 2.5); fs(c, A.inner, 0);
+  } else if (kind === 'pig') {
+    polyPath(c, [[-11, -43], [-12, -54], [-1, -47]]); fs(c, A.body); polyPath(c, [[4, -48], [12, -56], [14, -43]]); fs(c, A.body); polyPath(c, [[6, -48], [11, -53], [12, -46]]); fs(c, A.inner, 0);
+  } else if (kind === 'cow') {
+    polyPath(c, [[-6, -48], [-10, -58], [-2, -50]]); fs(c, '#f1e3c8', 2); polyPath(c, [[6, -50], [12, -59], [10, -48]]); fs(c, '#f1e3c8', 2);
+    ell(c, -13, -42, 7, 4, -0.4); fs(c, A.body); ell(c, 16, -43, 7, 4, 0.4); fs(c, A.body); ell(c, 16, -43, 4, 2, 0.4); fs(c, A.inner, 0);
+  } else if (kind === 'monkey') {
+    ell(c, -12, -38, 6, 6.5); fs(c, A.body); ell(c, -12, -38, 3.5, 4); fs(c, A.light, 0);
+  } else if (kind === 'frog') {
+    ell(c, -3, -48, 6.5, 6.5); fs(c, A.body); ell(c, 8, -48, 6.5, 6.5); fs(c, A.body);
+  } else if (kind === 'elefant') {
+    ell(c, -11, -38, 12, 14, -0.2); fs(c, A.body); ell(c, -11, -38, 7, 9, -0.2); fs(c, A.inner, 0);
   } else if (kind === 'koala') {
     ell(c, -10, -45, 9, 8.5); fs(c, A.body); ell(c, -10, -45, 5, 5); fs(c, A.inner, 0); ell(c, 12, -45, 9, 8.5); fs(c, A.body); ell(c, 12, -45, 5, 5); fs(c, A.inner, 0);
   } else if (kind === 'mouse') {
@@ -123,13 +149,20 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   if (kind === 'fox' || kind === 'wolf') { polyPath(c, [[-1, -33], [14, -31], [6, -27]]); fs(c, kind === 'wolf' ? A.light : '#fff', 0); }
   if (kind === 'tiger') { for (const [sx, sy] of [[-2, -48], [3, -49], [-8, -42], [-9, -36]]) line(c, sx, sy, sx + 1, sy + 4, 2, A.dark, false); }
   if (kind === 'raccoon') { rrPath(c, -3, -42.5, 16, 7, 3.5); c.fillStyle = A.dark; c.fill(); }
+  if (kind === 'cow') { ell(c, -4, -42, 5, 4, 0.3); c.fillStyle = A.dark; c.fill(); }
+  if (kind === 'monkey') { ell(c, 5, -37, 10, 9); c.fillStyle = A.light; c.fill(); }
+  if (kind === 'frog') { ell(c, -3, -48, 3.5, 3.5); c.fillStyle = '#fff'; c.fill(); ell(c, 8, -48, 3.5, 3.5); c.fill(); }
   // Augen
   ell(c, 1, -39, 2.3, 3.2); c.fillStyle = kind === 'panda' || kind === 'raccoon' ? '#fff' : OL; c.fill(); ell(c, 9, -39, 2.3, 3.2); c.fill();
   if (kind === 'panda' || kind === 'raccoon') { ell(c, 1.3, -39, 1.4, 2); c.fillStyle = OL; c.fill(); ell(c, 9.3, -39, 1.4, 2); c.fill(); }
   c.fillStyle = '#fff'; ell(c, 1.7, -40.2, 0.9, 0.9); c.fill(); ell(c, 9.7, -40.2, 0.9, 0.9); c.fill();
+  if (kind === 'frog') { ell(c, -2, -48, 1.8, 2.2); c.fillStyle = OL; c.fill(); ell(c, 9, -48, 1.8, 2.2); c.fill(); }
   // Nase, Mund, Wangen
-  ell(c, 12, -34.5, 2.6, 2); c.fillStyle = ['dog', 'panda', 'fox', 'bear', 'raccoon', 'wolf'].includes(kind) ? OL : kind === 'mouse' ? '#f7a1b5' : '#d6457a'; c.fill();
+  ell(c, 12, -34.5, 2.6, 2); c.fillStyle = ['dog', 'panda', 'fox', 'bear', 'raccoon', 'wolf', 'monkey', 'polar'].includes(kind) ? OL : kind === 'frog' ? '#3f8a35' : kind === 'mouse' ? '#f7a1b5' : '#d6457a'; c.fill();
   if (kind === 'koala') { ell(c, 11, -35, 3.6, 4.2); c.fillStyle = '#343a40'; c.fill(); }
+  if (kind === 'pig') { ell(c, 13, -34, 5, 4); fs(c, A.inner, 2); ell(c, 11.5, -34, 0.9, 1.3); c.fillStyle = OL; c.fill(); ell(c, 14.5, -34, 0.9, 1.3); c.fill(); }
+  if (kind === 'cow') { ell(c, 12, -32, 6.5, 5); fs(c, A.inner, 2); ell(c, 10.5, -32, 1, 1.3); c.fillStyle = OL; c.fill(); ell(c, 13.5, -32, 1, 1.3); c.fill(); }
+  if (kind === 'elefant') { c.beginPath(); c.moveTo(11, -36); c.bezierCurveTo(22, -34, 22, -22, 18 + Math.sin(t * 2) * 2, -16); c.lineWidth = 7.5; c.strokeStyle = OL; c.stroke(); c.lineWidth = 4.5; c.strokeStyle = A.body; c.stroke(); }
   c.beginPath(); c.moveTo(12, -32.5); c.quadraticCurveTo(10, -29.5, 7.5, -31); c.lineWidth = 1.6; c.strokeStyle = OL; c.stroke();
   c.fillStyle = 'rgba(255,120,120,.35)'; ell(c, -2, -33, 3, 2); c.fill();
   // Hundeohren (vorne)

@@ -10,7 +10,7 @@ function META(a = ACC()) {
   return m;
 }
 const BASE_ANIMALS = ['cat', 'dog', 'lion'];
-const SHOP_ANIMALS = [['bunny', 120], ['mouse', 120], ['bear', 150], ['panda', 150], ['fox', 150], ['raccoon', 180], ['koala', 180], ['wolf', 200], ['tiger', 250]];
+const SHOP_ANIMALS = [['bunny', 120], ['mouse', 120], ['bear', 150], ['panda', 150], ['fox', 150], ['raccoon', 180], ['koala', 180], ['wolf', 200], ['tiger', 250], ['frog', 120], ['pig', 140], ['cow', 160], ['monkey', 180], ['polar', 220], ['elefant', 260]];
 const JOKER_PRICE = 30, JOKERS_PER_DAY = 3;
 function ownedAnimals() { const m = META(); return BASE_ANIMALS.concat(m ? m.animals : []); }
 
@@ -197,14 +197,14 @@ class Shop {
       c.restore();
       if (maxS > 0) { const h = (bottom - top) * (bottom - top) / (bottom - top + maxS), y = top + (bottom - top - h) * (this.sc / maxS); rrPath(c, W - 9, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill(); }
     } else {
-      const all = BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS), cols = W > H ? 6 : 3, gap = 10, cw = Math.min(140, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(180, (bottom - top - gap) / Math.ceil(all.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
+      const all = BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS), cols = W > H ? (all.length > 12 ? 9 : 6) : 3, gap = 10, cw = Math.min(140, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(180, (bottom - top - gap) / Math.ceil(all.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
       all.forEach(([k, price], i) => {
         const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap), own = ownedAnimals().includes(k), cur = ACC().char === k;
         rrPath(c, x, y, cw, ch, 16); fs(c, cur ? '#d8f5e3' : '#fff', 3);
         drawAnimal(c, k, x + cw / 2, y + ch * 0.6, Math.min(1.6, ch / 115), { look: DEFAULT_LOOK, t: this.t + i, cap: false });
         txt(c, ANIMAL_NAMES[k], x + cw / 2, y + ch - 30, 15, '#3d2c1f', 'center', null);
         if (cur) txt(c, 'deine Figur', x + cw / 2, y + ch - 12, 12, '#2b9348', 'center', null);
-        else if (own) txt(c, 'antippen = wählen', x + cw / 2, y + ch - 12, 11, '#6b5a48', 'center', null);
+        else if (own) txt(c, cw < 120 ? 'wählen' : 'antippen = wählen', x + cw / 2, y + ch - 12, 11, '#6b5a48', 'center', null);
         else { icon(c, 'coin', x + cw / 2 - 22, y + ch - 12, 16); txt(c, String(price), x + cw / 2 + 4, y + ch - 11, 13, '#8d5a3b', 'center', null); }
         UI.btn(x, y, cw, ch, () => { if (own) { ACC().char = k; Save.write(); Sfx.play('good'); return; } this.buy(price, mm => { mm.animals.push(k); ACC().char = k; this.say(ANIMAL_NAMES[k] + ' ist jetzt deine Figur!'); }); });
       });
