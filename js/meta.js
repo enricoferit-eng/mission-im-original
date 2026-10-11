@@ -283,7 +283,8 @@ class Achievements {
 }
 
 // ---------- Freunde + Mehrspieler ----------
-const MP_COINS = { win: 15, lose: 5, team: 20 };
+const HELP_COINS = { easy: 10, medium: 15, hard: 25 };   // je Person, der man hilft
+const MP_COINS = { win: 40, lose: 15, team: 50 };
 function needOnline(c, back) {
   const a = ACC();
   if (a && a.token) return false;

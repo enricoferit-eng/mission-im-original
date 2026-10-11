@@ -347,22 +347,22 @@ const SHOP_SKINS = [
 ];
 // Exklusive Skins: gibt es nur im Tages-Shop, an manchen Tagen
 const EXCLUSIVE_SKINS = [
-  ['ex_drache', 'Drachen-Ritter', 'legend', 520, { uniform: 'weste', uCol: '#2b9348', uCol2: '#ffd60a', cap: '#2b9348', scarf: 'gold', pat: 'stars', sparkle: '#80ed99' }, 'turbo'],
-  ['ex_einhorn', 'Einhorn-Traum', 'legend', 520, { uniform: 'pulli', uCol: '#ffc8dd', uCol2: '#cdb4db', cap: 'rainbow', scarf: 'rainbow', sparkle: '#ffafcc' }, 'glueck'],
-  ['ex_pirat', 'Kapitän Goldbart', 'legend', 520, { uniform: 'weste', uCol: '#3d2c1f', uCol2: '#c9a227', cap: '#212529', scarf: 'gold', sparkle: '#ffd60a' }, 'detektor'],
-  ['ex_weltall', 'Sternen-Pilot', 'legend', 520, { uniform: 'pulli', uCol: '#1d3557', uCol2: '#a8dadc', cap: '#1d3557', scarf: '#a8dadc', pat: 'stars', sparkle: '#bde0fe' }, 'sternschutz'],
-  ['ex_lava', 'Lava-Held', 'rare', 260, { uniform: 'pulli', uCol: '#d00000', uCol2: '#ffba08', cap: '#370617', scarf: '#ffba08', pat: 'stripes' }, 'zeitplus'],
-  ['ex_ozean', 'Ozean-Taucher', 'rare', 260, { uniform: 'weste', uCol: '#0077b6', uCol2: '#90e0ef', cap: '#0077b6', scarf: '#90e0ef', pat: 'dots' }, 'magnet'],
-  ['ex_wald', 'Wald-Ranger', 'rare', 260, { uniform: 'latz', uCol: '#386641', uCol2: '#a7c957', cap: '#6a994e', scarf: '#a7c957', leaf: true }, 'adlerauge'],
-  ['ex_bonbon', 'Bonbon-Bäcker', 'rare', 260, { uniform: 'koch', uCol: '#ffffff', uCol2: '#ff8fab', cap: '#ff8fab', scarf: '#ffffff', pat: 'dots' }, 'bonuszeit'],
-  ['ex_vulkan', 'Vulkan-Wächter', 'legend', 520, { uniform: 'pulli', uCol: '#370617', uCol2: '#ffba08' === 'gold' ? '#c9a227' : '#ffba08', cap: '#ffba08', scarf: '#ffba08', pat: 'stars', sparkle: '#ff8800' }, 'extraherz'],
-  ['ex_eis', 'Eis-Königin', 'legend', 520, { uniform: 'schuerze', uCol: '#caf0f8', uCol2: '#48cae4' === 'gold' ? '#c9a227' : '#48cae4', cap: '#48cae4', scarf: '#48cae4', pat: 'stars', sparkle: '#e7f5ff' }, 'zeitplus'],
-  ['ex_dschungel', 'Dschungel-König', 'legend', 520, { uniform: 'latz', uCol: '#2d6a4f', uCol2: 'gold' === 'gold' ? '#c9a227' : 'gold', cap: 'gold', scarf: 'gold', pat: 'stars', sparkle: '#80ed99' }, 'turbo'],
-  ['ex_roboter', 'Robo-Helfer', 'legend', 520, { uniform: 'weste', uCol: '#adb5bd', uCol2: '#00b4d8' === 'gold' ? '#c9a227' : '#00b4d8', cap: '#00b4d8', scarf: '#00b4d8', pat: 'stars', sparkle: '#90e0ef' }, 'jokerplus'],
-  ['ex_hexe', 'Kräuter-Hexe', 'rare', 260, { uniform: 'pulli', uCol: '#5a189a', uCol2: '#80b918' === 'gold' ? '#c9a227' : '#80b918', cap: '#80b918', scarf: '#80b918', pat: 'stars' }, 'magnet'],
-  ['ex_cowboy', 'Cowboy', 'rare', 260, { uniform: 'weste', uCol: '#a0673a', uCol2: '#ffd166' === 'gold' ? '#c9a227' : '#ffd166', cap: '#ffd166', scarf: '#ffd166', pat: 'stars' }, 'bonuszeit'],
-  ['ex_clown', 'Zirkus-Clown', 'rare', 260, { uniform: 'pulli', uCol: '#ef476f', uCol2: '#ffd60a' === 'gold' ? '#c9a227' : '#ffd60a', cap: '#ffd60a', scarf: '#ffd60a', pat: 'stars' }, 'glueck'],
-  ['ex_ninja2', 'Schatten-Ninja', 'rare', 260, { uniform: 'pulli', uCol: '#212529', uCol2: '#ef476f' === 'gold' ? '#c9a227' : '#ef476f', cap: '#ef476f', scarf: '#ef476f', pat: 'stars' }, 'detektor'],
+  ['ex_drache', 'Drachen-Ritter', 'legend', 350, { uniform: 'weste', uCol: '#2b9348', uCol2: '#ffd60a', cap: '#2b9348', scarf: 'gold', pat: 'stars', sparkle: '#80ed99' }, 'turbo'],
+  ['ex_einhorn', 'Einhorn-Traum', 'legend', 350, { uniform: 'pulli', uCol: '#ffc8dd', uCol2: '#cdb4db', cap: 'rainbow', scarf: 'rainbow', sparkle: '#ffafcc' }, 'glueck'],
+  ['ex_pirat', 'Kapitän Goldbart', 'legend', 350, { uniform: 'weste', uCol: '#3d2c1f', uCol2: '#c9a227', cap: '#212529', scarf: 'gold', sparkle: '#ffd60a' }, 'detektor'],
+  ['ex_weltall', 'Sternen-Pilot', 'legend', 350, { uniform: 'pulli', uCol: '#1d3557', uCol2: '#a8dadc', cap: '#1d3557', scarf: '#a8dadc', pat: 'stars', sparkle: '#bde0fe' }, 'sternschutz'],
+  ['ex_lava', 'Lava-Held', 'rare', 120, { uniform: 'pulli', uCol: '#d00000', uCol2: '#ffba08', cap: '#370617', scarf: '#ffba08', pat: 'stripes' }, 'zeitplus'],
+  ['ex_ozean', 'Ozean-Taucher', 'rare', 120, { uniform: 'weste', uCol: '#0077b6', uCol2: '#90e0ef', cap: '#0077b6', scarf: '#90e0ef', pat: 'dots' }, 'magnet'],
+  ['ex_wald', 'Wald-Ranger', 'rare', 120, { uniform: 'latz', uCol: '#386641', uCol2: '#a7c957', cap: '#6a994e', scarf: '#a7c957', leaf: true }, 'adlerauge'],
+  ['ex_bonbon', 'Bonbon-Bäcker', 'rare', 120, { uniform: 'koch', uCol: '#ffffff', uCol2: '#ff8fab', cap: '#ff8fab', scarf: '#ffffff', pat: 'dots' }, 'bonuszeit'],
+  ['ex_vulkan', 'Vulkan-Wächter', 'legend', 350, { uniform: 'pulli', uCol: '#370617', uCol2: '#ffba08' === 'gold' ? '#c9a227' : '#ffba08', cap: '#ffba08', scarf: '#ffba08', pat: 'stars', sparkle: '#ff8800' }, 'extraherz'],
+  ['ex_eis', 'Eis-Königin', 'legend', 350, { uniform: 'schuerze', uCol: '#caf0f8', uCol2: '#48cae4' === 'gold' ? '#c9a227' : '#48cae4', cap: '#48cae4', scarf: '#48cae4', pat: 'stars', sparkle: '#e7f5ff' }, 'zeitplus'],
+  ['ex_dschungel', 'Dschungel-König', 'legend', 350, { uniform: 'latz', uCol: '#2d6a4f', uCol2: 'gold' === 'gold' ? '#c9a227' : 'gold', cap: 'gold', scarf: 'gold', pat: 'stars', sparkle: '#80ed99' }, 'turbo'],
+  ['ex_roboter', 'Robo-Helfer', 'legend', 350, { uniform: 'weste', uCol: '#adb5bd', uCol2: '#00b4d8' === 'gold' ? '#c9a227' : '#00b4d8', cap: '#00b4d8', scarf: '#00b4d8', pat: 'stars', sparkle: '#90e0ef' }, 'jokerplus'],
+  ['ex_hexe', 'Kräuter-Hexe', 'rare', 120, { uniform: 'pulli', uCol: '#5a189a', uCol2: '#80b918' === 'gold' ? '#c9a227' : '#80b918', cap: '#80b918', scarf: '#80b918', pat: 'stars' }, 'magnet'],
+  ['ex_cowboy', 'Cowboy', 'rare', 120, { uniform: 'weste', uCol: '#a0673a', uCol2: '#ffd166' === 'gold' ? '#c9a227' : '#ffd166', cap: '#ffd166', scarf: '#ffd166', pat: 'stars' }, 'bonuszeit'],
+  ['ex_clown', 'Zirkus-Clown', 'rare', 120, { uniform: 'pulli', uCol: '#ef476f', uCol2: '#ffd60a' === 'gold' ? '#c9a227' : '#ffd60a', cap: '#ffd60a', scarf: '#ffd60a', pat: 'stars' }, 'glueck'],
+  ['ex_ninja2', 'Schatten-Ninja', 'rare', 120, { uniform: 'pulli', uCol: '#212529', uCol2: '#ef476f' === 'gold' ? '#c9a227' : '#ef476f', cap: '#ef476f', scarf: '#ef476f', pat: 'stars' }, 'detektor'],
 ];
 EXCLUSIVE_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, exclusive: true, ability: ab, lvl: rarity === 'legend' ? 3 : 2 }, look); });
 SHOP_SKINS.forEach(([id, name, rarity, price, look, ab], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (ab) SKINS[id].ability = ab; SKINS[id].lvl = rarity === 'legend' ? 2 : 1; if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });

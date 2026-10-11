@@ -981,7 +981,7 @@ class Play {
   deliver(id) {
     const st = this.st, q = st.active; this.checkBonus(q, id);
     if (q && q.team) { st.done[id] = true; st.active = null; this.mpEnd('team'); return; }
-    st.done[id] = true; st.active = null; if (!this.mp) stat('kids');
+    st.done[id] = true; st.active = null; if (!this.mp) { stat('kids'); addCoins(HELP_COINS[this.diff] || 10, 'Geholfen!'); }
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
@@ -1019,7 +1019,7 @@ class Play {
     });
   }
   finishEasy(id) {
-    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id]; if (!this.mp) stat('kids');
+    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id]; if (!this.mp) { stat('kids'); addCoins(HELP_COINS[this.diff] || 10, 'Geholfen!'); }
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);

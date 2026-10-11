@@ -41,6 +41,7 @@ const AREA_SECRETS = {
   });
   ACHIEVEMENTS.push({ id: 'welt', name: 'Im Original zuhause', desc: 'Schaffe alle sechs Bereiche.', coins: 100 });
   ACHIEVEMENTS.push({ id: 'entdecker', name: 'Entdecker', desc: 'Lauf durch alle sechs Bereiche.', coins: 25 });
+  ACHIEVEMENTS.forEach(A => { A.coins *= 3; });   // alle Erfolge großzügiger belohnen
 }
 function checkAreaAch(stage) {
   const m = META(); if (!m) return;
@@ -90,7 +91,7 @@ function checkAreaAch(stage) {
   Play.prototype.stageClear = function () {
     const r = clear0.call(this);
     if (!this.mp) {
-      addCoins({ easy: 20, medium: 30, hard: 45 }[this.diff] + STAGE_ORDER.indexOf(this.stage) * 5, 'Bereich geschafft!');
+      addCoins({ easy: 60, medium: 90, hard: 140 }[this.diff] + STAGE_ORDER.indexOf(this.stage) * 15, 'Bereich geschafft!');
       achieve(this.stage === 'spielplatz' ? 'spielplatz' : 'clear_' + this.stage);
       if (typeof STAGE_ORDER !== 'undefined' && ['easy', 'medium', 'hard'].some(d => STAGE_ORDER.every(id => SP(d, id).clears > 0))) achieve('welt');
     }
