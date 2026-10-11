@@ -434,7 +434,7 @@ class LoginScene {
     this.busy = false;
     if (r && r.status === 200) { adoptAccount(r.data); Sfx.play('win'); this.leave(new Menu()); return; }
     const e = r && r.data && r.data.error;
-    this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen.' : e === 'not_found' ? (this.mode === 'code' ? 'Diesen Login-Code gibt es nicht.' : 'Ein Konto mit diesem Namen gibt es nicht.') : e === 'wrong_code' ? 'Der Geheim-Code stimmt nicht.' : e === 'locked' ? 'Zu oft falsch. Bitte in ' + r.data.wait + ' Minuten nochmal versuchen.' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
+    this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen.' : r.status >= 500 ? 'Der Konten-Server ist gerade nicht erreichbar. Konten auf diesem Gerät kannst du trotzdem nutzen oder neu anlegen.' : e === 'not_found' ? (this.mode === 'code' ? 'Diesen Login-Code gibt es nicht.' : 'Ein Konto mit diesem Namen gibt es nicht.') : e === 'wrong_code' ? 'Der Geheim-Code stimmt nicht.' : e === 'locked' ? 'Zu oft falsch. Bitte in ' + r.data.wait + ' Minuten nochmal versuchen.' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
     Sfx.play('bad');
   }
   draw(c) {
@@ -520,6 +520,12 @@ class NewAccount {
       this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return;
     }
     const e = r && r.data && r.data.error;
+    if (!r || r.status >= 500) {   // Server nicht erreichbar/gestört: Konto auf diesem Gerät anlegen, damit man trotzdem spielen kann
+      const old = this.migrate && Save.data.accounts[this.migrate];
+      if (old) { old.name = this.name; old.code = code; old.avatar = this.avatar; old.localOnly = true; Save.data.current = this.migrate; }
+      else { createAccount(this.name, code); const a = ACC(); a.avatar = this.avatar; a.localOnly = true; }
+      Save.write(false); this.step = 'done'; this.offlineMade = true; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return;
+    }
     this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen und nochmal versuchen.' : e === 'name_taken' ? 'Diesen Namen gibt es schon. Denk dir einen anderen aus!' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
     this.step = 'name'; Sfx.play('bad');
   }
@@ -555,8 +561,9 @@ class NewAccount {
       txt(c, a.name, W / 2, y + 140, 24, '#3d2c1f', 'center', null);
       txt(c, 'Merk dir deinen Geheim-Code:', W / 2, y + 180, 15, '#8d5a3b', 'center', null);
       a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 58; rrPath(c, cx - 24, y + 196, 48, 48, 12); fs(c, '#fff', 3); drawSym(c, k, cx, y + 220, 16); });
-      txt(c, 'Dein Login-Code (für andere Geräte):', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
-      rrPath(c, W / 2 - 110, y + 286, 220, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null);
+      if (a.localOnly) wrapLines(c, 'Dein Konto ist auf diesem Gerät gespeichert. Der Server ist gerade nicht erreichbar – später kannst du es sichern.', w - 60, 13).forEach((l, i) => txt(c, l, W / 2, y + 276 + i * 18, 13, '#8d5a3b', 'center', null));
+      else { txt(c, 'Dein Login-Code (für andere Geräte):', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
+      rrPath(c, W / 2 - 110, y + 286, 220, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null); }
       roundBtn(c, H < 560 ? x + w + 40 : W / 2, H < 560 ? y + 190 : y + 380, 34, '#06d6a0', 'play', () => this.leave(new Menu()));
     }
   }
