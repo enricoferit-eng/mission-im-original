@@ -41,7 +41,7 @@ function topBar(c, back) {
   if (back) roundBtn(c, 44, 44, 28, '#fff', 'back', back, '#ffd166');
   soundBtn(c, W - 40, 44);
 }
-function ownedSkins(a = ACC()) { const m = a && a.meta; return totalSkins(a) + ((m && m.skins) || []).length; }
+function ownedSkins(a = ACC()) { const m = a && a.meta; return new Set((m && m.skins) || []).size; }
 function totalSkins(a = ACC()) {
   let n = 0; if (!a) return 0;
   for (const d of ['easy', 'medium', 'hard']) { const st = (a.diff[d] && a.diff[d].stages) || {}; for (const k in st) n += st[k].skins.length; }
@@ -944,7 +944,7 @@ class Wardrobe {
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
     txt(c, 'Antippen zum Anziehen · Legendär → Selten → Normal', x + w / 2, y + 33, 14, '#6b5a48', 'center', null);
-    const earned = [].concat(...['easy', 'medium', 'hard'].map(dd => [].concat(...STAGE_ORDER.map(st => SP(dd, st).skins || [])))), shop = this.stage === 'laden', sp = { skins: META().skins.concat(earned) }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)).concat(earned))];
+    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
     const RK = { legend: 0, rare: 1, common: 2 }, ids = [...best.values()].sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
