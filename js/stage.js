@@ -78,6 +78,17 @@ function buildGridSpielplatz() {
     else if (d.r) cellsCircle(d.x, d.y, d.r - 4, i => (G0[i] = 0));
   }
 }
+// Sichtbare Möbel sind fest: man kann nicht hinter hohe Objekte laufen (Bäume, Pfosten, Lampen ausgenommen)
+const SOFT_DECOR = /tisch|palm|olive|baum|tanne|busch|lampe|laterne|pfosten|treppe|pylon|poller|cypress/;
+function solidDecor() {
+  if (!SG || SG.id === 'spielplatz' || !DECOR) return;
+  for (const d of DECOR) {
+    if (!d.bb || SOFT_DECOR.test(d.t)) continue;
+    // gesperrt wird nur der Bereich HINTER dem Möbel (zwischen Oberkante des Bildes und der Standfläche) – dort würde man verdeckt
+    const [bx, by, bw] = d.bb, foot = d.w ? d.y0 : d.y - (d.r || 20);
+    if (foot - by > 30) cellsIn(bx + 10, by + 6, bx + bw - 10, foot, i => { G0[i] = 0; });
+  }
+}
 const walk = (l, i) => i >= 0 && (ST[i] || (l ? G1[i] : G0[i]));
 function canStand(l, x, y) {
   return walk(l, cellIdx(x, y)) && walk(l, cellIdx(x - 9, y)) && walk(l, cellIdx(x + 9, y)) && walk(l, cellIdx(x, y - 6)) && walk(l, cellIdx(x, y + 6));
@@ -212,7 +223,7 @@ function furnSpot(D, decorId, how, o = {}) {
   else if (how === 'right') { px = px ?? R0 - 6; py = py ?? d.y - (o.up || 34); rot = rot ?? 0.45; sx = sx ?? R0 + 22; sy = sy ?? d.y + 4; }
   else if (how === 'top') { px = px ?? d.x + (o.dx || 0); py = py ?? top + (o.dy || 0); rot = rot ?? (o.dx || 0) * 0.01; sx = sx ?? d.x; sy = sy ?? d.y + 30; }
   else { px = px ?? d.x; py = py ?? d.y - 20; rot = rot ?? 0.15; sx = sx ?? px; sy = sy ?? d.y + 30; }
-  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 78, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.7 : 0.82), front: how === 'on' || !!o.front, cut: o.cut };
+  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 78, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.7 : 0.82), front: true, cut: o.cut };   // immer vor dem Möbel zeichnen, damit es nie verdeckt ist
 }
 let SG = null;
 STAGE_DEFS.spielplatz = {
@@ -232,7 +243,7 @@ function useStage(id) {
   HOUSE = D.house || OFFMAP; STAIRS = D.stairs || OFFMAP; SLIDE = D.slide || OFFMAP; SWING = D.swing || OFFMAP;
   START = D.start; GATE = D.gate; NPC_DEFS = D.npcs; ALL_IDS = NPC_DEFS.map(n => n.id).concat(['gate']);
   DECOR = D.decor; DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d)); SPOTS = D.spots;
-  G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); D.grid();
+  G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); D.grid(); solidDecor();
   GROUND = GROUND_CACHE[id] || null;
 }
 const W_ = k => (SG ? SG.words[k] : STAGE_DEFS.spielplatz.words[k]);   // Wort für die Auftraggeber (Kind / Mitarbeiter)
@@ -331,18 +342,21 @@ class Play {
     this.stage = opt.stage || (opt.mp && opt.mp.stage) || 'spielplatz';
     if (!this.mp && typeof worldPrepare === 'function') worldPrepare(this.stage, diff);   // Nachbar-Böden vorbereiten
     useStage(this.stage);
-    if (!this.mp && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); carveLinks(this.stage, diff); }
+    if (!this.mp && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); solidDecor(); carveLinks(this.stage, diff); }
     this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, this.stage);
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
     this.st = this.sp.run; this.st.clears = this.sp.clears;
     if (!this.st.layout) { const r = mulberry32(this.seedFor('layout')); this.st.layout = { seat: ri(0, 1, r) }; NPC_DEFS.forEach(n => { if (n.pos) this.st.layout[n.id] = ri(0, n.pos.length - 1, r); }); Save.write(); }
     this.npcs = NPC_DEFS.map(n => {
       if (n.swing) return { id: n.id, swing: this.st.layout.seat, x: SWING.seats[this.st.layout.seat], y: SWING.y + 55, l: 0 };
-      const p = n.pos[this.st.layout[n.id]]; return { id: n.id, x: p[0], y: p[1], l: p[2] };
+      const p = n.pos[this.st.layout[n.id]]; let x = p[0], y = p[1];
+      if (!p[2] && !canStand(0, x, y)) { const i = nearestFree(0, x, y); if (i >= 0) { x = (i % GW) * CELL + CELL / 2; y = Math.floor(i / GW) * CELL + CELL / 2; } }   // nie hinter/in Möbeln
+      return { id: n.id, x, y, l: p[2] };
     });
     this.p = { x: START.x, y: START.y, level: 0, dir: 1, t: 0, moving: false, path: null, target: null, slide: null, slideZ: 0 };
     this.camX = START.x; this.camY = START.y; this.zoom = 1;
     if (opt.enter) { const pt = nearestFree(0, opt.enter.x, opt.enter.y); this.p.x = pt >= 0 ? (pt % GW) * CELL + 12.5 : opt.enter.x; this.p.y = pt >= 0 ? Math.floor(pt / GW) * CELL + 12.5 : opt.enter.y; if (canStand(0, opt.enter.x, opt.enter.y)) { this.p.x = opt.enter.x; this.p.y = opt.enter.y; } this.p.dir = opt.enter.dir || 1; this.camX = this.p.x; this.camY = this.p.y; }
+    else if (!canStand(0, this.p.x, this.p.y)) { const pt = nearestFree(0, this.p.x, this.p.y); if (pt >= 0) { this.p.x = (pt % GW) * CELL + 12.5; this.p.y = Math.floor(pt / GW) * CELL + 12.5; } }   // Start nie in einem Möbel
     if (opt.cam) { this.camX = opt.cam.x; this.camY = opt.cam.y; }
     this.entered = !!opt.enter;
     this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null;
@@ -392,10 +406,10 @@ class Play {
     const M = this.mp, st = this.st;
     st.jokers = JOKERS_PER_RUN; this.mpT = 0; this.ghost = null;
     ACC().tut.coach = true;
-    this.activeIds = M.mode === 'team' ? [NPC_DEFS[0].id] : shuffle(NPC_DEFS.map(n => n.id), mulberry32(this.seedFor('kids'))).slice(0, M.opts.kids);
+    this.activeIds = M.mode === 'team' && M.opts.kids === 1 ? [NPC_DEFS[0].id] : shuffle(NPC_DEFS.map(n => n.id), mulberry32(this.seedFor('kids'))).slice(0, M.opts.kids);
     this.npcs = this.npcs.filter(n => this.activeIds.includes(n.id));   // nicht gewählte Kinder sind gar nicht da
     this.racer.state = 'off';   // Leo ist im Mehrspieler nicht da – nur die Kinder mit Aufträgen
-    if (M.mode === 'team') {
+    if (M.mode === 'team' && M.opts.kids === 1) {
       // Ein großer gemeinsamer Auftrag von Mia + zwei Teile, die man nur zu zweit schafft
       const q = this.genQuest(NPC_DEFS[0].id, { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chestOpen: false, chest: false, roof: false };
       q.owner = q.items.map((_, i) => i % M.n);   // klar aufgeteilt: jeder sucht nur seine eigenen Sachen
@@ -415,7 +429,7 @@ class Play {
     } else {
       // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
       this.pre = {}; if (this.diff !== 'easy') this.activeIds.concat(['gate']).forEach(id => { this.pre[id] = this.genQuest(id); });
-      this.banner = M.mode === '2v2' ? { text: '2 gegen 2! Du und ' + M.mates.map(p => p.name).join(' & ') + ' gegen ' + M.otherName + '. Teilt euch die ' + M.opts.kids + ' ' + W_('many') + ' auf!', t: 0 } : { text: 'Duell! Hilf ' + M.opts.kids + ' ' + (M.opts.kids === 1 ? W_('one') : W_('dat')) + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
+      this.banner = M.mode === 'team' ? { text: 'Zusammen! Ihr helft ' + M.opts.kids + ' ' + W_('dat') + ' – teilt euch die Aufträge auf. Was einer schafft, zählt für alle!', t: 0 } : M.mode === '2v2' ? { text: '2 gegen 2! Du und ' + M.mates.map(p => p.name).join(' & ') + ' gegen ' + M.otherName + '. Teilt euch die ' + M.opts.kids + ' ' + W_('many') + ' auf!', t: 0 } : { text: 'Duell! Hilf ' + M.opts.kids + ' ' + (M.opts.kids === 1 ? W_('one') : W_('dat')) + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
     }
   }
   mpKidsDone() { return NPC_DEFS.filter(n => this.st.done[n.id]).length; }
@@ -450,7 +464,11 @@ class Play {
       }
       if (o && o.fin && !this.mpOver) this.mpEnd('team');
     } else {
-      if (M.mode === '2v2') {
+      if (M.mode === 'team') {   // mehrere gemeinsame Aufträge: was ein Mitspieler schafft, ist für alle erledigt
+        (M.others || []).forEach(O => (O.prog && O.prog.ids || []).forEach(id => { if (!this.st.done[id] && this.activeIds.includes(id)) { this.st.done[id] = true; if (this.st.active && this.st.active.npc === id) this.st.active = null; this.toastTeam = { t: 0, text: O.name + ' hat ' + (NPC_NAMES[id] || W_('one')) + ' geholfen!' }; Sfx.note(880, 0.15, 'triangle', 0.06, 1.3); } }));
+        this.teamDone = this.activeIds.filter(id => this.st.done[id]).length;
+        if (this.teamDone >= M.opts.kids && !this.mpOver) this.mpEnd('team');
+      } else if (M.mode === '2v2') {
         const ids = new Set(NPC_DEFS.filter(n => this.st.done[n.id]).map(n => n.id)); (M.others || []).filter(O => O.mate && O.prog).forEach(O => (O.prog.ids || []).forEach(i => ids.add(i)));
         this.teamDone = ids.size;
         if ((M.others || []).some(O => !O.mate && O.prog && O.prog.fin) && !this.mpOver) this.mpEnd('lose');
@@ -469,11 +487,18 @@ class Play {
   }
   mpEnd(kind) {
     if (this.mpOver) return; this.mpOver = kind; const M = this.mp; overlay = null;
-    if (kind === 'team') { M.set({ fin: true }); M.sync(); setTimeout(() => M.stop(), 2500); stat('teams'); addCoins(MP_COINS.team, 'Zusammen geschafft!'); overlay = new MatchResult({ team: true, title: 'Zusammen geschafft!', sub: 'Ihr habt Mia alles gebracht. Tolles Teamwork mit ' + M.otherName + '!', coins: MP_COINS.team }); return; }
-    if (kind === 'gone') { M.stop(); addCoins(MP_COINS.lose, 'Mehrspieler'); overlay = new MatchResult({ title: 'Spiel beendet', sub: M.otherName + ' ist nicht mehr da – die Verbindung ist weg.', coins: MP_COINS.lose }); return; }
+    const kids = M.opts.kids || 1, mine = (M.si || 0) * kids + this.mpKidsDone(), perKid = MP_COINS.perKid * mine;
+    if (kind === 'team') { M.set({ fin: true }); M.sync(); setTimeout(() => M.stop(), 2500); stat('teams'); const c = MP_COINS.team + 15 * (this.teamDone || kids); addCoins(c, 'Zusammen geschafft!'); overlay = new MatchResult({ team: true, title: 'Zusammen geschafft!', sub: 'Tolles Teamwork mit ' + M.otherName + '! Ihr habt ' + (this.teamDone || kids) + ' ' + W_('dat') + ' geholfen.', coins: c }); return; }
+    if (kind === 'gone') { M.stop(); const c = MP_COINS.lose + perKid; addCoins(c, 'Mehrspieler'); overlay = new MatchResult({ title: 'Spiel beendet', sub: M.otherName + ' ist nicht mehr da – die Verbindung ist weg.', coins: c }); return; }
     stat('duels');
-    if (kind === 'win') { setTimeout(() => M.stop(), 2500); stat('wins'); addCoins(MP_COINS.win, 'Duell gewonnen!'); overlay = new MatchResult({ win: true, title: 'Gewonnen!', sub: (M.mode === '2v2' ? 'Euer Team war schneller als ' : 'Du warst schneller als ') + M.otherName + ' (' + (Math.round(this.mpT * 10) / 10).toFixed(1).replace('.', ',') + ' s).', coins: MP_COINS.win }); }
-    else { M.stop(); addCoins(MP_COINS.lose, 'Duell'); const wn = M.mode === '2v2' ? M.otherName : (((M.others || []).find(O => O.prog && O.prog.fin) || {}).name || M.otherName); overlay = new MatchResult({ title: wn + (wn.includes(' & ') ? ' waren' : ' war') + ' schneller', sub: 'Knapp! Fordere gleich eine Revanche.', coins: MP_COINS.lose }); }
+    // Platz: wie viele Gegner sind weiter gekommen? (Wer zuerst fertig ist, ist Erster)
+    const score = O => O.prog ? (O.prog.fin ? 1e6 : 0) + (O.prog.si || 0) * kids + (O.prog.done || 0) : 0;
+    const me2 = kind === 'win' ? 1e6 + mine : mine, foes = M.mode === '2v2' ? [] : (M.others || []).filter(O => !O.gone);
+    const place = kind === 'win' ? 1 : M.mode === '2v2' ? 2 : 1 + foes.filter(O => score(O) > me2).length, n = M.mode === '2v2' ? 2 : foes.length + 1;
+    const bonus = M.mode === '2v2' ? (kind === 'win' ? MP_COINS.place[0] : MP_COINS.place[2]) : MP_COINS.place[Math.min(place, 4) - 1], c = bonus + perKid;
+    const plTxt = M.mode === '2v2' ? '' : ' · Platz ' + place + ' von ' + n;
+    if (kind === 'win') { setTimeout(() => M.stop(), 2500); stat('wins'); addCoins(c, 'Platz 1!'); overlay = new MatchResult({ win: true, title: 'Gewonnen!' + plTxt.replace(' · ', ' – '), sub: (M.mode === '2v2' ? 'Euer Team war schneller als ' : 'Du warst schneller als ') + M.otherName + ' (' + (Math.round(this.mpT * 10) / 10).toFixed(1).replace('.', ',') + ' s).', coins: c }); }
+    else { M.stop(); addCoins(c, 'Platz ' + place); const wn = M.mode === '2v2' ? M.otherName : (((M.others || []).find(O => O.prog && O.prog.fin) || {}).name || M.otherName); overlay = new MatchResult({ title: M.mode === '2v2' ? wn + ' waren schneller' : 'Platz ' + place + ' von ' + n, sub: (M.mode === '2v2' ? '' : wn + ' war am schnellsten. ') + 'Du hast ' + mine + ' ' + (mine === 1 ? 'Auftrag' : 'Aufträge') + ' geschafft. Fordere gleich eine Revanche!', coins: c }); }
   }
   enter() { FX.clear(); }
   // ---- Geheime Joker ----
@@ -1419,7 +1444,7 @@ class Play {
     if (this.mp) {
       const M = this.mp, o = M.other, team = M.mode === 'team', lx = 14, ly = narrow ? rowY + 92 : rowY + 46;
       const foeDone = M.mode === '2v2' ? (() => { const s2 = new Set(); (M.others || []).filter(O => !O.mate && O.prog).forEach(O => (O.prog.ids || []).forEach(i => s2.add(i))); return s2.size; })() : ((o && o.done) || 0);
-      const label = team ? 'Team mit ' + M.otherName : M.otherName + ': ' + (M.opts.live ? foeDone + '/' + M.opts.kids + (M.opts.boss && M.mode !== '2v2' ? ' + Boss' : '') : '?');
+      const label = team ? 'Team mit ' + M.otherName + (M.opts.kids > 1 ? ': ' + (this.teamDone || 0) + '/' + M.opts.kids : '') : M.otherName + ': ' + (M.opts.live ? foeDone + '/' + M.opts.kids + (M.opts.boss && M.mode !== '2v2' ? ' + Boss' : '') : '?');
       c.font = `900 14px ${FONT}`; const lw = c.measureText(label).width + 44;
       rrPath(c, lx, ly - 18, lw, 36, 18); c.fillStyle = team ? 'rgba(17,138,178,.85)' : 'rgba(239,71,111,.85)'; c.fill(); icon(c, 'friends', lx + 20, ly, 22); txt(c, label, lx + 36, ly + 1, 14, '#fff', 'left', null);
       if (!team) { const me = (M.mode === '2v2' ? (this.teamDone || this.mpKidsDone()) : this.mpKidsDone()) + '/' + M.opts.kids; txt(c, (M.mode === '2v2' ? 'Dein Team: ' : 'Du: ') + me, lx + lw + 12, ly + 1, 14, '#fff', 'left', BRAND.ink); }

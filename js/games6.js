@@ -23,6 +23,7 @@ GAMES.rezept = { make(env) {
   newRound();
   const slot = i => ({ x: 50 + (i % 3) * 150, y: i < 3 ? 400 : 470 });
   return {
+    dbg: () => ({ seq, pos, shelf, show, slots: shelf.map((k, i) => slot(i)) }),
     hint: { type: 'tap', x: slot(shelf.indexOf(seq[0])).x, y: slot(shelf.indexOf(seq[0])).y },
     update(dt) { t += dt; show -= dt; shake = Math.max(0, shake - dt); fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7); drops.forEach(d => (d.t += dt)); drops = drops.filter(d => d.t < 0.5); fin.tick(dt); },
     draw(c) {
@@ -61,6 +62,7 @@ GAMES.auffangen = { challenge: true, make(env) {
   let px = 200, tx = 200, items = [], spawn = 0.4, got = 0, t = 0, fx = []; const fin = finisher(env);
   return {
     timeLimit: 30 + L * 5,
+    dbg: () => ({ items, px }),
     hint: { type: 'swipe', x: 200, y: 450 },
     update(dt) {
       t += dt; px = lerp(px, tx, Math.min(1, dt * 16)); spawn -= dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7);
@@ -103,6 +105,7 @@ GAMES.teelichter = { challenge: true, make(env) {
   let next = 1.2, got = 0, t = 0, fx = []; const fin = finisher(env);
   return {
     timeLimit: 32 + L * 4,
+    dbg: () => ({ lights }),
     hint: { type: 'tap', x: 200, y: 200 },
     update(dt) {
       t += dt; next -= dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7);
@@ -138,6 +141,7 @@ GAMES.tischnummer = { make(env) {
   const newRound = () => { const nums = shuffle(tables.map(q => q.n), r); guests = nums.map((n, i) => ({ n, x: 70 + i * (260 / Math.max(1, nT - 1)), y: 440, hx: 70 + i * (260 / Math.max(1, nT - 1)), hy: 440, seat: null, col: pick(['#e63946', '#118ab2', '#ffd166', '#06d6a0', '#9b5de5', '#f77f00'], r), skin: pick(['#f1c27d', '#c68642', '#8d5524', '#ffdbac'], r) })); tables.forEach(q => (q.taken = false)); };
   newRound();
   return {
+    dbg: () => ({ guests, tables }),
     hint: { type: 'drag', x: 70, y: 440, x2: tables[0].x, y2: tables[0].y },
     update(dt) { t += dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7); guests.forEach(g => { if (g !== drag) { g.x = lerp(g.x, g.hx, Math.min(1, dt * 10)); g.y = lerp(g.y, g.hy, Math.min(1, dt * 10)); } }); fin.tick(dt); },
     draw(c) {
@@ -165,6 +169,7 @@ GAMES.schmetterlinge = { challenge: true, make(env) {
   let want = pick(COLS, r), bugs = [], spawn = 0.2, got = 0, t = 0, fx = []; const fin = finisher(env);
   return {
     timeLimit: 32 + L * 4,
+    dbg: () => ({ bugs, want }),
     hint: { type: 'tap', x: 200, y: 260 },
     update(dt) {
       t += dt; spawn -= dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7);
@@ -211,6 +216,7 @@ GAMES.sprenger = { make(env) {
   let ang = -Math.PI / 2, len = 220, t = 0, aiming = false, drops = []; const fin = finisher(env);
   const tip = () => ({ x: sx + Math.cos(ang) * len, y: sy + Math.sin(ang) * len });
   return {
+    dbg: () => ({ spots, sx, sy }),
     hint: { type: 'drag', x: 200, y: 300, x2: spots[0].x, y2: spots[0].y },
     update(dt) {
       t += dt; const p = tip();
@@ -245,6 +251,7 @@ GAMES.schneemann = { make(env) {
   newBall();
   const topY = () => stack.reduce((y, b) => y - b.s * 1.8, baseY);
   return {
+    dbg: () => ({ ball, stack, tol }),
     hint: { type: 'tap', x: 200, y: 260 },
     update(dt) {
       t += dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7);
@@ -281,6 +288,7 @@ GAMES.geschenke = { make(env) {
   let gifts = [], drag = null, got = 0, t = 0, fx = [], spawn = 0; const fin = finisher(env);
   const add = () => { const free = [80, 200, 320].filter(x => !gifts.some(g => Math.abs(g.hx - x) < 10)); if (!free.length) return; const x = pick(free, r); gifts.push({ col: pick(COLS, r), box: pick(['#fff', '#ffc8dd', '#bde0fe', '#d8f5e3'], r), x, y: -40, hx: x, hy: 200 + (r() - 0.5) * 40, s: 0.85 + r() * 0.3 }); };
   return {
+    dbg: () => ({ gifts, sacks }),
     hint: { type: 'drag', x: 200, y: 200, x2: sacks[0].x, y2: 430 },
     update(dt) {
       t += dt; spawn -= dt; if (spawn <= 0 && gifts.length < 3 && got + gifts.length < need) { spawn = 0.3; add(); }
@@ -323,6 +331,7 @@ GAMES.parkschein = { make(env) {
   const eur = v => (v / 100).toFixed(2).replace('.', ',') + ' €';
   const cpos = i => ({ x: 200 + (i - (COINS.length - 1) / 2) * 72, y: 440 });
   return {
+    dbg: () => ({ price, paid, ticket, coins: COINS.map((v, i) => ({ v, ...cpos(i) })) }),
     hint: { type: 'tap', x: cpos(COINS.length - 1).x, y: 440 },
     update(dt) { t += dt; ticket = Math.max(0, ticket - dt); fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.9); flying.forEach(f => (f.t += dt * 3)); flying = flying.filter(f => f.t < 1); fin.tick(dt); },
     draw(c) {
@@ -358,6 +367,7 @@ GAMES.autowasch = { make(env) {
   const spots = []; for (let k = 0; k < n; k++) spots.push({ x: 110 + r() * 180, y: 140 + r() * 260, r: 14 + r() * 10, d: 1 });
   let sp = { x: 330, y: 470 }, down = false, t = 0, bubbles = [], bird = L === 2 ? 4 : 99; const fin = finisher(env);
   return {
+    dbg: () => ({ spots }),
     hint: { type: 'drag', x: spots[0].x, y: spots[0].y, x2: spots[0].x + 40, y2: spots[0].y + 20 },
     update(dt) {
       t += dt; bird -= dt;

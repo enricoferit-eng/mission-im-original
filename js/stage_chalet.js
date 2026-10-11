@@ -262,7 +262,7 @@ function drawWoodGate(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.chalet = {
-  id: 'chalet', bg: '#dbe4ee', start: { x: 955, y: 40 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
+  id: 'chalet', bg: '#dbe4ee', start: { x: 90, y: 950 }, gate: { x: 500, y: 1392, ix: 500, iy: 1320 },
   npcs: [
     { id: 'c_gerda', pos: [[300, 300], [700, 300], [240, 560]] },
     { id: 'c_felix', pos: [[300, 1000], [460, 1120], [200, 1160]] },

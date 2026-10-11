@@ -291,7 +291,7 @@ class Achievements {
 // ---------- Freunde + Mehrspieler ----------
 const CLEAR_BONUS = 300;   // extra Taler, wenn ein Bereich geschafft ist (statt Skin)
 const HELP_COINS = { easy: 10, medium: 15, hard: 25 };   // je Person, der man hilft
-const MP_COINS = { win: 40, lose: 15, team: 50 };
+const MP_COINS = { win: 40, lose: 15, team: 50, perKid: 10, place: [60, 35, 20, 10] };   // Mehrspieler: pro geschafftem Auftrag + nach Platzierung
 function needOnline(c, back) {
   const a = ACC();
   if (a && a.token) return false;
@@ -380,7 +380,7 @@ class MultiScene {
     });
     // Spiel einstellen
     panel(c, rx, ry, rw, rh, '#fff7e6', 22);
-    const o = this.opts, duel = o.mode !== 'team', multi = o.mode === 'duell', nRows = duel ? 6 : 4, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
+    const o = this.opts, duel = o.mode !== 'team', multi = o.mode === 'duell', nRows = duel ? 6 : 5, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
     const seg = (y, label, vals, isSel, set, maxW = 150) => {
       txt(c, label, rx + 16, y, 13, '#6b5a48', 'left', null); const bw = Math.min(maxW, (rw - 32) / vals.length - 6);
       vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = isSel(v); rrPath(c, bx, y + 10, bw, bh, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 10 + bh / 2, bw < 80 ? 11 : 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, bh, () => { set(v); Sfx.play('tap'); }); });
@@ -390,15 +390,16 @@ class MultiScene {
     seg(y, 'Wie viele Spieler?', [[2, '2'], [3, '3'], [4, '4']], v => (o.mode === '2v2' ? v === 4 : o.size === v), v => { if (o.mode === '2v2') { o.size = 4; this.err = '2 gegen 2 braucht genau 4 Spieler.'; } else o.size = v; }, 90); y += rowH;
     seg(y, multi ? 'Bereiche (mehrere = nacheinander)' : 'Bereich', STAGE_ORDER.map(id => [id, small || rw < 560 ? { kueche: 'Küche', gastraum: 'Innen', aussen: 'Außen', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' }[id] : STAGE_INFO[id].name]), v => o.stages.includes(v), v => { if (!multi) o.stages = [v]; else if (o.stages.includes(v)) { if (o.stages.length > 1) o.stages = o.stages.filter(x => x !== v); } else o.stages = STAGE_ORDER.filter(x => x === v || o.stages.includes(x)); o.stage = o.stages[0]; }); y += rowH;
     seg(y, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], v => o.diff === v, v => (o.diff = v)); y += rowH;
+    seg(y, o.mode === 'team' ? 'Wie viele Aufträge? (1 = ein großer Team-Auftrag)' : 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], v => o.kids === v, v => (o.kids = v), 90); y += rowH;
     if (duel) {
-      seg(y, 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], v => o.kids === v, v => (o.kids = v), 90); y += rowH;
+      
       const hw = (rw - 44) / 2;
       [[hw < 300 ? 'Boss-Level' : 'Boss-Level am Ende', o.boss, () => (o.boss = o.mode === '2v2' ? false : !o.boss)], [hw < 300 ? 'Gegner sehen' : 'Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
         const bx = rx + 14 + i * (hw + 16), boxH = bh + 12; rrPath(c, bx, y - 4, hw, boxH, 14); fs(c, 'rgba(255,255,255,.55)', 2, 'rgba(61,44,31,.35)');
         txt(c, lab, bx + 10, y + boxH / 2 - 4, 12, '#6b5a48', 'left', null);
         const tw2 = Math.min(64, hw / 5); [['Ja', true], ['Nein', false]].forEach(([n, v], k) => { const tx = bx + hw - 8 - (2 - k) * (tw2 + 4), sel = on === v; rrPath(c, tx, y + 2, tw2, bh, 12); fs(c, sel ? (v ? '#06d6a0' : '#ffd166') : '#fff', 2.5); txt(c, n, tx + tw2 / 2, y + 2 + bh / 2, 13, '#3d2c1f', 'center', null); UI.btn(tx, y + 2, tw2, bh, () => { if (on !== v) fn(); Sfx.play('tap'); }); });
       });
-    } else wrapLines(c, 'Ein großer gemeinsamer Auftrag: Was einer findet, zählt für beide. Zwei Sachen schafft ihr nur zusammen!', rw - 32, 13).forEach((l, i) => txt(c, l, rx + 16, y + 10 + i * 18, 13, '#3d2c1f', 'left', null));
+    }
     const by = ry + rh - 34, bw2 = (rw - 42) / 2;
     rrPath(c, rx + 14, by - 22, bw2, 44, 16); fs(c, '#06d6a0', 3); txt(c, this.busy ? '…' : 'Spiel erstellen', rx + 14 + bw2 / 2, by, 15, '#fff', 'center', BRAND.ink); UI.btn(rx + 14, by - 22, bw2, 44, () => { if (!this.busy) this.create(); });
     rrPath(c, rx + 28 + bw2, by - 22, bw2, 44, 16); fs(c, '#bde0fe', 3); txt(c, 'Code eingeben', rx + 28 + bw2 * 1.5, by, 15, '#3d2c1f', 'center', null); UI.btn(rx + 28 + bw2, by - 22, bw2, 44, () => { this.mode = 'code'; this.err = ''; nameInput.value = ''; });
@@ -450,7 +451,7 @@ class Match {
     const mine = cleanL(ACC().login); this.idx = Math.max(0, this.players.findIndex(p => cleanL(p.login) === mine)); if (this.idx === 0 && me === 'guest') this.idx = 1;
     this.n = this.players.length; this.team = this.mode === '2v2' ? this.idx % 2 : 0;
     const oth = this.players.filter((p, i) => i !== this.idx);
-    this.mates = this.mode === '2v2' ? this.players.filter((p, i) => i !== this.idx && i % 2 === this.team) : [];
+    this.mates = this.mode === '2v2' ? this.players.filter((p, i) => i !== this.idx && i % 2 === this.team) : this.mode === 'team' ? oth : [];
     this.foes = this.mode === '2v2' ? this.players.filter((p, i) => i % 2 !== this.team) : [];
     this.otherName = this.mode === '2v2' ? this.foes.map(p => p.name).join(' & ') : oth.map(p => p.name).join(' & ');
     this.others = []; this.other = null; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop();
@@ -461,7 +462,7 @@ class Match {
     if (this.busy || this.over === 'done') return; this.busy = true;
     const r = await api({ action: 'lobby_poll', code: this.code, progress: this.prog }); this.busy = false;
     if (r && r.status === 200) {
-      const prev = this.others; this.others = (r.data.others || (r.data.other ? [{ idx: this.idx ? 0 : 1, name: this.otherName, prog: r.data.other }] : [])).map(o => ({ ...o, mate: this.mode === '2v2' && o.idx % 2 === this.team }));
+      const prev = this.others; this.others = (r.data.others || (r.data.other ? [{ idx: this.idx ? 0 : 1, name: this.otherName, prog: r.data.other }] : [])).map(o => ({ ...o, mate: this.mode === 'team' || (this.mode === '2v2' && o.idx % 2 === this.team) }));
       if (this.others.some(o => o.prog && !(prev.find(q => q.idx === o.idx && q.prog && q.prog.at === o.prog.at)))) this.lastOther = Date.now();
       // zusammengefasste Sicht auf die Mitspieler (für Team-Aufgaben + Anzeige)
       const P = this.others.filter(o => o.prog && !o.gone).map(o => o.prog);

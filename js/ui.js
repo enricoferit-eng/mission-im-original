@@ -965,7 +965,6 @@ class Wardrobe {
         drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.6, Math.min(1.5, ch / 120), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name || '', cx + cw / 2, cy + ch - 34, cw < 110 ? 10 : 12, '#3d2c1f', 'center', null);
         if (sk.ability) { const A = ABILITIES[sk.ability], lv = skinLevel(sk); rrPath(c, cx + 5, cy + ch - 24, cw - 10, 19, 9); fs(c, '#ffd60a', 1.5); txt(c, A.name + ' ' + '★'.repeat(lv), cx + cw / 2, cy + ch - 14, cw < 110 ? 9 : 10, BRAND.ink, 'center', null); }
-        else txt(c, 'keine Fähigkeit', cx + cw / 2, cy + ch - 14, 9, '#adb5bd', 'center', null);
       } else if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
       if (rar) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
