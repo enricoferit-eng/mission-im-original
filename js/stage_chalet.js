@@ -56,8 +56,8 @@ function logWall(g, x, y, w, h, horiz = true) {
 }
 function drawGroundChalet(g, R) {
   snowGround(g, 0, 0, WORLD_W, WORLD_H, R);
-  // Wald hinten (oben)
-  for (let x = -20; x < WORLD_W + 40; x += 46) { if (x > 880) continue; const h = 90 + (x * 7) % 40; polyPath(g, [[x - 28, 120], [x, 120 - h], [x + 28, 120]]); fs(g, '#2d6a4f', 2.5); polyPath(g, [[x - 16, 120 - h * 0.55], [x, 120 - h], [x + 16, 120 - h * 0.55]]); g.fillStyle = '#fff'; g.fill(); }
+  // oben grenzt der Außenbereich an: Schnee-Hecke als Übergang (rechts Lücke für den Weg)
+  for (let x = 0; x < WORLD_W; x += 26) { if (x > 905) continue; ell(g, x, 12, 22, 20); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); ell(g, x, 2, 16, 7); g.fillStyle = '#fff'; g.fill(); }
   // Weg von der Terrasse oben rechts herunter (festgetretener Schnee)
   g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(955, -10); g.lineTo(955, 690); g.quadraticCurveTo(940, 760, 700, 800); g.stroke(); g.restore();
   for (let y = 10; y < 690; y += 28) { ell(g, 948 + (y % 56 ? 12 : 0), y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }

@@ -59,14 +59,9 @@ function drawGroundAussen(g, R) {
   lawn(g, 0, 0, WORLD_W, WORLD_H, R);
   // oben links: Parkplatz neben dem Glashaus
   for (const [x, y] of [[50, 70], [110, 120]]) { g.fillStyle = 'rgba(0,0,0,.15)'; ell(g, x + 20, y + 10, 40, 14); g.fill(); for (const [dx, dy, rr] of [[-18, -10, 24], [16, -14, 26], [0, -32, 24]]) { ell(g, x + dx, y + dy, rr, rr * 0.85); fs(g, '#40916c', 2.5); } }
-  // Glashaus-Front: Glas, Stahlrahmen, offene Falttüren in der Mitte
-  const sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#d3e9f1'); sky.addColorStop(1, '#eef6f9'); g.fillStyle = sky; g.fillRect(150, 0, WORLD_W - 150, 150);
-  for (let x = 170; x < WORLD_W; x += 125) { g.fillStyle = 'rgba(60,110,70,.4)'; ell(g, x + 60, 120, 40, 22); g.fill(); line(g, x + 40, 120, x + 46, 60, 4, 'rgba(80,60,40,.5)', false); for (let k = 0; k < 6; k++) { const a2 = -Math.PI / 2 + (k - 2.5) * 0.5; line(g, x + 46, 60, x + 46 + Math.cos(a2) * 30, 60 + Math.sin(a2) * 26, 3, 'rgba(70,120,60,.5)', false); } }
-  g.strokeStyle = '#495057'; g.lineWidth = 5; for (let x = 150; x <= WORLD_W; x += 62) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 150); g.stroke(); } g.beginPath(); g.moveTo(150, 50); g.lineTo(WORLD_W, 50); g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 170; x < WORLD_W; x += 186) { polyPath(g, [[x, 150], [x + 30, 150], [x + 90, 0], [x + 60, 0]]); g.fill(); }
-  g.fillStyle = '#d27d55'; g.fillRect(430, 60, 140, 90);
-  for (let k = 0; k < 3; k++) { rrPath(g, 380 + k * 12, 50, 12, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2.5); rrPath(g, 584 + k * 12, 50, 12, 100, 2); fs(g, 'rgba(200,230,245,.9)', 2.5); }
-  g.fillStyle = '#495057'; g.fillRect(150, 146, WORLD_W - 150, 8); g.fillRect(146, 0, 8, 154);
+  // oben grenzt direkt der Innenbereich an (dessen Glasfront mit Falttüren): hier nur Pflaster bis zur Kante
+  g.fillStyle = '#8a7f78'; g.fillRect(150, 0, WORLD_W - 150, 160); for (let y = 0, k = 0; y < 160; y += 18, k++) for (let x = 150 - (k % 2) * 18; x < WORLD_W; x += 36) { g.fillStyle = ['#9c918a', '#a69b93', '#938880', '#ada39b'][Math.floor(R() * 4)]; g.fillRect(x + 1, y + 1, 34, 16); }
+  g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 0, WORLD_W, 6);
   // Pflaster unter und vor dem Pavillon (wie auf dem Foto: graue Betonpflaster im Verband)
   g.save(); g.beginPath(); g.rect(158, 154, 732, 372); g.clip();
   g.fillStyle = '#8a7f78'; g.fillRect(158, 154, 732, 372);

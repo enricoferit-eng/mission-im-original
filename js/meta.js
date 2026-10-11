@@ -108,8 +108,8 @@ class Shop {
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
-    const tabs = [['joker', 'Tages-Shop'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere']], tw = Math.min(150, (W - 40) / 4 - 8);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 1.5) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
+    const tabs = [['joker', 'Tages-Shop'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere'], ['figur', 'Figur']], tw = Math.min(140, (W - 40) / 5 - 8);
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'figur') { const back = () => setScene(new Shop(this.back)); setScene(new CharEditor(back)); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)

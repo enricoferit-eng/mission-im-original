@@ -184,14 +184,17 @@ passInput.style.cssText = nameInput.style.cssText; passInput.type = 'password'; 
 document.body.appendChild(passInput);
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
 // Enricos Admin-Konto: funktioniert auch ohne Server (im Spiel steht nur ein Prüfwert, nicht der Code)
+const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }];
 const ENRICO_HASH = '3dac95a62bad66804a8c231d440c5189590390ea045c750a5325e656112c3ba3';
+LOCAL_LOGINS[0].h = ENRICO_HASH;
 async function enricoLogin(v) {
   try {
     const code = String(v).toUpperCase().replace(/[^A-Z0-9]/g, ''); if (code.length !== 8) return false;
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('mio-enrico-admin-v1:' + code));
-    const hex = Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join(''); if (hex !== ENRICO_HASH) return false;
-    const id = 'enrico'; if (!Save.data.accounts[id]) Save.data.accounts[id] = { name: 'Enrico', code: [0, 1, 2, 3], login: code.slice(0, 4) + '-' + code.slice(4), avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true, symbol: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
-    Object.assign(Save.data.accounts[id], { admin: true, gameAdmin: true }); Save.data.current = id; Save.write(false); return true;
+    const hex = Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+    const L = LOCAL_LOGINS.find(o => o.h === hex); if (!L) return false;
+    const id = L.id; if (!Save.data.accounts[id]) Save.data.accounts[id] = { name: L.name, code: [0, 1, 2, 3], login: code.slice(0, 4) + '-' + code.slice(4), avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true, symbol: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
+    if (L.admin) Object.assign(Save.data.accounts[id], { admin: true, gameAdmin: true }); Save.data.current = id; Save.write(false); return true;
   } catch (e) { return false; }
 }
 // Spiel-Admin (alle Bereiche, Skins, Taler): nur das vom Server markierte Konto (Enrico), nicht das Passwort-Admin-Konto

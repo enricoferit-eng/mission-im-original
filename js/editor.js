@@ -9,6 +9,12 @@ const FUR_TINTS = {
   rosa: { body: '#f7b6c2', light: '#ffe5ec', dark: '#d6869a' },
 };
 const EDIT_COLS = ['#6bb544', '#ef476f', '#ffd166', '#118ab2', '#9b5de5', '#f77f00', '#212529', '#f8f9fa', 'rainbow'];
+// Preise: Grundfarben, ohne Muster und normales Fell sind gratis, der Rest wird mit Talern freigeschaltet
+const FREE_COLS = ['#6bb544', '#ef476f', '#ffd166', '#118ab2'];
+function editPrice(kind, v) { if (kind === 'col') return FREE_COLS.includes(v) ? 0 : v === 'rainbow' ? 120 : 40; if (kind === 'pat') return v === '' ? 0 : v === 'stars' ? 70 : 50; if (kind === 'fur') return v === 'normal' ? 0 : v === 'rosa' ? 90 : 60; return 0; }
+function editOwned(kind, v) { const m = META(); return editPrice(kind, v) === 0 || (typeof isGameAdmin === 'function' && isGameAdmin()) || !!(m && m.unlocks && m.unlocks.includes(kind + ':' + v)); }
+function editBuy(kind, v, ok) { const m = META(), pr = editPrice(kind, v); if (!m) return; if (m.coins < pr) { Sfx.play('bad'); toast('Zu wenig Taler', 'Dafür brauchst du ' + pr + ' Taler', 'coin'); return; } m.coins -= pr; (m.unlocks = m.unlocks || []).push(kind + ':' + v); Save.write(); Sfx.play('win'); toast('Freigeschaltet!', '−' + pr + ' Taler', 'coin'); ok(); }
+const lockTag = (c, x, y, pr) => { rrPath(c, x - 24, y - 9, 48, 18, 9); fs(c, 'rgba(255,255,255,.95)', 2); icon(c, 'coin', x - 12, y, 12); txt(c, String(pr), x + 8, y + 1, 11, '#8d5a3b', 'center', null); };
 const EDIT_PATS = [['', 'Ohne'], ['dots', 'Punkte'], ['stripes', 'Streifen'], ['stars', 'Sterne'], ['leaf', 'Blatt']];
 function customLook() {
   const a = ACC(), u = a && a.custom; if (!u) return null;
@@ -38,6 +44,7 @@ class CharEditor {
     const a = ACC(); if (!a) return; const u = a.custom;
     topBar(c, () => { Save.write(); this.back(); });
     txt(c, 'Figur bearbeiten', 104, 44, 22, '#fff', 'left', BRAND.olive);
+    coinChip(c, W - 170, 44);
     const land = W > H, pw = land ? Math.min(W * 0.36, 300) : W - 24, ph = land ? H - 100 : Math.min(250, H * 0.36);
     const px = 12, py = 86;
     panel(c, px, py, pw, ph, '#d8f3dc', 24);
@@ -55,14 +62,14 @@ class CharEditor {
       L.forEach((k, i) => { const x = gx + (i % 3) * (cw + 8), y = gy + Math.floor(i / 3) * (ch + 8), sel = a.char === k; rrPath(c, x, y, cw, ch, 16); fs(c, sel ? '#d8f5e3' : '#fff', 2.5); drawAnimal(c, k, x + cw / 2, y + ch * 0.8, ch / 80, { t: this.t + i, noTint: true, look: DEFAULT_LOOK, noShadow: true }); txt(c, ANIMAL_NAMES[k], x + cw / 2, y + ch - 10, 11, BRAND.olive, 'center', null); UI.btn(x, y, cw, ch, () => pick(() => { a.char = k; })); });
     } else if (this.tab === 'fell') {
       const K = Object.keys(FUR_TINTS), cw = Math.min(110, gw / 3 - 8), ch = Math.min(100, gh / 2 - 8);
-      K.forEach((k, i) => { const x = gx + (i % 3) * (cw + 8), y = gy + Math.floor(i / 3) * (ch + 8), sel = (u.fur || 'normal') === k, T = FUR_TINTS[k] || ANIMALS[a.char || 'cat']; rrPath(c, x, y, cw, ch, 16); fs(c, sel ? '#d8f5e3' : '#fff', 2.5); ell(c, x + cw / 2, y + ch * 0.42, ch * 0.26, ch * 0.26); fs(c, T.body, 3); ell(c, x + cw / 2 + ch * 0.08, y + ch * 0.47, ch * 0.13, ch * 0.11); c.fillStyle = T.light; c.fill(); txt(c, k[0].toUpperCase() + k.slice(1), x + cw / 2, y + ch - 12, 12, BRAND.olive, 'center', null); UI.btn(x, y, cw, ch, () => pick(() => { u.fur = k; })); });
+      K.forEach((k, i) => { const x = gx + (i % 3) * (cw + 8), y = gy + Math.floor(i / 3) * (ch + 8), sel = (u.fur || 'normal') === k, T = FUR_TINTS[k] || ANIMALS[a.char || 'cat']; rrPath(c, x, y, cw, ch, 16); fs(c, sel ? '#d8f5e3' : '#fff', 2.5); ell(c, x + cw / 2, y + ch * 0.42, ch * 0.26, ch * 0.26); fs(c, T.body, 3); ell(c, x + cw / 2 + ch * 0.08, y + ch * 0.47, ch * 0.13, ch * 0.11); c.fillStyle = T.light; c.fill(); txt(c, k[0].toUpperCase() + k.slice(1), x + cw / 2, y + ch - 12, 12, BRAND.olive, 'center', null); if (!editOwned('fur', k)) lockTag(c, x + cw / 2, y + 14, editPrice('fur', k)); UI.btn(x, y, cw, ch, () => { if (editOwned('fur', k)) pick(() => { u.fur = k; }); else editBuy('fur', k, () => pick(() => { u.fur = k; })); }); });
     } else if (this.tab === 'tuch' || this.tab === 'kappe') {
-      const key = this.tab === 'tuch' ? 'scarf' : 'cap', r = Math.min(30, gw / 10), per = Math.max(1, Math.floor(gw / (r * 2 + 12)));
-      EDIT_COLS.forEach((col, i) => { const x = gx + r + (i % per) * (r * 2 + 12), y = gy + r + 6 + Math.floor(i / per) * (r * 2 + 12), sel = (u[key] || DEFAULT_LOOK[key]) === col; ell(c, x, y, r, r); fs(c, paint(c, col, x - r, x + r), sel ? 5 : 3, sel ? '#06d6a0' : OL); UI.btn(x - r, y - r, r * 2, r * 2, () => pick(() => { u[key] = col; })); });
+      const key = this.tab === 'tuch' ? 'scarf' : 'cap', r = Math.min(28, gw / 11), per = Math.max(1, Math.floor(gw / (r * 2 + 14)));
+      EDIT_COLS.forEach((col, i) => { const x = gx + r + (i % per) * (r * 2 + 12), y = gy + r + 6 + Math.floor(i / per) * (r * 2 + 26), sel = (u[key] || DEFAULT_LOOK[key]) === col; ell(c, x, y, r, r); fs(c, paint(c, col, x - r, x + r), sel ? 5 : 3, sel ? '#06d6a0' : OL); if (!editOwned('col', col)) lockTag(c, x, y + r + 2, editPrice('col', col)); UI.btn(x - r, y - r, r * 2, r * 2, () => { if (editOwned('col', col)) pick(() => { u[key] = col; }); else editBuy('col', col, () => pick(() => { u[key] = col; })); }); });
       txt(c, key === 'cap' ? 'Die Kappe bekommst du auf dem Spielplatz.' : '', gx + gw / 2, gy + gh - 10, 11, '#6b5a48', 'center', null);
     } else {
       const bw = Math.min(140, gw / 2 - 8), bh = 40;
-      EDIT_PATS.forEach(([k, n], i) => { const x = gx + (i % 2) * (bw + 8), y = gy + Math.floor(i / 2) * (bh + 8), sel = (u.pat || '') === k; rrPath(c, x, y, bw, bh, 14); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, n, x + bw / 2, y + bh / 2, 14, '#3d2c1f', 'center', null); UI.btn(x, y, bw, bh, () => pick(() => { u.pat = k; })); });
+      EDIT_PATS.forEach(([k, n], i) => { const x = gx + (i % 2) * (bw + 8), y = gy + Math.floor(i / 2) * (bh + 8), sel = (u.pat || '') === k; rrPath(c, x, y, bw, bh, 14); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, n, x + bw / 2, y + bh / 2, 14, '#3d2c1f', 'center', null); if (!editOwned('pat', k)) lockTag(c, x + bw - 30, y + bh / 2, editPrice('pat', k)); UI.btn(x, y, bw, bh, () => { if (editOwned('pat', k)) pick(() => { u.pat = k; }); else editBuy('pat', k, () => pick(() => { u.pat = k; })); }); });
     }
   }
 }

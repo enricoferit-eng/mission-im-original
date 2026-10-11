@@ -176,7 +176,7 @@ function drawGroundSpielplatz(g, R) {
   g.strokeStyle = '#f8f9fa'; g.lineWidth = 4;
   const carCols = ['#e9ecef', '#adb5bd', '#e63946', '#343a40', '#4dabf7', '#f8f9fa', '#8d99ae', '#ffd166', '#e9ecef'];
   for (let k = 0; k < 9; k++) {
-    const x = 75 + k * 110, y = 1352; if (Math.abs(x - GATE.x) < 70) continue;
+    const x = 75 + k * 110, y = 1352; if (true) continue;   // Autos stehen auf dem Parkplatz darunter
     rrPath(g, x - 26, y - 46, 52, 92, 16); fs(g, carCols[k], 3);
     rrPath(g, x - 20, y - 26, 40, 22, 6); fs(g, '#5a6f7d', 2); rrPath(g, x - 20, y + 14, 40, 16, 6); fs(g, '#5a6f7d', 2);
   }
