@@ -183,6 +183,7 @@ const KDRAW = {
     for (let k = 0; k < 4; k++) { rrPath(c, d.x0 + 14, d.y0 + 20 + k * 66, d.w - 28, 54, 4); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + 18, d.y0 + 24 + k * 66, d.w - 36, 46, 3); c.fillStyle = ['#74c69d', '#e63946', '#f1faee', '#ffd166'][k]; c.fill(); if (k === 0) for (let m = 0; m < 6; m++) { ell(c, d.x0 + 30 + m * 16, d.y0 + 40 + (m % 2) * 10, 8, 6, m); c.fillStyle = '#95d5b2'; c.fill(); } }
   },
   regal(c, d) {
+    rrPath(c, d.x0 - 4, d.y0 - 40, 8, 200, 3); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + d.w - 4, d.y0 - 40, 8, 200, 3); fs(c, '#adb5bd', 2);   // Regal-Pfosten
     for (let k = 0; k < 3; k++) { rrPath(c, d.x0, d.y0 + k * 66, d.w, 10, 2); fs(c, '#ced4da', 2); }
     for (let k = 0; k < 3; k++) for (let m = 0; m < 3; m++) gnBox(c, d.x0 + 6 + m * 31, d.y0 - 26 + k * 66, 28, 26, k === 1 ? 'rgba(255,255,255,.95)' : 'rgba(230,240,248,.9)');
     rrPath(c, d.x0 + 10, d.y0 + 150, 80, 34, 12); fs(c, '#d4a373', 2.5); for (let k = 0; k < 5; k++) line(c, d.x0 + 16 + k * 15, d.y0 + 154, d.x0 + 16 + k * 15, d.y0 + 180, 1.5, 'rgba(120,80,40,.4)', false);

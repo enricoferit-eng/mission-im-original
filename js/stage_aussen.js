@@ -145,8 +145,11 @@ const ADRAW = {
   kugel(c, d, t) {
     const gl = 0.55 + 0.25 * Math.sin(t * 1.5 + d.x);
     ell(c, d.x, d.y + 2, 20, 6); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill();
-    ell(c, d.x, d.y - 16, 28, 26); c.fillStyle = `rgba(255,248,220,${gl * 0.25})`; c.fill();
-    ell(c, d.x, d.y - 14, 16, 15); fs(c, `rgba(255,253,240,${0.85 + gl * 0.15})`, 2.5); ell(c, d.x - 5, d.y - 19, 5, 3); c.fillStyle = '#fff'; c.fill();
+    // Leuchtkugel im Rasen: deutlich größer, mit Lichtschein und Sockel
+    ell(c, d.x, d.y - 24, 44, 40); c.fillStyle = `rgba(255,240,180,${gl * 0.3})`; c.fill();
+    rrPath(c, d.x - 10, d.y - 6, 20, 8, 3); fs(c, '#6c757d', 2);
+    ell(c, d.x, d.y - 24, 24, 22); fs(c, `rgba(255,251,232,${0.9 + gl * 0.1})`, 3); ell(c, d.x - 8, d.y - 32, 7, 4); c.fillStyle = '#fff'; c.fill();
+    ell(c, d.x + 6, d.y - 16, 10, 6); c.fillStyle = 'rgba(255,214,90,.25)'; c.fill();
   },
   kissenbox(c, d) { c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, d.x, d.y + 2, 46, 9); c.fill(); rrPath(c, d.x - 42, d.y - 40, 84, 40, 6); fs(c, '#8d5a3b', 3); for (let k = 0; k < 6; k++) line(c, d.x - 38 + k * 15, d.y - 38, d.x - 38 + k * 15, d.y - 2, 1.5, 'rgba(60,35,20,.35)', false); rrPath(c, d.x - 46, d.y - 50, 92, 14, 5); fs(c, '#a0673a', 3); rrPath(c, d.x - 30, d.y - 62, 26, 14, 6); fs(c, '#e76f51', 2); rrPath(c, d.x + 2, d.y - 60, 26, 12, 6); fs(c, '#ffd166', 2); },
   liege(c, d) {
@@ -284,7 +287,7 @@ function drawGardenGate(c, x, y, s, open, locked, t, label = 'Spielplatz') {
   rrPath(c, -62, -130, 16, 134, 4); fs(c, '#8d5a3b', 3); rrPath(c, 46, -130, 16, 134, 4); fs(c, '#8d5a3b', 3);
   c.beginPath(); c.moveTo(-66, -122); c.quadraticCurveTo(0, -176, 66, -122); c.lineWidth = 14; c.strokeStyle = OL; c.stroke(); c.lineWidth = 9; c.strokeStyle = '#a0673a'; c.stroke();
   for (let k = 0; k < 8; k++) { const u = k / 7, xx = -60 + u * 120, yy = -122 - Math.sin(u * Math.PI) * 30; ell(c, xx, yy, 7, 5); fs(c, k % 2 ? '#52b788' : '#74c69d', 1.5); }
-  rrPath(c, -34, -162, 68, 24, 5); fs(c, '#fbf8f2', 2.5); txt(c, label, 0, -150, 13, '#6f4e37', 'center', null);
+  // Name steht auf dem Wegweiser daneben – kein zweites Schild auf dem Tor (wurde vom Boss-Symbol verdeckt)
   const o = clamp(open, 0, 1);
   for (const sd of [-1, 1]) { c.save(); c.translate(sd * 46, 0); c.scale(1 - o * 0.85, 1); const x0 = sd > 0 ? -46 : 0; for (let k = 0; k < 4; k++) { rrPath(c, x0 + 3 + k * 11, -86 + (sd > 0 ? 3 - k : k) * 2, 9, 84, 3); fs(c, '#c08b55', 2); } line(c, x0 + 2, -66, x0 + 44, -66, 4, '#8d5a3b'); line(c, x0 + 2, -22, x0 + 44, -22, 4, '#8d5a3b'); c.restore(); }
   if (locked) { const b = Math.sin(t * 3) * 2; ell(c, 0, -104 + b, 14, 14); fs(c, '#fff', 2.5); icon(c, 'lock', 0, -104 + b, 18); }
