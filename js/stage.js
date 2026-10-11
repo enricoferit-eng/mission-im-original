@@ -913,13 +913,17 @@ class Play {
     const items = shuffle(SG.items || ITEM_IDS, r).slice(0, cnt);
     // Verstecke: mal in der Umgebung, mal irgendwo im Hackschnitzel vergraben – jedes Mal neu
     const hidden = [], spots = shuffle(SPOTS, r), npcP = this.npcs.map(n => this.npcPos(n));
-    const farEnough = (x, y, l) => hidden.every(h => h.l !== l || dist(h.x, h.y, x, y) > 120);
+    // Verstecke eines Auftrags liegen weit genug auseinander, damit die Lupe nie das falsche Ding findet
+    const farEnough = (x, y, l) => hidden.every(h => h.l !== l || dist(h.x, h.y, x, y) > 175);
     for (let k = 0; k < cnt; k++) {
       let h = null;
       const roll = r();
       if (roll < 0.9 || !SG.feat.dig) {
         const behindPool = spots.filter(s2 => s2.decor), pool = roll < 0.75 && SG.feat.dig ? behindPool : spots;
-        const s = pool.find(s2 => !hidden.some(hh => hh.spot === s2.id) && farEnough(s2.x, s2.y, s2.l || 0));
+        let s = pool.find(s2 => !hidden.some(hh => hh.spot === s2.id) && farEnough(s2.x, s2.y, s2.l || 0));
+        if (!s && !SG.feat.dig) {   // nichts weit genug weg: das freie Versteck nehmen, das am weitesten von den anderen weg ist (nie einfach auf den Boden)
+          let bd = -1; for (const s2 of spots) { if (hidden.some(hh => hh.spot === s2.id)) continue; const d = Math.min(...hidden.map(hh => dist(hh.x, hh.y, s2.x, s2.y)).concat([9999])); if (d > bd) { bd = d; s = s2; } }
+        }
         if (s) h = { x: s.x, y: s.y, l: s.l || 0, reach: s.reach, spot: s.id, behind: !!s.decor, side: r() < 0.5 ? -1 : 1 };
         if (s && s.px != null) Object.assign(h, { px: s.px, py: s.py, rot: s.rot || 0, sz: s.sz || 0.8, front: !!s.front, cut: s.cut, zy: DECOR_BY[s.decor] ? DECOR_BY[s.decor].y + (DECOR_BY[s.decor].zy || 0) : s.py });
       }

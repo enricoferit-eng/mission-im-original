@@ -195,7 +195,7 @@ async function enricoLogin(v) {
   } catch (e) { return false; }
 }
 // Spiel-Admin (alle Bereiche, Skins, Taler): nur das vom Server markierte Konto (Enrico), nicht das Passwort-Admin-Konto
-function isGameAdmin(a = ACC()) { return !!(a && a.admin && a.gameAdmin); }
+function isGameAdmin(a = ACC()) { return !!(a && a.admin); }   // beide Admin-Konten (Enrico + Passwort-Admin) dürfen alles
 const NAME_A = ['Flinke', 'Mutige', 'Schlaue', 'Wilde', 'Lustige', 'Schnelle', 'Kleine', 'Starke'];
 const NAME_B = ['Rakete', 'Wolke', 'Pfote', 'Banane', 'Socke', 'Kugel', 'Brezel', 'Feder'];
 
