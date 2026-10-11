@@ -949,21 +949,26 @@ class Wardrobe {
       UI.btn(tx, y + 64, tw, 52, () => { this.stage = id; Sfx.play('tap'); });
     });
     const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), allIds = shop ? SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)) : stageSkins(this.stage, this.diff);
-    const cols = land ? (shop ? 7 : 6) : 3, rowsN = shop ? 2 : (land ? 1 : 2), cw = (w - 30 - (cols - 1) * 10) / cols - (shop ? 6 : 0), ch = shop ? Math.min(140, (h - 214) / rowsN - 8) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
-    const per = cols * rowsN, pages = Math.max(1, Math.ceil(allIds.length / per)); this.page = shop ? clamp(this.page || 0, 0, pages - 1) : 0;
-    const ids = allIds.slice(this.page * per, this.page * per + per);
+    const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(130, cw * 1.1) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
+    const ids = allIds;
+    // Laden-Skins: eine lange Liste zum Runterscrollen (Finger ziehen oder Mausrad)
+    const top = y + 124, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
+    this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
+    if (shop) { c.save(); c.beginPath(); c.rect(x + 4, top - 2, w - 8, bot - top + 4); c.clip(); }
     if (shop && !allIds.length) wrapLines(c, 'Noch keine Laden-Skins. Kauf welche im Laden, hol sie im Tages-Shop oder am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
-    if (shop && pages > 1) { if (this.page > 0) roundBtn(c, x + 22, y + h / 2 + 40, 18, '#fff', 'back', () => { this.page--; }); if (this.page < pages - 1) { c.save(); c.translate(x + w - 22, y + h / 2 + 40); c.scale(-1, 1); roundBtn(c, 0, 0, 18, '#fff', 'back', null); c.restore(); UI.btn(x + w - 42, y + h / 2 + 20, 40, 40, () => { this.page++; }); } txt(c, (this.page + 1) + ' / ' + pages, x + w / 2, y + h - 12, 12, '#6b5a48', 'center', null); }
     ids.forEach((sid, i) => {
-      const cx = x + 15 + (shop ? 21 : 0) + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10);
+      const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10) - this.sc;
+      if (shop && (cy > bot || cy + ch < top)) return;
       const own = sp.skins.includes(sid), eq = d.equip === sid;
       rrPath(c, cx, cy, cw, ch, 18); fs(c, eq ? '#d8f5e3' : own ? '#fff' : '#dee2e6', 3.5, eq ? '#2b9348' : OL);
       if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
       if (eq) icon(c, 'check', cx + cw - 20, cy + 20, 24, '#06d6a0');
-      if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
-      if (own) skinInfoBtn(c, cx + 18, cy + 18, sid);
+      if (own && shop) this.hits.push({ x: cx, y: cy, w: cw, h: ch, sid });
+      else if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
+      if (own && (!shop || cy + 6 > top)) skinInfoBtn(c, cx + 18, cy + 18, sid);
     });
+    if (shop) { c.restore(); if (maxS > 0) { const bh = (bot - top) * (bot - top) / (bot - top + maxS), byy = top + (bot - top - bh) * (this.sc / maxS); rrPath(c, x + w - 10, byy, 5, bh, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); } }
     // Standard-Look
     const by = y + h - 50;
     rrPath(c, W / 2 - 70, by - 26, 140, 52, 18); fs(c, d.equip === null ? '#d8f5e3' : '#fff', 3);
@@ -972,7 +977,14 @@ class Wardrobe {
     UI.btn(W / 2 - 70, by - 26, 140, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
     if (!shop && !OPEN_STAGES.includes(this.stage)) { icon(c, 'hourglass', W / 2, y + 128 + ch, 44); }
   }
-  down() {} move() {} up() {}
+  enter() {}
+  down(px, py) { if (this.box && py >= this.box.top && py <= this.box.bot) this.drag = { y0: py, s0: this.sc || 0, moved: false }; }
+  move(px, py) { const g = this.drag; if (!g) return; if (Math.abs(py - g.y0) > 8) g.moved = true; this.sc = g.s0 - (py - g.y0); }
+  up(px, py) {
+    const g = this.drag; this.drag = null; if (!g || g.moved) return;
+    const hh = (this.hits || []).find(o => px >= o.x && px <= o.x + o.w && py >= o.y && py <= o.y + o.h); if (!hh) return;
+    DP(this.diff).equip = hh.sid; Save.write(); Sfx.play('good');
+  }
 }
 
 // ---------- Glücksrad: welcher Skin dieser Stage ist es geworden? ----------
@@ -1175,6 +1187,8 @@ const endPtr = e => {
 };
 cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
+// Mausrad scrollt Listen (Laden-Skins, Kleiderschrank)
+cv.addEventListener('wheel', e => { const t = overlay || scene; if (t instanceof Wardrobe && t.box) t.sc = (t.sc || 0) + e.deltaY; else if (typeof Shop !== 'undefined' && t instanceof Shop && t.tab === 'skins') t.sc = (t.sc || 0) + e.deltaY; else return; e.preventDefault(); }, { passive: false });
 cv.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('resize', resize);
 document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });

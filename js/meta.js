@@ -10,7 +10,7 @@ function META(a = ACC()) {
   return m;
 }
 const BASE_ANIMALS = ['cat', 'dog', 'lion'];
-const SHOP_ANIMALS = [['bunny', 250], ['panda', 300], ['fox', 300]];
+const SHOP_ANIMALS = [['bunny', 120], ['mouse', 120], ['bear', 150], ['panda', 150], ['fox', 150], ['raccoon', 180], ['koala', 180], ['wolf', 200], ['tiger', 250]];
 const JOKER_PRICE = 30, JOKERS_PER_DAY = 3;
 function ownedAnimals() { const m = META(); return BASE_ANIMALS.concat(m ? m.animals : []); }
 
@@ -156,7 +156,7 @@ class Shop {
       });
     } else if (this.tab === 'rad') {
       // Glücksrad: zufälliger Skin aus dem Laden (selten/legendär seltener). Schon gehabt = halber Preis zurück.
-      const SPIN = 120, cx = W / 2, cy = top + (bottom - top) / 2 - 10, R = Math.min((bottom - top) / 2 - 22, 130);
+      const SPIN = 80, cx = W / 2, cy = top + (bottom - top) / 2 - 10, R = Math.min((bottom - top) / 2 - 22, 130);
       // jedes Mal neu gemischt: nur Skins, die man noch nicht hat (bis zu 8 Felder)
       if (!this.radPool) { const free = SHOP_SKINS.concat(EXCLUSIVE_SKINS).filter(o => !m.skins.includes(o[0])); this.radPool = shuffle(free).slice(0, 8); this.radA = 0; }
       const pool = this.radPool, n = pool.length, seg = TAU / Math.max(1, n);
@@ -201,7 +201,7 @@ class Shop {
       all.forEach(([k, price], i) => {
         const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap), own = ownedAnimals().includes(k), cur = ACC().char === k;
         rrPath(c, x, y, cw, ch, 16); fs(c, cur ? '#d8f5e3' : '#fff', 3);
-        drawAnimal(c, k, x + cw / 2, y + ch * 0.66, Math.min(1.7, ch / 100), { look: DEFAULT_LOOK, t: this.t + i, cap: false });
+        drawAnimal(c, k, x + cw / 2, y + ch * 0.6, Math.min(1.6, ch / 115), { look: DEFAULT_LOOK, t: this.t + i, cap: false });
         txt(c, ANIMAL_NAMES[k], x + cw / 2, y + ch - 30, 15, '#3d2c1f', 'center', null);
         if (cur) txt(c, 'deine Figur', x + cw / 2, y + ch - 12, 12, '#2b9348', 'center', null);
         else if (own) txt(c, 'antippen = wählen', x + cw / 2, y + ch - 12, 11, '#6b5a48', 'center', null);
