@@ -240,7 +240,7 @@ const TUT_CHAPTERS = [
       if (t > 2.2 && t < 5) { const k = ease.back(clamp((t - 2.2) * 3, 0, 1)); c.save(); c.translate(300, 70); c.scale(k, k); claimBand(c, 'Danke für deine Hilfe!', 0, 0, 18); c.restore(); }
     } },
   { title: 'Deine Belohnung', dur: 8,
-    say: 'Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, ein paar Taler und der nächste Bereich geht auf. Und das Glücksrad dreht sich: Du gewinnst einen Skin – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank.',
+    say: 'Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, 300 Taler extra und der nächste Bereich geht auf. Mit den Talern kaufst du dir im Laden Skins – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Anziehen kannst du sie in der Garderobe.',
     draw(c, t, S) {
       c.fillStyle = BRAND.olive; c.fillRect(0, 0, TV.w, TV.h);
       const ang = t < 4 ? (1 - Math.pow(1 - t / 4, 3)) * TAU * 4 : TAU * 4;

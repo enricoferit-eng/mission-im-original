@@ -289,6 +289,7 @@ class Achievements {
 }
 
 // ---------- Freunde + Mehrspieler ----------
+const CLEAR_BONUS = 300;   // extra Taler, wenn ein Bereich geschafft ist (statt Skin)
 const HELP_COINS = { easy: 10, medium: 15, hard: 25 };   // je Person, der man hilft
 const MP_COINS = { win: 40, lose: 15, team: 50 };
 function needOnline(c, back) {

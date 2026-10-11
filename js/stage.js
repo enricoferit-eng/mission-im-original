@@ -1067,21 +1067,18 @@ class Play {
   stageClear() {
     const kind = this.kind, sp = this.sp;
     const newPiece = !sp.outfit; sp.outfit = true;
-    // Belohnung: ein zufälliger Skin dieser Stage + Stufe (bevorzugt einer, den man noch nicht hat)
-    const all = stageSkins(this.stage, this.diff), missing = all.filter(s => !sp.skins.includes(s));
-    const skin = pick(missing.length ? missing : all);
-    const newSkin = !sp.skins.includes(skin); if (newSkin) sp.skins.push(skin);
-    if (newSkin) DP(this.diff).equip = skin;
+    // Belohnung: statt eines Skins gibt es 300 Taler extra (Skins kauft man im Laden)
+    const skin = DP(this.diff).equip, newSkin = false; addCoins(CLEAR_BONUS, 'Bonus für den Bereich!');
     const usedJoker = (this.st.jokersUsed || 0) > 0;
     sp.clears++; sp.run = null;
     Save.write();
     stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
     { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
-    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, have: sp.skins.length, diff: this.diff }, again => {
+    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, bonus: CLEAR_BONUS, diff: this.diff }, again => {
       if (SG.finalExit && !again) { setScene(new StageMap(this.diff)); return; }
       setScene(new Play(this.diff, SG.finalExit ? { stage: this.stage } : { stage: this.stage, enter: { x: this.p.x, y: this.p.y, dir: this.p.dir } }));
     }); };
-    overlay = new WheelOverlay({ kind, diff: this.diff, stage: this.stage, skin, newSkin }, after);
+    after();
   }
   coinBurst(sx, sy) { FX.sparkle(sx, sy, 16, '#ffd23f'); }
   // ---- Eingabe ----

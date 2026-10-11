@@ -145,9 +145,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, ein paar Taler und der nächste Bereich geht auf. Und das Glücksrad dreht sich: Du gewinnst einen Skin – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank.",
-  "key": "d2c5d28b",
-  "clean": "Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, ein paar Taler und der nächste Bereich geht auf. Und das Glücksrad dreht sich: Du gewinnst einen Skin, manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Alle Skins findest du im Kleiderschrank."
+  "text": "Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, 300 Taler extra und der nächste Bereich geht auf. Mit den Talern kaufst du dir im Laden Skins – manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Anziehen kannst du sie in der Garderobe.",
+  "key": "2d33c82e",
+  "clean": "Für jeden geschafften Bereich bekommst du ein neues Teil für deine Uniform, 300 Taler extra und der nächste Bereich geht auf. Mit den Talern kaufst du dir im Laden Skins, manche sind selten, manche sogar legendär mit einer besonderen Fähigkeit. Anziehen kannst du sie in der Garderobe."
  },
  {
   "who": "erzaehler",

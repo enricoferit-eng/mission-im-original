@@ -41,6 +41,7 @@ function topBar(c, back) {
   if (back) roundBtn(c, 44, 44, 28, '#fff', 'back', back, '#ffd166');
   soundBtn(c, W - 40, 44);
 }
+function ownedSkins(a = ACC()) { const m = a && a.meta; return totalSkins(a) + ((m && m.skins) || []).length; }
 function totalSkins(a = ACC()) {
   let n = 0; if (!a) return 0;
   for (const d of ['easy', 'medium', 'hard']) { const st = (a.diff[d] && a.diff[d].stages) || {}; for (const k in st) n += st[k].skins.length; }
@@ -53,7 +54,7 @@ function accountChip(c, x, y, a, onTap) {
   ell(c, x + 26, y + 26, 20, 20); fs(c, '#d8f3dc', 2.5);
   drawCritter(c, AVATARS[a.avatar % 6], x + 26, y + 42, 0.62, 0, { noShadow: true });
   txt(c, a.name, x + 52, y + 19, 17, '#3d2c1f', 'left', null);
-  icon(c, 'hanger', x + 60, y + 38, 16); txt(c, totalSkins(a) + '/108', x + 72, y + 39, 13, '#8d5a3b', 'left', null);
+  icon(c, 'hanger', x + 60, y + 38, 16); txt(c, String(ownedSkins(a)), x + 72, y + 39, 13, '#8d5a3b', 'left', null);
   ell(c, x + w - 14, y + 14, 5, 5); c.fillStyle = Net.status(a).col; c.fill();
   if (onTap) UI.btn(x, y, w, 52, onTap);
   return w;
@@ -258,7 +259,7 @@ class Accounts {
         ell(c, x + cw / 2, y + 52, 36, 36); fs(c, '#d8f3dc', 3);
         drawCritter(c, AVATARS[a.avatar % 6], x + cw / 2, y + 82, 1.1, this.t + i, { noShadow: true });
         txt(c, a.name, x + cw / 2, y + 112, 17, '#3d2c1f', 'center', null);
-        icon(c, 'hanger', x + cw / 2 - 22, y + 134, 16); txt(c, totalSkins(a) + '/108', x + cw / 2 + 8, y + 135, 14, '#8d5a3b', 'center', null);
+        icon(c, 'hanger', x + cw / 2 - 22, y + 134, 16); txt(c, String(ownedSkins(a)), x + cw / 2 + 8, y + 135, 14, '#8d5a3b', 'center', null);
         if (a.admin) UI.btn(x, y, cw, ch, () => { if (a.device) { Save.data.current = id; Save.write(false); Sfx.play('win'); setScene(new Menu()); } else setScene(new LoginScene('admin')); });
         else UI.btn(x, y, cw, ch, () => { Save.data.current = id; Save.write(); Sfx.play('win'); Net.refresh(); setScene(new Menu()); });   // Gerät ist gemerkt: kein Code nötig
         roundBtn(c, x + cw - 18, y + 18, 15, '#fff', 'trash', () => askDelete(id, a));
@@ -930,7 +931,7 @@ class Trailer {
 
 // ---------- Kleiderschrank: gesammelte Skins je Stage + Stufe ansehen und anziehen ----------
 class Wardrobe {
-  constructor(diff) { this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff]; this.stage = 'spielplatz'; this.t = 0; }
+  constructor(diff) { this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff]; this.stage = 'laden'; this.t = 0; }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
@@ -940,33 +941,28 @@ class Wardrobe {
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
     icon(c, 'hanger', x + 34, y + 32, 34);
     const d = DP(this.diff);
-    txt(c, totalSkins() + '/108', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
-    // Stage-Reiter
-    const tw = (w - 30) / 7;
-    { const tx = x + 15 + 6 * tw, sel = this.stage === 'laden'; rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3); icon(c, 'shop', tx + tw / 2, y + 86, Math.min(30, tw * 0.5)); const m = META(); txt(c, (m ? m.skins.length : 0) + '/' + (SHOP_SKINS.length + EXCLUSIVE_SKINS.length), tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null); UI.btn(tx, y + 64, tw, 52, () => { this.stage = 'laden'; Sfx.play('tap'); }); }
-    STAGE_ORDER.forEach((id, i) => {
-      const tx = x + 15 + i * tw, sel = id === this.stage, open = OPEN_STAGES.includes(id);
-      rrPath(c, tx + 3, y + 64, tw - 6, 52, 14); fs(c, sel ? '#ffd166' : '#e9ecef', 3);
-      c.save(); if (!open) c.globalAlpha = 0.4; stageIcon(c, id, tx + tw / 2, y + 86, Math.min(34, tw * 0.55)); c.restore();
-      const n = SP(this.diff, id).skins.length; txt(c, n + '/6', tx + tw / 2, y + 108, 11, '#3d2c1f', 'center', null);
-      UI.btn(tx, y + 64, tw, 52, () => { this.stage = id; Sfx.play('tap'); });
-    });
-    const shop = this.stage === 'laden', sp = shop ? { skins: META().skins } : SP(this.diff, this.stage), allIds = shop ? SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)) : stageSkins(this.stage, this.diff);
+    txt(c, ownedSkins() + ' Skins', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
+    // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
+    this.stage = 'laden';
+    txt(c, 'Antippen zum Anziehen · Legendär → Selten → Normal', x + w / 2, y + 96, 14, '#6b5a48', 'center', null);
+    const earned = [].concat(...['easy', 'medium', 'hard'].map(dd => [].concat(...STAGE_ORDER.map(st => SP(dd, st).skins || [])))), shop = this.stage === 'laden', sp = { skins: META().skins.concat(earned) }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)).concat(earned))];
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(130, cw * 1.1) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
-    const ids = allIds;
+    const RK = { legend: 0, rare: 1, common: 2 }, ids = allIds.slice().sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
     // Laden-Skins: eine lange Liste zum Runterscrollen (Finger ziehen oder Mausrad)
     const top = y + 124, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
     this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
     if (shop) { c.save(); c.beginPath(); c.rect(x + 4, top - 2, w - 8, bot - top + 4); c.clip(); }
-    if (shop && !allIds.length) wrapLines(c, 'Noch keine Laden-Skins. Kauf welche im Laden, hol sie im Tages-Shop oder am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
+    if (shop && !allIds.length) wrapLines(c, 'Noch keine Skins. Kauf welche im Laden, hol sie im Tages-Shop oder am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
     ids.forEach((sid, i) => {
       const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10) - this.sc;
       if (shop && (cy > bot || cy + ch < top)) return;
       const own = sp.skins.includes(sid), eq = d.equip === sid;
-      rrPath(c, cx, cy, cw, ch, 18); fs(c, eq ? '#d8f5e3' : own ? '#fff' : '#dee2e6', 3.5, eq ? '#2b9348' : OL);
+      const rar = own && SKINS[sid] && RARITY[SKINS[sid].rarity], rcol = rar ? { legend: '#c9a227', rare: '#118ab2', common: OL }[SKINS[sid].rarity] : OL;
+      rrPath(c, cx, cy, cw, ch, 18); fs(c, eq ? '#d8f5e3' : own ? '#fff' : '#dee2e6', SKINS[sid] && SKINS[sid].rarity === 'legend' ? 4.5 : 3.5, eq ? '#2b9348' : rcol);
       if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
-      if (eq) icon(c, 'check', cx + cw - 20, cy + 20, 24, '#06d6a0');
+      if (rar) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
+      if (eq) icon(c, 'check', cx + cw - 20, cy + ch - 20, 24, '#06d6a0');
       if (own && shop) this.hits.push({ x: cx, y: cy, w: cw, h: ch, sid });
       else if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
       if (own && (!shop || cy + 6 > top)) skinInfoBtn(c, cx + 18, cy + 18, sid);
@@ -1074,8 +1070,7 @@ class ClearOverlay {
     const k = ease.back(clamp(t * 2, 0, 1));
     c.save(); c.translate(cx, cy); c.scale(k, k);
     ell(c, 0, 0, 92, 92); fs(c, '#fff7e6', 5);
-    drawAnimal(c, o.kind, 0, 60, 2.7, { t, cap: true, look: SKINS[o.skin] });
-    if (o.newSkin) { c.save(); c.translate(70, -70); c.rotate(0.3); starPath(c, 0, 0, 30, 15, 8); fs(c, '#ef476f', 3); txt(c, 'NEU', 0, 1, 14, '#fff', 'center', null); c.restore(); }
+    drawAnimal(c, o.kind, 0, 60, 2.7, { t, cap: true, look: SKINS[o.skin] || DEFAULT_LOOK });
     c.restore();
     for (let s = 0; s < 3; s++) { const kk = ease.back(clamp(t * 2 - 0.4 - s * 0.2, 0, 1)); c.save(); c.translate(cx + (s - 1) * 56, cy - 122 - (s === 1 ? 14 : 0)); c.scale(kk, kk); icon(c, 'star', 0, 0, s === 1 ? 54 : 44); c.restore(); }
     drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);
@@ -1084,8 +1079,7 @@ class ClearOverlay {
     c.save(); c.translate(cx, ry); c.scale(kk, kk);
     panel(c, -150, -34, 300, 76, '#fff7e6', 20);
     if (o.newPiece) { ell(c, -110, 4, 26, 26); fs(c, '#ffd166', 3); drawOutfitIcon(c, 'kappe', -110, 4, 34); }
-    icon(c, 'hanger', -40, 4, 32);
-    for (let i = 0; i < 6; i++) { ell(c, 0 + i * 22, 4, 8, 8); fs(c, i < o.have ? '#06d6a0' : '#dee2e6', 2); }
+    icon(c, 'coin', o.newPiece ? -30 : -70, 4, 40); txt(c, '+' + (o.bonus || 300) + ' Taler', o.newPiece ? 50 : 20, 5, 26, '#c9762f', 'center', null);
     c.restore();
     if (t > 1.4) {
       roundBtn(c, cx - 60, HH - 80, 34, '#06d6a0', 'retry', () => this.close(true));
