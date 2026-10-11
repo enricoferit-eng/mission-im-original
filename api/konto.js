@@ -20,7 +20,7 @@ const validCode = c => Array.isArray(c) && c.length === 4 && c.every(v => Number
 // Speicher: Supabase (Tabelle "kv"), wenn eingerichtet – sonst Vercel Blob
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 const SB = !!(SB_URL && SB_KEY);
-const sbH = extra => ({ apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', ...extra });
+const sbH = extra => ({ apikey: SB_KEY, ...(SB_KEY.startsWith('sb_') ? {} : { Authorization: 'Bearer ' + SB_KEY }), 'Content-Type': 'application/json', ...extra });   // neue Schlüssel (sb_secret_…) nur im apikey-Kopf
 async function sb(method, q, body, extra) {
   const r = await fetch(SB_URL + '/rest/v1/kv' + q, { method, headers: sbH(extra), body: body ? JSON.stringify(body) : undefined });
   if (!r.ok) throw new Error('supabase ' + r.status + ' ' + (await r.text()).slice(0, 200));
