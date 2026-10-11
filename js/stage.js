@@ -3,7 +3,8 @@
 // Aufbau nach den echten Fotos: Hackschnitzel-Boden, zweistöckiges Holz-Spielhaus mit Treppe und Rutsche,
 // Doppelschaukel am Haus, Raum unter dem Haus gesperrt. Oben Glashaus + Terrasse (Eingang), unten Zaun mit
 // Ausgangstor zum Parkplatz (Endlevel), rechts Zypressen.
-const WORLD_W = 1000, WORLD_H = 1400, CELL = 25, GW = 40, GH = 56;
+// Größe des aktuellen Bereichs (jeder Bereich hat seine eigene, echte Größe – wird in useStage gesetzt)
+let WORLD_W = 1000, WORLD_H = 1400, GW = 40, GH = 56; const CELL = 25, MAX_CELLS = 140 * 140;
 let HOUSE = { x: 550, y: 550, w: 200, h: 150, fz: 60 };   // Plattform (Obergeschoss) auf 60 Höhe
 let STAIRS = { x: 625, y: 700, w: 50, h: 125 };
 let SLIDE = { x0: 750, x1: 905, y0: 600, y1: 650 };
@@ -53,7 +54,7 @@ let SPOTS = [
 ];
 
 // ---------- Begehbarkeits-Raster (2 Ebenen: Boden + Spielhaus-Plattform; Treppe verbindet) ----------
-const G0 = new Uint8Array(GW * GH), G1 = new Uint8Array(GW * GH), ST = new Uint8Array(GW * GH), SL = new Uint8Array(GW * GH);
+const G0 = new Uint8Array(MAX_CELLS), G1 = new Uint8Array(MAX_CELLS), ST = new Uint8Array(MAX_CELLS), SL = new Uint8Array(MAX_CELLS);
 const cellIdx = (x, y) => { const cx = Math.floor(x / CELL), cy = Math.floor(y / CELL); return cx < 0 || cy < 0 || cx >= GW || cy >= GH ? -1 : cy * GW + cx; };
 function cellsIn(x0, y0, x1, y1, fn) {
   for (let cy = 0; cy < GH; cy++) for (let cx = 0; cx < GW; cx++) {
@@ -148,7 +149,7 @@ function findPath(sx, sy, sl, tx, ty, tl, exact) {
 // ---------- Boden einmal vorzeichnen ----------
 let GROUND = null;
 function buildGround() {
-  const Q = 1.25, cv2 = document.createElement('canvas'); cv2.width = WORLD_W * Q; cv2.height = WORLD_H * Q;
+  const Q = Math.min(1.25, Math.sqrt(2.2e6 / (WORLD_W * WORLD_H))), cv2 = document.createElement('canvas'); cv2.width = Math.round(WORLD_W * Q); cv2.height = Math.round(WORLD_H * Q);   // große Bereiche etwas gröber (Speicher)
   const g = cv2.getContext('2d'); g.scale(Q, Q); g.lineJoin = 'round';
   const R = mulberry32(4242);
   SG.ground(g, R);
@@ -242,6 +243,7 @@ function useStage(id) {
   SG = D;
   HOUSE = D.house || OFFMAP; STAIRS = D.stairs || OFFMAP; SLIDE = D.slide || OFFMAP; SWING = D.swing || OFFMAP;
   START = D.start; GATE = D.gate; NPC_DEFS = D.npcs; ALL_IDS = NPC_DEFS.map(n => n.id).concat(['gate']);
+  WORLD_W = D.w || 1000; WORLD_H = D.h || 1400; GW = Math.ceil(WORLD_W / CELL); GH = Math.ceil(WORLD_H / CELL);
   DECOR = D.decor; DECOR_BY = {}; DECOR.forEach(d => (DECOR_BY[d.id] = d)); SPOTS = D.spots;
   G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); D.grid(); solidDecor();
   GROUND = GROUND_CACHE[id] || null;

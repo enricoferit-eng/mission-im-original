@@ -205,7 +205,7 @@ function buildGridChalet() {
   cellsIn(40, HUT.y1 + 34, 960, 1330, i => (G0[i] = 1));                               // Garten
   cellsIn(455, 1320, 545, 1345, i => (G0[i] = 1));
   cellsIn(440, 150, 560, 240, i => (G0[i] = 0));                                         // Kamin-Vorplatz
-  for (let i = 0; i < G0.length; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120) / 80) ** 2 < 1) G0[i] = 0; }   // zugefrorener Teich
+  for (let i = 0; i < GW * GH; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120) / 80) ** 2 < 1) G0[i] = 0; }   // zugefrorener Teich
   for (const d of CDECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - (d.t === 'huettentafel' ? 34 : 4), d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(8, d.r - 6), i => (G0[i] = 0));

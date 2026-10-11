@@ -6,9 +6,14 @@
 //   Parkplatz    | Chalet     | (Straße)
 // Man läuft über Durchgänge nahtlos weiter; Nachbarbereiche sieht man am Rand schon. Ein Bereich ist erst offen,
 // wenn der vorige (Reihenfolge der Geschichte) geschafft ist.
-const TILE_W = WORLD_W, TILE_H = WORLD_H;
-const WORLD_POS = { kueche: [1, 0], gastraum: [1, 1], aussen: [1, 2], spielplatz: [0, 2], chalet: [1, 3], parkplatz: [0, 3] };
-const WORLD_FILL = { '0,0': 'wiese', '0,1': 'wiese', '2,0': 'strasse', '2,1': 'strasse', '2,2': 'strasse', '2,3': 'strasse' };
+// Jeder Bereich liegt an seiner echten Stelle (linke obere Ecke in Welt-Koordinaten) und hat seine eigene Größe.
+const WORLD_XY = { kueche: [1000, 0], gastraum: [1000, 1400], aussen: [1000, 2800], spielplatz: [0, 2800], chalet: [1000, 4200], parkplatz: [0, 4200] };
+const areaW = id => (STAGE_DEFS[id] && STAGE_DEFS[id].w) || 1000, areaH = id => (STAGE_DEFS[id] && STAGE_DEFS[id].h) || 1400;
+const offOf = (from, to) => [WORLD_XY[to][0] - WORLD_XY[from][0], WORLD_XY[to][1] - WORLD_XY[from][1]];
+function worldBox() { const ids = Object.keys(WORLD_XY); return { x0: Math.min(...ids.map(k => WORLD_XY[k][0])) - TERRAIN_PAD, y0: Math.min(...ids.map(k => WORLD_XY[k][1])) - TERRAIN_PAD, x1: Math.max(...ids.map(k => WORLD_XY[k][0] + areaW(k))) + TERRAIN_PAD, y1: Math.max(...ids.map(k => WORLD_XY[k][1] + areaH(k))) + TERRAIN_PAD }; }
+const TERRAIN_PAD = 1000;
+// Bereiche, die einander berühren oder sehr nah sind (für Vorab-Laden und Speicher)
+const nearAreas = id => Object.keys(WORLD_XY).filter(k => k !== id && WORLD_XY[k][0] < WORLD_XY[id][0] + areaW(id) + 400 && WORLD_XY[k][0] + areaW(k) > WORLD_XY[id][0] - 400 && WORLD_XY[k][1] < WORLD_XY[id][1] + areaH(id) + 400 && WORLD_XY[k][1] + areaH(k) > WORLD_XY[id][1] - 400);
 // Durchgänge: side = Seite von a; r = Bereich entlang der Kante; gate = dort steht das Boss-Tor von a
 const LINKS = [
   { a: 'kueche', side: 'bottom', b: 'gastraum', r: [565, 645], gate: true },
@@ -19,7 +24,6 @@ const LINKS = [
   { a: 'aussen', side: 'bottom', b: 'chalet', r: [925, 985], bar: 'garden' },
 ];
 const OPP = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
-const stageAt = (c, r) => Object.keys(WORLD_POS).find(k => WORLD_POS[k][0] === c && WORLD_POS[k][1] === r);
 function areaCleared(diff, id) { return SP(diff, id).clears > 0; }
 function areaUnlocked(diff, id) {
   if (isGameAdmin()) return true;
@@ -48,71 +52,46 @@ function carveLinks(id, diff) {
 }
 // Boden + Raster eines anderen Bereichs kurz "ausleihen"
 function withStage(id, fn) { const cur = SG && SG.id; useStage(id); try { fn(); } finally { if (cur) useStage(cur); } }
-const FILL_CACHE = {};
-function fillGround(kind) {
-  if (FILL_CACHE[kind]) return FILL_CACHE[kind];
-  const Q = 0.7, cv = document.createElement('canvas'); cv.width = TILE_W * Q; cv.height = TILE_H * Q; const g = cv.getContext('2d'); g.scale(Q, Q); const R = mulberry32(kind === 'wiese' ? 11 : 12);
-  lawn(g, 0, 0, TILE_W, TILE_H, R);
-  const tree = (x, y, rr, col) => { g.fillStyle = 'rgba(0,0,0,.18)'; ell(g, x + rr * 0.5, y + rr * 0.35, rr * 1.1, rr * 0.5); g.fill(); rrPath(g, x - 6, y - rr * 0.6, 12, rr * 0.7, 4); fs(g, '#8d5a3b', 2.5);
-    for (const [dx, dy, k] of [[-rr * 0.55, -rr * 1.0, 0.7], [rr * 0.55, -rr * 1.05, 0.72], [0, -rr * 1.45, 0.8]]) { ell(g, x + dx, y + dy, rr * k, rr * k * 0.9); fs(g, col, 2.5); }
-    ell(g, x - rr * 0.25, y - rr * 1.6, rr * 0.25, rr * 0.18); g.fillStyle = 'rgba(255,255,255,.18)'; g.fill(); };
-  const flowers = (x0, y0, w, h, n) => { for (let k = 0; k < n; k++) { const x = x0 + R() * w, y = y0 + R() * h; ell(g, x, y, 3.2, 3.2); g.fillStyle = ['#fff', '#ffd166', '#ef476f', '#c77dff'][k % 4]; g.fill(); } };
-  if (kind === 'strasse') {
-    // Dorfstraße wie in Köndringen: Hecke, Grünstreifen mit Bäumen, Gehweg, Straße, Gehweg, Häuser mit Gärten
-    g.fillStyle = '#2d6a4f'; g.fillRect(0, 0, 50, TILE_H); for (let y = 0; y < TILE_H; y += 34) { ell(g, 30, y + 17, 26, 20); fs(g, '#40916c', 2); }
-    flowers(60, 0, 130, TILE_H, 90);
-    for (let y = 80; y < TILE_H; y += 260) tree(130, y + 120, 44, '#52b788');
-    const side = (x) => { g.fillStyle = '#c9c1b4'; g.fillRect(x, 0, 60, TILE_H); g.strokeStyle = 'rgba(90,80,70,.3)'; g.lineWidth = 1.5; for (let y = 0; y < TILE_H; y += 30) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + 60, y); g.stroke(); } g.beginPath(); g.moveTo(x + 30, 0); g.lineTo(x + 30, TILE_H); g.stroke(); };
-    side(200); side(680);
-    g.fillStyle = '#5c6066'; g.fillRect(260, 0, 420, TILE_H); for (let i = 0; i < 5000; i++) { g.fillStyle = i % 2 ? '#646970' : '#55595f'; g.fillRect(260 + R() * 420, R() * TILE_H, 2, 2); }
-    g.fillStyle = '#adb5bd'; g.fillRect(256, 0, 6, TILE_H); g.fillRect(678, 0, 6, TILE_H);
-    g.fillStyle = '#f8f9fa'; g.fillRect(272, 0, 4, TILE_H); g.fillRect(664, 0, 4, TILE_H); for (let y = 0; y < TILE_H; y += 90) g.fillRect(468, y, 5, 46);
-    for (let y = 150; y < TILE_H; y += 400) { rrPath(g, 238, y - 4, 8, 8, 2); fs(g, '#495057', 1.5); line(g, 242, y, 300, y, 4, '#495057'); ell(g, 300, y, 10, 6); g.fillStyle = '#ffe066'; g.fill(); }
-    // Häuser gegenüber (von oben: Dächer mit First), dazwischen Gärten
-    for (let k = 0; k < 4; k++) { const y = 40 + k * 350, col = ['#c1121f', '#9c3d10', '#6c757d', '#b5541f'][k];
-      g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(784, y + 14, 200, 170);
-      polyPath(g, [[770, y], [980, y], [980, y + 170], [770, y + 170]]); fs(g, col, 3); line(g, 770, y + 85, 980, y + 85, 3, 'rgba(0,0,0,.35)', false);
-      for (let r = 0; r < 8; r++) line(g, 770, y + 10 + r * 20, 980, y + 10 + r * 20, 1, 'rgba(0,0,0,.12)', false);
-      rrPath(g, 920, y + 20, 22, 26, 3); fs(g, '#adb5bd', 2); flowers(760, y + 190, 220, 140, 20); tree(880, y + 320, 30, '#40916c'); }
-  } else {
-    // Wiese mit Feldweg, Obstbäumen, Blumen und einem Zaun
-    g.fillStyle = '#d4b483'; g.beginPath(); g.moveTo(0, 520); g.bezierCurveTo(300, 470, 650, 760, 1000, 690); g.lineTo(1000, 740); g.bezierCurveTo(650, 810, 300, 520, 0, 570); g.closePath(); g.fill();
-    flowers(0, 0, TILE_W, TILE_H, 260);
-    const T = [[140, 220], [420, 160], [760, 260], [220, 950], [560, 1050], [860, 980], [330, 1290], [720, 1320], [880, 520], [110, 760]];
-    T.forEach(([x, y], k) => tree(x, y, 40 + (k % 3) * 8, ['#40916c', '#52b788', '#2d6a4f'][k % 3]));
-    for (let x = 20; x < TILE_W; x += 60) { rrPath(g, x, 1376, 8, 22, 2); fs(g, '#a0673a', 1.5); } line(g, 0, 1382, TILE_W, 1382, 3, '#8d5a3b', false); line(g, 0, 1392, TILE_W, 1392, 3, '#8d5a3b', false);
-  }
-  return (FILL_CACHE[kind] = cv);
+// Gelände rund um alle Bereiche (Wiese, Straßen, Kreisel, L114 …) – ein großes, grobes Bild für die ganze Welt
+let TERRAIN = null;
+function terrainImage() {
+  if (TERRAIN) return TERRAIN;
+  const B = worldBox(), Q = 0.25, cv = document.createElement('canvas'); cv.width = Math.ceil((B.x1 - B.x0) * Q); cv.height = Math.ceil((B.y1 - B.y0) * Q);
+  const g = cv.getContext('2d'); g.scale(Q, Q); g.translate(-B.x0, -B.y0); paintTerrain(g, B, mulberry32(77));
+  TERRAIN = { cv, B }; return TERRAIN;
+}
+function terrainTree(g, x, y, rr, col) { g.fillStyle = 'rgba(0,0,0,.18)'; ell(g, x + rr * 0.5, y + rr * 0.35, rr * 1.1, rr * 0.5); g.fill(); rrPath(g, x - 6, y - rr * 0.6, 12, rr * 0.7, 4); fs(g, '#8d5a3b', 2.5);
+  for (const [dx, dy, k] of [[-rr * 0.55, -rr * 1.0, 0.7], [rr * 0.55, -rr * 1.05, 0.72], [0, -rr * 1.45, 0.8]]) { ell(g, x + dx, y + dy, rr * k, rr * k * 0.9); fs(g, col, 2.5); } }
+// wird im Luftbild-Layout überschrieben; Standard: Wiese
+function paintTerrain(g, B, R) {
+  g.fillStyle = '#7fb069'; g.fillRect(B.x0, B.y0, B.x1 - B.x0, B.y1 - B.y0);
+  for (let i = 0; i < (B.x1 - B.x0) * (B.y1 - B.y0) / 9000; i++) { const x = B.x0 + R() * (B.x1 - B.x0), y = B.y0 + R() * (B.y1 - B.y0); g.fillStyle = ['#6a994e', '#8cbf6f', '#a7c957'][i % 3]; g.fillRect(x, y, 6, 6); }
 }
 function worldPrepare(id, diff) {
-  const [c0, r0] = WORLD_POS[id] || [0, 0];
-  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const nb = stageAt(c0 + dx, r0 + dy); if (nb && !GROUND_CACHE[nb]) withStage(nb, () => buildGround()); }
+  for (const nb of nearAreas(id)) if (!GROUND_CACHE[nb] && areaUnlocked(diff, nb)) withStage(nb, () => buildGround());
 }
 // Nachbarn eines Play-Objekts: Böden, Deko, Tore, Figuren, Effekte
 function worldNeighbors(play) {
-  const id = play.stage, [c0, r0] = WORLD_POS[id];
+  const id = play.stage, near = nearAreas(id);
   // Speicher sparen: nur aktueller Bereich + direkte Nachbarn behalten
-  const keep = new Set([id]); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const nb = stageAt(c0 + dx, r0 + dy); if (nb) keep.add(nb); }
+  const keep = new Set([id].concat(near));
   for (const k in GROUND_CACHE) if (!keep.has(k)) delete GROUND_CACHE[k];
   for (const k in SPR) { const i = k.indexOf('_d_'); if (i > 0 && !keep.has(k.slice(0, i))) delete SPR[k]; }
   play.nb = []; play.nbExtras = [];
-  const cols = Object.values(WORLD_POS).map(v => v[0]).concat(Object.keys(WORLD_FILL).map(k => +k.split(',')[0])), rows = Object.values(WORLD_POS).map(v => v[1]).concat(Object.keys(WORLD_FILL).map(k => +k.split(',')[1]));
-  play.wb = { x0: (Math.min(...cols) - c0) * TILE_W, x1: (Math.max(...cols) - c0 + 1) * TILE_W, y0: (Math.min(...rows) - r0) * TILE_H, y1: (Math.max(...rows) - r0 + 1) * TILE_H };
-  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-    if (!dx && !dy) continue;
-    const sid = stageAt(c0 + dx, r0 + dy), fill = WORLD_FILL[(c0 + dx) + ',' + (r0 + dy)], ox = dx * TILE_W, oy = dy * TILE_H;
-    if (sid && !areaUnlocked(play.diff, sid)) { play.nb.push({ fog: sid, ox, oy }); continue; }   // noch nicht freigeschaltet: Nebel
-    if (sid) {
-      const N = { id: sid, ox, oy, D: STAGE_DEFS[sid] };
-      const run = SP(play.diff, sid).run, lay = run && run.layout;
-      N.npcs = N.D.npcs.filter(n => n.pos).map(n => { const p = n.pos[lay && lay[n.id] != null ? lay[n.id] : 0]; return { id: n.id, x: p[0], y: p[1], l: p[2] || 0, done: !!(run && run.done[n.id]) }; });
-      play.nb.push(N);
-      if (N.D.extras) {   // Effekte des Nachbarn (Dach, Lichter, Schnee ...), mit umgerechneter Spielerposition
-        const proxy = { get p() { return { x: play.p.x - ox, y: play.p.y - oy, level: 0 }; }, stage: sid, diff: play.diff };
-        let ex = null; withStage(sid, () => { ex = N.D.extras(proxy); });
-        play.nbExtras.push({ ex, ox, oy, id: sid });
-      }
-    } else if (fill) play.nb.push({ fill, ox, oy });
+  const B = worldBox(), [X0, Y0] = WORLD_XY[id];
+  play.wb = { x0: B.x0 + 600 - X0, x1: B.x1 - 600 - X0, y0: B.y0 + 600 - Y0, y1: B.y1 - 600 - Y0 };
+  for (const sid of near) {
+    const [ox, oy] = offOf(id, sid), w = areaW(sid), h = areaH(sid);
+    if (!areaUnlocked(play.diff, sid)) { play.nb.push({ fog: sid, ox, oy, w, h }); continue; }   // noch nicht freigeschaltet: Nebel
+    const N = { id: sid, ox, oy, w, h, D: STAGE_DEFS[sid] };
+    const run = SP(play.diff, sid).run, lay = run && run.layout;
+    N.npcs = N.D.npcs.filter(n => n.pos).map(n => { const p = n.pos[lay && lay[n.id] != null ? lay[n.id] : 0]; return { id: n.id, x: p[0], y: p[1], l: p[2] || 0, done: !!(run && run.done[n.id]) }; });
+    play.nb.push(N);
+    if (N.D.extras) {   // Effekte des Nachbarn (Dach, Lichter, Schnee ...), mit umgerechneter Spielerposition
+      const proxy = { get p() { return { x: play.p.x - ox, y: play.p.y - oy, level: 0 }; }, stage: sid, diff: play.diff };
+      let ex = null; withStage(sid, () => { ex = N.D.extras(proxy); });
+      play.nbExtras.push({ ex, ox, oy, id: sid, w, h });
+    }
   }
   if (!play.mp) carveLinks(id, play.diff);   // withStage hat das Raster neu gebaut
 }
@@ -123,39 +102,41 @@ Object.assign(Play.prototype, {
       if (!linkOpen(this.diff, E.L)) continue;
       const [r0, r1] = E.L.r, along = E.side === 'top' || E.side === 'bottom' ? p.x : p.y;
       if (along < r0 - 20 || along > r1 + 20) continue;
-      if ((E.side === 'bottom' && p.y > TILE_H - 16) || (E.side === 'top' && p.y < 16) || (E.side === 'left' && p.x < 16) || (E.side === 'right' && p.x > TILE_W - 16)) { this.crossTo(E); return true; }
+      if ((E.side === 'bottom' && p.y > WORLD_H - 16) || (E.side === 'top' && p.y < 16) || (E.side === 'left' && p.x < 16) || (E.side === 'right' && p.x > WORLD_W - 16)) { this.crossTo(E); return true; }
     }
     return false;
   },
   crossTo(E) {
-    const [c0, r0] = WORLD_POS[this.stage], [c1, r1] = WORLD_POS[E.to], ox = (c1 - c0) * TILE_W, oy = (r1 - r0) * TILE_H, p = this.p;
+    const [ox, oy] = offOf(this.stage, E.to), p = this.p, tw = areaW(E.to), th = areaH(E.to);
     let nx = p.x - ox, ny = p.y - oy;
-    if (E.side === 'bottom') ny = 24; if (E.side === 'top') ny = TILE_H - 24; if (E.side === 'right') nx = 24; if (E.side === 'left') nx = TILE_W - 24;
+    if (E.side === 'bottom') ny = 24; if (E.side === 'top') ny = th - 24; if (E.side === 'right') nx = 24; if (E.side === 'left') nx = tw - 24;
+    nx = clamp(nx, 24, tw - 24); ny = clamp(ny, 24, th - 24);
     Save.write(); overlay = null; Voice.stop();
     setScene(new Play(this.diff, { stage: E.to, enter: { x: nx, y: ny, dir: p.dir }, cam: { x: this.camX - ox, y: this.camY - oy }, joy: this.joy }));
   },
   tapOutside(w) {
-    if (w.x >= 0 && w.x <= TILE_W && w.y >= 0 && w.y <= TILE_H) return false;
-    const side = w.y > TILE_H ? 'bottom' : w.y < 0 ? 'top' : w.x < 0 ? 'left' : 'right';
+    if (w.x >= 0 && w.x <= WORLD_W && w.y >= 0 && w.y <= WORLD_H) return false;
+    const side = w.y > WORLD_H ? 'bottom' : w.y < 0 ? 'top' : w.x < 0 ? 'left' : 'right';
     const E = exitsOf(this.stage).filter(e => linkOpen(this.diff, e.L)).sort((a, b) => (a.side === side ? 0 : 1) - (b.side === side ? 0 : 1))[0];
     if (!E) { Sfx.play('bad'); return true; }
     const [r0, r1] = E.L.r, horiz = E.side === 'top' || E.side === 'bottom', al = clamp(horiz ? w.x : w.y, r0 + 10, r1 - 10);
-    const tx = horiz ? al : (E.side === 'left' ? 12 : TILE_W - 12), ty = horiz ? (E.side === 'top' ? 12 : TILE_H - 12) : al;
+    const tx = horiz ? al : (E.side === 'left' ? 12 : WORLD_W - 12), ty = horiz ? (E.side === 'top' ? 12 : WORLD_H - 12) : al;
     const path = findPath(this.p.x, this.p.y, this.p.level, tx, ty, 0, false);
     if (path) { this.p.path = path; this.p.target = null; this.tapMark = { x: tx, y: ty, l: 0, t: 0 }; }
     return true;
   },
   drawNbGrounds(c) {
+    { const T = terrainImage(), [X0, Y0] = WORLD_XY[this.stage]; c.drawImage(T.cv, T.B.x0 - X0, T.B.y0 - Y0, T.B.x1 - T.B.x0, T.B.y1 - T.B.y0); }   // Gelände unter allem
     for (const N of this.nb || []) {
-      if (!this.tileVisible(N.ox, N.oy)) continue;
+      if (!this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       if (N.fog) { drawFog(c, N.ox, N.oy, N.fog, this.t); continue; }
-      const img = N.fill ? fillGround(N.fill) : GROUND_CACHE[N.id];
-      if (img) c.drawImage(img, N.ox, N.oy, TILE_W, TILE_H);
+      const img = GROUND_CACHE[N.id];
+      if (img) c.drawImage(img, N.ox, N.oy, N.w, N.h);
     }
   },
-  tileVisible(ox, oy) {
+  tileVisible(ox, oy, w = 1000, h = 1400) {
     const z = this.zoom, hw = W / 2 / z, hh = H / 2 / z;
-    return ox < this.camX + hw + 300 && ox + TILE_W > this.camX - hw - 300 && oy < this.camY + hh + 400 && oy + TILE_H > this.camY - hh - 300;
+    return ox < this.camX + hw + 300 && ox + w > this.camX - hw - 300 && oy < this.camY + hh + 400 && oy + h > this.camY - hh - 300;
   },
   pushNb(c, L, t) {
     const z = this.zoom, vx0 = this.camX - W / 2 / z - 160, vx1 = this.camX + W / 2 / z + 160, vy0 = this.camY - H / 2 / z - 80, vy1 = this.camY + H / 2 / z + 320;
@@ -164,7 +145,7 @@ Object.assign(Play.prototype, {
     pushLinkBarriers(c, L, this.stage, 0, 0, this.diff, t);
     pushSigns(c, L, this.stage, this.diff, t);
     for (const N of this.nb || []) {
-      if (N.fill || N.fog || !this.tileVisible(N.ox, N.oy)) continue;
+      if (N.fog || !this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       const { ox, oy, D } = N, tr = f => () => { c.save(); c.translate(ox, oy); f(); c.restore(); };
       for (const d of D.decor) {
         const bb = BB_CACHE[N.id + '_d_' + d.id] || decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3] + 100)) continue;
@@ -177,7 +158,7 @@ Object.assign(Play.prototype, {
       pushLinkBarriers(c, L, N.id, ox, oy, this.diff, t);
     }
     for (const E of this.nbExtras || []) {
-      if (!this.tileVisible(E.ox, E.oy) || !E.ex.draw) continue;
+      if (!this.tileVisible(E.ox, E.oy, E.w, E.h) || !E.ex.draw) continue;
       const Lp = { push: o => L.push({ y: o.y + E.oy, f: () => { c.save(); c.translate(E.ox, E.oy); o.f(); c.restore(); } }) };
       E.ex.draw(c, Lp, (x, y) => x + E.ox > vx0 && x + E.ox < vx1 && y + E.oy > vy0 && y + E.oy < vy1, t);
     }
@@ -220,11 +201,11 @@ function pushPlaygroundProps(c, L, ox, oy, inView) {
 function pushLinkBarriers(c, L, sid, ox, oy, diff, t) {
   for (const Lk of LINKS) {
     if (Lk.a !== sid || Lk.gate || linkOpen(diff, Lk)) continue;
-    const [r0, r1] = Lk.r, m = (r0 + r1) / 2;
-    if (Lk.bar === 'garden') L.push({ y: TILE_H - 8 + oy, f: () => { c.save(); c.translate(ox, oy); drawGardenGate(c, m, TILE_H - 8, 0.8, 0, true, t, 'Chalet'); c.restore(); } });
-    else if (Lk.side === 'bottom') L.push({ y: TILE_H - 4 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedDoors(c, m, TILE_H - 4, r1 - r0 + 20, t); c.restore(); } });
+    const [r0, r1] = Lk.r, m = (r0 + r1) / 2, TW = areaW(sid), TH = areaH(sid);
+    if (Lk.bar === 'garden') L.push({ y: TH - 8 + oy, f: () => { c.save(); c.translate(ox, oy); drawGardenGate(c, m, TH - 8, 0.8, 0, true, t, 'Chalet'); c.restore(); } });
+    else if (Lk.side === 'bottom') L.push({ y: TH - 4 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedDoors(c, m, TH - 4, r1 - r0 + 20, t); c.restore(); } });
     else if (Lk.side === 'left') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, 14, r0 - 10, r1 + 10, t); c.restore(); } });
-    else if (Lk.side === 'right') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, TILE_W - 14, r0 - 10, r1 + 10, t); c.restore(); } });
+    else if (Lk.side === 'right') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, TW - 14, r0 - 10, r1 + 10, t); c.restore(); } });
   }
 }
 function drawLockedDoors(c, x, y, w, t) {
@@ -241,6 +222,7 @@ function drawLockedFence(c, x, y0, y1, t) {
 // Nebel über noch gesperrten Bereichen (die Welt wächst mit jedem geschafften Bereich)
 const STAGE_NAME = { gastraum: 'Innenbereich', kueche: 'Küche', aussen: 'Außenbereich', chalet: 'Chalet', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz' };
 function drawFog(c, ox, oy, id, t) {
+  const TILE_W = areaW(id), TILE_H = areaH(id);
   const g = c.createLinearGradient(ox, oy, ox + TILE_W, oy + TILE_H); g.addColorStop(0, '#dfe7ea'); g.addColorStop(1, '#c9d4d8');
   c.fillStyle = g; c.fillRect(ox - 2, oy - 2, TILE_W + 4, TILE_H + 4);
   for (let k = 0; k < 26; k++) { const x = ox + ((k * 173 + t * 12 * (k % 3 + 1)) % (TILE_W + 300)) - 150, y = oy + (k * 211) % TILE_H; ell(c, x, y, 140 + (k % 4) * 30, 70 + (k % 3) * 20); c.fillStyle = 'rgba(255,255,255,.45)'; c.fill(); }
@@ -254,10 +236,10 @@ function pushSigns(c, L, id, diff, t) {
     const [r0, r1] = E.L.r, m = (r0 + r1) / 2, open = linkOpen(diff, E.L), name = STAGE_NAME[E.to];
     let x, y, arrow;
     if (E.side === 'top') { x = r1 + 60; y = 230; arrow = '↑'; }
-    else if (E.side === 'bottom') { x = r0 - 70; y = TILE_H - 90; arrow = '↓'; }
+    else if (E.side === 'bottom') { x = r0 - 70; y = WORLD_H - 90; arrow = '↓'; }
     else if (E.side === 'left') { x = 110; y = r0 - 30; arrow = '←'; }
-    else { x = TILE_W - 110; y = r0 - 30; arrow = '→'; }
-    x = clamp(x, 90, TILE_W - 90);
+    else { x = WORLD_W - 110; y = r0 - 30; arrow = '→'; }
+    x = clamp(x, 90, WORLD_W - 90);
     L.push({ y, f: () => {
       c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 2, 16, 5); c.fill(); line(c, x, y, x, y - 70, 5, '#8d5a3b');
       c.font = `900 15px ${FONT}`; const w = Math.max(96, c.measureText(arrow + ' ' + name).width + 26);
@@ -301,29 +283,27 @@ class WorldMap {
   close() { if (overlay === this) overlay = null; }
   draw(c) {
     c.fillStyle = 'rgba(20,30,20,.6)'; c.fillRect(0, 0, W, H);
-    const cols = 3, rows = 4, pad = 16, top = 62, tileH = (H - top - pad * 2) / rows, tileW = Math.min((W - pad * 2 - 90) / cols, tileH * 1.7);
-    const gw = tileW * cols, x0 = (W - gw) / 2, y0 = top + 4;
     txt(c, 'Weltkarte', W / 2, 32, 24, '#fff', 'center', BRAND.olive);
     roundBtn(c, W - 40, 36, 22, '#ced4da', 'cross', () => this.close());
-    rrPath(c, x0 - 8, y0 - 8, gw + 16, tileH * rows + 16, 16); fs(c, '#fbf8f2', 3);
-    for (let r = 0; r < rows; r++) for (let col = 0; col < cols; col++) {
-      const id = stageAt(col, r), fill = WORLD_FILL[col + ',' + r], x = x0 + col * tileW, y = y0 + r * tileH;
-      c.save(); c.beginPath(); c.rect(x + 1, y + 1, tileW - 2, tileH - 2); c.clip();
-      if (fill) { const img = fillGround(fill); c.drawImage(img, x, y, tileW, tileH); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(x, y, tileW, tileH); }
-      else if (id) {
-        const open = areaUnlocked(this.play.diff, id), img = GROUND_CACHE[id];
-        if (img) c.drawImage(img, x, y, tileW, tileH); else { c.fillStyle = STAGE_COL[id] || '#ddd'; c.fillRect(x, y, tileW, tileH); stageIcon(c, id, x + tileW / 2, y + tileH * 0.42, Math.min(tileW, tileH) * 0.32); }
-        if (!open) { c.fillStyle = 'rgba(210,220,224,.92)'; c.fillRect(x, y, tileW, tileH); icon(c, 'lock', x + tileW / 2, y + tileH * 0.42, Math.min(tileW, tileH) * 0.3); }
-        const here = id === this.play.stage, cl = areaCleared(this.play.diff, id);
-        rrPath(c, x + 6, y + tileH - 30, tileW - 12, 24, 10); fs(c, here ? '#ffd166' : open ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.7)', 2);
-        txt(c, (cl ? '✓ ' : '') + STAGE_NAME[id], x + tileW / 2, y + tileH - 18, Math.min(14, tileW / 9), open ? '#35452F' : '#868e96', 'center', null);
-        if (here) { const p = this.play.p, px = x + p.x / TILE_W * tileW, py = y + p.y / TILE_H * tileH, pu = 1 + Math.sin(this.t * 6) * 0.2; ell(c, px, py, 9 * pu, 9 * pu); fs(c, '#ef476f', 2.5); }
-        if (open && !here) UI.btn(x, y, tileW, tileH, () => { this.close(); Sfx.play('win'); Save.write(); setScene(new Play(this.play.diff, { stage: id })); });
-        else if (!open) UI.btn(x, y, tileW, tileH, () => { Sfx.play('bad'); const i = STAGE_ORDER.indexOf(id); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_NAME[STAGE_ORDER[i - 1]], 'lock'); });
-      }
-      c.restore();
-      c.lineWidth = 2; c.strokeStyle = 'rgba(0,0,0,.25)'; c.strokeRect(x, y, tileW, tileH);
+    // ganze Anlage maßstabsgetreu wie auf dem Luftbild
+    const T = terrainImage(), B = T.B, pad = 14, top = 62, aw = W - pad * 2 - 80, ah = H - top - pad, sc = Math.min(aw / (B.x1 - B.x0), ah / (B.y1 - B.y0));
+    const mw = (B.x1 - B.x0) * sc, mh = (B.y1 - B.y0) * sc, mx = (W - mw) / 2, my = top + (ah - mh) / 2, X = wx => mx + (wx - B.x0) * sc, Y = wy => my + (wy - B.y0) * sc;
+    rrPath(c, mx - 6, my - 6, mw + 12, mh + 12, 14); fs(c, '#fbf8f2', 3);
+    c.save(); c.beginPath(); c.rect(mx, my, mw, mh); c.clip(); c.drawImage(T.cv, mx, my, mw, mh);
+    for (const id of Object.keys(WORLD_XY)) {
+      const [wx, wy] = WORLD_XY[id], x = X(wx), y = Y(wy), tw = areaW(id) * sc, th = areaH(id) * sc;
+      const open = areaUnlocked(this.play.diff, id), img = GROUND_CACHE[id], here = id === this.play.stage, cl = areaCleared(this.play.diff, id);
+      if (img) c.drawImage(img, x, y, tw, th); else { c.fillStyle = STAGE_COL[id] || '#ddd'; c.fillRect(x, y, tw, th); stageIcon(c, id, x + tw / 2, y + th * 0.42, Math.min(tw, th) * 0.3); }
+      if (!open) { c.fillStyle = 'rgba(210,220,224,.92)'; c.fillRect(x, y, tw, th); icon(c, 'lock', x + tw / 2, y + th * 0.42, Math.min(tw, th) * 0.3); }
+      c.lineWidth = here ? 4 : 2; c.strokeStyle = here ? '#ffd166' : 'rgba(0,0,0,.35)'; c.strokeRect(x, y, tw, th);
+      const lab = (cl ? '✓ ' : '') + STAGE_NAME[id]; c.font = `900 ${Math.max(10, Math.min(14, tw / 8))}px ${FONT}`; const lw = c.measureText(lab).width + 14;
+      rrPath(c, x + tw / 2 - lw / 2, y + th - 26, lw, 20, 9); fs(c, here ? '#ffd166' : open ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.7)', 1.5);
+      txt(c, lab, x + tw / 2, y + th - 15, Math.max(10, Math.min(14, tw / 8)), open ? '#35452F' : '#868e96', 'center', null);
+      if (here) { const p = this.play.p, pu = 1 + Math.sin(this.t * 6) * 0.2; ell(c, x + p.x * sc, y + p.y * sc, 8 * pu, 8 * pu); fs(c, '#ef476f', 2.5); }
+      if (open && !here) UI.btn(x, y, tw, th, () => { this.close(); Sfx.play('win'); Save.write(); setScene(new Play(this.play.diff, { stage: id })); });
+      else if (!open) UI.btn(x, y, tw, th, () => { Sfx.play('bad'); const i = STAGE_ORDER.indexOf(id); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_NAME[STAGE_ORDER[i - 1]], 'lock'); });
     }
+    c.restore();
   }
 }
 {
