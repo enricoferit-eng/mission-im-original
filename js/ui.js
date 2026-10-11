@@ -941,28 +941,35 @@ class Wardrobe {
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
     icon(c, 'hanger', x + 34, y + 32, 34);
     const d = DP(this.diff);
-    txt(c, ownedSkins() + ' Skins', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
+    txt(c, '', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
-    txt(c, 'Antippen zum Anziehen · Legendär → Selten → Normal', x + w / 2, y + 96, 14, '#6b5a48', 'center', null);
+    txt(c, 'Antippen zum Anziehen · Legendär → Selten → Normal', x + w / 2, y + 33, 14, '#6b5a48', 'center', null);
     const earned = [].concat(...['easy', 'medium', 'hard'].map(dd => [].concat(...STAGE_ORDER.map(st => SP(dd, st).skins || [])))), shop = this.stage === 'laden', sp = { skins: META().skins.concat(earned) }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)).concat(earned))];
-    const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(130, cw * 1.1) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
-    const RK = { legend: 0, rare: 1, common: 2 }, ids = allIds.slice().sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
+    const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
+    const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
+    const RK = { legend: 0, rare: 1, common: 2 }, ids = [...best.values()].sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
     // Laden-Skins: eine lange Liste zum Runterscrollen (Finger ziehen oder Mausrad)
-    const top = y + 124, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
+    const top = y + 60, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
     this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
     if (shop) { c.save(); c.beginPath(); c.rect(x + 4, top - 2, w - 8, bot - top + 4); c.clip(); }
     if (shop && !allIds.length) wrapLines(c, 'Noch keine Skins. Kauf welche im Laden, hol sie im Tages-Shop oder am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
     ids.forEach((sid, i) => {
-      const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 128 + Math.floor(i / cols) * (ch + 10) - this.sc;
+      const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 64 + Math.floor(i / cols) * (ch + 10) - this.sc;
       if (shop && (cy > bot || cy + ch < top)) return;
       const own = sp.skins.includes(sid), eq = d.equip === sid;
       const rar = own && SKINS[sid] && RARITY[SKINS[sid].rarity], rcol = rar ? { legend: '#c9a227', rare: '#118ab2', common: OL }[SKINS[sid].rarity] : OL;
       rrPath(c, cx, cy, cw, ch, 18); fs(c, eq ? '#d8f5e3' : own ? '#fff' : '#dee2e6', SKINS[sid] && SKINS[sid].rarity === 'legend' ? 4.5 : 3.5, eq ? '#2b9348' : rcol);
-      if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
+      if (own && shop) {   // Figur, Name und Fähigkeit
+        const sk = SKINS[sid] || {};
+        drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.6, Math.min(1.5, ch / 120), { look: sk, cap: true, t: this.t + i });
+        txt(c, sk.name || '', cx + cw / 2, cy + ch - 34, cw < 110 ? 10 : 12, '#3d2c1f', 'center', null);
+        if (sk.ability) { const A = ABILITIES[sk.ability], lv = skinLevel(sk); rrPath(c, cx + 5, cy + ch - 24, cw - 10, 19, 9); fs(c, '#ffd60a', 1.5); txt(c, A.name + ' ' + '★'.repeat(lv), cx + cw / 2, cy + ch - 14, cw < 110 ? 9 : 10, BRAND.ink, 'center', null); }
+        else txt(c, 'keine Fähigkeit', cx + cw / 2, cy + ch - 14, 9, '#adb5bd', 'center', null);
+      } else if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
       if (rar) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
-      if (eq) icon(c, 'check', cx + cw - 20, cy + ch - 20, 24, '#06d6a0');
+      if (eq) icon(c, 'check', cx + cw - 18, cy + 44, 24, '#06d6a0');
       if (own && shop) this.hits.push({ x: cx, y: cy, w: cw, h: ch, sid });
       else if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
       if (own && (!shop || cy + 6 > top)) skinInfoBtn(c, cx + 18, cy + 18, sid);
