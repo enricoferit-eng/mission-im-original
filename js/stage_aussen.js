@@ -98,7 +98,6 @@ const ADECOR = [
   { id: 'kugel1', t: 'kugel', x: 520, y: 548, r: 14, anim: true },
   { id: 'kugel2', t: 'kugel', x: 880, y: 600, r: 14, anim: true },
   { id: 'brunnen', t: 'brunnen', x: 640, y: 700, r: 46, bb: [560, 490, 160, 220] },
-  { id: 'schirmL1', t: 'schirmlila', x: 120, y: 520, bb: [40, 380, 160, 150] },
   { id: 'baum4', t: 'laubbaum', x: 180, y: 1120, r: 34, bb: [60, 930, 240, 200] },
   { id: 'baum5', t: 'laubbaum', x: 380, y: 1300, r: 30, bb: [260, 1110, 240, 200] },
   { id: 'brunnen2', t: 'kissenbox', x: 300, y: 830, r: 28, bb: [250, 760, 100, 70] },
@@ -312,10 +311,10 @@ STAGE_DEFS.aussen = {
     gateAsk: 'Das Gartentor klemmt! Bring mir diese Sachen, dann geht es auf und du kommst zum Spielplatz.',
     search: 'Schau in Blumentöpfe und unter Tische – dann tippe auf die Lupe!' },
   pools: {
-    easy: ['schirme', 'wespen', 'tauben', 'werfen', 'kissen', 'giessen', 'fegen', 'limo_mix', 'eisbecher_r', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color', 'pop'],
-    puzzle: ['tauben', 'limo_mix', 'eisbecher_r', 'pipes', 'lights', 'pattern', 'diff', 'mirror', 'rotimg', 'nextrow', 'count', 'puzzle', 'maze', 'oddone', 'pairs', 'dials'],
-    std: ['schirme', 'wespen', 'werfen', 'kissen', 'collect'],
-    sp: ['werfen', 'kissen', 'balance_walk', 'run'],
+    easy: ['schmetterlinge', 'sprenger', 'schirme', 'wespen', 'tauben', 'werfen', 'kissen', 'giessen', 'fegen', 'limo_mix', 'eisbecher_r', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color', 'pop'],
+    puzzle: ['sprenger', 'tauben', 'limo_mix', 'eisbecher_r', 'pipes', 'lights', 'pattern', 'diff', 'mirror', 'rotimg', 'nextrow', 'count', 'puzzle', 'maze', 'oddone', 'pairs', 'dials'],
+    std: ['schmetterlinge', 'schirme', 'wespen', 'werfen', 'kissen', 'collect'],
+    sp: ['schmetterlinge', 'werfen', 'kissen', 'balance_walk', 'run'],
     hard: ['jump', 'platform', 'slide'],
   },
   extras(play) {

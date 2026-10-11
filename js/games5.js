@@ -312,7 +312,7 @@ GAMES.einparken = { make(env) {
       fin.tick(dt);
     },
     draw(c) {
-      asphaltBg(c, t); txtGot(c, got, need, '#fff');
+      asphaltBg(c, t); txtGot(c, got, need);
       line(c, 50, 70, 350, 70, 4, '#f8f9fa', false); for (let i = 0; i <= 5; i++) line(c, 50 + i * 60, 70, 50 + i * 60, 170, 4, '#f8f9fa', false);
       slots.forEach(s => { if (!s.free) drawCar(c, s.x, 120, 0, s.col); else { txt(c, 'P', s.x, 120, 30, 'rgba(255,255,255,.5)', 'center', null); } });
       line(c, 0, 230, 400, 230, 3, 'rgba(255,255,255,.4)', false); for (let x = 0; x < 400; x += 50) line(c, x, 300, x + 26, 300, 3, '#f8f9fa', false);
@@ -346,7 +346,7 @@ GAMES.pumpen = { make(env) {
       fin.tick(dt);
     },
     draw(c) {
-      asphaltBg(c, t); txtGot(c, got, need, '#fff');
+      asphaltBg(c, t); txtGot(c, got, need);
       const tire = got / need, R = 70 + tire * 14;
       // Fahrrad
       ell(c, 110, 380, R, R); fs(c, '#212529', 6 + tire * 4); ell(c, 110, 380, R - 12, R - 12); fs(c, null, 2, '#adb5bd'); for (let k = 0; k < 8; k++) { const a = k * TAU / 8 + t * 0.2; line(c, 110, 380, 110 + Math.cos(a) * (R - 12), 380 + Math.sin(a) * (R - 12), 1.5, '#adb5bd', false); }
@@ -401,7 +401,7 @@ GAMES.bus = { make(env) {
       c.fillStyle = '#ced4da'; c.fillRect(0, 380, GAME_W, 140); c.fillRect(0, 0, GAME_W, LY(lanes - 1) - 40);
       for (let k = 0; k < lanes - 1; k++) for (let x = 0; x < 400; x += 50) line(c, x, LY(k) - 35, x + 26, LY(k) - 35, 3, '#f8f9fa', false);
       for (let k = 0; k < Math.max(1, lanes * 2); k++) rrPath(c, 176, LY(0) + 40 - k * 35, 48, 18, 2), c.fillStyle = 'rgba(255,255,255,.75)', c.fill();
-      txtGot(c, got, need, '#fff');
+      txtGot(c, got, need);
       // Bus oben
       c.save(); c.translate(bus.x, LY(lanes - 1) - 96); rrPath(c, -140, -40, 280, 70, 14); fs(c, '#ffd166', 3); for (let k = 0; k < 5; k++) { rrPath(c, -126 + k * 50, -30, 40, 26, 5); fs(c, '#a5d8ff', 2); }
       const op = bus.state === 'open' ? 1 : 0; rrPath(c, -20 - op * 16, -6, 40 + op * 32, 36, 4); fs(c, op ? '#343a40' : '#fff3bf', 2.5); ell(c, -100, 30, 14, 14); fs(c, '#212529', 2.5); ell(c, 100, 30, 14, 14); fs(c, '#212529', 2.5); c.restore();

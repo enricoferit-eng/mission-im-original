@@ -625,6 +625,66 @@
  },
  {
   "who": "erzaehler",
+  "text": "Schau dir das Rezept oben an. Tippe dann die Zutaten in der richtigen Reihenfolge an – sie fallen in den Topf.",
+  "key": "ed12be9b",
+  "clean": "Schau dir das Rezept oben an. Tippe dann die Zutaten in der richtigen Reihenfolge an, sie fallen in den Topf."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Der Koch wirft Essen hoch. Schieb die Pfanne mit dem Finger hin und her und fang es auf. Nichts Angebranntes fangen!",
+  "key": "d4016d7d",
+  "clean": "Der Koch wirft Essen hoch. Schieb die Pfanne mit dem Finger hin und her und fang es auf. Nichts Angebranntes fangen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Auf den Tischen gehen Kerzen aus. Tippe eine Kerze an, dann brennt sie wieder.",
+  "key": "64291631",
+  "clean": "Auf den Tischen gehen Kerzen aus. Tippe eine Kerze an, dann brennt sie wieder."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jeder Gast hat eine Nummer. Zieh ihn an den Tisch mit derselben Nummer.",
+  "key": "6d892908",
+  "clean": "Jeder Gast hat eine Nummer. Zieh ihn an den Tisch mit derselben Nummer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben siehst du eine Farbe. Tippe nur die Schmetterlinge in dieser Farbe an – und lass die Bienen in Ruhe!",
+  "key": "12038665",
+  "clean": "Oben siehst du eine Farbe. Tippe nur die Schmetterlinge in dieser Farbe an, und lass die Bienen in Ruhe!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh mit dem Finger, dann spritzt der Rasensprenger dorthin. Mach alle braunen Stellen wieder grün.",
+  "key": "22ae4bf6",
+  "clean": "Zieh mit dem Finger, dann spritzt der Rasensprenger dorthin. Mach alle braunen Stellen wieder grün."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Schneekugel schwingt hin und her. Tippe, damit sie fällt – genau oben auf die andere Kugel!",
+  "key": "e8e2b354",
+  "clean": "Die Schneekugel schwingt hin und her. Tippe, damit sie fällt, genau oben auf die andere Kugel!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh jedes Geschenk in den Sack, der die gleiche Farbe hat wie die Schleife.",
+  "key": "e6f2851d",
+  "clean": "Zieh jedes Geschenk in den Sack, der die gleiche Farbe hat wie die Schleife."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben steht, was das Parken kostet. Tippe die Münzen an, bis es genau passt. Zu viel? Dann fängst du neu an.",
+  "key": "79d76d00",
+  "clean": "Oben steht, was das Parken kostet. Tippe die Münzen an, bis es genau passt. Zu viel? Dann fängst du neu an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch mit dem gelben Schwamm über die Dreckflecken, bis das Auto wieder sauber ist.",
+  "key": "14a044a2",
+  "clean": "Wisch mit dem gelben Schwamm über die Dreckflecken, bis das Auto wieder sauber ist."
+ },
+ {
+  "who": "erzaehler",
   "text": "Probier es einfach aus!",
   "key": "8c9aba00",
   "clean": "Probier es einfach aus!"

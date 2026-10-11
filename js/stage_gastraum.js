@@ -111,7 +111,6 @@ function drawGroundGastraum(g, R) {
   for (let y = 0, k = 0; y < 150; y += 16, k++) for (let x = 740 + (k % 2) * 14; x < 1000; x += 28) { rrPath(g, x + 1, y + 1, 26, 14, 4); g.fillStyle = ['#d8dde2', '#c5ccd3', '#e1e5e9'][(x + k) % 3]; g.fill(); }
   g.fillStyle = '#74c69d'; g.fillRect(740, 0, 260, 26); for (let x = 744; x < 1000; x += 6) line(g, x, 26, x + 2, 18, 1.5, '#40916c', false);
   for (let x = 744; x <= 1000; x += 16) line(g, x, 26, x, 64, 2.5, '#868e96', false); line(g, 740, 26, 1000, 26, 5, '#6c757d'); line(g, 740, 64, 1000, 64, 3, '#868e96', false);
-  for (let k = 0; k < 6; k++) { const x = 770 + k * 34, y = 92 + Math.sin(k) * 6; starPath(g, x, y, 7, 3); fs(g, '#f8f9fa', 1.5); }
   // Glaswände links/rechts mit Stahlstützen
   glassWall(g, 0, 150, 52, 1190, R, 0); glassWall(g, 948, 150, 52, 1190, R, 1);
   for (let y = 150; y < 1340; y += 238) { steelPost(g, 50, y, y + 60); steelPost(g, 950, y, y + 60); }
@@ -355,10 +354,10 @@ STAGE_DEFS.gastraum = {
     gateAsk: 'Die Glastür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst auf die Terrasse.',
     search: 'Schau unter Tische und hinter Palmen – dann tippe auf die Lupe!' },
   pools: {
-    easy: ['servietten', 'tablett', 'fliegen', 'musikbox', 'einschenken', 'sonnenstrahl', 'tisch', 'bestellung', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color', 'pop', 'giessen'],
-    puzzle: ['sonnenstrahl', 'servietten', 'bestellung', 'tisch', 'sequence', 'diff', 'lights', 'mirror', 'rotimg', 'pattern', 'pairs', 'nextrow', 'count', 'puzzle', 'maze', 'shell'],
-    std: ['tablett', 'fliegen', 'einschenken', 'musikbox', 'collect'],
-    sp: ['tablett', 'musikbox', 'run', 'balance_walk'],
+    easy: ['tischnummer', 'teelichter', 'servietten', 'tablett', 'fliegen', 'musikbox', 'einschenken', 'sonnenstrahl', 'tisch', 'bestellung', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color', 'pop', 'giessen'],
+    puzzle: ['tischnummer', 'sonnenstrahl', 'servietten', 'bestellung', 'tisch', 'sequence', 'diff', 'lights', 'mirror', 'rotimg', 'pattern', 'pairs', 'nextrow', 'count', 'puzzle', 'maze', 'shell'],
+    std: ['teelichter', 'tablett', 'fliegen', 'einschenken', 'musikbox', 'collect'],
+    sp: ['teelichter', 'tablett', 'musikbox', 'run', 'balance_walk'],
     hard: ['jump', 'platform', 'run'],
   },
   extras(play) {

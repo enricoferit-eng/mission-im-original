@@ -175,11 +175,8 @@ const KDRAW = {
     counterBlock(c, d.x0, d.y0, d.w, d.h);
     for (let k = 0; k < 5; k++) { rrPath(c, d.x0 + 14 + (k % 2) * 80, d.y0 + 30 + Math.floor(k / 2) * 70, 70, 54, 4); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + 18 + (k % 2) * 80, d.y0 + 34 + Math.floor(k / 2) * 70, 62, 46, 3); c.fillStyle = ['#e63946', '#95d5b2', '#f6d38d', '#6c584c', '#ffd166'][k]; c.fill(); }   // Kühltheke mit Zutaten
     rrPath(c, d.x0 + 20, d.y0 + 250, 140, 100, 6); fs(c, '#f8f9fa', 2.5); line(c, d.x0 + 60, d.y0 + 290, d.x0 + 120, d.y0 + 280, 3, '#ffd166');   // Schneidbrett mit Messer
-    // Wärmebrücke (Regal darüber) + Bildschirm
+    // Wärmebrücke (Regal darüber)
     rrPath(c, d.x0 - 6, d.y0 - 60, d.w + 12, 14, 4); fs(c, '#dee2e6', 3); line(c, d.x0 + 4, d.y0 - 46, d.x0 + 4, d.y0 + 10, 4, '#adb5bd'); line(c, d.x0 + d.w - 4, d.y0 - 46, d.x0 + d.w - 4, d.y0 + 10, 4, '#adb5bd');
-    for (let k = 0; k < 3; k++) { ell(c, d.x0 + 30 + k * 60, d.y0 - 72, 18, 7); fs(c, '#fff', 2); }
-    rrPath(c, d.x0 + d.w - 70, d.y0 - 120, 76, 52, 6); fs(c, '#212529', 3); rrPath(c, d.x0 + d.w - 64, d.y0 - 114, 64, 40, 3); c.fillStyle = '#2b9348'; c.fill(); for (let k = 0; k < 4; k++) line(c, d.x0 + d.w - 58, d.y0 - 106 + k * 8, d.x0 + d.w - 20 - (k % 2) * 14, d.y0 - 106 + k * 8, 2, 'rgba(255,255,255,.7)', false);
-    rrPath(c, d.x0 + 10, d.y0 - 104, 60, 30, 10); fs(c, '#d4a373', 2.5);   // Brotkorb
   },
   salat(c, d) {
     counterBlock(c, d.x0, d.y0, d.w, d.h);
@@ -290,10 +287,10 @@ STAGE_DEFS.kueche = {
     gateAsk: 'Die Schwingtür klemmt! Bring mir diese Sachen, dann geht sie auf und du kommst in den Innenbereich.',
     search: 'Schau in Töpfe, auf Wagen und hinter Kühlschränke – dann tippe auf die Lupe!' },
   pools: {
-    easy: ['schnippeln', 'pfannkuchen', 'eier', 'kneten', 'ruehren', 'ueberkochen', 'kuehlpacken', 'pizzaofen', 'belegen', 'spuelen', 'bestellung', 'tisch', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color'],
-    puzzle: ['kuehlpacken', 'eier', 'belegen', 'bestellung', 'hanoi', 'pipes', 'lights', 'pairs', 'sequence', 'dials', 'balance', 'diff', 'count', 'pattern', 'sort'],
-    std: ['schnippeln', 'pfannkuchen', 'ueberkochen', 'pizzaofen', 'collect'],
-    sp: ['ruehren', 'kneten', 'spuelen', 'run'],
+    easy: ['rezept', 'schnippeln', 'pfannkuchen', 'eier', 'kneten', 'ruehren', 'ueberkochen', 'kuehlpacken', 'pizzaofen', 'belegen', 'spuelen', 'bestellung', 'tisch', 'memory', 'sort', 'size_row', 'count_easy', 'cups', 'stack', 'findall', 'shadow', 'trace', 'maze_easy', 'connect', 'color'],
+    puzzle: ['rezept', 'kuehlpacken', 'eier', 'belegen', 'bestellung', 'hanoi', 'pipes', 'lights', 'pairs', 'sequence', 'dials', 'balance', 'diff', 'count', 'pattern', 'sort'],
+    std: ['auffangen', 'schnippeln', 'pfannkuchen', 'ueberkochen', 'pizzaofen', 'collect'],
+    sp: ['auffangen', 'ruehren', 'kneten', 'spuelen', 'run'],
     hard: ['jump', 'slide', 'platform'],
   },
   extras(play) {   // Dampf über den Töpfen, flackernder Ofen

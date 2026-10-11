@@ -521,7 +521,7 @@ const GAMES = {};
 // ===== Memory (Leicht: Sandförmchen, Mittel/Schwer: Paare mit mehr Karten) =====
 function memoryMake(env, easy) {
   const r = env.r, n = easy ? 6 : env.hard ? 8 : 6, cols = 4, rows = (2 * n) / cols;
-  const faces = shuffle(FOOD_IDS, r).slice(0, n);
+  const faces = shuffle(MOT(), r).slice(0, n);
   const cw = 86, ch = Math.min(140, 470 / rows - 12);
   const deck = shuffle([...Array(n).keys(), ...Array(n).keys()], r).map((k, i) => ({ k, f: 0, open: false, done: false, x: ((i % cols) + 0.5) * 100, y: 40 + (Math.floor(i / cols) + 0.5) * (470 / rows) }));
   let sel = [], wait = 0, tries = 0, T = 0, matches = 0; const fin = finisher(env);
@@ -577,7 +577,7 @@ GAMES.pairs = { make: env => memoryMake(env, false) };
 
 // ===== LEICHT (Katze): bekannte Kinderspiel-Formate, kein Scheitern =====
 GAMES.connect = { make(env) {
-  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 5);
+  const r = env.r, ids = shuffle(MOT(), r).slice(0, 5);
   const L = ids.map((id, i) => ({ id, x: 80, y: 60 + i * 100, con: false }));
   const R = shuffle(ids, r).map((id, i) => ({ id, x: 320, y: 60 + i * 100, by: 60 + i * 100, con: false }));
   const links = []; let drag = null, px = 0, py = 0, T = 0; const fin = finisher(env);
@@ -635,7 +635,7 @@ GAMES.pop = { make(env) {
 } };
 
 GAMES.puzzle = { make(env) {
-  const r = env.r, img = makeImage(pick(['eisclown', 'eisbecher', 'kuchen', 'glashaus', 'palme', 'flammkuchen'], r), 210);
+  const r = env.r, img = makeImage(pick(areaPick(['eisclown', 'eisbecher', 'kuchen', 'glashaus', 'palme', 'flammkuchen']), r), 210);
   const bx = 95, by = 28, P = 70;
   const tray = shuffle([[50, 330], [125, 300], [200, 335], [275, 300], [350, 330], [85, 430], [165, 455], [245, 430], [325, 455]], r);
   const pcs = [...Array(9).keys()].map(k => {
@@ -699,7 +699,7 @@ GAMES.stack = { make(env) {
 } };
 
 GAMES.shadow = { make(env) {
-  const r = env.r, ids = shuffle(FOOD_IDS, r).slice(0, 5), xs = [44, 122, 200, 278, 356];
+  const r = env.r, ids = shuffle(MOT(), r).slice(0, 5), xs = [44, 122, 200, 278, 356];
   const sh = ids.map((id, i) => ({ id, x: xs[i], y: 150 }));
   const pos = shuffle(xs, r);
   const its = ids.map((id, i) => ({ id, x: pos[i], y: 400, hx: pos[i], hy: 400, hw: 36, hh: 36, locked: false, tx: sh[i].x, ty: sh[i].y }));
@@ -880,7 +880,7 @@ GAMES.pipes = { make(env) {
       const sy = gy + sr * ts + ts / 2, ey = gy + er * ts + ts / 2;
       line(c, 6, sy, gx, sy, ts * 0.26, '#4dabf7'); ell(c, 18, sy, 18, 22); fs(c, '#ffd60a', 4);
       line(c, gx + 300, ey, 394, ey, ts * 0.26, T[er * N + N - 1].wet && eff(T[er * N + N - 1]) & 2 ? '#4dabf7' : '#ced4da');
-      drawFood(c, 'limo', 372, ey + 34, 54);
+      drawAny(c, heroId('limo'), 372, ey + 34, 54);
       T.forEach(t => {
         const cx = gx + t.x * ts + ts / 2, cy = gy + t.y * ts + ts / 2;
         rrPath(c, cx - ts / 2 + 3, cy - ts / 2 + 3, ts - 6, ts - 6, 10); fs(c, '#f8f9fa', 3);
@@ -992,7 +992,7 @@ GAMES.balance = { make(env) {
 
 // Schiebepuzzle
 GAMES.slider = { make(env) {
-  const r = env.r, N = 3, P = 100, ox = 50, oy = 150, img = makeImage(pick(['ball', 'pluesch', 'drachen', 'roller', 'helm', 'kreisel', 'wasserpistole'], r), 300);
+  const r = env.r, N = 3, P = 100, ox = 50, oy = 150, img = makeImage(pick(areaPick(['ball', 'pluesch', 'drachen', 'roller', 'helm', 'kreisel', 'wasserpistole']), r), 300);
   const b = [...Array(N * N).keys()]; // b[pos] = Kachel, N*N-1 = leer
   let e = N * N - 1, prev = -1;
   const nb = p => [p - N, p + N, p % N ? p - 1 : -1, p % N < N - 1 ? p + 1 : -1].filter(q => q >= 0 && q < N * N);
@@ -1132,7 +1132,7 @@ function shellMake(env, P) {
       rrPath(c, 30, 370, 340, 24, 10); fs(c, '#a0673a', 3);
       roundDots(c, rounds, round, 40);
       const bc = cups[ball];
-      if ((lift[ball] || 0) > 0.02) drawFood(c, 'eisclown', bc.x, 344, 36);   // nur sichtbar, wenn die Glocke angehoben ist
+      if ((lift[ball] || 0) > 0.02) drawAny(c, heroId('eisclown'), bc.x, 344, 36);   // nur sichtbar, wenn die Glocke angehoben ist
       [...cups].sort((a, b) => a.y - b.y).forEach((cp, i) => {
         const ci = cups.indexOf(cp), up = (lift[ci] || 0) * 70, sx = state === 'pick' ? 0 : 0;
         c.save(); c.translate(cp.x + sx + (shake > 0 && state === 'reveal' ? shakeX(shake) : 0), cp.y - up);
@@ -1158,7 +1158,7 @@ GAMES.diff = { make(env) {
   const r = env.r, k = env.hard ? 5 : 3, H2 = 225, Y1 = 34, Y2 = 280;
   const items = []; let guard = 0;
   while (items.length < (env.hard ? 12 : 9) && guard++ < 500) {
-    const it = { id: pick(FOOD_IDS, r), x: 34 + r() * 332, y: 30 + r() * 165, s: 36 + r() * 16, flip: 1 };
+    const it = { id: pick(MOT(), r), x: 34 + r() * 332, y: 30 + r() * 165, s: 36 + r() * 16, flip: 1 };
     if (items.every(o => dist(o.x, o.y, it.x, it.y) > 52)) items.push(it);
   }
   const bottom = items.map(o => Object.assign({}, o));
@@ -1166,7 +1166,7 @@ GAMES.diff = { make(env) {
     const types = ['gone', 'swap', 'big'].concat(env.hard && ASYM.includes(items[i].id) ? ['flip', 'flip'] : []).concat(env.hard ? ['move'] : []);
     const ty = pick(types, r), b = bottom[i];
     if (ty === 'gone') b.gone = true;
-    else if (ty === 'swap') b.id = pick(FOOD_IDS.filter(q => q !== b.id), r);
+    else if (ty === 'swap') b.id = pick(MOT().filter(q => q !== b.id), r);
     else if (ty === 'big') b.s *= env.hard ? 1.3 : 1.45;
     else if (ty === 'flip') b.flip = -1;
     else if (ty === 'move') b.y = clamp(b.y + (b.y > 110 ? -28 : 28), 25, 200);
@@ -1212,7 +1212,7 @@ function mazeMake(env, N, fog) {
     const [dx, dy, b, ob] = pick(opts, r), n = (y + dy) * N + x + dx;
     W4[c0] &= ~b; W4[n] &= ~ob; seen[n] = 1; st.push(n);
   }
-  let pos = 0, ax = 0, ay = 0, t = 0; const goal = N * N - 1, fin = finisher(env), goalId = pick(FOOD_IDS, r);
+  let pos = 0, ax = 0, ay = 0, t = 0; const goal = N * N - 1, fin = finisher(env), goalId = pick(MOT(), r);
   const tryTo = cx => {
     const x = pos % N, y = Math.floor(pos / N), tx = cx % N, ty = Math.floor(cx / N);
     const dx = tx - x, dy = ty - y; if (Math.abs(dx) + Math.abs(dy) !== 1) return;
@@ -1332,9 +1332,9 @@ GAMES.count = { make(env) {
   const r = env.r, rounds = 2;
   let round = 0, target, its, opts, shake = 0, t = 0; const fin = finisher(env);
   const setup = () => {
-    target = pick(FOOD_IDS, r);
+    target = pick(MOT(), r);
     const n = env.hard ? ri(7, 11, r) : ri(4, 8, r), m = env.hard ? 16 : 9;
-    const others = shuffle(FOOD_IDS.filter(q => q !== target), r).slice(0, 5);
+    const others = shuffle(MOT().filter(q => q !== target), r).slice(0, 5);
     its = [];
     for (let i = 0; i < n + m; i++) its.push({ id: i < n ? target : pick(others, r), x: 30 + r() * 340, y: 110 + r() * 230, vx: (r() - 0.5) * (env.hard ? 70 : 36), vy: (r() - 0.5) * (env.hard ? 50 : 26), s: 34 + r() * 10 });
     const vals = shuffle([n - 2, n - 1, n, n + 1, n + 2].filter(v => v > 0), r).slice(0, 3);
@@ -1376,7 +1376,7 @@ GAMES.run = { challenge: true, make(env) {
   const obs = [];
   for (let i = 0; i < rows; i++) {
     const D = 420 + i * gap, lanes = shuffle([0, 1, 2], r), nb = r() < (env.hard ? 0.7 : 0.35) ? 2 : 1;
-    for (let k = 0; k < nb; k++) obs.push({ D, lane: lanes[k], id: pick(['ball', 'eimerchen', 'bauklotz', 'roller', 'pluesch'], r) });
+    for (let k = 0; k < nb; k++) obs.push({ D, lane: lanes[k], id: pick(areaPick(['ball', 'eimerchen', 'bauklotz', 'roller', 'pluesch']), r) });
     if (env.hard && r() < 0.3) obs.push({ D, lane: lanes[2], clock: true });
   }
   const end = 420 + rows * gap + 120;
@@ -1473,9 +1473,9 @@ GAMES.jump = { challenge: true, make(env) {
     const kind = r();
     if (kind < 0.38) { const w = env.hard ? 88 + r() * 32 : 72 + r() * 26; obs.push({ t: 'gap', x, w }); x += w; }
     else {
-      const h = 40 + r() * 16; obs.push({ t: 'hurdle', x, w: 44, h, id: pick(['bauklotz', 'ball', 'eimerchen'], r) });
+      const h = 40 + r() * 16; obs.push({ t: 'hurdle', x, w: 44, h, id: pick(areaPick(['bauklotz', 'ball', 'eimerchen']), r) });
       if (env.hard && r() < 0.35) clocks.push({ x: x + 22, y: 315 });
-      if (kind > 0.8) { x += 44 + (env.hard ? 150 : 175); obs.push({ t: 'hurdle', x, w: 44, h: 40, id: 'bauklotz' }); }
+      if (kind > 0.8) { x += 44 + (env.hard ? 150 : 175); obs.push({ t: 'hurdle', x, w: 44, h: 40, id: heroId('bauklotz') }); }
       x += 44;
     }
     x += env.hard ? 220 + r() * 90 : 260 + r() * 100;
@@ -1517,7 +1517,7 @@ GAMES.jump = { challenge: true, make(env) {
 } };
 
 GAMES.collect = { challenge: true, make(env) {
-  const r = env.r, target = pick(FOOD_IDS, r), others = shuffle(FOOD_IDS.filter(i => i !== target), r).slice(0, 6);
+  const r = env.r, target = pick(MOT(), r), others = shuffle(MOT().filter(i => i !== target), r).slice(0, 6);
   const need = env.hard ? 12 : 8, v = (env.hard ? 300 : 230) * env.slow;
   let got = 0, px = 200, tx = 200, spT = 0.4, inv = 0, t = 0; const its = [], fin = finisher(env);
   return {
@@ -1570,7 +1570,7 @@ GAMES.slide = { challenge: true, make(env) {
         const ls = shuffle([0, 1, 2], r), nb = r() < (env.hard ? 0.75 : 0.35) ? 2 : 1;
         for (let k = 0; k < nb; k++) {
           const kid = r() < 0.3, roll = env.hard && !kid && r() < 0.3;
-          obs.push({ x: lanes[ls[k]] + (r() - 0.5) * 20, y: 580, kid, vx: roll ? (r() < 0.5 ? -60 : 60) : 0, id: kid ? pick(['hase', 'igel'], r) : pick(['ball', 'pluesch', 'eimerchen', 'frisbee', 'bauklotz'], r) });
+          obs.push({ x: lanes[ls[k]] + (r() - 0.5) * 20, y: 580, kid, vx: roll ? (r() < 0.5 ? -60 : 60) : 0, id: kid ? pick(['hase', 'igel'], r) : pick(areaPick(['ball', 'pluesch', 'eimerchen', 'frisbee', 'bauklotz']), r) });
         }
         if (env.hard && r() < 0.25) obs.push({ x: lanes[ls[2]], y: 580, clock: true, vx: 0 });
       }
@@ -1696,7 +1696,7 @@ GAMES.mirror = { make(env) {
 
 // Bild drehen: jede Kachel ist verdreht
 GAMES.rotimg = { make(env) {
-  const r = env.r, N = env.hard ? 4 : 3, P = 300 / N, ox = 50, oy = 150, img = makeImage(pick(['roller', 'drachen', 'wasserpistole', 'seifenblasen', 'helm', 'kreisel'], r), 300);
+  const r = env.r, N = env.hard ? 4 : 3, P = 300 / N, ox = 50, oy = 150, img = makeImage(pick(areaPick(['roller', 'drachen', 'wasserpistole', 'seifenblasen', 'helm', 'kreisel']), r), 300);
   const S = img.width / N, fin = finisher(env), ictx = img.getContext('2d');
   // Für jedes Teil prüfen, in welchen Drehungen es gleich aussieht (z. B. nur Wiese oder Himmel)
   const sameRots = i => {
@@ -1783,10 +1783,10 @@ GAMES.dots_easy = { make: env => dotsMake(env, 10, 1) };
 
 // Wimmelbild: alle gleichen Dinge finden
 GAMES.findall = { make(env) {
-  const r = env.r, target = pick(FOOD_IDS, r), n = ri(4, 5, r);
+  const r = env.r, target = pick(MOT(), r), n = ri(4, 5, r);
   const LOOKALIKE = [['ball', 'springball', 'murmeln'], ['eimerchen', 'sandfoermchen'], ['frisbee', 'hulahoop']];
   const like = (LOOKALIKE.find(g2 => g2.includes(target)) || [target]);
-  const list = shuffle([...Array(n).fill(target), ...shuffle(FOOD_IDS.concat(ITEM_IDS).filter(i => !like.includes(i) && i !== target), r).slice(0, 11)], r);
+  const list = shuffle([...Array(n).fill(target), ...shuffle(MOT().concat(AREA() === 'spielplatz' ? Object.keys(FOOD) : []).filter(i => !like.includes(i) && i !== target), r).slice(0, 11)], r);
   const its = []; let g = 0;
   for (const id of list) { let p; do { p = { x: 50 + r() * 300, y: 130 + r() * 350 }; g++; } while (g < 3000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 64)); its.push({ id, x: p.x, y: p.y, found: false, wob: 0, vx: (r() - 0.5) * 36 * GAME_MOTION, vy: (r() - 0.5) * 28 * GAME_MOTION, ph: r() * 6 }); }
   let got = 0; const fin = finisher(env);
@@ -1832,7 +1832,7 @@ GAMES.trace = { make(env) {
       c.setLineDash([4, 14]); c.lineWidth = 6; c.strokeStyle = '#118ab2'; c.stroke(); c.setLineDash([]);
       if (idx > 0) { c.beginPath(); for (let i = 0; i <= idx; i++) i ? c.lineTo(pts[i][0], pts[i][1]) : c.moveTo(pts[i][0], pts[i][1]); c.lineWidth = 10; c.strokeStyle = '#ffd166'; c.stroke(); }
       const e = pts[pts.length - 1]; drawUmbrella(c, e[0], e[1], 34);
-      const p = pts[idx]; ell(c, p[0], p[1], 26, 8); fs(c, '#adb5bd', 3); drawFood(c, 'eisclown', p[0], p[1] - 20, 50);
+      const p = pts[idx]; ell(c, p[0], p[1], 26, 8); fs(c, '#adb5bd', 3); drawAny(c, heroId('eisclown'), p[0], p[1] - 20, 50);
     },
     down(x, y) { const p = pts[idx]; if (dist(x, y, p[0], p[1]) < 60) drag = true; },
     move(x, y) {
@@ -1848,7 +1848,7 @@ GAMES.trace = { make(env) {
 GAMES.count_easy = { make(env) {
   const r = env.r, rounds = 3; let round = 0, n, id, its, opts, shake = 0; const fin = finisher(env);
   const setup = () => {
-    n = ri(3, 6, r); id = pick(['eisclown', 'croissant', 'limo', 'kuchen', 'eisbecher'], r); its = []; let g = 0; const oth = shuffle(FOOD_IDS.filter(q => q !== id), r).slice(0, 2);
+    n = ri(3, 6, r); id = pick(areaPick(['eisclown', 'croissant', 'limo', 'kuchen', 'eisbecher']), r); its = []; let g = 0; const oth = shuffle(MOT().filter(q => q !== id), r).slice(0, 2);
     for (let i = 0; i < n; i++) { let p; do { p = { x: 70 + r() * 260, y: 110 + r() * 200 }; g++; } while (g < 2000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 62)); its.push(p); }
     for (let i = 0; i < ri(2, 4, r); i++) { let p; do { p = { x: 70 + r() * 260, y: 110 + r() * 200 }; g++; } while (g < 4000 && its.some(o => dist(o.x, o.y, p.x, p.y) < 62)); p.id = pick(oth, r); its.push(p); }
     const pool = shuffle([1, 2, 3, 4, 5, 6].filter(v => v !== n), r).slice(0, 2).concat([n]);
@@ -2077,7 +2077,7 @@ GAMES.platform = { challenge: true, make(env) {
       for (const e of enemies) {
         if (!e.alive) continue;
         if (e.t === 'bee') { c.save(); c.translate(e.cx, e.y); ell(c, 0, 0, 14, 10); fs(c, '#ffd60a', 2.5); line(c, -3, -9, -3, 9, 3, OL, false); line(c, 4, -8, 4, 8, 3, OL, false); ell(c, -4, -12, 7, 5 + Math.sin(t * 40) * 2); fs(c, 'rgba(255,255,255,.8)', 1.5); c.restore(); }
-        else { c.save(); c.translate(e.cx, e.y - 18); c.rotate(e.x * 0.05); drawItem(c, 'ball', 0, 0, 42); c.restore(); }
+        else { c.save(); c.translate(e.cx, e.y - 18); c.rotate(e.x * 0.05); drawAny(c, heroId('ball'), 0, 0, 42); c.restore(); }
       }
       line(c, goalX, goalY, goalX, goalY - 110, 5, '#495057'); polyPath(c, [[goalX, goalY - 110], [goalX + 50, goalY - 95], [goalX, goalY - 80]]); fs(c, '#ef476f', 3);
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, P.x, P.y, 1.15, { t, moving: P.on && Math.abs(P.vx) > 20, dir: P.dir, cap: hasCap(env.kind), noShadow: !P.on });

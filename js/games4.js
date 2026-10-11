@@ -18,9 +18,10 @@ function terraceBg(c, floor = 300, t = 0, wind = 0) {
   const sky = c.createLinearGradient(0, 0, 0, floor); sky.addColorStop(0, '#74c0fc'); sky.addColorStop(1, '#d0ebff'); c.fillStyle = sky; c.fillRect(0, 0, GAME_W, floor);
   for (let k = 0; k < 3; k++) { const x = ((k * 160 + t * 12) % 520) - 60; ell(c, x, 50 + k * 26, 40, 13); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill(); ell(c, x + 26, 44 + k * 26, 26, 12); c.fill(); }
   for (const x of [40, 360]) { const sw = Math.sin(t * 1.5 + x) * (3 + wind * 8); c.beginPath(); c.moveTo(x, floor - 190); c.quadraticCurveTo(x + 26 + sw, floor - 90, x + 16, floor); c.lineTo(x - 16, floor); c.quadraticCurveTo(x - 26 + sw, floor - 90, x, floor - 190); fs(c, '#2d6a4f', 3); }
-  const fl = Math.sin(t * 2.2) * (6 + wind * 14);
-  c.beginPath(); c.moveTo(70, 18); c.quadraticCurveTo(200, 60 + fl, 330, 24); c.lineTo(300, 110); c.quadraticCurveTo(200, 90 + fl * 0.6, 100, 120); c.closePath(); fs(c, '#e8590c', 3);
-  c.fillStyle = 'rgba(255,255,255,.15)'; c.beginPath(); c.moveTo(70, 18); c.quadraticCurveTo(200, 60 + fl, 330, 24); c.lineTo(320, 40); c.quadraticCurveTo(200, 74 + fl, 84, 40); c.closePath(); c.fill();
+  // Pavillon-Dach (orange/weiß/orange) statt Sonnensegel
+  const fl = Math.sin(t * 2.2) * (2 + wind * 5);
+  c.fillStyle = '#6c757d'; c.fillRect(0, 0, GAME_W, 8);
+  for (let k = 0; k < 10; k++) { const x = k * 40, col = k % 3 === 1 ? '#fff' : '#f77f00'; c.beginPath(); c.moveTo(x, 6); c.lineTo(x + 40, 6); c.lineTo(x + 40, 30); c.quadraticCurveTo(x + 20, 44 + fl, x, 30); c.closePath(); fs(c, col, 2.5); }
   c.fillStyle = '#d6cebf'; c.fillRect(0, floor, GAME_W, GAME_H - floor);
   for (let i = 0; i < 260; i++) { const x = (i * 97.3) % GAME_W, y = floor + ((i * 53.7) % (GAME_H - floor)); c.fillStyle = ['#c5bcad', '#e6dfd3', '#b3aa9a'][i % 3]; c.fillRect(x, y, 3, 3); }
 }

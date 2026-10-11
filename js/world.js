@@ -51,15 +51,36 @@ function withStage(id, fn) { const cur = SG && SG.id; useStage(id); try { fn(); 
 const FILL_CACHE = {};
 function fillGround(kind) {
   if (FILL_CACHE[kind]) return FILL_CACHE[kind];
-  const Q = 0.5, cv = document.createElement('canvas'); cv.width = TILE_W * Q; cv.height = TILE_H * Q; const g = cv.getContext('2d'); g.scale(Q, Q); const R = mulberry32(kind === 'wiese' ? 11 : 12);
+  const Q = 0.7, cv = document.createElement('canvas'); cv.width = TILE_W * Q; cv.height = TILE_H * Q; const g = cv.getContext('2d'); g.scale(Q, Q); const R = mulberry32(kind === 'wiese' ? 11 : 12);
   lawn(g, 0, 0, TILE_W, TILE_H, R);
+  const tree = (x, y, rr, col) => { g.fillStyle = 'rgba(0,0,0,.18)'; ell(g, x + rr * 0.5, y + rr * 0.35, rr * 1.1, rr * 0.5); g.fill(); rrPath(g, x - 6, y - rr * 0.6, 12, rr * 0.7, 4); fs(g, '#8d5a3b', 2.5);
+    for (const [dx, dy, k] of [[-rr * 0.55, -rr * 1.0, 0.7], [rr * 0.55, -rr * 1.05, 0.72], [0, -rr * 1.45, 0.8]]) { ell(g, x + dx, y + dy, rr * k, rr * k * 0.9); fs(g, col, 2.5); }
+    ell(g, x - rr * 0.25, y - rr * 1.6, rr * 0.25, rr * 0.18); g.fillStyle = 'rgba(255,255,255,.18)'; g.fill(); };
+  const flowers = (x0, y0, w, h, n) => { for (let k = 0; k < n; k++) { const x = x0 + R() * w, y = y0 + R() * h; ell(g, x, y, 3.2, 3.2); g.fillStyle = ['#fff', '#ffd166', '#ef476f', '#c77dff'][k % 4]; g.fill(); } };
   if (kind === 'strasse') {
-    g.fillStyle = '#74c69d'; g.fillRect(0, 0, 120, TILE_H);
-    g.fillStyle = '#5c6066'; g.fillRect(260, 0, 420, TILE_H); for (let i = 0; i < 6000; i++) { g.fillStyle = i % 2 ? '#646970' : '#55595f'; g.fillRect(260 + R() * 420, R() * TILE_H, 2, 2); }
-    g.fillStyle = '#f8f9fa'; g.fillRect(262, 0, 4, TILE_H); g.fillRect(674, 0, 4, TILE_H); for (let y = 0; y < TILE_H; y += 90) g.fillRect(468, y, 4, 46);
-    for (let y = 40; y < TILE_H; y += 110) { const x = 150 + (y * 7) % 60; g.fillStyle = 'rgba(0,0,0,.15)'; ell(g, x + 18, y + 6, 26, 10); g.fill(); g.beginPath(); g.moveTo(x, y - 90); g.quadraticCurveTo(x + 20, y - 40, x + 12, y); g.lineTo(x - 12, y); g.quadraticCurveTo(x - 20, y - 40, x, y - 90); fs(g, '#2d6a4f', 2.5); }
+    // Dorfstraße wie in Köndringen: Hecke, Grünstreifen mit Bäumen, Gehweg, Straße, Gehweg, Häuser mit Gärten
+    g.fillStyle = '#2d6a4f'; g.fillRect(0, 0, 50, TILE_H); for (let y = 0; y < TILE_H; y += 34) { ell(g, 30, y + 17, 26, 20); fs(g, '#40916c', 2); }
+    flowers(60, 0, 130, TILE_H, 90);
+    for (let y = 80; y < TILE_H; y += 260) tree(130, y + 120, 44, '#52b788');
+    const side = (x) => { g.fillStyle = '#c9c1b4'; g.fillRect(x, 0, 60, TILE_H); g.strokeStyle = 'rgba(90,80,70,.3)'; g.lineWidth = 1.5; for (let y = 0; y < TILE_H; y += 30) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + 60, y); g.stroke(); } g.beginPath(); g.moveTo(x + 30, 0); g.lineTo(x + 30, TILE_H); g.stroke(); };
+    side(200); side(680);
+    g.fillStyle = '#5c6066'; g.fillRect(260, 0, 420, TILE_H); for (let i = 0; i < 5000; i++) { g.fillStyle = i % 2 ? '#646970' : '#55595f'; g.fillRect(260 + R() * 420, R() * TILE_H, 2, 2); }
+    g.fillStyle = '#adb5bd'; g.fillRect(256, 0, 6, TILE_H); g.fillRect(678, 0, 6, TILE_H);
+    g.fillStyle = '#f8f9fa'; g.fillRect(272, 0, 4, TILE_H); g.fillRect(664, 0, 4, TILE_H); for (let y = 0; y < TILE_H; y += 90) g.fillRect(468, y, 5, 46);
+    for (let y = 150; y < TILE_H; y += 400) { rrPath(g, 238, y - 4, 8, 8, 2); fs(g, '#495057', 1.5); line(g, 242, y, 300, y, 4, '#495057'); ell(g, 300, y, 10, 6); g.fillStyle = '#ffe066'; g.fill(); }
+    // Häuser gegenüber (von oben: Dächer mit First), dazwischen Gärten
+    for (let k = 0; k < 4; k++) { const y = 40 + k * 350, col = ['#c1121f', '#9c3d10', '#6c757d', '#b5541f'][k];
+      g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(784, y + 14, 200, 170);
+      polyPath(g, [[770, y], [980, y], [980, y + 170], [770, y + 170]]); fs(g, col, 3); line(g, 770, y + 85, 980, y + 85, 3, 'rgba(0,0,0,.35)', false);
+      for (let r = 0; r < 8; r++) line(g, 770, y + 10 + r * 20, 980, y + 10 + r * 20, 1, 'rgba(0,0,0,.12)', false);
+      rrPath(g, 920, y + 20, 22, 26, 3); fs(g, '#adb5bd', 2); flowers(760, y + 190, 220, 140, 20); tree(880, y + 320, 30, '#40916c'); }
   } else {
-    for (let k = 0; k < 14; k++) { const x = 80 + (k * 137) % 840, y = 120 + (k * 251) % 1200; g.fillStyle = 'rgba(0,0,0,.15)'; ell(g, x + 24, y + 8, 60, 20); g.fill(); for (const [dx, dy, rr] of [[-30, -60, 36], [26, -64, 38], [0, -96, 40]]) { ell(g, x + dx, y + dy, rr, rr * 0.85); fs(g, k % 2 ? '#40916c' : '#2d6a4f', 2.5); } }
+    // Wiese mit Feldweg, Obstbäumen, Blumen und einem Zaun
+    g.fillStyle = '#d4b483'; g.beginPath(); g.moveTo(0, 520); g.bezierCurveTo(300, 470, 650, 760, 1000, 690); g.lineTo(1000, 740); g.bezierCurveTo(650, 810, 300, 520, 0, 570); g.closePath(); g.fill();
+    flowers(0, 0, TILE_W, TILE_H, 260);
+    const T = [[140, 220], [420, 160], [760, 260], [220, 950], [560, 1050], [860, 980], [330, 1290], [720, 1320], [880, 520], [110, 760]];
+    T.forEach(([x, y], k) => tree(x, y, 40 + (k % 3) * 8, ['#40916c', '#52b788', '#2d6a4f'][k % 3]));
+    for (let x = 20; x < TILE_W; x += 60) { rrPath(g, x, 1376, 8, 22, 2); fs(g, '#a0673a', 1.5); } line(g, 0, 1382, TILE_W, 1382, 3, '#8d5a3b', false); line(g, 0, 1392, TILE_W, 1392, 3, '#8d5a3b', false);
   }
   return (FILL_CACHE[kind] = cv);
 }
@@ -262,9 +283,10 @@ const STAGE_COL = { kueche: '#adb5bd', gastraum: '#d27d55', aussen: '#74c69d', s
 {
   const hud0 = Play.prototype.drawHud;
   Play.prototype.drawHud = function (c) {
-    hud0.call(this, c);
+    this.coachTop = 0; hud0.call(this, c);
     const name = STAGE_NAME[this.stage]; if (!name) return;
-    c.font = `900 22px ${FONT}`; const w = c.measureText(name).width + 74, x = W / 2 - w / 2, y = H - 56;
+    // über dem Hinweis-Band, damit sich nichts überdeckt
+    c.font = `900 22px ${FONT}`; const w = c.measureText(name).width + 74, x = W / 2 - w / 2, y = this.coachTop ? this.coachTop - 52 : H - 56;
     rrPath(c, x, y, w, 44, 22); fs(c, 'rgba(255,255,255,.95)', 3.5); ell(c, x + 26, y + 22, 15, 15); fs(c, STAGE_COL[this.stage] || '#fff', 3);
     drawCollect(c, this.stage, x + 26, y + 22, 1.6, -0.5);
     txt(c, name, x + 50, y + 23, 22, '#35452F', 'left', null);

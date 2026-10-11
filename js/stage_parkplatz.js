@@ -190,10 +190,10 @@ STAGE_DEFS.parkplatz = {
     gateAsk: 'Die Schranke klemmt! Bring mir diese Sachen, dann geht sie auf und es geht ab nach Hause.',
     search: 'Schau hinter Autos und in Büsche – dann tippe auf die Lupe!' },
   pools: {
-    easy: ['einparken', 'pumpen', 'bus', 'stau', 'memory', 'connect', 'shadow', 'trace', 'maze_easy', 'count_easy', 'findall', 'sort', 'size_row', 'cups', 'stack', 'color', 'pop', 'dots_easy'],
-    puzzle: ['stau', 'einparken', 'dials', 'lights', 'pipes', 'diff', 'nextrow', 'mirror', 'puzzle', 'rotimg', 'sequence', 'dots', 'count', 'pattern', 'oddone', 'pairs'],
-    std: ['einparken', 'pumpen', 'bus', 'collect'],
-    sp: ['pumpen', 'bus', 'run', 'balance_walk'],
+    easy: ['parkschein', 'autowasch', 'einparken', 'pumpen', 'bus', 'stau', 'memory', 'connect', 'shadow', 'trace', 'maze_easy', 'count_easy', 'findall', 'sort', 'size_row', 'cups', 'stack', 'color', 'pop', 'dots_easy'],
+    puzzle: ['parkschein', 'stau', 'einparken', 'dials', 'lights', 'pipes', 'diff', 'nextrow', 'mirror', 'puzzle', 'rotimg', 'sequence', 'dots', 'count', 'pattern', 'oddone', 'pairs'],
+    std: ['autowasch', 'einparken', 'pumpen', 'bus', 'collect'],
+    sp: ['autowasch', 'pumpen', 'bus', 'run', 'balance_walk'],
     hard: ['heimfahrt', 'jump', 'platform'],
   },
   extras(play) {

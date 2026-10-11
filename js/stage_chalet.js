@@ -282,10 +282,10 @@ STAGE_DEFS.chalet = {
     gateAsk: 'Das Holztor ist eingefroren! Bring mir diese Sachen, dann ist der Weg zum Spielplatz frei.',
     search: 'Schau hinter Tannen und unter Tische – dann tippe auf die Lupe!' },
   pools: {
-    easy: ['fondue', 'holzhacken', 'kaminfeuer', 'schneeball', 'eisrutsch', 'eisstock', 'memory', 'limo_mix', 'stack', 'trace', 'lights', 'count_easy', 'cups', 'findall', 'shadow', 'maze_easy', 'connect', 'color', 'sort', 'size_row', 'pop'],
-    puzzle: ['eisrutsch', 'hanoi', 'lights', 'diff', 'puzzle', 'balance', 'pattern', 'dots', 'pairs', 'nextrow', 'count', 'mirror', 'rotimg', 'sequence', 'shell', 'oddone'],
-    std: ['fondue', 'holzhacken', 'kaminfeuer', 'schneeball', 'eisstock', 'collect'],
-    sp: ['holzhacken', 'eisstock', 'slide', 'run'],
+    easy: ['schneemann', 'geschenke', 'fondue', 'holzhacken', 'kaminfeuer', 'schneeball', 'eisrutsch', 'eisstock', 'memory', 'limo_mix', 'stack', 'trace', 'lights', 'count_easy', 'cups', 'findall', 'shadow', 'maze_easy', 'connect', 'color', 'sort', 'size_row', 'pop'],
+    puzzle: ['schneemann', 'geschenke', 'eisrutsch', 'hanoi', 'lights', 'diff', 'puzzle', 'balance', 'pattern', 'dots', 'pairs', 'nextrow', 'count', 'mirror', 'rotimg', 'sequence', 'shell', 'oddone'],
+    std: ['schneemann', 'fondue', 'holzhacken', 'kaminfeuer', 'schneeball', 'eisstock', 'collect'],
+    sp: ['geschenke', 'holzhacken', 'eisstock', 'slide', 'run'],
     hard: ['jump', 'slide', 'platform'],
   },
   extras(play) {

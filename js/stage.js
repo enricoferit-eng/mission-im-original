@@ -381,7 +381,11 @@ class Play {
   // Mehrspieler: gleicher Zufall, aber der zweite Spieler bekommt die nächste Aufgabe in der Liste -> andere Aufgaben als der Gegner
   get role() { return this.mp && this.mp.me === 'guest' ? 1 : 0; }   // Spieler 1 = Gastgeber, Spieler 2 = Gast
   off(q, i) { return q.got[i] || !!(q.team && q.owner && q.owner[i] !== this.role); }   // auf meiner Karte nicht (mehr) da
-  pickRole(arr, r) { const i = Math.floor(r() * arr.length); return arr[(i + (this.mp && this.mp.me === 'guest' && arr.length > 1 ? 1 : 0)) % arr.length]; }
+  pickRole(arr, r) {
+    // Bereichs-eigene Spezial-Aufgaben kommen doppelt so oft dran wie die allgemeinen
+    const GEN = new Set(EASY_GAMES.concat(PUZZLES, CHALLENGES_STD, CHALLENGES_SP, CHALLENGES_HARD)), w = arr.concat(arr.filter(g => !GEN.has(g)));
+    const i = Math.floor(r() * w.length); return w[(i + (this.mp && this.mp.me === 'guest' && w.length > 1 ? 1 : 0)) % w.length];
+  }
   seedFor(tag) { let h = 2166136261; for (const ch of String(tag)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return ((this.mp ? this.mp.seed : Date.now()) ^ h) >>> 0; }
   // ---------- Mehrspieler ----------
   mpSetup() {
@@ -581,7 +585,7 @@ class Play {
     const msg = T.npc === 'gate' ? W_('gateTap') : (this.st.active ? `Bring die Sachen zurück – tippe ${W_('the')} an!` : `Tippe ${W_('a')} mit ! an.`);
     const key = 'c_' + msg; if (!this.coachSaid[key]) { this.coachSaid[key] = true; Voice.say(msg, true); }
     c.font = `900 17px ${FONT}`; const mw = c.measureText(msg).width + 30, by = H - 40;
-    rrPath(c, W / 2 - mw / 2, by - 20, mw, 40, 20); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, by, 17, '#fff', 'center', null);
+    rrPath(c, W / 2 - mw / 2, by - 20, mw, 40, 20); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, by, 17, '#fff', 'center', null); this.coachTop = by - 20;
   }
   // ---- Hilfsfunktionen ----
   z() { const p = this.p; if (p.slide) return p.slideZ; const i = cellIdx(p.x, p.y); if (i >= 0 && ST[i]) return stairsZ(p.y); return p.level ? HOUSE.fz : 0; }
@@ -950,7 +954,7 @@ class Play {
       const g = this.pickRole(cand, r); used.push(g); return g;
     });
     // Täuschungen: an anderen Stellen guckt auch etwas heraus (Stöckchen, Blatt, Steinchen, Kronkorken)
-    const decoys = [], nd = this.diff === 'hard' ? 7 : 4;
+    const decoys = [], nd = this.diff === 'hard' ? 3 : 2;
     // Täuschungen auch an Möbeln: dort, wo nichts versteckt ist, guckt manchmal nur Krimskrams hervor
     const freeSp = shuffle(SPOTS.filter(s2 => s2.px != null && !hidden.some(h => h.spot === s2.id)), r), nFurn = freeSp.length ? Math.ceil(nd * 0.6) : 0;
     for (let k = 0; k < nFurn && k < freeSp.length; k++) { const s2 = freeSp[k], dd = DECOR_BY[s2.decor]; decoys.push({ x: s2.x, y: s2.y, px: s2.px, py: s2.py, rot: s2.rot || 0, front: !!s2.front, zy: dd ? dd.y + (dd.zy || 0) : s2.py, kind: pick(SG.junk, r), done: false, reach: 60 }); }
@@ -1360,8 +1364,8 @@ class Play {
       ell(c, 0, 0, 26, 26); fs(c, T.kind === 'found' ? '#fff7e6' : '#dee2e6', 3);
       if (T.kind === 'found') drawItem(c, T.item, 0, 0, 36); else if (T.kind === 'junk') { drawJunk(c, 0, 8, T.junk, 1.4); icon(c, 'cross', 14, 12, 18, '#ef476f'); } else icon(c, 'puff', 0, 0, 34);
       if (this.diff !== 'easy') {
-        const JN = { twig: 'ein Stöckchen', leaf: 'ein Blatt', pebble: 'ein Steinchen', cap: 'ein Kronkorken' };
-        const tx = T.kind === 'found' ? ITEMS[T.item].n + ' gefunden!' : T.kind === 'junk' ? 'Nur ' + JN[T.junk] + ' …' : 'Hier ist nichts.';
+        const JN = { twig: 'ein Stöckchen', leaf: 'ein Blatt', pebble: 'ein Steinchen', cap: 'ein Kronkorken', nudel: 'eine Nudel', zettel: 'ein Zettel', salat: 'ein Salatblatt', korken: 'ein Korken', zucker: 'ein Zuckertütchen', strohhalm: 'ein Strohhalm', zapfen: 'ein Tannenzapfen', ast: 'ein Ast', schneeball: 'ein Schneeball' };
+        const tx = T.kind === 'found' ? ITEMS[T.item].n + ' gefunden!' : T.kind === 'junk' ? 'Nur ' + (JN[T.junk] || 'Krimskrams') + ' …' : 'Hier ist nichts.';
         txt(c, tx, 0, 44, 17, T.kind === 'found' ? '#fff' : '#fbf8f2', 'center', BRAND.olive);
       }
       c.restore();
