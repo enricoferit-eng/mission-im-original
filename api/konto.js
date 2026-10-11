@@ -17,7 +17,17 @@ const cleanLogin = l => String(l || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const fmtLogin = l => l.slice(0, 4) + '-' + l.slice(4, 8);
 const validCode = c => Array.isArray(c) && c.length === 4 && c.every(v => Number.isInteger(v) && v >= 0 && v <= 5);
 
+// Speicher: Supabase (Tabelle "kv"), wenn eingerichtet – sonst Vercel Blob
+const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const SB = !!(SB_URL && SB_KEY);
+const sbH = extra => ({ apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', ...extra });
+async function sb(method, q, body, extra) {
+  const r = await fetch(SB_URL + '/rest/v1/kv' + q, { method, headers: sbH(extra), body: body ? JSON.stringify(body) : undefined });
+  if (!r.ok) throw new Error('supabase ' + r.status + ' ' + (await r.text()).slice(0, 200));
+  const txt = await r.text(); return txt ? JSON.parse(txt) : null;
+}
 async function readJSON(path) {
+  if (SB) { const rows = await sb('GET', '?select=val&path=eq.' + encodeURIComponent(path)); return rows && rows[0] ? rows[0].val : null; }
   try {
     const r = await get(path, { ...PRIV, useCache: false });
     if (!r || r.statusCode !== 200) return null;
@@ -25,7 +35,18 @@ async function readJSON(path) {
   } catch (e) { if (e && e.name === 'BlobNotFoundError') return null; throw e; }
 }
 async function writeJSON(path, obj) {
+  if (SB) { await sb('POST', '', { path, val: obj, updated: new Date().toISOString() }, { Prefer: 'resolution=merge-duplicates,return=minimal' }); return; }
   await put(path, JSON.stringify(obj), { ...PRIV, allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json', cacheControlMaxAge: 60 });
+}
+async function delJSON(paths) {
+  if (SB) { await sb('DELETE', '?path=in.(' + paths.map(p => '"' + p + '"').join(',') + ')', null, { Prefer: 'return=minimal' }); return; }
+  await del(paths);
+}
+async function listJSON(prefix) {   // alle Pfade mit diesem Anfang
+  if (SB) { const rows = await sb('GET', '?select=path&path=like.' + encodeURIComponent(prefix + '*')); return rows.map(r => r.path); }
+  const files = []; let cursor;
+  do { const r = await list({ prefix, cursor, limit: 1000 }); files.push(...r.blobs); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
+  return files.map(f => f.pathname);
 }
 function publicAcc(login, acc) {
   return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, code: acc.code, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };
@@ -88,7 +109,7 @@ async function save(b) {
 
 async function remove(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  await del([accFile(a.l), nameFile(a.acc.nk)]);
+  await delJSON([accFile(a.l), nameFile(a.acc.nk)]);
   return [200, { ok: true }];
 }
 
@@ -132,9 +153,9 @@ async function lobby_new(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   let code = '';
   for (let i = 0; i < 10; i++) { code = Array.from(crypto.randomBytes(4), x => LOBBY_CHARS[x % LOBBY_CHARS.length]).join(''); if (!(await readJSON(lobbyFile(code)))) break; }
-  const o = b.opts || {}, opts = { mode: o.mode === 'team' ? 'team' : 'duell', diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 2, 3, 4, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false, stage: ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].includes(o.stage) ? o.stage : 'spielplatz', stages: Array.isArray(o.stages) ? ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].filter(s => o.stages.includes(s)) : [] };
+  const o = b.opts || {}, opts = { mode: ['team', '2v2'].includes(o.mode) ? o.mode : 'duell', size: o.mode === '2v2' ? 4 : [2, 3, 4].includes(o.size) ? o.size : 2, diff: ['easy', 'medium', 'hard'].includes(o.diff) ? o.diff : 'medium', kids: [1, 2, 3, 4, 5].includes(o.kids) ? o.kids : 3, boss: !!o.boss, live: o.live !== false, stage: ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].includes(o.stage) ? o.stage : 'spielplatz', stages: Array.isArray(o.stages) ? ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].filter(s => o.stages.includes(s)) : [] };
   if (!opts.stages.length) opts.stages = [opts.stage]; opts.stage = opts.stages[0];
-  const lob = { code, host: pub(a.l, a.acc), guest: null, opts, seed: crypto.randomBytes(4).readUInt32BE(0), status: 'wait', created: Date.now(), started: 0 };
+  const lob = { code, host: pub(a.l, a.acc), guest: null, players: [pub(a.l, a.acc)], gone: [], opts, seed: crypto.randomBytes(4).readUInt32BE(0), status: 'wait', created: Date.now(), started: 0 };
   await writeJSON(lobbyFile(code), lob);
   if (b.invite) { const t = cleanLogin(b.invite), inv = (await readJSON(invFile(t))) || { list: [] }; inv.list = inv.list.filter(i => Date.now() - i.at < 15 * 60000).concat([{ code, from: lob.host, at: Date.now() }]).slice(-5); await writeJSON(invFile(t), inv); }
   const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.lobbies++; await writeJSON('stats/mp.json', st);
@@ -144,9 +165,10 @@ async function lobby_join(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   const code = String(b.code || '').toUpperCase().replace(/[^A-Z]/g, ''), lob = code.length === 4 && (await readJSON(lobbyFile(code)));
   if (!lob || Date.now() - lob.created > 60 * 60000) return [404, { error: 'not_found' }];
-  if (cleanLogin(lob.host.login) === a.l) return [200, lob];
-  if (lob.guest && cleanLogin(lob.guest.login) !== a.l) return [409, { error: 'full' }];
-  lob.guest = pub(a.l, a.acc); lob.status = 'ready'; await writeJSON(lobbyFile(code), lob);
+  lob.players = lob.players || [lob.host].concat(lob.guest ? [lob.guest] : []);
+  if (lob.players.some(p => cleanLogin(p.login) === a.l)) return [200, lob];
+  if (lob.status === 'run' || lob.players.length >= ((lob.opts && lob.opts.size) || 2)) return [409, { error: 'full' }];
+  lob.players.push(pub(a.l, a.acc)); lob.guest = lob.players[1]; lob.status = 'ready'; await writeJSON(lobbyFile(code), lob);
   const inv = await readJSON(invFile(a.l)); if (inv) { inv.list = inv.list.filter(i => i.code !== code); await writeJSON(invFile(a.l), inv); }
   return [200, lob];
 }
@@ -157,15 +179,19 @@ async function lobby_poll(b) {
   const writeP = b.progress && typeof b.progress === 'object' ? writeJSON(progFile(code, l), { ...b.progress, at: Date.now() }) : null;
   let lob = await readJSON(lobbyFile(code));
   if (!lob) return [404, { error: 'not_found' }];
-  const isHost = cleanLogin(lob.host.login) === l, isGuest = lob.guest && cleanLogin(lob.guest.login) === l;
-  if (!isHost && !isGuest) return [403, { error: 'not_member' }];
-  const other = isHost ? lob.guest : lob.host;
-  const tasks = [other ? readJSON(progFile(code, cleanLogin(other.login))).catch(() => null) : null];
-  if (b.start && isHost && lob.guest && lob.status === 'ready') { lob.status = 'run'; lob.started = Date.now(); tasks.push(writeJSON(lobbyFile(code), lob), (async () => { const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.matches++; await writeJSON('stats/mp.json', st); })()); }
-  if (b.leave) { lob.status = 'closed'; lob.left = l; tasks.push(writeJSON(lobbyFile(code), lob)); }
+  lob.players = lob.players || [lob.host].concat(lob.guest ? [lob.guest] : []); lob.gone = lob.gone || [];
+  const idx = lob.players.findIndex(p => cleanLogin(p.login) === l), isHost = idx === 0;
+  if (idx < 0) return [403, { error: 'not_member' }];
+  const oth = lob.players.map((p, i) => ({ p, i })).filter(x => x.i !== idx);
+  const tasks = [Promise.all(oth.map(x => readJSON(progFile(code, cleanLogin(x.p.login))).catch(() => null)))];
+  const need = lob.opts && lob.opts.mode === '2v2' ? 4 : 2;
+  if (b.start && isHost && lob.players.length >= need && lob.status === 'ready') { lob.status = 'run'; lob.started = Date.now(); tasks.push(writeJSON(lobbyFile(code), lob), (async () => { const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.matches++; await writeJSON('stats/mp.json', st); })()); }
+  if (b.leave) { if (!lob.gone.includes(l)) lob.gone.push(l); if (isHost && lob.status !== 'run') lob.status = 'closed'; if (lob.players.length - lob.gone.length < 2) lob.status = 'closed'; lob.left = l; tasks.push(writeJSON(lobbyFile(code), lob)); }
   if (writeP) tasks.push(writeP);
-  const [op] = await Promise.all(tasks);
-  return [200, { lobby: lob, me: isHost ? 'host' : 'guest', other: op, now: Date.now() }];
+  const [progs] = await Promise.all(tasks);
+  const others = oth.map((x, k) => ({ idx: x.i, name: x.p.name, login: x.p.login, gone: lob.gone.includes(cleanLogin(x.p.login)), prog: progs[k] }));
+  return [200, { lobby: lob, me: isHost ? 'host' : 'guest', idx, others, other: others[0] ? others[0].prog : null, now: Date.now() }];
+
 }
 // Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig
 const adminDeviceToken = (U, P) => crypto.createHmac('sha256', SECRET).update('admin-geraet:' + U + ':' + crypto.createHash('sha256').update(P).digest('hex')).digest('hex');
@@ -183,8 +209,7 @@ async function admin(b) {
     acc.admin = true; await writeJSON(accFile(login), acc);
     return [200, { login: fmtLogin(login), name: acc.name, code: acc.code }];
   }
-  const files = []; let cursor;
-  do { const r = await list({ prefix: 'accounts/', cursor, limit: 1000 }); files.push(...r.blobs); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
+  const files = (await listJSON('accounts/')).map(pathname => ({ pathname }));
   const now = Date.now(), DAY = 86400000;
   const st = { accounts: 0, new7: 0, active7: 0, active30: 0, skins: 0, perDiff: {}, generated: now };
   for (const d of ['easy', 'medium', 'hard']) st.perDiff[d] = { players: 0, stageClears: 0, playersCleared: 0, questsDone: 0, skins: 0 };

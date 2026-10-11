@@ -379,12 +379,12 @@ class Play {
     if (this.mp) this.mpSetup();
   }
   // Mehrspieler: gleicher Zufall, aber der zweite Spieler bekommt die nächste Aufgabe in der Liste -> andere Aufgaben als der Gegner
-  get role() { return this.mp && this.mp.me === 'guest' ? 1 : 0; }   // Spieler 1 = Gastgeber, Spieler 2 = Gast
-  off(q, i) { return q.got[i] || !!(q.team && q.owner && q.owner[i] !== this.role); }   // auf meiner Karte nicht (mehr) da
+  get role() { return this.mp ? this.mp.idx % 2 : 0; }   // Team-Rolle (Schalter/Leiter): abwechselnd 0/1   // Spieler 1 = Gastgeber, Spieler 2 = Gast
+  off(q, i) { return q.got[i] || !!(q.team && q.owner && q.owner[i] !== (this.mp ? this.mp.idx : 0)); }   // auf meiner Karte nicht (mehr) da
   pickRole(arr, r) {
     // Bereichs-eigene Spezial-Aufgaben kommen doppelt so oft dran wie die allgemeinen
     const GEN = new Set(EASY_GAMES.concat(PUZZLES, CHALLENGES_STD, CHALLENGES_SP, CHALLENGES_HARD)), w = arr.concat(arr.filter(g => !GEN.has(g)));
-    const i = Math.floor(r() * w.length); return w[(i + (this.mp && this.mp.me === 'guest' && w.length > 1 ? 1 : 0)) % w.length];
+    const i = Math.floor(r() * w.length); return w[(i + (this.mp && w.length > 1 ? this.mp.idx : 0)) % w.length];
   }
   seedFor(tag) { let h = 2166136261; for (const ch of String(tag)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return ((this.mp ? this.mp.seed : Date.now()) ^ h) >>> 0; }
   // ---------- Mehrspieler ----------
@@ -398,7 +398,7 @@ class Play {
     if (M.mode === 'team') {
       // Ein großer gemeinsamer Auftrag von Mia + zwei Teile, die man nur zu zweit schafft
       const q = this.genQuest(NPC_DEFS[0].id, { easy: 6, medium: 8, hard: 10 }[this.diff]); q.team = true; q.coop = { chestOpen: false, chest: false, roof: false };
-      q.owner = q.items.map((_, i) => i % 2);   // klar aufgeteilt: jeder sucht nur seine eigenen Sachen
+      q.owner = q.items.map((_, i) => i % M.n);   // klar aufgeteilt: jeder sucht nur seine eigenen Sachen
       const extra = ITEM_IDS.filter(i => !q.items.includes(i)); q.coopItems = { chest: extra[0] || ITEM_IDS[0], roof: extra[1] || ITEM_IDS[1] };
       st.active = q;
       const find = (cands) => cands.find(([x, y]) => canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70)) || cands[0];
@@ -411,10 +411,11 @@ class Play {
       { const L = this.coop.ladder, side = L.x < HOUSE.x ? -1 : 1, cand = [[L.x + side * 44, L.y + 8], [L.x, L.y + 46], [L.x + side * 30, L.y + 40]]; const h = cand.find(([x, y]) => canStand(0, x, y)) || cand[1]; this.coop.hold = { x: h[0], y: h[1] }; this.coop.side = side; }
       this.swBoth = 0; this.climb = null;
       this.banner = { text: NPC_NAMES[NPC_DEFS[0].id] + ' braucht ganz viele Sachen! Grüner Punkt = deine, blauer Punkt = die von ' + M.otherName + '.', t: 0 };
+      if (M.n > 2) { q.items = q.items.concat(shuffle(ITEM_IDS.filter(i => !q.items.includes(i)), mulberry32(this.seedFor('more'))).slice(0, (M.n - 2) * 3)); q.got = q.items.map(() => false); q.owner = q.items.map((_, i) => i % M.n); }
     } else {
       // Duell: alle Aufträge vorab in fester Reihenfolge würfeln, damit beide genau dasselbe bekommen
       this.pre = {}; if (this.diff !== 'easy') this.activeIds.concat(['gate']).forEach(id => { this.pre[id] = this.genQuest(id); });
-      this.banner = { text: 'Duell! Hilf ' + M.opts.kids + ' ' + (M.opts.kids === 1 ? W_('one') : W_('dat')) + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
+      this.banner = M.mode === '2v2' ? { text: '2 gegen 2! Du und ' + M.mates.map(p => p.name).join(' & ') + ' gegen ' + M.otherName + '. Teilt euch die ' + M.opts.kids + ' ' + W_('many') + ' auf!', t: 0 } : { text: 'Duell! Hilf ' + M.opts.kids + ' ' + (M.opts.kids === 1 ? W_('one') : W_('dat')) + (M.opts.boss ? ' und schaff das Boss-Level am Tor' : '') + ' – schneller als ' + M.otherName + '!', t: 0 };
     }
   }
   mpKidsDone() { return NPC_DEFS.filter(n => this.st.done[n.id]).length; }
@@ -425,9 +426,11 @@ class Play {
     const p = this.p, q = this.st.active;
     const sw = this.coop && !this.climb ? this.coop.sw.findIndex(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34) : -1, hold = !!(this.coop && this.role === 1 && p.level === 0 && dist(p.x, p.y, this.coop.hold.x, this.coop.hold.y) < 30);
     const cq = q && q.coop;
-    M.set({ pos: { x: Math.round(p.x), y: Math.round(p.y), l: p.level, z: Math.round(this.z() + (this.swingZ || 0)), k: this.kind }, done: this.mpKidsDone(), got: q && q.team ? q.got.map((g, i) => (g ? i : -1)).filter(i => i >= 0) : [], sw: sw + 1, hold, chestOpen: !!(cq && cq.chestOpen), chest: !!(cq && cq.chest), roof: !!(cq && cq.roof) });
+    M.set({ pos: { x: Math.round(p.x), y: Math.round(p.y), l: p.level, z: Math.round(this.z() + (this.swingZ || 0)), k: this.kind }, done: this.mpKidsDone(), ids: NPC_DEFS.filter(n => this.st.done[n.id]).map(n => n.id), got: q && q.team ? q.got.map((g, i) => (g ? i : -1)).filter(i => i >= 0) : [], sw: sw + 1, hold, chestOpen: !!(cq && cq.chestOpen), chest: !!(cq && cq.chest), roof: !!(cq && cq.roof) });
     const o = M.other, fresh = o && Date.now() - M.lastOther < 3500;
-    if (o && o.pos) { const g = this.ghost || (this.ghost = { x: o.pos.x, y: o.pos.y, z: 0 }); g.tx = o.pos.x; g.ty = o.pos.y; g.l = o.pos.l; g.tz = o.pos.z || 0; g.k = o.pos.k; g.x = lerp(g.x, g.tx, Math.min(1, dt * 4)); g.y = lerp(g.y, g.ty, Math.min(1, dt * 4)); g.z = lerp(g.z, g.tz, Math.min(1, dt * 4)); g.moving = dist(g.x, g.y, g.tx, g.ty) > 4; }
+    this.ghosts = this.ghosts || {};
+    for (const O of M.others || []) { const op = O.prog && O.prog.pos; if (!op || O.gone) { delete this.ghosts[O.idx]; continue; } const g = this.ghosts[O.idx] || (this.ghosts[O.idx] = { x: op.x, y: op.y, z: 0, name: O.name, mate: M.mode === 'team' || O.mate }); g.l = op.l; g.k = op.k; g.moving = dist(g.x, g.y, op.x, op.y) > 4; g.x = lerp(g.x, op.x, Math.min(1, dt * 4)); g.y = lerp(g.y, op.y, Math.min(1, dt * 4)); g.z = lerp(g.z, op.z || 0, Math.min(1, dt * 4)); }
+    if (false && o && o.pos) { const g = this.ghost || (this.ghost = { x: o.pos.x, y: o.pos.y, z: 0 }); g.tx = o.pos.x; g.ty = o.pos.y; g.l = o.pos.l; g.tz = o.pos.z || 0; g.k = o.pos.k; g.x = lerp(g.x, g.tx, Math.min(1, dt * 4)); g.y = lerp(g.y, g.ty, Math.min(1, dt * 4)); g.z = lerp(g.z, g.tz, Math.min(1, dt * 4)); g.moving = dist(g.x, g.y, g.tx, g.ty) > 4; }
     if (q && q.team) {
       // Funde des Partners zählen mit
       (o && o.got || []).forEach(i => { if (q.got[i] === false) { q.got[i] = true; this.toastTeam = { t: 0, text: M.otherName + ' hat etwas gefunden!' }; Sfx.note(880, 0.15, 'triangle', 0.06, 1.3); } });
@@ -447,7 +450,12 @@ class Play {
       }
       if (o && o.fin && !this.mpOver) this.mpEnd('team');
     } else {
-      if (o && o.fin && !this.mpOver) this.mpEnd('lose');
+      if (M.mode === '2v2') {
+        const ids = new Set(NPC_DEFS.filter(n => this.st.done[n.id]).map(n => n.id)); (M.others || []).filter(O => O.mate && O.prog).forEach(O => (O.prog.ids || []).forEach(i => ids.add(i)));
+        this.teamDone = ids.size;
+        if ((M.others || []).some(O => !O.mate && O.prog && O.prog.fin) && !this.mpOver) this.mpEnd('lose');
+        else if ((ids.size >= M.opts.kids || (M.others || []).some(O => O.mate && O.prog && O.prog.fin)) && !this.mpOver) { M.set({ fin: true }); M.sync(); this.mpEnd('win'); }
+      } else if (o && o.fin && !this.mpOver) this.mpEnd('lose');
       else if (this.mpGoal() && !this.mpOver) {
         if (M.si < M.stages.length - 1) {   // nächster Bereich im Duell
           M.elapsed += this.mpT; M.si++; M.set({ si: M.si }); this.mpOver = 'next'; Sfx.play('win');
@@ -464,8 +472,8 @@ class Play {
     if (kind === 'team') { M.set({ fin: true }); M.sync(); setTimeout(() => M.stop(), 2500); stat('teams'); addCoins(MP_COINS.team, 'Zusammen geschafft!'); overlay = new MatchResult({ team: true, title: 'Zusammen geschafft!', sub: 'Ihr habt Mia alles gebracht. Tolles Teamwork mit ' + M.otherName + '!', coins: MP_COINS.team }); return; }
     if (kind === 'gone') { M.stop(); addCoins(MP_COINS.lose, 'Mehrspieler'); overlay = new MatchResult({ title: 'Spiel beendet', sub: M.otherName + ' ist nicht mehr da – die Verbindung ist weg.', coins: MP_COINS.lose }); return; }
     stat('duels');
-    if (kind === 'win') { setTimeout(() => M.stop(), 2500); stat('wins'); addCoins(MP_COINS.win, 'Duell gewonnen!'); overlay = new MatchResult({ win: true, title: 'Gewonnen!', sub: 'Du warst schneller als ' + M.otherName + ' (' + (Math.round(this.mpT * 10) / 10).toFixed(1).replace('.', ',') + ' s).', coins: MP_COINS.win }); }
-    else { M.stop(); addCoins(MP_COINS.lose, 'Duell'); overlay = new MatchResult({ title: M.otherName + ' war schneller', sub: 'Knapp! Fordere gleich eine Revanche.', coins: MP_COINS.lose }); }
+    if (kind === 'win') { setTimeout(() => M.stop(), 2500); stat('wins'); addCoins(MP_COINS.win, 'Duell gewonnen!'); overlay = new MatchResult({ win: true, title: 'Gewonnen!', sub: (M.mode === '2v2' ? 'Euer Team war schneller als ' : 'Du warst schneller als ') + M.otherName + ' (' + (Math.round(this.mpT * 10) / 10).toFixed(1).replace('.', ',') + ' s).', coins: MP_COINS.win }); }
+    else { M.stop(); addCoins(MP_COINS.lose, 'Duell'); const wn = M.mode === '2v2' ? M.otherName : (((M.others || []).find(O => O.prog && O.prog.fin) || {}).name || M.otherName); overlay = new MatchResult({ title: wn + (wn.includes(' & ') ? ' waren' : ' war') + ' schneller', sub: 'Knapp! Fordere gleich eine Revanche.', coins: MP_COINS.lose }); }
   }
   enter() { FX.clear(); }
   // ---- Geheime Joker ----
@@ -1152,9 +1160,9 @@ class Play {
     if (this.waiter && SG.feat.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     // Mehrspieler: Mitspieler-Figur + Team-Objekte (Schatzkiste mit Doppel-Schalter, Leiter)
-    if (this.ghost && this.ghost.k) { const g = this.ghost, up = g.z > 1; L.push({ y: up ? HOUSE.y + HOUSE.h + 2 : g.y, f: () => {
+    for (const g of Object.values(this.ghosts || {})) { if (!g.k) continue; const up = g.z > 1; L.push({ y: up ? HOUSE.y + HOUSE.h + 2 : g.y, f: () => {
       c.globalAlpha = 0.85; drawAnimal(c, g.k, g.x, g.y - g.z, 1.12, { t: t + 3, moving: g.moving, look: DEFAULT_LOOK, cap: false }); c.globalAlpha = 1;
-      c.font = `900 13px ${FONT}`; const nw = c.measureText(this.mp.otherName).width + 16; rrPath(c, g.x - nw / 2, g.y - g.z - 92, nw, 22, 11); c.fillStyle = this.mp.mode === 'team' ? 'rgba(17,138,178,.9)' : 'rgba(239,71,111,.9)'; c.fill(); txt(c, this.mp.otherName, g.x, g.y - g.z - 81, 13, '#fff', 'center', null);
+      c.font = `900 13px ${FONT}`; const nw = c.measureText(g.name).width + 16; rrPath(c, g.x - nw / 2, g.y - g.z - 92, nw, 22, 11); c.fillStyle = g.mate ? 'rgba(17,138,178,.9)' : 'rgba(239,71,111,.9)'; c.fill(); txt(c, g.name, g.x, g.y - g.z - 81, 13, '#fff', 'center', null);
     } }); }
     if (this.coop) { const C = this.coop, q = this.st.active, cq = (q && q.coop) || {}, open = cq.chestOpen, o = this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
       L.push({ y: C.chest.y, f: () => {
@@ -1413,10 +1421,11 @@ class Play {
     }
     if (this.mp) {
       const M = this.mp, o = M.other, team = M.mode === 'team', lx = 14, ly = narrow ? rowY + 92 : rowY + 46;
-      const label = team ? 'Team mit ' + M.otherName : M.otherName + ': ' + (M.opts.live ? ((o && o.done) || 0) + '/' + M.opts.kids + (M.opts.boss ? ' + Boss' : '') : '?');
+      const foeDone = M.mode === '2v2' ? (() => { const s2 = new Set(); (M.others || []).filter(O => !O.mate && O.prog).forEach(O => (O.prog.ids || []).forEach(i => s2.add(i))); return s2.size; })() : ((o && o.done) || 0);
+      const label = team ? 'Team mit ' + M.otherName : M.otherName + ': ' + (M.opts.live ? foeDone + '/' + M.opts.kids + (M.opts.boss && M.mode !== '2v2' ? ' + Boss' : '') : '?');
       c.font = `900 14px ${FONT}`; const lw = c.measureText(label).width + 44;
       rrPath(c, lx, ly - 18, lw, 36, 18); c.fillStyle = team ? 'rgba(17,138,178,.85)' : 'rgba(239,71,111,.85)'; c.fill(); icon(c, 'friends', lx + 20, ly, 22); txt(c, label, lx + 36, ly + 1, 14, '#fff', 'left', null);
-      if (!team) { const me = this.mpKidsDone() + '/' + M.opts.kids; txt(c, 'Du: ' + me, lx + lw + 12, ly + 1, 14, '#fff', 'left', BRAND.ink); }
+      if (!team) { const me = (M.mode === '2v2' ? (this.teamDone || this.mpKidsDone()) : this.mpKidsDone()) + '/' + M.opts.kids; txt(c, (M.mode === '2v2' ? 'Dein Team: ' : 'Du: ') + me, lx + lw + 12, ly + 1, 14, '#fff', 'left', BRAND.ink); }
       if (this.coop && !this.mpOver) {
         const C = this.coop, p = this.p, q = this.st.active, o2 = M.other, fresh = o2 && Date.now() - M.lastOther < 3500;
         let hint = ''; const onSw = C.sw.findIndex(w => p.level === 0 && dist(p.x, p.y, w.x, w.y) < 34);

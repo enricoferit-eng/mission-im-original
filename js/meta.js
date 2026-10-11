@@ -174,7 +174,7 @@ class Shop {
     } else if (this.tab === 'skins') {
       // alle Skins auf einer Seite untereinander, sortiert: Normal → Selten → Legendär, dann nach Preis
       const RO = { common: 0, rare: 1, legend: 2 }, list = this.skinList || (this.skinList = SHOP_SKINS.slice().sort((a, b) => RO[a[2]] - RO[b[2]] || a[3] - b[3] || a[1].localeCompare(b[1])));
-      const cols = W > H ? 6 : 3, gap = 10, cw = Math.min(150, (W - 40 - gap * (cols - 1)) / cols), ch = Math.min(150, cw * 1.05), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
+      const cols = W > H ? 6 : 3, gap = 10, cw = Math.min(150, (W - 110 - gap * (cols - 1)) / cols), ch = Math.min(150, cw * 1.05), x0 = (W - 70 - (cw * cols + gap * (cols - 1))) / 2;
       const kind = ACC().char || 'cat', rows = Math.ceil(list.length / cols), headH = 28;
       // Abschnitte je Seltenheit
       const groups = [['common', 'Normal'], ['rare', 'Selten'], ['legend', 'Legendär']].map(([r, n]) => [n, list.filter(o => o[2] === r)]);
@@ -195,6 +195,11 @@ class Shop {
         this.skinHit.push({ x, y, w: cw, h: ch, id, name, price, own });
       });
       c.restore();
+      // gut sichtbare Pfeile zum Blättern (zusätzlich zu Ziehen und Mausrad)
+      if (maxS > 0) { const bx = W - 36, step = (bottom - top) * 0.8;
+        c.save(); if (this.sc <= 0) c.globalAlpha = 0.35; c.translate(bx, top + 30); c.rotate(Math.PI / 2); roundBtn(c, 0, 0, 24, '#fff', 'back', null); c.restore(); UI.btn(bx - 26, top + 4, 52, 52, () => { this.sc = Math.max(0, (this.sc || 0) - step); });
+        c.save(); if (this.sc >= maxS) c.globalAlpha = 0.35; c.translate(bx, bottom - 30); c.rotate(-Math.PI / 2); roundBtn(c, 0, 0, 24, '#ffd166', 'back', null); c.restore(); UI.btn(bx - 26, bottom - 56, 52, 52, () => { this.sc = Math.min(maxS, (this.sc || 0) + step); });
+        txt(c, Math.round(this.sc / maxS * 100) + '%', bx, (top + bottom) / 2, 11, '#fff', 'center', BRAND.olive); }
       if (maxS > 0) { const h = (bottom - top) * (bottom - top) / (bottom - top + maxS), y = top + (bottom - top - h) * (this.sc / maxS); rrPath(c, W - 9, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill(); }
     } else {
       const all = BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS), cols = W > H ? (all.length > 12 ? 9 : 6) : 3, gap = 10, cw = Math.min(140, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(180, (bottom - top - gap) / Math.ceil(all.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
@@ -299,7 +304,7 @@ function needOnline(c, back) {
 function api(body) { const a = ACC(); return Net.call(Object.assign({ login: a.login, token: a.token }, body)); }
 
 class MultiScene {
-  constructor() { this.t = 0; this.data = null; this.err = ''; this.busy = false; this.mode = 'menu'; this.opts = { mode: 'duell', diff: CUR_DIFF || 'medium', kids: 3, boss: false, live: true, stage: 'spielplatz', stages: ['spielplatz'] }; this.pollT = 0; }
+  constructor() { this.t = 0; this.data = null; this.err = ''; this.busy = false; this.mode = 'menu'; this.opts = { mode: 'duell', size: 2, diff: CUR_DIFF || 'medium', kids: 3, boss: false, live: true, stage: 'spielplatz', stages: ['spielplatz'] }; this.pollT = 0; }
   enter() { FX.clear(); nameInput.value = ''; if (ACC() && ACC().token) this.refresh(); }
   async refresh() { const r = await api({ action: 'friends' }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Keine Verbindung zum Server.'; }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 8 && ACC() && ACC().token) { this.pollT = 0; this.refresh(); } }
@@ -372,19 +377,20 @@ class MultiScene {
     });
     // Spiel einstellen
     panel(c, rx, ry, rw, rh, '#fff7e6', 22);
-    const o = this.opts, duel = o.mode === 'duell', nRows = duel ? 5 : 3, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
+    const o = this.opts, duel = o.mode !== 'team', multi = o.mode === 'duell', nRows = duel ? 6 : 4, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
     const seg = (y, label, vals, isSel, set, maxW = 150) => {
       txt(c, label, rx + 16, y, 13, '#6b5a48', 'left', null); const bw = Math.min(maxW, (rw - 32) / vals.length - 6);
       vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = isSel(v); rrPath(c, bx, y + 10, bw, bh, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 10 + bh / 2, bw < 80 ? 11 : 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, bh, () => { set(v); Sfx.play('tap'); }); });
     };
     let y = ry + 20;
-    seg(y, 'Modus', [['duell', 'Gegeneinander'], ['team', 'Zusammen']], v => o.mode === v, v => { o.mode = v; if (v === 'team') o.stages = [o.stages[0]]; o.stage = o.stages[0]; }, 180); y += rowH;
-    seg(y, duel ? 'Bereiche (mehrere = nacheinander)' : 'Bereich', STAGE_ORDER.map(id => [id, small || rw < 560 ? { kueche: 'Küche', gastraum: 'Innen', aussen: 'Außen', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' }[id] : STAGE_INFO[id].name]), v => o.stages.includes(v), v => { if (!duel) o.stages = [v]; else if (o.stages.includes(v)) { if (o.stages.length > 1) o.stages = o.stages.filter(x => x !== v); } else o.stages = STAGE_ORDER.filter(x => x === v || o.stages.includes(x)); o.stage = o.stages[0]; }); y += rowH;
+    seg(y, 'Modus', [['duell', small || rw < 520 ? 'Jeder gegen jeden' : 'Jeder gegen jeden'], ['team', 'Alle zusammen'], ['2v2', '2 gegen 2']], v => o.mode === v, v => { o.mode = v; if (v !== 'duell') o.stages = [o.stages[0]]; if (v === '2v2') { o.size = 4; o.boss = false; } o.stage = o.stages[0]; }, 180); y += rowH;
+    seg(y, 'Wie viele Spieler?', [[2, '2'], [3, '3'], [4, '4']], v => (o.mode === '2v2' ? v === 4 : o.size === v), v => { if (o.mode === '2v2') { o.size = 4; this.err = '2 gegen 2 braucht genau 4 Spieler.'; } else o.size = v; }, 90); y += rowH;
+    seg(y, multi ? 'Bereiche (mehrere = nacheinander)' : 'Bereich', STAGE_ORDER.map(id => [id, small || rw < 560 ? { kueche: 'Küche', gastraum: 'Innen', aussen: 'Außen', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' }[id] : STAGE_INFO[id].name]), v => o.stages.includes(v), v => { if (!multi) o.stages = [v]; else if (o.stages.includes(v)) { if (o.stages.length > 1) o.stages = o.stages.filter(x => x !== v); } else o.stages = STAGE_ORDER.filter(x => x === v || o.stages.includes(x)); o.stage = o.stages[0]; }); y += rowH;
     seg(y, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], v => o.diff === v, v => (o.diff = v)); y += rowH;
     if (duel) {
       seg(y, 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], v => o.kids === v, v => (o.kids = v), 90); y += rowH;
       const hw = (rw - 44) / 2;
-      [[hw < 300 ? 'Boss-Level' : 'Boss-Level am Ende', o.boss, () => (o.boss = !o.boss)], [hw < 300 ? 'Gegner sehen' : 'Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
+      [[hw < 300 ? 'Boss-Level' : 'Boss-Level am Ende', o.boss, () => (o.boss = o.mode === '2v2' ? false : !o.boss)], [hw < 300 ? 'Gegner sehen' : 'Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
         const bx = rx + 14 + i * (hw + 16), boxH = bh + 12; rrPath(c, bx, y - 4, hw, boxH, 14); fs(c, 'rgba(255,255,255,.55)', 2, 'rgba(61,44,31,.35)');
         txt(c, lab, bx + 10, y + boxH / 2 - 4, 12, '#6b5a48', 'left', null);
         const tw2 = Math.min(64, hw / 5); [['Ja', true], ['Nein', false]].forEach(([n, v], k) => { const tx = bx + hw - 8 - (2 - k) * (tw2 + 4), sel = on === v; rrPath(c, tx, y + 2, tw2, bh, 12); fs(c, sel ? (v ? '#06d6a0' : '#ffd166') : '#fff', 2.5); txt(c, n, tx + tw2 / 2, y + 2 + bh / 2, 13, '#3d2c1f', 'center', null); UI.btn(tx, y + 2, tw2, bh, () => { if (on !== v) fn(); Sfx.play('tap'); }); });
@@ -413,34 +419,53 @@ class LobbyScene {
     const w = Math.min(W - 30, 460), h = Math.min(H - 150, 290), x = (W - w) / 2, y = 76, py = y + Math.min(190, h - 60);
     panel(c, x, y, w, h, '#fff7e6', 24);
     const o = this.lob.opts, stars = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff];
-    txt(c, o.mode === 'team' ? 'Zusammen spielen · ' + stars : 'Duell · ' + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars, W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
+    txt(c, (o.size || 2) + ' Spieler · ' + (o.mode === 'team' ? 'Zusammen · ' + stars : (o.mode === '2v2' ? '2 gegen 2 · ' : 'Duell · ') + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars), W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
     txt(c, 'Spiel-Code', W / 2, y + 62, 13, '#6b5a48', 'center', null);
     this.lob.code.split('').forEach((ch, i) => { const cx = W / 2 + (i - 1.5) * 52; rrPath(c, cx - 22, y + 74, 44, 52, 12); fs(c, '#fff', 3); txt(c, ch, cx, y + 101, 30, '#118ab2', 'center', null); });
-    const ppl = [this.lob.host, this.lob.guest];
-    ppl.forEach((p, i) => { const cx = W / 2 + (i ? 90 : -90), cy = py; ell(c, cx, cy - 10, 30, 30); fs(c, p ? '#d8f3dc' : '#e9ecef', 3); if (p) { drawCritter(c, AVATARS[(p.avatar || 0) % 6], cx, cy + 14, 0.9, this.t + i, { noShadow: true }); txt(c, p.name, cx, cy + 40, 14, '#3d2c1f', 'center', null); } else { const b = Math.sin(this.t * 4) * 3; txt(c, '?', cx, cy - 10 + b, 28, '#adb5bd', 'center', null); txt(c, 'wartet …', cx, cy + 40, 13, '#6b5a48', 'center', null); } });
-    txt(c, this.lob.opts.mode === 'team' ? 'mit' : 'gegen', W / 2, py - 8, 14, '#6b5a48', 'center', null);
-    if (this.me === 'host' && this.lob.guest) {
+    const size = o.size || 2, ppl = (this.lob.players || [this.lob.host, this.lob.guest].filter(Boolean)).slice(0, size); while (ppl.length < size) ppl.push(null);
+    const gap = Math.min(110, (w - 40) / size);
+    ppl.forEach((p, i) => { const cx = W / 2 + (i - (size - 1) / 2) * gap, cy = py, teamCol = o.mode === '2v2' ? (i % 2 ? '#ffc8dd' : '#bde0fe') : null; ell(c, cx, cy - 10, 30, 30); fs(c, p ? (teamCol || '#d8f3dc') : '#e9ecef', 3);
+      if (p) { drawCritter(c, AVATARS[(p.avatar || 0) % 6], cx, cy + 14, 0.9, this.t + i, { noShadow: true }); txt(c, p.name, cx, cy + 40, 13, '#3d2c1f', 'center', null); }
+      else { const b = Math.sin(this.t * 4 + i) * 3; txt(c, '?', cx, cy - 10 + b, 26, '#adb5bd', 'center', null); txt(c, 'wartet …', cx, cy + 40, 12, '#adb5bd', 'center', null); } });
+    txt(c, o.mode === 'team' ? 'alle zusammen' : o.mode === '2v2' ? 'Blau gegen Rosa' : 'jeder gegen jeden', W / 2, py + 62, 13, '#6b5a48', 'center', null);
+    const need = o.mode === '2v2' ? 4 : 2, have = ppl.filter(Boolean).length;
+    if (this.me === 'host' && have >= need) {
       const pu = 1 + Math.sin(this.t * 5) * 0.05; c.save(); c.translate(W / 2, y + h + 34); c.scale(pu, pu); rrPath(c, -110, -26, 220, 52, 22); fs(c, '#06d6a0', 3.5); txt(c, 'Los geht’s!', 0, 1, 20, '#fff', 'center', BRAND.ink); c.restore();
       UI.btn(W / 2 - 110, y + h + 8, 220, 52, () => this.poll({ start: true }));
-    } else txt(c, this.me === 'guest' ? 'Warte, bis ' + this.lob.host.name + ' startet …' : 'Sag deinem Freund den Code!', W / 2, y + h + 30, 15, '#fff', 'center', BRAND.ink);
+    } else txt(c, this.me === 'guest' ? 'Warte, bis ' + this.lob.host.name + ' startet …' : have < need ? 'Sag deinen Freunden den Code! (' + have + '/' + need + ')' : 'Sag deinen Freunden den Code!', W / 2, y + h + 30, 15, '#fff', 'center', BRAND.ink);
   }
 }
 
 // ---------- Laufendes Mehrspieler-Spiel: Fortschritt senden/abholen ----------
 class Match {
   get stage() { return this.stages[this.si] || 'spielplatz'; }
-  constructor(lob, me) { this.stages = (lob.opts && lob.opts.stages && lob.opts.stages.length ? lob.opts.stages : [(lob.opts && lob.opts.stage) || 'spielplatz']); if (lob.opts && lob.opts.mode === 'team') this.stages = this.stages.slice(0, 1); this.si = 0; this.elapsed = 0; this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts; this.mode = lob.opts.mode || 'duell'; this.other = null; this.otherName = (me === 'host' ? lob.guest : lob.host).name; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop(); }
-  // Abgleich ohne Pause: nach jeder Antwort sofort (0,3 s) die nächste Abfrage
+  constructor(lob, me) {
+    this.stages = (lob.opts && lob.opts.stages && lob.opts.stages.length ? lob.opts.stages : [(lob.opts && lob.opts.stage) || 'spielplatz']);
+    this.mode = lob.opts.mode || 'duell'; if (this.mode !== 'duell') this.stages = this.stages.slice(0, 1);
+    this.si = 0; this.elapsed = 0; this.lob = lob; this.me = me; this.code = lob.code; this.seed = lob.seed; this.opts = lob.opts;
+    this.players = lob.players || [lob.host].concat(lob.guest ? [lob.guest] : []);
+    const mine = cleanL(ACC().login); this.idx = Math.max(0, this.players.findIndex(p => cleanL(p.login) === mine)); if (this.idx === 0 && me === 'guest') this.idx = 1;
+    this.n = this.players.length; this.team = this.mode === '2v2' ? this.idx % 2 : 0;
+    const oth = this.players.filter((p, i) => i !== this.idx);
+    this.mates = this.mode === '2v2' ? this.players.filter((p, i) => i !== this.idx && i % 2 === this.team) : [];
+    this.foes = this.mode === '2v2' ? this.players.filter((p, i) => i % 2 !== this.team) : [];
+    this.otherName = this.mode === '2v2' ? this.foes.map(p => p.name).join(' & ') : oth.map(p => p.name).join(' & ');
+    this.others = []; this.other = null; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop();
+  }
   async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 1500)); } }   // sparsam: jeder Abgleich kostet Speicher-Zugriffe
   set(p) { Object.assign(this.prog, p); }
   async sync() {
     if (this.busy || this.over === 'done') return; this.busy = true;
     const r = await api({ action: 'lobby_poll', code: this.code, progress: this.prog }); this.busy = false;
     if (r && r.status === 200) {
-      if (r.data.other) { if (!this.other || r.data.other.at !== this.other.at) this.lastOther = Date.now(); this.other = r.data.other; }
-      if (r.data.lobby.status === 'closed' && r.data.lobby.left !== cleanL(ACC().login) && !this.over) this.over = 'left';
+      const prev = this.others; this.others = (r.data.others || (r.data.other ? [{ idx: this.idx ? 0 : 1, name: this.otherName, prog: r.data.other }] : [])).map(o => ({ ...o, mate: this.mode === '2v2' && o.idx % 2 === this.team }));
+      if (this.others.some(o => o.prog && !(prev.find(q => q.idx === o.idx && q.prog && q.prog.at === o.prog.at)))) this.lastOther = Date.now();
+      // zusammengefasste Sicht auf die Mitspieler (für Team-Aufgaben + Anzeige)
+      const P = this.others.filter(o => o.prog && !o.gone).map(o => o.prog);
+      if (P.length) this.other = { pos: P[0].pos, done: Math.max(...P.map(p => p.done || 0)), got: [].concat(...P.map(p => p.got || [])), sw: (P.find(p => p.sw) || {}).sw || 0, hold: P.some(p => p.hold), chestOpen: P.some(p => p.chestOpen), chest: P.some(p => p.chest), roof: P.some(p => p.roof), fin: P.some(p => p.fin), at: Math.max(...P.map(p => p.at || 0)) };
+      const lob = r.data.lobby; if (lob.status === 'closed' && lob.left !== cleanL(ACC().login) && !this.over) this.over = 'left';
     }
-    if (!this.over && Date.now() - this.lastOther > 45000) this.over = 'lost';   // Verbindung zum anderen weg
+    if (!this.over && Date.now() - this.lastOther > 45000) this.over = 'lost';   // Verbindung zu allen anderen weg
   }
   stop() { this.over = 'done'; }
   leave() { api({ action: 'lobby_poll', code: this.code, leave: true }); this.stop(); }

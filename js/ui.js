@@ -523,6 +523,9 @@ class NewAccount {
       this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return;
     }
     const e = r && r.data && r.data.error;
+    if ((!r || r.status >= 500) && this.migrate) {   // Spielstand sichern geht gerade nicht: nichts Neues anlegen, Spielstand bleibt auf dem Gerät
+      this.err = 'Der Server ist gerade nicht erreichbar. Dein Spielstand bleibt auf diesem Gerät – versuch es später nochmal.'; this.step = 'name'; Sfx.play('bad'); return;
+    }
     if (!r || r.status >= 500) {   // Server nicht erreichbar/gestört: Konto auf diesem Gerät anlegen, damit man trotzdem spielen kann
       const old = this.migrate && Save.data.accounts[this.migrate];
       if (old) { old.name = this.name; old.code = code; old.avatar = this.avatar; old.localOnly = true; Save.data.current = this.migrate; }
