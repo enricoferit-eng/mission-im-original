@@ -297,10 +297,10 @@ const STAGE_COL = { kueche: '#adb5bd', gastraum: '#d27d55', aussen: '#74c69d', s
     this.coachTop = 0; hud0.call(this, c);
     const name = STAGE_NAME[this.stage]; if (!name) return;
     // über dem Hinweis-Band, damit sich nichts überdeckt
-    c.font = `900 22px ${FONT}`; const w = c.measureText(name).width + 74, x = W / 2 - w / 2, y = this.coachTop ? this.coachTop - 52 : H - 56;
-    rrPath(c, x, y, w, 44, 22); fs(c, 'rgba(255,255,255,.95)', 3.5); ell(c, x + 26, y + 22, 15, 15); fs(c, STAGE_COL[this.stage] || '#fff', 3);
-    drawCollect(c, this.stage, x + 26, y + 22, 1.6, -0.5);
-    txt(c, name, x + 50, y + 23, 22, '#35452F', 'left', null);
+    c.font = `900 16px ${FONT}`; const w = c.measureText(name).width + 54, x = W / 2 - w / 2, y = this.coachTop ? this.coachTop - 40 : H - 42;
+    rrPath(c, x, y, w, 32, 16); fs(c, 'rgba(255,255,255,.9)', 2.5); ell(c, x + 18, y + 16, 11, 11); fs(c, STAGE_COL[this.stage] || '#fff', 2);
+    drawCollect(c, this.stage, x + 18, y + 16, 1.15, -0.5);
+    txt(c, name, x + 34, y + 17, 16, '#35452F', 'left', null);
   };
   if (Play.prototype.drawHud._src === undefined) Play.prototype.drawHud._src = hud0._src || hud0;
 }
@@ -341,7 +341,7 @@ class WorldMap {
     hud1.call(this, c);
     if (this.mp) return;
     const x = W - 46, y = 108;
-    roundBtn(c, x, y, 24, '#caffbf', null, () => { Sfx.play('tap'); overlay = new WorldMap(this); }, '#2d6a4f');
+    roundBtn(c, x, y, 21, '#caffbf', null, () => { Sfx.play('tap'); overlay = new WorldMap(this); }, '#2d6a4f');
     // kleines Karten-Symbol: 3 x 2 Kacheln
     for (let r = 0; r < 2; r++) for (let k = 0; k < 3; k++) { rrPath(c, x - 13 + k * 9, y - 9 + r * 9, 8, 8, 2); c.fillStyle = (r + k) % 2 ? '#2d6a4f' : '#74c69d'; c.fill(); }
     txt(c, 'Karte', x, y + 34, 11, '#fff', 'center', BRAND.olive);

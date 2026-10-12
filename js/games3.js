@@ -300,10 +300,12 @@ GAMES.pizzaofen = { make(env) {
       c.fillStyle = '#212529'; c.fillRect(0, 0, GAME_W, GAME_H);
       txt(c, got + ' / ' + need, 200, 40, 22, '#fff', 'center', BRAND.olive);
       S.forEach(s => {
-        rrPath(c, 40, s.y, 320, 96, 14); fs(c, '#343a40', 3); rrPath(c, 56, s.y + 14, 288, 68, 10); c.fillStyle = `rgba(255,${120 + Math.sin(t * 6 + s.y) * 20},40,.35)`; c.fill();
-        for (let k = 0; k < 4; k++) { ell(c, 80 + k * 80, s.y + 80, 22, 6); c.fillStyle = `rgba(255,${150 + Math.sin(t * 10 + k) * 40},50,.5)`; c.fill(); }
-        if (s.on) { const b = clamp(s.b, 0, 1.15), col = b < 0.35 ? '#fdf0d5' : b < W1 ? '#f6d38d' : b < W2 ? '#e09f3e' : b < 1 ? '#9c6644' : '#3d2c1f';
-          c.save(); c.translate(200 + Math.sin(t * 2 + s.y) * 4, s.y + 48); rrPath(c, -100, -26, 200, 52, 14); fs(c, col, 3); for (let k = 0; k < 8; k++) { ell(c, -80 + k * 23, -6 + (k % 3) * 8, 6, 4); c.fillStyle = k % 2 ? '#c1121f' : '#fff3b0'; c.fill(); } if (b > 1) for (let k = 0; k < 3; k++) { ell(c, -40 + k * 40, -40 - ((t * 30 + k * 10) % 30), 12, 9); c.fillStyle = 'rgba(120,120,120,.5)'; c.fill(); } c.restore();
+        rrPath(c, 40, s.y, 320, 96, 14); fs(c, '#495057', 3);
+        for (let k = 0; k < 9; k++) { rrPath(c, 44 + k * 35, s.y + 4, 32, 10, 3); c.fillStyle = k % 2 ? '#6c757d' : '#5c636a'; c.fill(); }   // Mauersteine oben
+        { const gr = c.createLinearGradient(0, s.y + 14, 0, s.y + 84); gr.addColorStop(0, '#2b1d14'); gr.addColorStop(1, `rgb(${140 + Math.sin(t * 6 + s.y) * 20},60,20)`); rrPath(c, 56, s.y + 16, 288, 68, 10); c.fillStyle = gr; c.fill(); }
+        for (let k = 0; k < 7; k++) { ell(c, 70 + k * 44, s.y + 78, 16, 5); c.fillStyle = `rgba(255,${150 + Math.sin(t * 10 + k) * 50},40,.65)`; c.fill(); }   // Glut
+        rrPath(c, 60, s.y + 70, 280, 10, 4); c.fillStyle = 'rgba(80,60,50,.8)'; c.fill();   // Schamottstein-Boden
+        if (s.on) { const b = clamp(s.b, 0, 1.15); c.save(); c.translate(200 + Math.sin(t * 2 + s.y) * 3, s.y + 48); drawFlammkuchenTop(c, 210, 56, b, t, s.y); c.restore();
           rrPath(c, 300, s.y + 10, 16, 76, 8); c.fillStyle = 'rgba(255,255,255,.15)'; c.fill(); rrPath(c, 300, s.y + 10 + 76 * (1 - W2), 16, 76 * (W2 - W1), 6); c.fillStyle = 'rgba(6,214,160,.6)'; c.fill(); ell(c, 308, s.y + 10 + 76 * (1 - clamp(b, 0, 1)), 9, 5); fs(c, '#fff', 2); }
       });
       fly.forEach(f => { c.globalAlpha = 1 - f.t / 0.8; txt(c, f.burnt ? 'Verbrannt!' : 'Perfekt!', 200, f.y + 40 - f.t * 40, 24, f.burnt ? '#ef476f' : '#80ed99', 'center', '#fff'); c.globalAlpha = 1; });
@@ -319,6 +321,28 @@ GAMES.pizzaofen = { make(env) {
   };
 } };
 
+// Flammkuchen von oben: dünner rechteckiger Boden mit knusprigem Rand, Schmand, Speckwürfel, Zwiebelringe, Schnittlauch.
+// b = Backgrad (0 roh … ~0.7 goldbraun … 1 dunkel … >1 verbrannt)
+function drawFlammkuchenTop(c, w, h, b, t = 0, seed = 0) {
+  const mix = (a, z, u) => '#' + [0, 2, 4].map(k => Math.round(parseInt(a.substr(1 + k, 2), 16) * (1 - u) + parseInt(z.substr(1 + k, 2), 16) * u).toString(16).padStart(2, '0')).join('');
+  const crust = b < 0.6 ? mix('#f1e1bf', '#e2a756', b / 0.6) : b < 1 ? mix('#e2a756', '#8d5a3b', (b - 0.6) / 0.4) : mix('#8d5a3b', '#2b1d14', Math.min(1, (b - 1) / 0.15));
+  const cream = b < 0.7 ? mix('#fbf6ea', '#f6e3bd', b / 0.7) : mix('#f6e3bd', '#6f4e37', Math.min(1, (b - 0.7) / 0.45));
+  c.fillStyle = 'rgba(0,0,0,.3)'; rrPath(c, -w / 2 + 4, -h / 2 + 6, w, h, 10); c.fill();
+  // Boden mit welligem Rand
+  c.beginPath(); for (let k = 0; k <= 24; k++) { const u = k / 24, x = -w / 2 + u * w, y = -h / 2 + Math.sin(k * 1.9 + seed) * 2; k ? c.lineTo(x, y) : c.moveTo(x, y); }
+  for (let k = 0; k <= 24; k++) { const u = k / 24, x = w / 2 - u * w, y = h / 2 + Math.sin(k * 2.3 + seed) * 2; c.lineTo(x, y); } c.closePath(); fs(c, crust, 2.5);
+  rrPath(c, -w / 2 + 9, -h / 2 + 8, w - 18, h - 16, 8); c.fillStyle = cream; c.fill();
+  // Bräunungsflecken
+  if (b > 0.45) for (let k = 0; k < 12; k++) { ell(c, -w / 2 + 20 + ((k * 53 + seed) % (w - 40)), -h / 2 + 14 + ((k * 31) % (h - 28)), 5 + (k % 3) * 2, 3 + (k % 2)); c.fillStyle = `rgba(150,90,30,${Math.min(0.55, (b - 0.45) * 1.3)})`; c.fill(); }
+  // Zwiebelringe
+  for (let k = 0; k < 6; k++) { const x = -w / 2 + 26 + k * (w - 52) / 5, y = (k % 2 ? 7 : -8); c.beginPath(); c.arc(x, y, 7, 0.3, Math.PI * 1.4); c.lineWidth = 2.2; c.strokeStyle = b > 1 ? '#3d2c1f' : '#fff8e1'; c.stroke(); c.lineWidth = 1; c.strokeStyle = 'rgba(160,120,60,.5)'; c.stroke(); }
+  // Speckwürfel
+  for (let k = 0; k < 11; k++) { const x = -w / 2 + 18 + ((k * 37 + seed * 3) % (w - 36)), y = -h / 2 + 13 + ((k * 23) % (h - 26)); rrPath(c, x - 4, y - 3, 8, 6, 2); c.fillStyle = b > 1 ? '#4a2c20' : mix('#e07a7f', '#a63d40', Math.min(1, b)); c.fill(); line(c, x - 3, y - 1, x + 3, y - 1, 1.2, 'rgba(255,255,255,.55)', false); }
+  // Schnittlauch (erst wenn er fertig ist? – nein, immer: grüne Röllchen)
+  for (let k = 0; k < 9; k++) { ell(c, -w / 2 + 22 + ((k * 41 + seed) % (w - 44)), -h / 2 + 18 + ((k * 17) % (h - 34)), 2, 2); c.fillStyle = b > 1 ? '#2d3a20' : '#52b788'; c.fill(); }
+  // verbrannt: Rauch
+  if (b > 1) for (let k = 0; k < 3; k++) { const p = (t * 0.8 + k / 3) % 1; ell(c, -30 + k * 30, -h / 2 - p * 40, 10 + p * 12, 8 + p * 8); c.fillStyle = `rgba(90,90,90,${0.5 * (1 - p)})`; c.fill(); }
+}
 const KITCHEN_GAMES = ['schnippeln', 'ruehren', 'ueberkochen', 'pfannkuchen', 'kneten', 'eier', 'kuehlpacken', 'pizzaofen'];
 Object.assign(HELP_TEXT, {
   schnippeln: 'Das Gemüse rollt am Messer vorbei. Tippe genau dann, wenn eine gestrichelte Schnittlinie unter dem Messer ist.',

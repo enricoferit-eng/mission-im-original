@@ -42,7 +42,7 @@ class GameOverlay {
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
     GAME_MOTION = o.diff === 'easy' ? 0.7 : o.diff === 'hard' ? 1.3 : 1;
-    this.cd = 3; this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
+    this.cd = 1; this.ready = false; /* statt 3-2-1: das Kind drückt selbst auf „Los!“ */ this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
     this.par = parTime(this.id, o.diff, o.kind); this.thr = [this.par, Math.round(this.par * 1.7)];
     const burst0 = this.env.burst; this.env.burst = (x, y, n) => { burst0(x, y, n); self.good(x, y); };
     Sfx.hook = type => { if (overlay === self && type === 'bad') self.miss(); };
@@ -126,6 +126,7 @@ class GameOverlay {
   // Zündschnur + Sterne (Druck ohne weniger Zeit: wer schnell ist, bekommt mehr Sterne)
   tickPressure(dt) {
     if (this.cdWait > 0) { this.cdWait -= dt; return false; }
+    if (!this.ready && this.cd > 0) return false;   // wartet auf „Los!“
     if (this.cd > -0.6) {
       const before = Math.ceil(this.cd); this.cd -= dt; const after = Math.ceil(this.cd);
       if (after !== before && before > 0) { if (after > 0) Sfx.note(660, 0.12, 'square', 0.05); else { Sfx.note(990, 0.35, 'square', 0.06, 1.2); buzz(40); } }
@@ -176,9 +177,16 @@ class GameOverlay {
     if (this.cd <= -0.6 || this.help || this.state !== 'play' || this.cdWait > 0) return;
     const p = this.toScreen(200, 250), n = Math.ceil(this.cd), fr = this.cd > 0 ? this.cd - Math.floor(this.cd) : 0;
     const k = this.cd > 0 ? ease.back(clamp((1 - fr) * 3, 0, 1)) : ease.back(clamp((-this.cd) * 4, 0, 1));
-    if (this.cd > 0) { c.fillStyle = 'rgba(16,28,18,.45)'; c.fillRect(0, 0, W, H); }
-    c.save(); c.translate(p.x, p.y); c.scale(k * 1.6, k * 1.6); c.rotate(this.cd > 0 ? (fr - 0.5) * 0.3 : 0);
-    if (this.cd > 0) { ell(c, 0, 0, 58, 58); fs(c, ['#06d6a0', '#ffd166', '#ef476f'][n - 1] || '#ef476f', 6); txt(c, String(n), 0, 3, 72, '#fff', 'center', OL); }
+    if (!this.ready && this.cd > 0) {   // großer Los-Knopf, das Spiel startet erst, wenn man tippt
+      c.fillStyle = 'rgba(16,28,18,.35)'; c.fillRect(0, 0, W, H);
+      const pu = 1 + Math.sin(this.t * 5) * 0.05; c.save(); c.translate(p.x, p.y); c.scale(pu, pu);
+      rrPath(c, -110, -44, 220, 88, 44); fs(c, '#06d6a0', 6); icon(c, 'play', -56, 0, 46); txt(c, 'Los!', 22, 3, 46, '#fff', 'center', OL); c.restore();
+      txt(c, 'Tippe, wenn du bereit bist', p.x, p.y + 76, 15, '#fff', 'center', OL);
+      return;
+    }
+    if (this.cd > 0) return;
+    c.save(); c.translate(p.x, p.y); c.scale(k * 1.6, k * 1.6);
+    if (false) {}
     else { c.globalAlpha = clamp(1 + this.cd * 1.6, 0, 1); rrPath(c, -100, -42, 200, 84, 42); fs(c, BRAND.lime, 6); txt(c, 'LOS!', 0, 3, 60, '#fff', 'center', OL); }
     c.restore();
   }
@@ -280,7 +288,7 @@ class GameOverlay {
     this.drawRays(c);
     const dz = this.danger();
     if (dz > 0) { const a = dz * (0.25 + 0.25 * Math.sin(this.t * 14)); const gr = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.7); gr.addColorStop(0, 'rgba(239,71,111,0)'); gr.addColorStop(1, `rgba(239,71,111,${a})`); c.fillStyle = gr; c.fillRect(0, 0, W, H); }
-    roundBtn(c, 46, 44, 30, '#fff', 'stop', () => { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
+    roundBtn(c, 44, 42, 24, '#fff', 'stop', () => { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
     const o = this.opts;
     if (o.kind === 'easy' && o.steps) {
       const n = o.steps.n, w = Math.min(28, this.side ? (H - 140) / n : (W - 200) / n);
@@ -356,7 +364,7 @@ class GameOverlay {
       lines.forEach((l, i) => txt(c, l, W / 2, ty + 20 + i * 22, 17, '#fff', 'center', null)); c.globalAlpha = 1;
     }
     // Erklär-Knopf (?) + Erklärung mit Text
-    if (this.state === 'play') roundBtn(c, W - 46, 44, 26, '#bde0fe', 'question', () => { this.help = !this.help; }, '#118ab2');
+    if (this.state === 'play') roundBtn(c, W - 44, 42, 21, '#bde0fe', 'question', () => { this.help = !this.help; }, '#118ab2');
     if (this.help) {
       const lines = [HELP_TEXT[this.id] || 'Probier es einfach aus!'];
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
@@ -367,6 +375,7 @@ class GameOverlay {
     }
   }
   down(x, y, id) { if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
+    if (this.state === 'play' && !this.help && !this.ready && this.cd > 0 && this.cdWait <= 0) { this.ready = true; this.cd = 0.001; Sfx.note(990, 0.3, 'square', 0.06, 1.2); buzz(30); return; }
     if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
   move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
   up(x, y, id) { if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.up) this.g.up(p.x, p.y, id); }

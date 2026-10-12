@@ -1410,8 +1410,8 @@ class Play {
     return bd < 80 ? 5 : bd < 170 ? 4 : bd < 300 ? 3 : bd < 460 ? 2 : 1;
   }
   drawHud(c) {
-    roundBtn(c, 46, 46, 30, '#fff', 'stop', () => this.stop());
-    roundBtn(c, 112, 46, 24, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
+    roundBtn(c, 46, 46, 25, '#fff', 'stop', () => this.stop());
+    roundBtn(c, 106, 46, 20, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
     soundBtn(c, W - 40, 46);
     { const n = this.st.leaves.filter(o => o.got).length, k = 1 + this.leafPop * 0.35;
       rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
@@ -1536,7 +1536,7 @@ class Play {
     if (this.canSearch() && !this.swinging) {
       const bx = W - 58, by = H - 112, pulse = !ACC().tut.search ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(bx, by); c.scale(pulse, pulse);
-      roundBtn(c, 0, 0, 38, this.searching ? '#ffd166' : '#fff', 'search', null);
+      roundBtn(c, 0, 0, 32, this.searching ? '#ffd166' : '#fff', 'search', null);
       c.restore();
       UI.btn(bx - 46, by - 46, 92, 92, () => this.startSearch());
       if (!ACC().tut.search) drawHand(c, bx + 4, by + 30 + Math.abs(Math.sin(this.t * 4)) * 10, 1.4);

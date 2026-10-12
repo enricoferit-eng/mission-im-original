@@ -81,7 +81,7 @@ class Menu {
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
-    if (!(a.tut && a.tut.guide)) { const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
+    if (!(a.tut && a.tut.guide) && this.t < 8) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
@@ -807,7 +807,7 @@ class StageMap {
     c.restore();
     // Kopfleiste
     topBar(c, () => setScene(new Menu()));
-    txt(c, d.name, 92, 44, 22, '#fff', 'left', BRAND.olive);
+    { c.font = `900 18px ${FONT}`; const tw = c.measureText(d.name).width + 28; rrPath(c, W / 2 - tw / 2, 14, tw, 32, 16); c.fillStyle = 'rgba(32,44,30,.75)'; c.fill(); txt(c, d.name, W / 2, 31, 18, '#fff', 'center', null); }
     // Info-Karte zum gewählten Bereich
     const id = STAGE_ORDER[this.cur], open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
     const cw = Math.min(W - 120, 560), ch = 104, cx = 16 + (W - 120 - cw) / 2, k = ease.back(this.card), cy = H - ch - 12 + (1 - k) * 140;
@@ -821,11 +821,11 @@ class StageMap {
         const done = ALL_IDS.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
         for (let q = 0; q < 6; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); }
         const pu = 1 + Math.sin(t * 6) * 0.07;
-        c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 34, '#06d6a0', 'play', null); c.restore();
+        c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 28, '#06d6a0', 'play', null); c.restore();
         UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
       } else { const prev = STAGE_ORDER[STAGE_ORDER.indexOf(id) - 1], lab = prev ? 'Schaffe zuerst: ' + STAGE_INFO[prev].name : 'gesperrt'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 44; rrPath(c, tx, cy + 64, lw, 28, 14); fs(c, '#fff', 2); icon(c, 'lock', tx + 16, cy + 78, 18); txt(c, lab, tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
     }
-    roundBtn(c, W - 50, H - 60, 30, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
+    roundBtn(c, W - 46, H - 52, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
   }
   down(x, y) { this.drag = { x0: x, cam0: this.camX, moved: false }; }
   move(x) { const d = this.drag; if (!d) return; if (Math.abs(x - d.x0) > 10) d.moved = true; if (d.moved) { const G = this.geo(); this.camX = clamp(d.cam0 - (x - d.x0), 0, G.mapW - W); } }

@@ -92,6 +92,26 @@ Object.assign(ITEMS, {
 });
 const KUECHE_ITEMS = ['kochloeffel', 'schneebesen', 'kelle', 'sieb', 'nudelholz', 'wender', 'messbecher', 'tomate', 'kaese', 'salatkopf', 'eieruhr', 'topflappen'];
 
+// ---- Zutaten in Behältern (damit man erkennt, was drin ist) ----
+function gnFill(c, x, y, w, h, kind, seed = 1) {
+  c.save(); rrPath(c, x, y, w, h, 3); c.clip();
+  const bg = { salat: '#2d6a4f', tomate: '#9d0208', zwiebel: '#e9ecef', kaese: '#f4a261', paprika: '#2b9348', pilze: '#cbb89d', speck: '#b5838d', sosse: '#c1121f', nudeln: '#f6d38d', eis: '#dbe4ee' }[kind] || '#adb5bd';
+  c.fillStyle = bg; c.fillRect(x, y, w, h);
+  const n = Math.round(w * h / 90);
+  for (let i = 0; i < n; i++) {
+    const px = x + ((i * 37 + seed * 11) % 100) / 100 * w, py = y + ((i * 61 + seed * 7) % 100) / 100 * h;
+    if (kind === 'salat') { ell(c, px, py, 8, 6, i); c.fillStyle = ['#52b788', '#74c69d', '#95d5b2', '#40916c'][i % 4]; c.fill(); }
+    else if (kind === 'tomate') { ell(c, px, py, 6, 6); fs(c, '#e63946', 1); ell(c, px - 2, py - 2, 1.8, 1.4); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill(); }
+    else if (kind === 'zwiebel') { c.beginPath(); c.arc(px, py, 5, 0, TAU); c.lineWidth = 1.6; c.strokeStyle = '#c77dff'; c.stroke(); }
+    else if (kind === 'kaese') { rrPath(c, px - 4, py - 4, 8, 8, 1.5); fs(c, '#ffd166', 1); }
+    else if (kind === 'paprika') { line(c, px - 5, py, px + 5, py + 2, 4, i % 2 ? '#e63946' : '#ffd166', false); }
+    else if (kind === 'pilze') { c.beginPath(); c.arc(px, py, 5, Math.PI, 0); c.closePath(); fs(c, '#a0673a', 1); }
+    else if (kind === 'speck') { rrPath(c, px - 4, py - 3, 8, 6, 2); fs(c, '#e07a7f', 1); line(c, px - 3, py - 1, px + 3, py - 1, 1.2, '#fff', false); }
+    else if (kind === 'nudeln') { c.beginPath(); c.arc(px, py, 5, 0.4, 2.6); c.lineWidth = 2.2; c.strokeStyle = '#e9c46a'; c.stroke(); }
+  }
+  if (kind === 'sosse') { c.beginPath(); c.arc(x + w / 2, y + h / 2, Math.min(w, h) * 0.3, 0, 4.5); c.lineWidth = 2; c.strokeStyle = 'rgba(255,255,255,.35)'; c.stroke(); }
+  c.restore();
+}
 // ---- Hilfs-Zeichnungen: Edelstahl, Fliesen ----
 function steel(c, x, y, w, h, r = 6) { const g = c.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, '#e9ecef'); g.addColorStop(0.5, '#ced4da'); g.addColorStop(1, '#dee2e6'); rrPath(c, x, y, w, h, r); fs(c, g, 3); }
 function tiles(c, x, y, w, h, s = 22, col = '#fbfbfb') { c.fillStyle = col; c.fillRect(x, y, w, h); c.strokeStyle = 'rgba(0,0,0,.09)'; c.lineWidth = 1.2; for (let a = x; a <= x + w; a += s) { c.beginPath(); c.moveTo(a, y); c.lineTo(a, y + h); c.stroke(); } for (let b = y; b <= y + h; b += s) { c.beginPath(); c.moveTo(x, b); c.lineTo(x + w, b); c.stroke(); } }
@@ -188,14 +208,14 @@ const KDRAW = {
   },
   pass(c, d, t) {
     counterBlock(c, d.x0, d.y0, d.w, d.h);
-    for (let k = 0; k < 5; k++) { rrPath(c, d.x0 + 14 + (k % 2) * 80, d.y0 + 30 + Math.floor(k / 2) * 70, 70, 54, 4); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + 18 + (k % 2) * 80, d.y0 + 34 + Math.floor(k / 2) * 70, 62, 46, 3); c.fillStyle = ['#e63946', '#95d5b2', '#f6d38d', '#6c584c', '#ffd166'][k]; c.fill(); }   // Kühltheke mit Zutaten
+    for (let k = 0; k < 5; k++) { rrPath(c, d.x0 + 14 + (k % 2) * 80, d.y0 + 30 + Math.floor(k / 2) * 70, 70, 54, 4); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + 18 + (k % 2) * 80, d.y0 + 34 + Math.floor(k / 2) * 70, 62, 46, 3); gnFill(c, d.x0 + 18 + (k % 2) * 80, d.y0 + 34 + Math.floor(k / 2) * 70, 62, 46, ['tomate', 'salat', 'nudeln', 'pilze', 'kaese'][k], k + 1); }   // Kühltheke mit Zutaten
     rrPath(c, d.x0 + 20, d.y0 + 250, 140, 100, 6); fs(c, '#f8f9fa', 2.5); line(c, d.x0 + 60, d.y0 + 290, d.x0 + 120, d.y0 + 280, 3, '#ffd166');   // Schneidbrett mit Messer
     // Wärmebrücke (Regal darüber)
     rrPath(c, d.x0 - 6, d.y0 - 60, d.w + 12, 14, 4); fs(c, '#dee2e6', 3); line(c, d.x0 + 4, d.y0 - 46, d.x0 + 4, d.y0 + 10, 4, '#adb5bd'); line(c, d.x0 + d.w - 4, d.y0 - 46, d.x0 + d.w - 4, d.y0 + 10, 4, '#adb5bd');
   },
   salat(c, d) {
     counterBlock(c, d.x0, d.y0, d.w, d.h);
-    for (let k = 0; k < 4; k++) { rrPath(c, d.x0 + 14, d.y0 + 20 + k * 66, d.w - 28, 54, 4); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + 18, d.y0 + 24 + k * 66, d.w - 36, 46, 3); c.fillStyle = ['#74c69d', '#e63946', '#f1faee', '#ffd166'][k]; c.fill(); if (k === 0) for (let m = 0; m < 6; m++) { ell(c, d.x0 + 30 + m * 16, d.y0 + 40 + (m % 2) * 10, 8, 6, m); c.fillStyle = '#95d5b2'; c.fill(); } }
+    for (let k = 0; k < 4; k++) { rrPath(c, d.x0 + 14, d.y0 + 20 + k * 66, d.w - 28, 54, 4); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + 18, d.y0 + 24 + k * 66, d.w - 36, 46, 3); gnFill(c, d.x0 + 18, d.y0 + 24 + k * 66, d.w - 36, 46, ['salat', 'tomate', 'zwiebel', 'speck'][k], k + 3); }
   },
   regal(c, d) {
     rrPath(c, d.x0 - 4, d.y0 - 40, 8, 200, 3); fs(c, '#adb5bd', 2); rrPath(c, d.x0 + d.w - 4, d.y0 - 40, 8, 200, 3); fs(c, '#adb5bd', 2);   // Regal-Pfosten
@@ -216,12 +236,15 @@ const KDRAW = {
     for (let k = 1; k < 5; k++) line(c, d.x0 + k * d.w / 5, d.y0 - 76, d.x0 + k * d.w / 5, d.y0 + d.h - 4, 2, 'rgba(0,0,0,.08)', false);
     rrPath(c, d.x0, d.y0 + d.h - 100, d.w, 100, 6); fs(c, '#e9ecef', 3);   // Vorderseite
     rrPath(c, d.x0 + d.w - 110, d.y0 + d.h - 96, 96, 92, 4); fs(c, '#f8f9fa', 2.5); rrPath(c, d.x0 + d.w - 30, d.y0 + d.h - 64, 10, 34, 4); fs(c, '#343a40', 2);
-    rrPath(c, d.x0 + 18, d.y0 + d.h - 90, 120, 50, 4); fs(c, '#ffd60a', 2.5);  
+    rrPath(c, d.x0 + 18, d.y0 + d.h - 90, 120, 50, 4); fs(c, '#4dabf7', 2.5);
+    { const sx = d.x0 + 78, sy = d.y0 + d.h - 65; for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3; line(c, sx - Math.cos(a) * 18, sy - Math.sin(a) * 18, sx + Math.cos(a) * 18, sy + Math.sin(a) * 18, 4, '#fff', false); } }   // Schneeflocke = Kühlraum
     for (let k = 0; k < 4; k++) { const fx = d.x0 + 30 + k * 60, fy = d.y0 - 40 + ((k * 23) % 30); ell(c, fx, fy, 3, 3); c.fillStyle = 'rgba(160,210,255,.6)'; c.fill(); }   // Kälte
   },
   kisten(c, d) {
     c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, d.x, d.y + 2, 40, 10); c.fill();
-    for (let k = 0; k < 3; k++) { rrPath(c, d.x - 34, d.y - 34 - k * 30, 68, 34, 4); fs(c, '#212529', 2.5); for (let m = 0; m < 4; m++) { rrPath(c, d.x - 28 + m * 15, d.y - 30 - k * 30, 10, 24, 4); fs(c, '#4dabf7', 1.5); } line(c, d.x - 30, d.y - 20 - k * 30, d.x + 30, d.y - 20 - k * 30, 2, 'rgba(255,255,255,.2)', false); }
+    // gestapelte Gemüsekisten (grün), oben sieht man das Gemüse
+    for (let k = 0; k < 3; k++) { rrPath(c, d.x - 34, d.y - 34 - k * 30, 68, 34, 4); fs(c, '#2b9348', 2.5); for (let m = 0; m < 4; m++) { rrPath(c, d.x - 28 + m * 15, d.y - 26 - k * 30, 10, 14, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); } }
+    { const top = d.y - 34 - 2 * 30, veg = d.id === 'kisten2' ? 'pilze' : 'tomate'; rrPath(c, d.x - 30, top - 10, 60, 16, 4); c.fillStyle = '#1b4332'; c.fill(); for (let m = 0; m < 6; m++) { const vx = d.x - 24 + m * 10, vy = top - 4 - (m % 2) * 5; if (veg === 'tomate') { ell(c, vx, vy, 6, 6); fs(c, '#e63946', 1.5); ell(c, vx, vy - 5, 2, 1.5); c.fillStyle = '#2b9348'; c.fill(); } else { c.beginPath(); c.arc(vx, vy + 2, 6, Math.PI, 0); c.closePath(); fs(c, '#a0673a', 1.5); } } }
   },
   kistenregal(c, d) {
     rrPath(c, d.x0, d.y0 - 60, d.w, d.h + 60, 3); fs(c, '#ced4da', 2.5);
@@ -234,7 +257,7 @@ const KDRAW = {
   },
   getraenke(c, d) {
     rrPath(c, d.x0, d.y0 - 110, d.w, d.h + 110, 4); fs(c, '#212529', 3); rrPath(c, d.x0 + 4, d.y0 - 106, d.w - 8, 18, 3); c.fillStyle = '#1c4fd8'; c.fill(); 
-    rrPath(c, d.x0 + 6, d.y0 - 84, d.w - 12, d.h + 70, 3); c.fillStyle = 'rgba(160,210,255,.25)'; c.fill(); for (let k = 0; k < 5; k++) { line(c, d.x0 + 8, d.y0 - 70 + k * 24, d.x0 + d.w - 8, d.y0 - 70 + k * 24, 2, '#4dabf7', false); rrPath(c, d.x0 + 12, d.y0 - 84 + k * 24, d.w - 24, 12, 2); c.fillStyle = ['#f77f00', '#fff', '#e63946', '#ffd166', '#fff'][k]; c.fill(); }
+    rrPath(c, d.x0 + 6, d.y0 - 84, d.w - 12, d.h + 70, 3); c.fillStyle = 'rgba(160,210,255,.25)'; c.fill(); for (let k = 0; k < 5; k++) { line(c, d.x0 + 8, d.y0 - 70 + k * 24, d.x0 + d.w - 8, d.y0 - 70 + k * 24, 2, '#4dabf7', false); for (let m = 0; m < 5; m++) { const bx = d.x0 + 14 + m * (d.w - 28) / 4, by = d.y0 - 72 + k * 24, col = ['#2b9348', '#f77f00', '#e63946', '#ffd166', '#4dabf7'][(k + m) % 5]; rrPath(c, bx - 4, by - 14, 8, 14, 2); fs(c, col, 1); rrPath(c, bx - 2, by - 19, 4, 6, 1); c.fillStyle = '#343a40'; c.fill(); } }   // Flaschen
   },
   stahl(c, d) { steel(c, d.x0, d.y0 - 110, d.w, d.h + 110, 4); rrPath(c, d.x0 + 6, d.y0 - 104, d.w - 12, 14, 2); fs(c, '#212529', 1.5); rrPath(c, d.x0 + 18, d.y0 - 70, 34, 44, 2); fs(c, '#fff', 1.5); rrPath(c, d.x0 + d.w - 12, d.y0 - 60, 5, 40, 2); fs(c, '#495057', 1.5); },
   saecke(c, d) { for (const [dx, dy] of [[-12, 0], [10, -4]]) { rrPath(c, d.x + dx - 16, d.y + dy - 36, 32, 38, 10); fs(c, '#f1e3c8', 2.5);  } },
