@@ -119,10 +119,11 @@ function findPath(sx, sy, sl, tx, ty, tl, exact) {
   const tx0 = t % GW, ty0 = Math.floor(t / GW);
   const h = i => { const dx = Math.abs(i % GW - tx0), dy = Math.abs(Math.floor(i / GW) - ty0); return Math.max(dx, dy) + 0.414 * Math.min(dx, dy); };
   const st = sl * N + s; g[st] = 0; push(h(s), st);
-  let goal = -1, iter = 0;
-  while (heap.length && iter++ < 20000) {
+  let goal = -1, iter = 0, best = st, bestH = h(s);   // best: am nächsten erreichbare Stelle, falls das Ziel selbst nicht erreichbar ist
+  while (heap.length && iter++ < 30000) {
     const [, n] = pop(); if (closed[n]) continue; closed[n] = 1;
     const l = n >= N ? 1 : 0, i = n - l * N;
+    { const hi = h(i); if (hi < bestH) { bestH = hi; best = n; } }
     if (i === t && (l === tl || ST[i])) { goal = n; break; }
     const cx = i % GW, cy = Math.floor(i / GW);
     const lv = ST[i] ? [0, 1] : [l];
@@ -138,7 +139,7 @@ function findPath(sx, sy, sl, tx, ty, tl, exact) {
       }
     }
   }
-  if (goal < 0) return null;
+  if (goal < 0) { if (exact || best === st) return null; goal = best; }   // so nah wie möglich heran
   const out = [];
   for (let n = goal; n >= 0 && n !== st; n = came[n]) { const l = n >= N ? 1 : 0, i = n - l * N; out.push({ x: (i % GW) * CELL + 12.5, y: Math.floor(i / GW) * CELL + 12.5, l }); }
   out.reverse();
@@ -224,7 +225,7 @@ function furnSpot(D, decorId, how, o = {}) {
   else if (how === 'right') { px = px ?? R0 - 6; py = py ?? d.y - (o.up || 34); rot = rot ?? 0.45; sx = sx ?? R0 + 22; sy = sy ?? d.y + 4; }
   else if (how === 'top') { px = px ?? d.x + (o.dx || 0); py = py ?? top + (o.dy || 0); rot = rot ?? (o.dx || 0) * 0.01; sx = sx ?? d.x; sy = sy ?? d.y + 30; }
   else { px = px ?? d.x; py = py ?? d.y - 20; rot = rot ?? 0.15; sx = sx ?? px; sy = sy ?? d.y + 30; }
-  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 78, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.7 : 0.82), front: true, cut: o.cut };   // immer vor dem Möbel zeichnen, damit es nie verdeckt ist
+  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 96, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.7 : 0.82), front: true, cut: o.cut };   // immer vor dem Möbel zeichnen, damit es nie verdeckt ist
 }
 let SG = null;
 STAGE_DEFS.spielplatz = {
@@ -874,7 +875,7 @@ class Play {
     if (this.canSearch()) for (const s of SPOTS) out.push({ k: 'spot', x: s.x, y: s.y, l: s.l || 0, r: s.reach - 12, sx: s.x, sy: s.y - (s.l ? HOUSE.fz : 0) - 16 });
     const q = this.st.active;
     if (this.canSearch() && q) {
-      q.hidden.forEach((h, i) => { if (this.off(q, i)) return; const pk = peekOf(h); out.push({ k: 'spot', x: pk.x, y: pk.y, l: h.l, r: 40, sx: pk.x, sy: pk.y - (h.l ? HOUSE.fz : 0) - 8 }); });
+      q.hidden.forEach((h, i) => { if (this.off(q, i)) return; const pk = peekOf(h); out.push({ k: 'spot', x: h.x, y: h.y, l: h.l, r: Math.min(60, (h.reach || 60) - 20), sx: pk.x, sy: pk.y - (h.l ? HOUSE.fz : 0) - 8 }); });   // tippt man das Ding an, läuft man zu der Stelle, von der aus man es erreicht
       (q.decoys || []).forEach(d => { if (!d.done) out.push({ k: 'spot', x: d.x, y: d.y, l: 0, r: 40, sx: d.x, sy: d.y - 8 }); });
     }
     { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
@@ -913,7 +914,7 @@ class Play {
     }
     let tx = w.x, ty = w.y, tl = 0;
     if (w.x > HOUSE.x && w.x < HOUSE.x + HOUSE.w && w.y + HOUSE.fz > HOUSE.y && w.y + HOUSE.fz < HOUSE.y + HOUSE.h) { ty = w.y + HOUSE.fz; tl = 1; }
-    const path = findPath(p.x, p.y, p.level, tx, ty, tl, true);
+    const path = findPath(p.x, p.y, p.level, tx, ty, tl, true) || findPath(p.x, p.y, p.level, tx, ty, tl, false);   // nicht erreichbar: so nah wie möglich
     if (path) { p.path = path; p.target = null; this.tapMark = { x: tx, y: ty, l: tl, t: 0 }; }
   }
   interact(T) {

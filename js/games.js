@@ -2003,7 +2003,7 @@ GAMES.platform = { challenge: true, make(env) {
   const segs = shuffle(SEG, r).slice(0, 13);
   segs.forEach((sg, i) => {
     if (sg === 'flat') { ground(4 + ri(0, 2, r)); }
-    else if (sg === 'gap') { x += (2 + ri(0, 1, r)) * T; ground(3); }
+    else if (sg === 'gap') { x += 2 * T; ground(3); }   // Lücke immer gut zu schaffen
     else if (sg === 'step') { const d = ri(0, 1, r) ? 1 : -1; gh = clamp(gh + d * ri(1, 2, r), 0, 3); ground(3); gh = clamp(gh + (r() < 0.5 ? 1 : -1), 0, 3); ground(3); }
     else if (sg === 'planks') { const base = GY - gh * T; for (let k = 0; k < 3; k++) { plats.push({ x: x + 30 + k * 120, y: base - 50 - (k % 2) * 60, w: 80, h: 16, k: 'p' }); } x += 380; ground(3); }
     else if (sg === 'mover') { const base = GY - gh * T; movers.push({ x0: x + 20, x1: x + 220, y: base - 20, w: 90, h: 16, k: 'm', ph: r() * 6 }); x += 330; ground(3); }

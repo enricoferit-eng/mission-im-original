@@ -196,7 +196,6 @@ const KDECOR = [
   { id: 'stahl', t: 'stahl', x: 715, y: 1050, x0: 680, y0: 990, w: 70, h: 60, bb: [670, 880, 90, 180] },
   { id: 'saecke', t: 'saecke', x: 570, y: 1185, r: 26, bb: [536, 1140, 70, 60] },
   { id: 'kanister', t: 'kanister', x: 770, y: 1180, r: 16, bb: [748, 1148, 44, 44] },
-  { id: 'lagerregal', t: 'lagerregal', x: 360, y: 1330, x0: 300, y0: 1270, w: 120, h: 60, bb: [290, 1180, 140, 160] },
 ];
 const KDRAW = {
   herd(c, d, t) {
@@ -293,7 +292,6 @@ const KSPOTS = [
   furnSpot(KDECOR, 'stahl', 'right', { px: 746, py: 965, sx: 775, sy: 1062 }),
   furnSpot(KDECOR, 'saecke', 'top', { px: 582, py: 1140, sx: 570, sy: 1228 }),
   furnSpot(KDECOR, 'kanister', 'left', { px: 757, py: 1158, sx: 742, sy: 1210 }),
-  furnSpot(KDECOR, 'lagerregal', 'left', { px: 304, py: 1288, sx: 272, sy: 1300 }),
 ];
 // Küchenmöbel rücken um KX nach rechts, die Lager-Möbel bekommen neue Plätze im Lager links (Verstecke wandern mit)
 {

@@ -108,8 +108,9 @@ function heroId(def) { return AREA() === 'spielplatz' ? def : (AREA_HERO[AREA()]
   };
   cypress = function (c, x, y, h) {
     const a = AREA();
-    if (a === 'kueche') {   // hoher Kühlschrank
-      rrPath(c, x - h * 0.16, y - h, h * 0.32, h, 6); fs(c, '#e9ecef', 3); line(c, x - h * 0.16, y - h * 0.62, x + h * 0.16, y - h * 0.62, 2.5, OL, false); line(c, x + h * 0.1, y - h * 0.9, x + h * 0.1, y - h * 0.7, 3, '#868e96', false);
+    if (a === 'kueche') {   // hängende Töpfe an der Wand (Deko oben, keine Wand im Weg)
+      const top = y - h * 1.6; line(c, x - 40, top, x + 40, top, 4, '#868e96', false);
+      for (let k = -1; k <= 1; k++) { const px = x + k * 30, py = top + 26 + Math.abs(k) * 6; line(c, px, top, px, py - 12, 1.5, OL, false); ell(c, px, py, 12, 12); fs(c, k ? '#adb5bd' : '#c87533', 2); ell(c, px, py, 7, 7); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); }
     } else if (a === 'gastraum') {   // Topfpalme
       rrPath(c, x - 14, y - 26, 28, 26, 5); fs(c, '#c1121f', 3); line(c, x, y - 26, x, y - h * 0.8, 4, '#8d5a3b', false);
       for (let k = 0; k < 5; k++) { const an = -Math.PI / 2 + (k - 2) * 0.55; ell(c, x + Math.cos(an) * 20, y - h * 0.8 + Math.sin(an) * 14, 18, 6, an); fs(c, '#40916c', 2.5); }
