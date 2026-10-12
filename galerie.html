@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galerie – Mission: Im Original</title>
+<style>
+ body{margin:0;background:#f4efe6;font-family:system-ui,-apple-system,sans-serif;color:#35452F}
+ #c{position:fixed;left:-9999px;top:0;width:10px;height:10px}
+ header{position:sticky;top:0;background:#35452F;color:#fff;padding:10px 16px;z-index:5;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+ header b{font-size:18px;margin-right:8px} header a{color:#d5e8a6;text-decoration:none;font-weight:700;font-size:14px}
+ main{padding:8px 16px 60px} h2{margin:26px 0 6px;font-size:22px} h3{margin:16px 0 6px;font-size:16px;color:#6b5a48}
+ .grid{display:flex;flex-wrap:wrap;gap:10px}
+ .card{background:#fff;border:2px solid #e3dccd;border-radius:12px;padding:6px;display:flex;flex-direction:column;align-items:center;width:132px}
+ .card.big{width:auto} .card canvas{display:block} .card span{font-size:12px;font-weight:700;text-align:center;margin-top:4px;word-break:break-word}
+ .card small{font-size:11px;color:#8d7b68;text-align:center}
+ .legend{border-color:#c9a227}.rare{border-color:#4dabf7}
+</style></head><body>
+<canvas id="c"></canvas>
+<header><b>Galerie</b><a href="#items">Fundsachen</a><a href="#junk">Täuschungen</a><a href="#decor">Möbel &amp; Deko</a><a href="#people">Personen</a><a href="#animals">Tiere</a><a href="#skins">Skins</a><a href="#games">Aufgaben</a></header>
+<main id="m"></main>
+<script src="js/core.js?v=20261012a"></script>
+<script src="js/voiceclips.js?v=20261012a"></script>
+<script src="js/art.js?v=20261012a"></script>
+<script src="js/brand.js?v=20261012a"></script>
+<script src="js/games.js?v=20261012a"></script>
+<script src="js/games2.js?v=20261012a"></script>
+<script src="js/games3.js?v=20261012a"></script>
+<script src="js/games4.js?v=20261012a"></script>
+<script src="js/games5.js?v=20261012a"></script>
+<script src="js/games6.js?v=20261012a"></script>
+<script src="js/themes.js?v=20261012a"></script>
+<script src="js/stage.js?v=20261012a"></script>
+<script src="js/stage_kueche.js?v=20261012a"></script>
+<script src="js/stage_gastraum.js?v=20261012a"></script>
+<script src="js/stage_aussen.js?v=20261012a"></script>
+<script src="js/stage_chalet.js?v=20261012a"></script>
+<script src="js/stage_parkplatz.js?v=20261012a"></script>
+<script src="js/world.js?v=20261012a"></script>
+<script src="js/tutorial.js?v=20261012a"></script>
+<script src="js/ui.js?v=20261012a"></script>
+<script src="js/meta.js?v=20261012a"></script>
+<script src="js/secrets.js?v=20261012a"></script>
+<script src="js/admin.js?v=20261012a"></script>
+<script src="js/audio.js?v=20261012a"></script>
+<script src="js/editor.js?v=20261012a"></script>
+<script>
+// Galerie: zeigt alles mit den echten Zeichnungen aus dem Spiel
+(function () {
+  // nichts am Spielstand ändern: keine Konten anlegen, nichts speichern
+  try { Save.write = () => {}; } catch (e) {}
+  const M = document.getElementById('m');
+  const NAMES = { kueche: 'Küche', gastraum: 'Innenbereich', aussen: 'Außenbereich', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' };
+  const sec = (id, title) => { const h = document.createElement('h2'); h.id = id; h.textContent = title; M.appendChild(h); };
+  const sub = t => { const h = document.createElement('h3'); h.textContent = t; M.appendChild(h); const g = document.createElement('div'); g.className = 'grid'; M.appendChild(g); return g; };
+  function card(grid, w, h, draw, label, note, cls) {
+    const d = document.createElement('div'); d.className = 'card' + (cls ? ' ' + cls : ''); const cv = document.createElement('canvas'), q = 2;
+    cv.width = w * q; cv.height = h * q; cv.style.width = w + 'px'; cv.style.height = h + 'px'; const g = cv.getContext('2d'); g.scale(q, q); g.lineJoin = 'round'; g.lineCap = 'round';
+    try { draw(g); } catch (e) { g.fillStyle = '#c1121f'; g.font = '11px sans-serif'; g.fillText('Fehler', 8, 20); console.warn(label, e); }
+    d.appendChild(cv); if (w > 132) d.style.width = (w + 12) + 'px';
+    if (label) { const s = document.createElement('span'); s.textContent = label; d.appendChild(s); }
+    if (note) { const s = document.createElement('small'); s.textContent = note; d.appendChild(s); }
+    grid.appendChild(d);
+  }
+  const DN = { herd: 'Herd + Fritteuse', pass: 'Pass mit Kühltheke', salat: 'Salatbar', regal: 'Regal', wagen: 'Servierwagen', eimer: 'Eimer', kuehlraum: 'Kühlraum', kisten: 'Gemüsekisten', kistenregal: 'Kistenregal', faesser: 'Fässer', getraenke: 'Getränkekühlschrank', stahl: 'Edelstahl-Kühlschrank', saecke: 'Mehlsäcke', kanister: 'Kanister', lagerregal: 'Lagerregal',
+    bar: 'Bar', hocker: 'Barhocker', treppe: 'Treppe zur Empore', kuebel: 'Pflanzkübel', yuccatopf: 'Yucca im Topf', palmtisch: 'Palmentisch', palme: 'Palme', tisch4: 'Tisch mit Gästen', olive: 'Olivenbaum mit Rundbank', servierwagen: 'Servierwagen', tafel: 'Lange Tafel', fass: 'Weinfass',
+    blumentopf: 'Blumentopf', oliventopf: 'Olivenbäumchen', kissenbox: 'Kissenbox', pavtisch: 'Pavillon-Tisch', pfosten: 'Pavillon-Pfosten', lounge: 'Lounge-Sessel', cypress: 'Zypresse', kugel: 'Leuchtkugel', brunnen: 'Wunschbrunnen', laubbaum: 'Laubbaum', gartenbank: 'Gartenbank',
+    yucca: 'Yucca', rock: 'Stein', planter: 'Pflanzkasten', bench: 'Bank', lamp: 'Laterne', board: 'Kreidetafel', gatesign: 'Torschild',
+    auto: 'Auto', anhaenger: 'Anhänger', transporter: 'Transporter', rbinsel: 'Kreisel-Insel', pflanzinsel: 'Pflanzinsel', poller: 'Poller', lampe_p: 'Straßenlaterne', busch: 'Busch', baum: 'Baum', pylon: 'Original-Schild',
+    huettentafel: 'Hüttentafel', christbaum: 'Christbaum', holzkorb: 'Holzkorb', garderobe: 'Garderobe', kaesefass: 'Käsefass', schaukelstuhl: 'Schaukelstuhl', skikiste: 'Skikiste', tanne: 'Tanne', schneemann: 'Schneemann', holzstapel: 'Holzstapel', hackklotz: 'Hackklotz', schlitten: 'Schlitten', laternenpfahl: 'Laterne', rentier: 'Rentier', wagenrad: 'Wagenrad', schneehaufen: 'Schneehaufen' };
+  const JN = { cap: 'Kronkorken', nudel: 'Nudel', zettel: 'Zettel', salat: 'Salatblatt', korken: 'Korken', zucker: 'Zuckertütchen', strohhalm: 'Strohhalm', leaf: 'Blatt', pebble: 'Steinchen', twig: 'Stöckchen', zapfen: 'Tannenzapfen', ast: 'Ast', schneeball: 'Schneeball' };
+  const AREAS = ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'];
+  const itemsOf = a => a === 'spielplatz' ? ITEM_IDS : STAGE_DEFS[a].items;
+  // ---- Fundsachen ----
+  sec('items', 'Fundsachen (die man suchen muss)');
+  for (const a of AREAS) { const g = sub(NAMES[a] + ' (' + itemsOf(a).length + ')'); itemsOf(a).forEach(id => card(g, 120, 90, c => drawAny(c, id, 60, 48, 62), (ITEMS[id] || FOOD[id] || {}).n || id)); }
+  { const g = sub('Leckereien (' + FOOD_IDS.length + ')'); FOOD_IDS.forEach(id => card(g, 120, 90, c => drawFood(c, id, 60, 48, 62), (FOOD[id] || {}).n || id)); }
+  // ---- Täuschungen ----
+  sec('junk', 'Täuschungen (Krimskrams beim Suchen)');
+  for (const a of AREAS) { useStage(a); const g = sub(NAMES[a]); (SG.junk || []).forEach(k => card(g, 90, 70, c => { useStage(a); drawJunk(c, 45, 42, k, 2.2); }, JN[k] || k)); }
+  // ---- Deko ----
+  sec('decor', 'Möbel & Deko auf der Karte');
+  for (const a of AREAS) {
+    useStage(a); const D = STAGE_DEFS[a], seen = new Set(), g = sub(NAMES[a]);
+    for (const d of D.decor) {
+      if (seen.has(d.t)) continue; seen.add(d.t);
+      const bb = decorBB(d), sc = Math.min(1, 300 / bb[2], 260 / bb[3]), w = Math.max(110, bb[2] * sc), h = bb[3] * sc;
+      card(g, w, h, c => { useStage(a); const fn = decorStatic(a, D, d); c.scale(sc, sc); c.translate(-bb[0] + (w / sc - bb[2]) / 2, -bb[1]); if (fn) fn(c, 1); }, DN[d.t] || d.t);
+    }
+  }
+  // ---- Personen ----
+  sec('people', 'Personen');
+  for (const a of AREAS) { useStage(a); const g = sub(NAMES[a]); STAGE_DEFS[a].npcs.forEach(n => card(g, 110, 130, c => { useStage(a); drawCritter(c, n.id, 55, 118, 1.25, 0.5, { staff: true, noShadow: false }); }, NPC_NAMES[n.id] || n.id)); }
+  // ---- Tiere ----
+  sec('animals', 'Spielfiguren (Tiere)');
+  { const g = sub(Object.keys(ANIMALS).length + ' Tiere'); Object.keys(ANIMALS).forEach(k => card(g, 110, 120, c => drawAnimal(c, k, 55, 108, 1.5, { look: DEFAULT_LOOK, t: 0.5, noOutfit: true }), ANIMAL_NAMES[k] || k)); }
+  // ---- Skins ----
+  sec('skins', 'Skins');
+  const skinCard = (g, id) => { const sk = SKINS[id]; if (!sk) return; card(g, 110, 120, c => drawAnimal(c, 'cat', 55, 108, 1.5, { look: sk, cap: true, t: 0.5, noOutfit: true }), sk.name, (RARITY[sk.rarity] || {}).name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name + ' ' + '★'.repeat(skinLevel(sk)) : ''), sk.rarity === 'legend' ? 'legend' : sk.rarity === 'rare' ? 'rare' : ''); };
+  { const RK = { legend: 0, rare: 1, common: 2 }; const shop = SHOP_SKINS.map(x => x[0]).sort((a, b) => RK[SKINS[a].rarity] - RK[SKINS[b].rarity]); const g = sub('Laden (' + shop.length + ')'); shop.forEach(id => skinCard(g, id)); }
+  { const g = sub('Tages-Shop exklusiv (' + EXCLUSIVE_SKINS.length + ')'); EXCLUSIVE_SKINS.forEach(x => skinCard(g, x[0])); }
+  { const all = new Set(); const g = sub('Frühere Bereichs-Skins'); AREAS.forEach(a => ['easy', 'medium', 'hard'].forEach(df => stageSkins(a, df).forEach(id => { const n = SKINS[id] && SKINS[id].name; if (n && !all.has(n)) { all.add(n); skinCard(g, id); } }))); }
+  // ---- Aufgaben ----
+  sec('games', 'Aufgaben (Standbild aus jedem Spiel)');
+  const env = () => ({ diff: 'medium', hard: false, kind: 'cat', slow: 1, r: mulberry32(7), win() {}, hit() { return false; }, addTime() {}, burst() {}, conf() {} });
+  const done = new Set();
+  for (const a of AREAS) {
+    const P = STAGE_DEFS[a].pools || { easy: EASY_GAMES, puzzle: PUZZLES, std: CHALLENGES_STD, sp: CHALLENGES_SP, hard: CHALLENGES_HARD };
+    const ids = [...new Set([].concat(P.easy || [], P.puzzle || [], P.std || [], P.sp || [], P.hard || []))].filter(id => GAMES[id] && !done.has(id + a));
+    const g = sub(NAMES[a] + ' (' + ids.length + ' Aufgaben)');
+    for (const id of ids) {
+      done.add(id + a);
+      card(g, 200, 260, c => { useStage(a); GAME_MOTION = 1; const G = GAMES[id].make(env(), { diff: 'medium', item: (itemsOf(a) || [])[0] }); for (let k = 0; k < 12; k++) G.update && G.update(0.08); c.save(); c.scale(0.5, 0.5); c.beginPath(); c.rect(0, 0, GAME_W, GAME_H); c.clip(); G.draw(c); c.restore(); }, id, (HELP_TEXT[id] || '').slice(0, 70) + '…');
+    }
+  }
+})();
+</script>
+</body></html>
