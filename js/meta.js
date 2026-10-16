@@ -61,14 +61,19 @@ function addCoins(n, why) { const m = META(); if (!m) return; m.coins += n; Save
 
 // ---- Einblendungen oben (Erfolge, Taler) ----
 const TOASTS = [];
-function toast(title, sub, ic = 'trophy') { TOASTS.push({ title, sub, ic, t: 0 }); Sfx.note(784, 0.15, 'triangle', 0.07, 1.3); setTimeout(() => Sfx.note(1047, 0.2, 'triangle', 0.07, 1.2), 120); }
+function toast(title, sub, ic = 'trophy') {
+  // Taler-Meldungen zusammenfassen statt viele hintereinander
+  const coin = ic === 'coin' && /^\+(\d+) Taler$/.exec(sub), last = TOASTS[TOASTS.length - 1];
+  if (coin && last && last.ic === 'coin' && last.t < 1.2) { last.n = (last.n || +/\d+/.exec(last.sub)[0]) + +coin[1]; last.sub = '+' + last.n + ' Taler'; last.title = last.title === title ? title : 'Taler bekommen'; last.t = Math.min(last.t, 0.4); return; }
+  TOASTS.push({ title, sub, ic, t: 0 }); Sfx.note(784, 0.12, 'triangle', 0.05, 1.3);
+}
 function drawToasts(c, dt) {
   const q = TOASTS[0]; if (!q) return;
-  q.t += dt; if (q.t > 3.2) { TOASTS.shift(); return; }
-  const k = ease.back(clamp(q.t * 3, 0, 1)) * clamp((3.2 - q.t) * 3, 0, 1), w = Math.min(W - 30, 380), y = 12 + (k - 1) * 80;
+  q.t += dt * (TOASTS.length > 2 ? 2 : 1); if (q.t > 2.2) { TOASTS.shift(); return; }
+  const k = ease.back(clamp(q.t * 3, 0, 1)) * clamp((2.2 - q.t) * 3, 0, 1), w = Math.min(W - 30, 320), y = 8 + (k - 1) * 70;
   c.save(); c.globalAlpha = clamp(k, 0, 1);
-  rrPath(c, W / 2 - w / 2, y, w, 58, 22); fs(c, '#fff7e6', 3); ell(c, W / 2 - w / 2 + 32, y + 29, 20, 20); fs(c, '#ffd166', 2.5); icon(c, q.ic, W / 2 - w / 2 + 32, y + 29, 26);
-  txt(c, q.title, W / 2 - w / 2 + 62, y + 21, 16, BRAND.olive, 'left', null); txt(c, q.sub, W / 2 - w / 2 + 62, y + 41, 14, '#c9762f', 'left', null);
+  rrPath(c, W / 2 - w / 2, y, w, 44, 18); fs(c, '#fff7e6', 2.5); ell(c, W / 2 - w / 2 + 24, y + 22, 15, 15); fs(c, '#ffd166', 2); icon(c, q.ic, W / 2 - w / 2 + 24, y + 22, 20);
+  txt(c, q.title, W / 2 - w / 2 + 46, y + 15, 13, BRAND.olive, 'left', null); txt(c, q.sub, W / 2 - w / 2 + 46, y + 31, 12, '#c9762f', 'left', null);
   c.restore();
 }
 function coinChip(c, x, y) {
@@ -163,10 +168,10 @@ class Shop {
       const pool = this.radPool, n = pool.length, seg = TAU / Math.max(1, n);
       if (!n) { panel(c, W / 2 - 170, cy - 50, 340, 100, '#fff7e6', 22); txt(c, 'Du hast schon alle Skins!', W / 2, cy - 10, 18, BRAND.olive, 'center', null); txt(c, 'Bald gibt es neue im Tages-Shop.', W / 2, cy + 18, 13, '#6b5a48', 'center', null); }
       else {
-        const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 3.2), 3)) : (this.radA || 0);
+        const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 2.2), 3)) : (this.radA || 0);
         pool.forEach((o, i) => { const a0 = ang + i * seg, a1 = a0 + seg; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + seg / 2) * R * 0.62, cy + Math.sin(a0 + seg / 2) * R * 0.62); drawAnimal(c, ACC().char || 'cat', 0, 14, R / 150, { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
         ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
-        if (sp && this.t - sp.t0 > 3.3 && !sp.done) { sp.done = true; const id = pool[sp.k][0], mm = META(); mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6; }
+        if (sp && this.t - sp.t0 > 2.3 && !sp.done) { sp.done = true; const id = pool[sp.k][0], mm = META(); mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6; }
         if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
         const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
         UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => RARITY[o[2]].w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * seg + seg / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
@@ -456,7 +461,7 @@ class Match {
     this.otherName = this.mode === '2v2' ? this.foes.map(p => p.name).join(' & ') : oth.map(p => p.name).join(' & ');
     this.others = []; this.other = null; this.prog = {}; this.lastOther = Date.now(); this.over = null; this.busy = false; this.t0 = Date.now(); this.loop();
   }
-  async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 1500)); } }   // sparsam: jeder Abgleich kostet Speicher-Zugriffe
+  async loop() { while (this.over !== 'done') { await this.sync(); await new Promise(r => setTimeout(r, 1000)); } }   // sparsam: jeder Abgleich kostet Speicher-Zugriffe
   set(p) { Object.assign(this.prog, p); }
   async sync() {
     if (this.busy || this.over === 'done') return; this.busy = true;

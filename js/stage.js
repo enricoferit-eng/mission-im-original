@@ -225,7 +225,7 @@ function furnSpot(D, decorId, how, o = {}) {
   else if (how === 'right') { px = px ?? R0 - 6; py = py ?? d.y - (o.up || 34); rot = rot ?? 0.45; sx = sx ?? R0 + 22; sy = sy ?? d.y + 4; }
   else if (how === 'top') { px = px ?? d.x + (o.dx || 0); py = py ?? top + (o.dy || 0); rot = rot ?? (o.dx || 0) * 0.01; sx = sx ?? d.x; sy = sy ?? d.y + 30; }
   else { px = px ?? d.x; py = py ?? d.y - 20; rot = rot ?? 0.15; sx = sx ?? px; sy = sy ?? d.y + 30; }
-  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 96, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.7 : 0.82), front: true, cut: o.cut };   // immer vor dem Möbel zeichnen, damit es nie verdeckt ist
+  return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 96, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.78 : 0.95), front: true, cut: o.cut };   // immer vor dem Möbel zeichnen, damit es nie verdeckt ist
 }
 let SG = null;
 STAGE_DEFS.spielplatz = {
@@ -720,7 +720,8 @@ class Play {
   }
   onStairs() { const i = cellIdx(this.p.x, this.p.y); return i >= 0 && !!ST[i]; }
   // ---- Ablauf ----
-  stop() { overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
+  stop() { if (this.mp && !this.mpOver && !(overlay instanceof ConfirmDialog)) { overlay = new ConfirmDialog({ text: 'Mehrspieler-Spiel wirklich verlassen? Die anderen spielen dann ohne dich weiter.', icon: 'stop', onYes: () => { this.mpOver = 'left'; this.stop(); } }); return; }
+    overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
     this.t += dt;
     this.zoom = W > H ? clamp(H / 560, 0.55, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6);
@@ -798,10 +799,10 @@ class Play {
       mx = (dx / d) * k; my = (dy / d) * k; p.path = null; p.target = null;
     }
     if (mx || my) {
-      const s = spd * dt; const a = this.tryMove(p.x + mx * s, p.y); const b = this.tryMove(p.x, p.y + my * s);
+      const s = spd * dt * (WORLD_W * WORLD_H > 2.5e6 ? 1.2 : 1); const a = this.tryMove(p.x + mx * s, p.y); const b = this.tryMove(p.x, p.y + my * s);
       p.moving = a || b; if (Math.abs(mx) > 0.15) p.dir = mx > 0 ? 1 : -1;
     } else if (p.path && p.path.length) {
-      const w = p.path[0], dx = w.x - p.x, dy = w.y - p.y, d = Math.hypot(dx, dy), s = spd * dt;
+      const w = p.path[0], dx = w.x - p.x, dy = w.y - p.y, d = Math.hypot(dx, dy), s = spd * dt * (p.path.length > 12 ? 1.5 : p.path.length > 6 ? 1.25 : 1) * (WORLD_W * WORLD_H > 2.5e6 ? 1.2 : 1);   // lange Wege schneller
       if (d <= s) { p.x = w.x; p.y = w.y; p.level = w.l; p.path.shift(); }
       else { p.x += (dx / d) * s; p.y += (dy / d) * s; const i = cellIdx(p.x, p.y); if (i >= 0 && !ST[i]) p.level = w.l; }
       if (Math.abs(dx) > 2) p.dir = dx > 0 ? 1 : -1;
@@ -848,7 +849,7 @@ class Play {
   updateSearch(dt) {
     const s = this.searching, p = this.p; s.t += dt; p.moving = false;
     if (Math.floor(s.t * 8) !== Math.floor((s.t - dt) * 8)) { const sc = this.w2s(p.x + p.dir * 14, p.y, this.z()); FX.puff(sc.x, sc.y, 2); }
-    if (s.t < 0.7) return;
+    if (s.t < 0.45) return;
     this.searching = null;
     const q = this.st.active; if (!q) return;
     const onSt = this.onStairs();
@@ -1096,13 +1097,13 @@ class Play {
     const kind = this.kind, sp = this.sp;
     const newPiece = !sp.outfit; sp.outfit = true;
     // Belohnung: statt eines Skins gibt es 300 Taler extra (Skins kauft man im Laden)
-    const skin = DP(this.diff).equip, newSkin = false; addCoins(CLEAR_BONUS, 'Bonus für den Bereich!');
+    const skin = DP(this.diff).equip, newSkin = false, bonus = sp.clears ? 50 : CLEAR_BONUS; addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!');
     const usedJoker = (this.st.jokersUsed || 0) > 0;
     sp.clears++; sp.run = null;
     Save.write();
     stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
     { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
-    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, bonus: CLEAR_BONUS, diff: this.diff }, again => {
+    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, bonus, diff: this.diff }, again => {
       if (SG.finalExit && !again) { setScene(new StageMap(this.diff)); return; }
       setScene(new Play(this.diff, SG.finalExit ? { stage: this.stage } : { stage: this.stage, enter: { x: this.p.x, y: this.p.y, dir: this.p.dir } }));
     }); };
@@ -1539,6 +1540,7 @@ class Play {
       c.save(); c.translate(bx, by); c.scale(pulse, pulse);
       roundBtn(c, 0, 0, 32, this.searching ? '#ffd166' : '#fff', 'search', null);
       c.restore();
+      txt(c, 'Suchen', bx, by + 44, 12, '#fff', 'center', BRAND.olive);
       UI.btn(bx - 46, by - 46, 92, 92, () => this.startSearch());
       if (!ACC().tut.search) drawHand(c, bx + 4, by + 30 + Math.abs(Math.sin(this.t * 4)) * 10, 1.4);
       if (this.diff === 'medium') {

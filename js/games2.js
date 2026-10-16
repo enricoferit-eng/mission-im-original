@@ -44,7 +44,7 @@ GAMES.tisch = { make(env) {
     if (sl) { sl.filled = true; o.hx = sl.x; o.hy = sl.y; o.locked = true; Sfx.play('good'); env.burst(sl.x, sl.y, 8); if (slots.every(q => q.filled)) fin.set(0.6); }
   });
   return {
-    hint: { type: 'drag', x: its[0].x, y: its[0].y, x2: slots.find(q => q.k === its[0].k).x, y2: slots.find(q => q.k === its[0].k).y },
+    hint: (() => { const f = its.find(o => slots.some(q => q.k === o.k)), sl = slots.find(q => q.k === f.k); return { type: 'drag', x: f.x, y: f.y, x2: sl.x, y2: sl.y }; })(),
     update(dt) { kit.update(dt); fin.tick(dt); },
     draw(c) {
       terraceBg(c);

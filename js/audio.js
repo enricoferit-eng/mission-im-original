@@ -31,19 +31,19 @@ const Tune = {
   on: false, id: null, step: 0, next: 0, timer: null,
   start(id) {
     if (this.on && this.id === id) return; this.stop();
-    if (!Sfx.on() || !TUNES[id]) return;
+    if (!Sfx.on() || musicOff() || !TUNES[id]) return;
     try { const c = Sfx.ctx(); this.on = true; this.id = id; this.step = 0; this.next = c.currentTime + 0.1; this.timer = setInterval(() => this.tick(), 60); } catch (e) { /* kein Audio */ }
   },
   stop() { this.on = false; this.id = null; if (this.timer) clearInterval(this.timer); this.timer = null; },
   tone(f, t, dur, wave, vol) { const c = Sfx.ac, o = c.createOscillator(), g = c.createGain(); o.type = wave; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.05); },
   tick() {
-    if (!this.on) return; if (!Sfx.on()) { this.stop(); return; }
+    if (!this.on) return; if (!Sfx.on() || musicOff()) { this.stop(); return; }
     const c = Sfx.ac; if (!c || c.state !== 'running') return;
     const T = TUNES[this.id], st = 60 / T.bpm / 2;
     while (this.next < c.currentTime + 0.25) {
       const t = this.next, k = this.step % 16, bar = Math.floor(this.step / 16) % T.bass.length;
-      const m = T.mel[k]; if (m !== null) this.tone(N(m + (Math.floor(this.step / 64) % 2 ? 2 : 0)), t, st * 1.6, T.wave, T.vol);
-      if (k % 4 === 0) this.tone(N(T.bass[bar] - 12), t, st * 3.5, 'triangle', T.vol * 1.4);
+      const m = T.mel[k]; if (m !== null) this.tone(N(m + (Math.floor(this.step / 64) % 2 ? 2 : 0)), t, st * 1.6, T.wave, T.vol * 0.7);
+      if (k % 4 === 0) this.tone(N(T.bass[bar] - 12), t, st * 3.5, 'triangle', T.vol * 1.0);
       if (T.bells && k % 2 === 0) { const b = c.createBufferSource(); b.buffer = noiseBuf(0.05); const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000; const g = c.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); b.connect(hp).connect(g).connect(c.destination); b.start(t); }
       this.next += st; this.step++;
     }

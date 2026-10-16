@@ -231,10 +231,11 @@ const Sfx = {
   },
 };
 // Spannungs-Musik in den Aufgaben: Bass + Klick, das Tempo zieht an, wenn es eng wird
+function musicOff() { const a = typeof ACC === 'function' && ACC(); return !!(a && a.music === false); }
 const Music = {
   on: false, bpm: 110, next: 0, step: 0, timer: null,
   start(bpm = 110) {
-    this.bpm = bpm; if (this.on || !Sfx.on()) return;
+    this.bpm = bpm; if (this.on || !Sfx.on() || musicOff()) return;
     try { const c = Sfx.ctx(); this.on = true; this.next = c.currentTime + 0.05; this.step = 0; this.timer = setInterval(() => this.tick(), 50); } catch (e) { this.on = false; }
   },
   stop() { this.on = false; if (this.timer) clearInterval(this.timer); this.timer = null; },

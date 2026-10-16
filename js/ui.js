@@ -34,8 +34,14 @@ function claimBand(c, text, x, y, size = 16, col = BRAND.olive) {
   txt(c, text, x, y + 1, size, col, 'center', null);
 }
 function soundBtn(c, x, y) {
-  const a = ACC(), on = !!(a && a.sound);
-  roundBtn(c, x, y, 22, on ? '#d0ebff' : '#e9ecef', on ? 'sound' : 'mute', () => { if (!a) return; a.sound = !a.sound; Save.write(); if (a.sound) { Sfx.play('tap'); } else Voice.stop(); });
+  // drei Stufen: alles an → ohne Musik → ganz aus
+  const a = ACC(), on = !!(a && a.sound), mus = on && a.music !== false;
+  roundBtn(c, x, y, 22, on ? '#d0ebff' : '#e9ecef', on ? 'sound' : 'mute', () => { if (!a) return;
+    if (a.sound && a.music !== false) { a.music = false; Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); toast('Musik aus', 'Stimme und Geräusche bleiben an', 'sound'); }
+    else if (a.sound) { a.sound = false; Voice.stop(); toast('Ton aus', 'Alles ist still', 'mute'); }
+    else { a.sound = true; a.music = true; Sfx.play('tap'); toast('Ton an', 'Musik, Stimme und Geräusche', 'sound'); }
+    Save.write(); });
+  if (on && !mus) { ell(c, x + 15, y + 15, 9, 9); fs(c, '#fff', 2); txt(c, '♪', x + 15, y + 16, 11, '#c1121f', 'center', null); line(c, x + 9, y + 21, x + 21, y + 9, 2, '#c1121f', false); }
 }
 function topBar(c, back) {
   if (back) roundBtn(c, 44, 44, 28, '#fff', 'back', back, '#ffd166');
@@ -81,7 +87,8 @@ class Menu {
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
-    if (!(a.tut && a.tut.guide) && this.t < 8) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
+    txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 144, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Ton', W - 40, 72, 11, '#fff', 'center', BRAND.olive);
+    if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
@@ -304,7 +311,7 @@ class ConfirmDialog {
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
     fitBegin(c, w, h + 40);
     panel(c, x, y, w, h, '#fff7e6', 24);
-    icon(c, 'trash', W / 2, y + 40, 40);
+    icon(c, this.o.icon || 'trash', W / 2, y + 40, 40);
     lines.forEach((l, i) => txt(c, l, W / 2, y + 86 + i * 25, 18, '#3d2c1f', 'center', null));
     roundBtn(c, W / 2 - 60, y + h - 10, 28, '#ced4da', 'cross', () => this.close());
     roundBtn(c, W / 2 + 60, y + h - 10, 28, '#ef476f', 'check', () => { this.close(); this.o.onYes(); });
@@ -1086,7 +1093,7 @@ class ClearOverlay {
     if (o.newPiece) { ell(c, -110, 4, 26, 26); fs(c, '#ffd166', 3); drawOutfitIcon(c, 'kappe', -110, 4, 34); }
     icon(c, 'coin', o.newPiece ? -30 : -70, 4, 40); txt(c, '+' + (o.bonus || 300) + ' Taler', o.newPiece ? 50 : 20, 5, 26, '#c9762f', 'center', null);
     c.restore();
-    if (t > 1.4) {
+    if (t > 0.7) {
       roundBtn(c, cx - 60, HH - 80, 34, '#06d6a0', 'retry', () => this.close(true));
       roundBtn(c, cx + 60, HH - 80, 34, '#ffd166', 'home', () => this.close(false));
     }

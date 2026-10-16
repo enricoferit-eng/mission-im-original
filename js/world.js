@@ -258,6 +258,7 @@ function drawFog(c, ox, oy, id, t) {
   const cx = ox + TILE_W / 2, cy = oy + TILE_H / 2;
   ell(c, cx, cy, 70, 70); fs(c, 'rgba(255,255,255,.9)', 4); icon(c, 'lock', cx, cy - 6, 70);
   txt(c, STAGE_NAME[id] || '', cx, cy + 100, 40, '#495057', 'center', '#fff');
+  { const i = STAGE_ORDER.indexOf(id), prev = STAGE_ORDER[i - 1]; if (prev) txt(c, 'Schaffe zuerst: ' + STAGE_NAME[prev], cx, cy + 146, 24, '#6c757d', 'center', '#fff'); }
 }
 // Wegweiser an jedem Durchgang: Name des Nachbarbereichs + Pfeil (gesperrt: Schloss)
 function pushSigns(c, L, id, diff, t) {

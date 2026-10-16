@@ -52,7 +52,7 @@ class GameOverlay {
     this.tip = null; this.lastTouch = 0;
     if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(HELP_TEXT[me.id] || 'Probier es einfach aus!', true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
     if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
-    this.cdWait = this.tip ? 2.4 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
+    this.cdWait = this.tip ? 1.2 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + ABIL_VAL.zeitplus[ability('zeitplus')] : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
@@ -1420,7 +1420,7 @@ GAMES.run = { challenge: true, make(env) {
         if (o.done) continue; const y = 440 - (o.D - d); if (y < -60 || y > 580) continue;
         const x = 100 + o.lane * 100;
         if (o.clock) { icon(c, 'clock', x, y - 10, 46); continue; }
-        ell(c, x, y + 22, 30, 8); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); drawItem(c, o.id, x, y, 66);
+        ell(c, x, y + 22, 30, 8); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); drawAny(c, o.id, x, y, 66);
       }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 470, 1.7, { t, moving: true, cap: hasCap(env.kind) });
     },
@@ -1515,7 +1515,7 @@ GAMES.jump = { challenge: true, make(env) {
       for (const o of obs) {
         const sx = o.x - wx; if (sx > 460 || sx + o.w < -60) continue;
         if (o.t === 'gap') { c.fillStyle = '#2b1d14'; c.fillRect(sx, 398, o.w, 130); c.fillStyle = '#4a3324'; c.fillRect(sx + 6, 404, o.w - 12, 120); }
-        else drawItem(c, o.id, sx + 22, 400 - o.h / 2 + (o.id === 'bauklotz' ? 4 : 0), o.h + 12);
+        else drawAny(c, o.id, sx + 22, 400 - o.h / 2 + (o.id === 'bauklotz' ? 4 : 0), o.h + 12);
       }
       for (const k of clocks) if (!k.done) { const sx = k.x - wx; if (sx > -40 && sx < 440) icon(c, 'clock', sx, k.y, 40); }
       const fx = end - wx; if (fx < 440) { line(c, fx, 400, fx, 300, 5, '#495057'); polyPath(c, [[fx, 300], [fx + 46, 315], [fx, 330]]); fs(c, '#ef476f', 3); }
@@ -1607,7 +1607,7 @@ GAMES.slide = { challenge: true, make(env) {
         if (o.done) continue;
         if (o.clock) icon(c, 'clock', o.x, o.y, 44);
         else if (o.kid) drawCritter(c, o.id, o.x, o.y + 20, 1.1, t);
-        else { c.save(); c.translate(o.x, o.y); if (o.vx) c.rotate(o.y * 0.03); drawItem(c, o.id, 0, 0, 60); c.restore(); }
+        else { c.save(); c.translate(o.x, o.y); if (o.vx) c.rotate(o.y * 0.03); drawAny(c, o.id, 0, 0, 60); c.restore(); }
       }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 150, 1.5, { t, moving: false, tilt: (tx - px) * 0.01, cap: hasCap(env.kind) });
       for (let i = 0; i < 4; i++) line(c, px - 30 + i * 20, 70 - ((t * 300 + i * 40) % 60), px - 30 + i * 20, 90 - ((t * 300 + i * 40) % 60), 3, 'rgba(255,255,255,.8)', false);

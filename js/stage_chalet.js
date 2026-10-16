@@ -326,7 +326,7 @@ STAGE_DEFS.chalet = {
   },
   extras(play) {
     // Schneefall draußen, Kaminfeuer flackert, Wirt Sepp rührt im großen Fondue-Topf, Rauch aus dem Kamin
-    const flakes = [...Array(90)].map((_, i) => ({ x: Math.random() * CW, y: Math.random() * CH - CY, s: 1.5 + Math.random() * 2.5, v: 30 + Math.random() * 40, ph: Math.random() * 6 }));
+    const flakes = [...Array(55)].map((_, i) => ({ x: Math.random() * CW, y: Math.random() * CH - CY, s: 1.5 + Math.random() * 2.5, v: 30 + Math.random() * 40, ph: Math.random() * 6 }));
     return {
       update(dt) { flakes.forEach(f => { f.y += f.v * dt; f.ph += dt; f.x += Math.sin(f.ph) * 12 * dt; if (f.y > CH - CY) { f.y = -CY - 10; f.x = Math.random() * CW; } }); },
       draw(c, L0, vis0, t) {
@@ -341,7 +341,7 @@ STAGE_DEFS.chalet = {
           for (const [lx, ly] of [[300, 300], [700, 300], [300, 430], [700, 430]]) { if (!vis(lx, ly + 60)) continue; line(c, lx, ly - 140, lx, ly - 100, 1.5, '#3d2c1f', false); rrPath(c, lx - 9, ly - 100, 18, 26, 3); fs(c, '#343a40', 2); rrPath(c, lx - 6, ly - 96, 12, 18, 2); c.fillStyle = `rgba(255,214,110,${0.85 + 0.15 * Math.sin(t * 5 + lx)})`; c.fill(); ell(c, lx, ly - 86, 26, 26); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
         } });
         L.push({ y: 99997, f: () => {
-          c.save(); c.fillStyle = 'rgba(255,255,255,.92)';
+          c.save(); c.fillStyle = 'rgba(255,255,255,.7)';
           flakes.forEach(f => { if (f.y < HUT0.y1 + 30 && f.y > HUT0.y0 - 120 && f.x > HUT0.x0 - 30 && f.x < HUT0.x1 + 30) return; if (!vis(f.x, f.y)) return; ell(c, f.x, f.y, f.s, f.s); c.fill(); });
           for (let k = 0; k < 4; k++) { const p = ((t * 0.25 + k / 4) % 1); ell(c, 500 + Math.sin(p * 6 + k) * 14, 10 - p * 120, 10 + p * 18, 8 + p * 14); c.fillStyle = `rgba(220,225,230,${0.5 * (1 - p)})`; c.fill(); }
           c.restore();

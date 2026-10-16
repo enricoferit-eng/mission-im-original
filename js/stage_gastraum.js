@@ -85,16 +85,16 @@ function drawGroundGastraum(g, R) {
   g.restore();
   // Rückwand links: Bar-Regalwand aus Altholz (Foto): Kreidetafel-Leiste, große Tafel, Regale mit Flaschen + Gläsern, Kupferbecher
   for (let y = 0, k = 0; y < 150; y += 12, k++) for (let x = (k % 3) * -20; x < 560; x += 60 + (k * 13) % 30) { g.fillStyle = ['#6f4e37', '#7a5a43', '#5c4636', '#8a7262', '#6b5847', '#4e3b2d'][(k * 7 + x) % 6]; g.fillRect(x, y, 62, 12); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(x, y + 11, 62, 1); }
-  rrPath(g, 40, 6, 500, 24, 2); fs(g, '#2b2d2f', 2.5); txt(g, 'PESTO  ·  KAFFEE  ·  Lange Rede, kurzer Gin', 290, 18, 11, '#f1f3f5', 'center', null);
+  rrPath(g, 40, 6, 500, 24, 2); fs(g, '#2b2d2f', 2.5); for (let k = 0; k < 9; k++) line(g, 70 + k * 52, 18, 110 + k * 52, 18, 2, 'rgba(241,243,245,.75)', false);
   rrPath(g, 160, 38, 120, 78, 3); fs(g, '#2b2d2f', 3); rrPath(g, 156, 34, 128, 86, 4); fs(g, null, 4, '#8d5a3b');
-  txt(g, 'Pumpkin Spice Latte', 220, 54, 9, '#f8f9fa', 'center', null); txt(g, 'Kürbissuppe', 220, 76, 10, '#f8f9fa', 'center', null); txt(g, 'Neuer Süßer', 220, 98, 10, '#f8f9fa', 'center', null); ell(g, 266, 104, 6, 5); g.fillStyle = '#f77f00'; g.fill();
+  for (let k = 0; k < 3; k++) line(g, 180, 54 + k * 22, 260 - (k % 2) * 20, 54 + k * 22, 2.2, 'rgba(248,249,250,.8)', false); ell(g, 266, 104, 6, 5); g.fillStyle = '#f77f00'; g.fill();
   for (const [x0, w] of [[40, 110], [290, 250]]) for (let k = 0; k < 3; k++) {
     const y = 58 + k * 30; rrPath(g, x0, y, w, 5, 2); fs(g, '#a0673a', 1.5);
     for (let m = 0; m < Math.floor(w / 13); m++) { const x = x0 + 6 + m * 13, kind = (m * 3 + k) % 4;
       if (kind < 2) { rrPath(g, x, y - 20, 7, 20, 2); fs(g, ['#2b9348', '#9d0208', '#e9c46a', '#1d3557', '#f77f00', '#adb5bd'][(m * 5 + k) % 6], 1.2); rrPath(g, x + 2, y - 26, 3, 7, 1); fs(g, '#343a40', 0.8); }
       else { rrPath(g, x - 1, y - 13, 9, 13, 2); g.fillStyle = 'rgba(210,235,250,.85)'; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(30,30,30,.6)'; g.stroke(); } }
   }
-  rrPath(g, 420, 38, 120, 18, 2); fs(g, '#2b2d2f', 2); txt(g, 'Irish Coffee', 480, 47, 10, '#f8f9fa', 'center', null);
+  rrPath(g, 420, 38, 120, 18, 2); fs(g, '#2b2d2f', 2); line(g, 440, 47, 520, 47, 2, 'rgba(248,249,250,.8)', false);
   for (let k = 0; k < 6; k++) { line(g, 548, 40 + k * 18, 552, 40 + k * 18, 2, '#495057', false); ell(g, 552, 46 + k * 18, 5, 4); fs(g, '#c87533', 1.2); }
   // Mitte: Weinberg-Fototapete im Abendlicht
   { const x0 = 650, w = 110, sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, '#f9c74f'); sky.addColorStop(0.55, '#f8961e'); sky.addColorStop(1, '#d9480f'); g.fillStyle = sky; g.fillRect(x0, 0, w, 150);
@@ -384,10 +384,10 @@ STAGE_DEFS.gastraum = {
         if (vis(jx, 150)) L.push({ y: 150, f: () => { drawPerson(c, 'g_jonas', jx, 150, 1.05, t, { sit: true, noShadow: true }); drawGlass(c, jx + 16, 112 + Math.sin(t * 6) * 3, 0.35, 0, '#fff'); } });
         L.push({ y: 99999, f: () => {
           c.save(); c.globalAlpha = 0.95;
-          for (const [y0, ph] of [[300, 0], [560, 1], [840, 2]]) {
+          for (const [y0, ph] of [[300, 0], [700, 1]]) {
             const sag = 34 + Math.sin(t * 0.9 + ph) * 4, yy = y0 - 170;
             c.beginPath(); c.moveTo(52, yy); c.quadraticCurveTo(GW2 / 2, yy + sag * 2, GW2 - 52, yy); c.lineWidth = 1.5; c.strokeStyle = 'rgba(40,30,20,.6)'; c.stroke();
-            for (let k = 1; k < 26; k++) { const u = k / 26, bx = 52 + (GW2 - 104) * u, by = yy + sag * 2 * 2 * u * (1 - u) + 6; if (!vis(bx, by + 170)) continue; line(c, bx, by - 6, bx, by, 1, 'rgba(40,30,20,.6)', false); ell(c, bx, by + 4, 4, 5.5); c.fillStyle = `rgba(255,214,110,${0.75 + 0.25 * Math.sin(t * 2 + k + ph)})`; c.fill(); ell(c, bx, by + 4, 10, 10); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
+            for (let k = 1; k < 16; k++) { const u = k / 16, bx = 52 + (GW2 - 104) * u, by = yy + sag * 2 * 2 * u * (1 - u) + 6; if (!vis(bx, by + 170)) continue; line(c, bx, by - 6, bx, by, 1, 'rgba(40,30,20,.6)', false); ell(c, bx, by + 4, 4, 5.5); c.fillStyle = `rgba(255,214,110,${0.75 + 0.25 * Math.sin(t * 2 + k + ph)})`; c.fill(); ell(c, bx, by + 4, 10, 10); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
           }
           c.restore();
         } });

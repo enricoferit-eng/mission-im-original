@@ -1,0 +1,1 @@
+{ "name": "mio-qa", "private": true, "dependencies": { "puppeteer-core": "*" } }
