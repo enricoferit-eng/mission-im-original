@@ -65,7 +65,7 @@ function toast(title, sub, ic = 'trophy') {
   // Taler-Meldungen zusammenfassen statt viele hintereinander
   const coin = ic === 'coin' && /^\+(\d+) Taler$/.exec(sub), last = TOASTS[TOASTS.length - 1];
   if (coin && last && last.ic === 'coin' && last.t < 1.2) { last.n = (last.n || +/\d+/.exec(last.sub)[0]) + +coin[1]; last.sub = '+' + last.n + ' Taler'; last.title = last.title === title ? title : 'Taler bekommen'; last.t = Math.min(last.t, 0.4); return; }
-  TOASTS.push({ title, sub, ic, t: 0 }); Sfx.note(784, 0.12, 'triangle', 0.05, 1.3);
+  TOASTS.push({ title, sub, ic, t: 0 }); if (!coin || +coin[1] >= 50) Sfx.note(784, 0.12, 'triangle', 0.05, 1.3);
 }
 function drawToasts(c, dt) {
   const q = TOASTS[0]; if (!q) return;

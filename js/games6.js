@@ -147,7 +147,7 @@ GAMES.tischnummer = { make(env) {
     draw(c) {
       bgEasy(c); roundDots(c, rounds, round, 26);
       tables.forEach(q => { ell(c, q.x, q.y + 8, 52, 30); fs(c, '#c99a63', 3); ell(c, q.x, q.y + 4, 44, 24); fs(c, '#fff', 0); rrPath(c, q.x - 18, q.y - 36, 36, 28, 8); fs(c, '#35452F', 2.5); txt(c, String(q.n), q.x, q.y - 21, 20, '#fff', 'center', null); });
-      guests.forEach(g => { const y = g.y + (g.seat ? 0 : Math.sin(t * 3 + g.n) * 2); ell(c, g.x, y + 22, 18, 22); fs(c, g.col, 2.5); ell(c, g.x, y - 8, 14, 14); fs(c, g.skin, 2.5); ell(c, g.x - 5, y - 9, 1.8, 2.2); c.fillStyle = OL; c.fill(); ell(c, g.x + 5, y - 9, 1.8, 2.2); c.fill(); ell(c, g.x + 14, y + 16, 12, 12); fs(c, '#fff', 2.5); txt(c, String(g.n), g.x + 14, y + 17, 15, BRAND.olive, 'center', null); });
+      guests.forEach(g => { const y = g.y + (g.seat ? 0 : Math.sin(t * 3 + g.n) * 2); c.save(); c.translate(g.x, y); c.scale(1.25, 1.25); c.translate(-g.x, -y); ell(c, g.x, y + 22, 18, 22); fs(c, g.col, 2.5); ell(c, g.x, y - 8, 14, 14); fs(c, g.skin, 2.5); ell(c, g.x - 5, y - 9, 1.8, 2.2); c.fillStyle = OL; c.fill(); ell(c, g.x + 5, y - 9, 1.8, 2.2); c.fill(); ell(c, g.x + 14, y + 16, 12, 12); fs(c, '#fff', 2.5); txt(c, String(g.n), g.x + 14, y + 17, 15, BRAND.olive, 'center', null); c.restore(); });
       fxText(c, fx);
     },
     down(x, y) { if (fin.on()) return; drag = guests.find(g => !g.seat && dist(x, y, g.x, g.y + 6) < 34) || null; if (drag) Sfx.play('tap'); },
@@ -189,7 +189,7 @@ GAMES.schmetterlinge = { challenge: true, make(env) {
       if (fin.on()) return;
       const b = bugs.find(q => !q.dead && dist(x, y, q.x, q.y) < 34); if (!b) return; b.dead = true;
       if (b.bee) { env.hit(); Sfx.play('bad'); fx.push({ s: 'Au, Biene!', x: b.x, y: b.y - 20, t: 0 }); }
-      else if (b.col === want) { got++; Sfx.play('good'); env.burst(b.x, b.y, 6); fx.push({ s: '+1', x: b.x, y: b.y - 20, t: 0, ok: true }); if (got >= need) fin.set(0.5); else if (L > 0 && got % 4 === 0) { want = pick(COLS.filter(q => q !== want), r); fx.push({ s: 'Jetzt ' + want[1] + '!', x: 200, y: 90, t: 0, ok: true }); } }
+      else if (b.col === want) { got++; Sfx.play('good'); env.burst(b.x, b.y, 6); fx.push({ s: '+1', x: b.x, y: b.y - 20, t: 0, ok: true }); if (got >= need) fin.set(0.5); else if (L > 0 && got % 4 === 0) { want = pick(COLS.filter(q => q !== want), r); fx.push({ s: 'Jetzt ' + want[1] + '!', x: 200, y: 120, t: 0, ok: true }); env.conf(200, 60, 12); } }
       else { Sfx.play('bad'); fx.push({ s: 'Falsche Farbe', x: b.x, y: b.y - 20, t: 0 }); }
     },
   };

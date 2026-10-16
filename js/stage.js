@@ -390,7 +390,7 @@ class Play {
     if (!SG.feat.racer) this.racer.state = 'off';
     for (const d of DECOR) if (SG.decorDraw && SG.decorDraw[d.t]) measureBB(SG.id + '_d_' + d.id, d.x, d.y, g => SG.decorDraw[d.t](g, d, 0, 0));   // Bildrahmen einmal vorab messen
     if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
-    if (!this.mp && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) this.banner = { text: STAGE_NAME[this.stage], t: 0 }; }
+    if (!this.mp && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) { this.banner = { text: STAGE_NAME[this.stage], t: 0 }; this.fadeIn = 0.35; } }
     if (opt.joy) this.joy = opt.joy;
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
@@ -943,6 +943,7 @@ class Play {
     if (!ACC().tut.symbol) { ACC().tut.symbol = true; Save.write(); }
     if (id === 'gate' && st.done.gate) { if (SG.finalExit) this.startExit(); else a.jump = 0.5; return; }
     if (s === 'done') { a.jump = 0.5; return; }
+    if (id === 'gate' && (s === 'open' || s === 'boss') && !this.bossSaid) { this.bossSaid = true; Sfx.note(196, 0.4, 'sawtooth', 0.05); setTimeout(() => Sfx.note(147, 0.6, 'sawtooth', 0.05), 220); this.banner = { text: 'Das große Finale dieses Bereichs!', t: 0 }; }
     if (s === 'locked') { overlay = new QuestDialog({ mode: 'lock', npc: id, done: NPC_DEFS.filter(x => st.done[x.id]).length }); return; }
     if (this.diff === 'easy') { this.startEasy(id); return; }
     const q = st.active;
@@ -1419,6 +1420,7 @@ class Play {
     return bd < 80 ? 5 : bd < 170 ? 4 : bd < 300 ? 3 : bd < 460 ? 2 : 1;
   }
   drawHud(c) {
+    if (this.fadeIn > 0) { c.fillStyle = `rgba(20,30,20,${this.fadeIn / 0.35 * 0.8})`; c.fillRect(0, 0, W, H); this.fadeIn -= 1 / 60; }   // Bereichswechsel weich einblenden
     roundBtn(c, 46, 46, 25, '#fff', 'stop', () => this.stop());
     roundBtn(c, 106, 46, 20, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
     soundBtn(c, W - 40, 46);

@@ -322,7 +322,7 @@ STAGE_DEFS.kueche = {
   decor: KDECOR, spots: KSPOTS, grid: buildGridKueche, ground: drawGroundKueche, decorDraw: KDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['cap', 'nudel', 'zettel', 'salat'], items: KUECHE_ITEMS,
-  drawGate: (...a) => drawSideDoor(...a), gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
+  drawGate: (c, x, y, s, ...r) => drawSideDoor(c, x, y, s * 1.3, ...r), gateName: 'Die Schwingtür', dialogGate: 0.58, gateFace: (c, x, y, s, t) => drawKitchenDoor(c, x, y, s * 0.42, 0, true, t),
   words: { one: 'Mitarbeiter', the: 'den Mitarbeiter', a: 'einen Mitarbeiter', many: 'Mitarbeiter', dat: 'Mitarbeitern', back: 'zum Mitarbeiter', each: 'Jeder Mitarbeiter',
     hide: 'in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken', junk: 'eine Nudel oder ein Kronkorken', gate: 'an der Schwingtür zum Innenbereich', gateTap: 'Lauf zur Schwingtür und tippe sie an!',
     opened: 'Die Tür ist offen!',
