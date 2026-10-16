@@ -96,17 +96,17 @@ function dailyOffers() {
 class Shop {
   constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'joker'; this.msg = ''; this.msgT = 0; }
   enter() { FX.clear(); }
-  update(dt) { this.t += dt; this.msgT = Math.max(0, this.msgT - dt); }
+  update(dt) { this.t += dt; this.msgT = Math.max(0, this.msgT - dt); if (!this.drag && Math.abs(this.vel || 0) > 5) { this.sc = (this.sc || 0) + this.vel * dt; this.vel *= Math.pow(0.04, dt); } }   // Schwung beim Wischen
   say(m) { this.msg = m; this.msgT = 2.5; }
-  down(x, y) { if (this.tab === 'skins') this.drag = { y0: y, s0: this.sc || 0, moved: false, x, y }; }
-  move(x, y) { if (this.drag) { if (Math.abs(y - this.drag.y0) > 8) this.drag.moved = true; this.sc = this.drag.s0 - (y - this.drag.y0); } }
+  down(x, y) { this.vel = 0; if (this.tab === 'skins') this.drag = { y0: y, s0: this.sc || 0, moved: false, x, y, ly: y, lt: performance.now() }; }
+  move(x, y) { if (this.drag) { if (Math.abs(y - this.drag.y0) > 8) this.drag.moved = true; this.sc = this.drag.s0 - (y - this.drag.y0); const now = performance.now(), dt = Math.max(1, now - this.drag.lt) / 1000; this.vel = -(y - this.drag.ly) / dt; this.drag.ly = y; this.drag.lt = now; } }
   up(x, y) {
     const d = this.drag; this.drag = null; if (!d || d.moved || this.tab !== 'skins') return;
     const h = (this.skinHit || []).find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h); if (!h) return;
     if (h.own) { wearSkin(h.id); this.say(h.name + ' hast du jetzt an!'); return; }
     this.buy(h.price, mm => { mm.skins.push(h.id); wearSkin(h.id); this.say(h.name + ' gekauft und gleich angezogen!'); });
   }
-  buy(price, fn) { const m = META(); if (m.coins < price) { Sfx.play('bad'); this.say('Dafür fehlen dir noch ' + (price - m.coins) + ' Taler.'); return; } m.coins -= price; fn(m); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 40); achieve('einkauf'); }
+  buy(price, fn, ok) { if (price >= 150 && !ok) { overlay = new ConfirmDialog({ text: 'Für ' + price + ' Taler kaufen?', icon: 'coin', onYes: () => this.buy(price, fn, true) }); return; } const m = META(); if (m.coins < price) { Sfx.play('bad'); this.say('Dafür fehlen dir noch ' + (price - m.coins) + ' Taler.'); return; } m.coins -= price; fn(m); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 40); achieve('einkauf'); }
   draw(c) {
     skyBg(c);
     const m = META(); if (!m) return;
@@ -280,7 +280,7 @@ class Achievements {
       ell(c, x + 32, y + ch / 2, 22, 22); fs(c, done ? '#ffd166' : '#dee2e6', 2.5); icon(c, done ? 'trophy' : (A.secret ? 'question' : 'lock'), x + 32, y + ch / 2, 26, done ? undefined : '#868e96');
       const hidden = A.secret && !done, st = m.st[A.stat && GENERAL_ACH.has(A.stat) ? A.stat : achKey(A.stat, tab)] || (tab === 'medium' ? m.st[A.stat] : 0) || 0;
       txt(c, hidden ? 'Geheimer Erfolg' : A.name, x + 64, y + 22, 15, done ? BRAND.olive : '#495057', 'left', null);
-      const desc = hidden ? 'Entdecke es selbst …' : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, st) + '/' + A.need + ')' : '');
+      const desc = hidden ? (A.area ? 'Ein Geheimnis im Bereich ' + A.area + ' …' : 'Entdecke es selbst …') : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, st) + '/' + A.need + ')' : '');
       wrapLines(c, desc, cw - 140, 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null));
       icon(c, 'coin', x + cw - 50, y + ch / 2, 18); txt(c, String(A.coins), x + cw - 38, y + ch / 2 + 1, 14, '#8d5a3b', 'left', null);
       if (done) icon(c, 'check', x + cw - 14, y + 14, 16, '#06d6a0');
@@ -294,9 +294,9 @@ class Achievements {
 }
 
 // ---------- Freunde + Mehrspieler ----------
-const CLEAR_BONUS = 300;   // extra Taler, wenn ein Bereich geschafft ist (statt Skin)
+const CLEAR_BONUS = 200;   // extra Taler, wenn ein Bereich geschafft ist (statt Skin)
 const HELP_COINS = { easy: 10, medium: 15, hard: 25 };   // je Person, der man hilft
-const MP_COINS = { win: 40, lose: 15, team: 50, perKid: 10, place: [60, 35, 20, 10] };   // Mehrspieler: pro geschafftem Auftrag + nach Platzierung
+const MP_COINS = { win: 40, lose: 25, team: 50, perKid: 10, place: [60, 35, 20, 10] };   // Mehrspieler: pro geschafftem Auftrag + nach Platzierung
 function needOnline(c, back) {
   const a = ACC();
   if (a && a.token) return false;
@@ -314,14 +314,14 @@ function api(body) { const a = ACC(); return Net.call(Object.assign({ login: a.l
 class MultiScene {
   constructor() { this.t = 0; this.data = null; this.err = ''; this.busy = false; this.mode = 'menu'; this.opts = { mode: 'duell', size: 2, diff: CUR_DIFF || 'medium', kids: 3, boss: false, live: true, stage: 'spielplatz', stages: ['spielplatz'] }; this.pollT = 0; }
   enter() { FX.clear(); nameInput.value = ''; if (ACC() && ACC().token) this.refresh(); }
-  async refresh() { const r = await api({ action: 'friends' }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Keine Verbindung zum Server.'; }
+  async refresh() { const r = await api({ action: 'friends' }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Gerade keine Verbindung. Versuch es gleich nochmal.'; }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 8 && ACC() && ACC().token) { this.pollT = 0; this.refresh(); } }
   leave(s) { nameInput.style.display = 'none'; nameInput.blur(); setScene(s); }
   async addFriend() {
     const v = nameInput.value.trim(); if (v.length < 2) return; nameInput.blur(); this.busy = true;
     const r = await api({ action: 'friend_add', name: v }); this.busy = false;
     if (r && r.status === 200) { this.data = r.data; this.mode = 'menu'; nameInput.value = ''; Sfx.play('win'); achieve('freund'); }
-    else this.err = !r ? 'Keine Verbindung zum Server.' : r.data && r.data.error === 'self' ? 'Das bist du selbst!' : 'Ein Konto mit diesem Namen gibt es nicht.';
+    else this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : r.data && r.data.error === 'self' ? 'Das bist du selbst!' : 'Ein Konto mit diesem Namen gibt es nicht.';
   }
   async create(invite) {
     this.busy = true; const r = await api({ action: 'lobby_new', opts: this.opts, invite: invite || null }); this.busy = false;
@@ -329,7 +329,7 @@ class MultiScene {
   }
   async join(code) {
     this.busy = true; const r = await api({ action: 'lobby_join', code }); this.busy = false;
-    if (r && r.status === 200) this.leave(new LobbyScene(r.data, r.data.opts.mode || 'duell')); else this.err = !r ? 'Keine Verbindung zum Server.' : r.status === 409 ? 'Dieses Spiel ist schon voll.' : 'Diesen Code gibt es nicht.';
+    if (r && r.status === 200) this.leave(new LobbyScene(r.data, r.data.opts.mode || 'duell')); else this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : r.status === 409 ? 'Dieses Spiel ist schon voll.' : 'Diesen Code gibt es nicht.';
   }
   draw(c) {
     skyBg(c);

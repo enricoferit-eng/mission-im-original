@@ -509,6 +509,7 @@ const CONF = ['#ef476f', '#ffd166', '#06d6a0', '#118ab2', '#f78c6b', '#9b5de5', 
 const FX = {
   ps: [], fly: [],
   confetti(x, y, n = 40, power = 1) {
+    n = Math.round(n * 0.6);   // weniger Gewusel
     for (let i = 0; i < n; i++) this.ps.push({
       x, y, vx: (rnd() - 0.5) * 520 * power, vy: (-rnd() * 480 - 120) * power, g: 900,
       life: 1.1 + rnd() * 0.7, t: 0, col: pick(CONF), s: 5 + rnd() * 5, rot: rnd() * 6, vr: (rnd() - 0.5) * 12, kind: 'c',

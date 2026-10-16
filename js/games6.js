@@ -19,7 +19,7 @@ function drawIngr(c, k, x, y, s = 1) {
 GAMES.rezept = { make(env) {
   const r = env.r, L = L6(env), n = 3 + L, rounds = L === 0 ? 1 : 2, shelf = shuffle(INGR, r);
   let round = 0, seq = [], pos = 0, show = 0, t = 0, shake = 0, fx = [], drops = []; const fin = finisher(env);
-  const newRound = () => { seq = []; for (let k = 0; k < n; k++) seq.push(pick(INGR.filter(q => q !== seq[k - 1]), r)); pos = 0; show = L === 0 ? 999 : 2.2 + n * 0.5; };
+  const newRound = () => { seq = []; for (let k = 0; k < n; k++) seq.push(pick(INGR.filter(q => q !== seq[k - 1]), r)); pos = 0; show = L === 0 ? 999 : 3.2 + n * 0.5; };
   newRound();
   const slot = i => ({ x: 50 + (i % 3) * 150, y: i < 3 ? 400 : 470 });
   return {
@@ -109,7 +109,7 @@ GAMES.teelichter = { challenge: true, make(env) {
     hint: { type: 'tap', x: 200, y: 200 },
     update(dt) {
       t += dt; next -= dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7);
-      if (next <= 0 && !fin.on()) { next = (1.6 - L * 0.35) / env.slow; const on = lights.filter(q => q.on); if (on.length) { const q = pick(on, r); q.on = false; q.off = 0; Sfx.note(220, 0.15, 'sine', 0.04); } }
+      if (next <= 0 && !fin.on()) { next = (1.6 - L * 0.35) / env.slow; const on = lights.filter(q => q.on); if (on.length && lights.length - on.length < 2 + L) { const q = pick(on, r); q.on = false; q.off = 0; Sfx.note(220, 0.15, 'sine', 0.04); } }
       lights.forEach(q => { if (!q.on) { q.off += dt; if (q.off > 4.5 - L && !fin.on()) { q.off = 0; env.hit(); } } });
       fin.tick(dt);
     },
@@ -221,7 +221,7 @@ GAMES.sprenger = { make(env) {
     update(dt) {
       t += dt; const p = tip();
       if (aiming) { drops.push({ x: sx, y: sy - 20, tx: p.x + (r() - 0.5) * 24, ty: p.y + (r() - 0.5) * 24, t: 0 });
-        spots.forEach(s => { if (s.w < 1 && dist(p.x, p.y, s.x, s.y) < s.r + 18) { s.w = Math.min(1, s.w + dt / (0.6 + L * 0.25)); if (s.w >= 1) { Sfx.play('good'); env.burst(s.x, s.y, 8); if (spots.every(q => q.w >= 1)) fin.set(0.6); } } }); }
+        spots.forEach(s => { if (s.w < 1 && dist(p.x, p.y, s.x, s.y) < s.r + 30) { s.w = Math.min(1, s.w + dt / (0.6 + L * 0.25)); if (s.w >= 1) { Sfx.play('good'); env.burst(s.x, s.y, 8); if (spots.every(q => q.w >= 1)) fin.set(0.6); } } }); }
       drops.forEach(d => (d.t += dt * 2.4)); drops = drops.filter(d => d.t < 1); fin.tick(dt);
     },
     draw(c) {
@@ -244,7 +244,7 @@ GAMES.sprenger = { make(env) {
 // ===== Chalet =====
 // 7) Schneemann bauen: Die Schneekugel schwingt hin und her – tippe, damit sie genau oben drauf fällt
 GAMES.schneemann = { make(env) {
-  const r = env.r, L = L6(env), need = 1 + L, tol = [30, 22, 16][L];
+  const r = env.r, L = L6(env), need = 1 + L, tol = [34, 26, 20][L];
   let made = 0, stack = [], ball = null, t = 0, fx = [], done = []; const fin = finisher(env);
   const sizes = [44, 34, 25], baseY = 470;
   const newBall = () => { ball = { x: 200, y: 110, s: sizes[stack.length], ph: r() * 6, drop: false, vy: 0 }; };
@@ -371,7 +371,7 @@ GAMES.autowasch = { make(env) {
     hint: { type: 'drag', x: spots[0].x, y: spots[0].y, x2: spots[0].x + 40, y2: spots[0].y + 20 },
     update(dt) {
       t += dt; bird -= dt;
-      if (bird <= 0 && !fin.on()) { bird = 5; spots.push({ x: 120 + r() * 160, y: 150 + r() * 240, r: 12, d: 1 }); Sfx.note(900, 0.08, 'sine', 0.03); }
+      if (bird <= 0 && !fin.on()) { bird = 99; spots.push({ x: 120 + r() * 160, y: 150 + r() * 240, r: 12, d: 1 }); Sfx.note(900, 0.08, 'sine', 0.03); }
       bubbles.forEach(b => (b.t += dt)); bubbles = bubbles.filter(b => b.t < 0.8);
       if (down) spots.forEach(s => { if (s.d > 0 && dist(sp.x, sp.y, s.x, s.y) < s.r + 26) { s.d = Math.max(0, s.d - dt * (2.2 - L * 0.5)); if (s.d === 0) { Sfx.play('good'); env.burst(s.x, s.y, 5); if (spots.every(q => q.d === 0)) fin.set(0.6); } } });
       fin.tick(dt);

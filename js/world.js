@@ -252,7 +252,7 @@ function drawLockedFence(c, x, y0, y1, t) {
 const STAGE_NAME = { gastraum: 'Innenbereich', kueche: 'Küche', aussen: 'Außenbereich', chalet: 'Chalet', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz' };
 function drawFog(c, ox, oy, id, t) {
   const TILE_W = areaW(id), TILE_H = areaH(id);
-  const g = c.createLinearGradient(ox, oy, ox + TILE_W, oy + TILE_H); g.addColorStop(0, '#dfe7ea'); g.addColorStop(1, '#c9d4d8');
+  const g = c.createLinearGradient(ox, oy, ox + TILE_W, oy + TILE_H); g.addColorStop(0, '#b8c2c7'); g.addColorStop(1, '#a3afb5');
   c.fillStyle = g; c.fillRect(ox - 2, oy - 2, TILE_W + 4, TILE_H + 4);
   for (let k = 0; k < 26; k++) { const x = ox + ((k * 173 + t * 12 * (k % 3 + 1)) % (TILE_W + 300)) - 150, y = oy + (k * 211) % TILE_H; ell(c, x, y, 140 + (k % 4) * 30, 70 + (k % 3) * 20); c.fillStyle = 'rgba(255,255,255,.45)'; c.fill(); }
   const cx = ox + TILE_W / 2, cy = oy + TILE_H / 2;

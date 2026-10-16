@@ -6,6 +6,8 @@ const GAME_W = 400, GAME_H = 520;
 // ---------- Druck & Tempo: Countdown, Tempo-Sterne mit Zündschnur, Combos, Musik ----------
 let GAME_MOTION = 1;                       // wie stark sich Dinge in den Aufgaben bewegen (Stufe)
 const PAR_LONG = { hanoi: 1.6, pipes: 1.5, rotimg: 1.5, mirror: 1.5, diff: 1.4, lights: 1.4, puzzle: 1.3, balance: 1.3, dials: 1.3, sequence: 1.3, pattern: 1.3, platform: 2 };
+// kurze Fassung des Hilfetexts (erster Satz) – für Leicht ab dem zweiten Mal
+function helpShort(id) { const t = HELP_TEXT[id] || 'Probier es einfach aus!', m = /^.*?[.!?](\s|$)/.exec(t); return (m ? m[0] : t).trim(); }
 function parTime(id, diff, kind) { return Math.round((kind === 'easy' ? 22 : diff === 'hard' ? 38 : 32) * (PAR_LONG[id] || 1)); }
 try { document.addEventListener('visibilitychange', () => { if (document.hidden) Music.stop(); }); } catch (e) { /* egal */ }
 
@@ -19,7 +21,7 @@ class GameOverlay {
     const o = this.opts, self = this;
     this.state = 'play'; this.t = 0; this.endT = 0; this.touched = false; this.flash = 0;
     this.timed = o.diff === 'hard' && !!GAMES[this.id].challenge;   // nur Schwer-Challenges: Leben + Zeit
-    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? [3, 4, 5, 5, 6][ability('extraherz')] : 3; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
+    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? [4, 5, 6, 6, 7][ability('extraherz')] : 4; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
     this.env = {
       diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1,
       r: mulberry32(((o.seed || 7) + this.retries * 977) >>> 0),
@@ -50,7 +52,7 @@ class GameOverlay {
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
     // Beim ersten Mal: kurzer Hinweis über dem Spielfeld (vorgelesen) + Zeigehand – kein Textfenster, das Spiel startet sofort
     this.tip = null; this.lastTouch = 0;
-    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(HELP_TEXT[me.id] || 'Probier es einfach aus!', true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
+    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(helpShort(me.id), true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
     if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
     this.cdWait = this.tip ? 1.2 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
@@ -107,7 +109,7 @@ class GameOverlay {
       txt(c, msg, x + r + 20, y, Math.min(15, 15 * (W - x - r - 40) / c.measureText(msg).width), '#fff', 'left', null); c.globalAlpha = 1;
     }
   }
-  starsOn() { return !this.timed; }
+  starsOn() { if (!this.timed && !this.starTip && typeof ACC === 'function' && ACC() && !ACC().tut.stars && this.cd <= 0) { this.starTip = true; ACC().tut.stars = true; toast('Sterne', 'Je schneller du bist, desto mehr Sterne', 'star'); } return !this.timed; }
   good(x, y) {
     if (this.state !== 'play') return;
     this.combo = this.t - this.lastGood < 2.6 ? this.combo + 1 : 1; this.lastGood = this.t;
@@ -374,7 +376,7 @@ class GameOverlay {
       helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); }, false);
     }
   }
-  down(x, y, id) { if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
+  down(x, y, id) { if (this.opts.diff === 'easy' && Voice.busy && Voice.busy()) Voice.stop(); if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
     if (this.state === 'play' && !this.help && !this.ready && this.cd > 0 && this.cdWait <= 0) { this.ready = true; this.cd = 0.001; Sfx.note(990, 0.3, 'square', 0.06, 1.2); buzz(30); return; }
     if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
   move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
@@ -2035,7 +2037,7 @@ GAMES.platform = { challenge: true, make(env) {
       if (L && !R) { P.vx = Math.max(-max, P.vx - acc * dt); P.dir = -1; } else if (R && !L) { P.vx = Math.min(max, P.vx + acc * dt); P.dir = 1; } else P.vx *= P.on ? Math.pow(0.0005, dt) : Math.pow(0.3, dt);
       P.coyote -= dt; P.buf -= dt;
       if (J && !this.jHeld) P.buf = 0.12; this.jHeld = J;
-      if (P.buf > 0 && (P.on || P.coyote > 0)) { P.vy = -640; P.on = false; P.coyote = 0; P.buf = 0; Sfx.play('jump'); }
+      if (P.buf > 0 && (P.on || P.coyote > 0)) { P.vy = -680; P.on = false; P.coyote = 0; P.buf = 0; Sfx.play('jump'); }
       if (!J && P.vy < -260) P.vy = -260;               // kurzer Druck = kleiner Sprung
       P.vy = Math.min(900, P.vy + 1700 * dt);
       // horizontal

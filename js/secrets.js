@@ -35,7 +35,7 @@ const AREA_SECRETS = {
   const NAMES = { gastraum: 'Innenbereich', kueche: 'Küche', aussen: 'Außenbereich', chalet: 'Chalet', parkplatz: 'Parkplatz' };
   const HELD = { gastraum: 'Innenbereich-Held', kueche: 'Küchen-Held', aussen: 'Terrassen-Held', chalet: 'Chalet-Held', parkplatz: 'Parkplatz-Held' };
   Object.entries(AREA_SECRETS).forEach(([st, list]) => {
-    list.forEach(S => { SECRET_NAMES[S.key] = S.name; ACHIEVEMENTS.push({ id: 'g_' + S.key, name: S.ach, desc: 'Geheimnis: ' + S.desc, coins: 20, secret: true }); });
+    list.forEach(S => { SECRET_NAMES[S.key] = S.name; ACHIEVEMENTS.push({ id: 'g_' + S.key, name: S.ach, desc: 'Geheimnis: ' + S.desc, coins: 20, secret: true, area: NAMES[st] }); });
     ACHIEVEMENTS.push({ id: 'geheim_' + st, name: 'Geheimnisse: ' + NAMES[st], desc: 'Finde alle Geheimnisse im Bereich ' + NAMES[st] + '.', coins: 40 });
     ACHIEVEMENTS.push({ id: 'clear_' + st, name: HELD[st], desc: 'Schaffe den Bereich ' + NAMES[st] + '.', coins: 30 });
   });
@@ -59,7 +59,7 @@ function checkAreaAch(stage) {
           const T = sec[S.key] = (sec[S.key] || []).filter(t => this.t - t < S.time).concat([this.t]);
           Sfx.note(520 + T.length * 90, 0.08, 'triangle', 0.05); const sc = this.w2s(S.x, S.y, 30); FX.sparkle(sc.x, sc.y, 4 + T.length * 2, '#ffd23f');
           if (T.length >= S.n) { this.secretJoker(S.key); checkAreaAch(this.stage); }
-          return;
+          break;   // Antippen zählt fürs Geheimnis, wirkt aber trotzdem normal (laufen, suchen)
         }
         if (S.kind === 'seq') {
           const k = S.pts.findIndex(([x, y]) => dist(w.x, w.y, x, y) < S.r);
@@ -67,7 +67,7 @@ function checkAreaAch(stage) {
             let st = sec[S.key]; if (!st || this.t - st.t0 > S.time) st = sec[S.key] = { i: 0, t0: this.t };
             if (dist(S.pts[st.i][0], S.pts[st.i][1], S.pts[k][0], S.pts[k][1]) < 1) { st.i++; Sfx.note(600 + st.i * 120, 0.12, 'sine', 0.06); const sc = this.w2s(S.pts[k][0], S.pts[k][1], 20); FX.sparkle(sc.x, sc.y, 10, '#fff3bf'); if (st.i >= S.pts.length) { delete sec[S.key]; this.secretJoker(S.key); checkAreaAch(this.stage); } }
             else sec[S.key] = null;
-            return;
+            break;
           }
         }
       }

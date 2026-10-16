@@ -9,7 +9,7 @@ const puppeteer = require('puppeteer-core');
     const L = [], add = (text, who = 'erzaehler') => { if (text) L.push({ who, text, key: Voice.key(text, who), clean: Voice.clean(text) }); };
     STORY_SAY.forEach(t => add(t));
     TUT_CHAPTERS.forEach(ch => { add(ch.say); add(ch.try); });
-    Object.values(HELP_TEXT).forEach(t => add(t)); add('Probier es einfach aus!');
+    Object.values(HELP_TEXT).forEach(t => add(t)); Object.keys(HELP_TEXT).forEach(id => add(helpShort(id))); add('Probier es einfach aus!');
     ['Die Zeit ist abgelaufen!', 'Keine Herzen mehr!'].forEach(t => add(t + ' Versuch es gleich nochmal.'));
     add('Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft.');
     add('Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt.');

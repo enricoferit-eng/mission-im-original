@@ -23,6 +23,8 @@ Object.assign(NPC_LINES, {
 Object.assign(VOICE_OF, { p_schmidt: { pitch: 0.8, rate: 0.95, pick: 4 }, p_julia: { pitch: 1.15, rate: 1.05, pick: 2 }, p_karl: { pitch: 0.75, rate: 0.85, pick: 6 }, p_petra: { pitch: 1.05, rate: 1.0, pick: 1 }, p_tim: { pitch: 1.45, rate: 1.1, pick: 3 } });
 
 Object.assign(ITEMS, {
+  fahrradlicht: { n: 'Fahrradlicht', d(c, f) { rrPath(c, -12, -10, 24, 22, 7); fs(c, f('#343a40')); ell(c, 0, 1, 8, 8); fs(c, f('#ffe066'), 2); if (!f.sil) { ell(c, -2, -1, 3, 3); c.fillStyle = '#fff'; c.fill(); } rrPath(c, -4, 12, 8, 8, 2); fs(c, f('#495057'), 2); } },
+  einkaufstasche: { n: 'Einkaufstasche', d(c, f) { c.beginPath(); c.arc(0, -8, 9, Math.PI, 0); c.lineWidth = 3; c.strokeStyle = f('#2b9348'); c.stroke(); polyPath(c, [[-16, -8], [16, -8], [13, 18], [-13, 18]]); fs(c, f('#52b788')); if (!f.sil) leaf(c, 0, 5, 0.5, '#fff'); } },
   autoschluessel: { n: 'Autoschlüssel', d(c, f) { rrPath(c, -16, -12, 18, 26, 7); fs(c, f('#343a40')); ell(c, -7, -4, 3, 3); fs(c, f('#adb5bd'), 1.5); ell(c, -7, 5, 3, 3); fs(c, f('#adb5bd'), 1.5); rrPath(c, 2, -3, 20, 6, 2); fs(c, f('#ced4da')); for (let k = 0; k < 3; k++) rrPath(c, 8 + k * 5, 3, 3, 4, 1), c.fillStyle = f('#ced4da'), c.fill(); ell(c, -7, -18, 6, 5); c.lineWidth = 2.5; c.strokeStyle = OL; c.stroke(); } },
   geldbeutel: { n: 'Geldbeutel', d(c, f) { rrPath(c, -18, -12, 36, 26, 6); fs(c, f('#8d5a3b')); rrPath(c, -18, -12, 36, 12, 6); fs(c, f('#a0673a'), 2.5); ell(c, 10, -2, 4, 4); fs(c, f('#ffd166'), 2); if (!f.sil) line(c, -12, 8, 6, 8, 1.5, 'rgba(255,255,255,.3)', false); } },
   handy: { n: 'Handy', d(c, f) { c.rotate(0.15); rrPath(c, -11, -20, 22, 40, 5); fs(c, f('#212529')); rrPath(c, -8, -15, 16, 28, 2); c.fillStyle = f.sil ? f('#000') : '#4dabf7'; c.fill(); if (!f.sil) { leaf(c, 0, -2, 0.4, BRAND.lime); ell(c, 0, 16, 2, 2); c.fillStyle = '#495057'; c.fill(); } } },
@@ -34,7 +36,7 @@ Object.assign(ITEMS, {
   luftpumpe: { n: 'Luftpumpe', d(c, f) { c.rotate(-0.5); rrPath(c, -5, -14, 10, 32, 3); fs(c, f('#adb5bd')); rrPath(c, -12, -20, 24, 7, 3); fs(c, f('#212529')); line(c, 0, 18, 6, 26, 3, f('#212529')); } },
   spielzeugauto: { n: 'Spielzeugauto', d(c, f) { rrPath(c, -20, -4, 40, 14, 5); fs(c, f('#e63946')); c.beginPath(); c.moveTo(-10, -4); c.lineTo(-6, -14); c.lineTo(8, -14); c.lineTo(12, -4); c.closePath(); fs(c, f('#e63946')); if (!f.sil) { rrPath(c, -5, -12, 6, 7, 1); c.fillStyle = '#a5d8ff'; c.fill(); rrPath(c, 3, -12, 6, 7, 1); c.fill(); } ell(c, -11, 11, 5, 5); fs(c, f('#212529'), 2); ell(c, 11, 11, 5, 5); fs(c, f('#212529'), 2); } },
 });
-const PARK_ITEMS = ['autoschluessel', 'geldbeutel', 'handy', 'helm', 'parkschein', 'pluesch', 'regenschirm', 'trinkflasche', 'rucksack', 'kappe_i', 'luftpumpe', 'spielzeugauto'];
+const PARK_ITEMS = ['autoschluessel', 'geldbeutel', 'handy', 'fahrradlicht', 'parkschein', 'einkaufstasche', 'regenschirm', 'trinkflasche', 'rucksack', 'kappe_i', 'luftpumpe', 'spielzeugauto'];
 
 const PCOLS = ['#e9ecef', '#adb5bd', '#e63946', '#343a40', '#4dabf7', '#f8f9fa', '#8d99ae', '#ffd166', '#2a9d8f', '#6c584c'];
 // Aufbau wie auf dem Luftbild (Norden oben): oben links der Kreisverkehr mit Grasinsel (Brühlstraße), oben rechts der Spielplatz
@@ -45,7 +47,7 @@ const PW = 2900, PH = 1500, PSX = PW / 1000, PSY = PH / 1400, PX = x => Math.rou
 // Kreisel links oben (links neben dem Spielplatz), Brühlstraße kommt von links
 const RB = { x: 760, y: 360, r: 235, ri: 78 };
 const PROWS = [[[1200, 760], [2600, 600]], [[300, 1080], [2200, 880]]];
-const PPOSTS = []; PROWS.forEach(([a, b], ri) => { const n = Math.floor(dist(a[0], a[1], b[0], b[1]) / 30); for (let k = 0; k <= n; k++) { if (Math.abs(k - n / 2) < 1.6) continue; const u = k / n; PPOSTS.push([Math.round(lerp(a[0], b[0], u)), Math.round(lerp(a[1], b[1], u))]); } });
+const PPOSTS = []; PROWS.forEach(([a, b], ri) => { const n = Math.floor(dist(a[0], a[1], b[0], b[1]) / 30); for (let k = 0; k <= n; k++) { if (Math.abs(k - n / 2) < 1.6 || Math.abs(k - n / 4) < 1.2 || Math.abs(k - 3 * n / 4) < 1.2) continue; const u = k / n; PPOSTS.push([Math.round(lerp(a[0], b[0], u)), Math.round(lerp(a[1], b[1], u))]); } });
 const PUDDLES = [[1500, 700, 34], [700, 1250, 40], [2400, 1100, 38]];
 function drawGroundParkplatz(g, R) {
   // heller Beton/Kies-Platz überall (Größe wie auf dem Luftbild)
@@ -84,6 +86,7 @@ const PDECOR = [
   car('a1', 520, 700, 0.25, PCOLS[0]), car('a2', 610, 690, 0.2, PCOLS[3]), car('a3', 1020, 690, -0.2, PCOLS[3]), car('a4', 1240, 520, -0.25, PCOLS[2]),
   car('a5', 700, 1020, 0.05, PCOLS[4]), car('a6', 1450, 1260, 0.1, PCOLS[3]), car('a7', 1880, 470, 0, PCOLS[1]),
   car('a8', 2050, 520, 0.2, PCOLS[5]), car('a9', 2380, 470, 0.15, PCOLS[6]), car('a10', 1700, 1010, 0.1, PCOLS[7]), car('a11', 2150, 1000, 0.15, PCOLS[8]), car('a12', 2550, 980, -0.1, PCOLS[9]), car('a13', 1000, 1260, 0.1, PCOLS[2]),
+  car('a14', 1700, 700, -0.15, PCOLS[4]), car('a15', 2700, 690, 0.1, PCOLS[0]), car('a16', 600, 1280, 0.05, PCOLS[6]), car('a17', 2250, 1290, -0.1, PCOLS[3]), car('a18', 2700, 1250, 0.12, PCOLS[7]),
   { id: 'anhaenger', t: 'anhaenger', x: 170, y: 1250, x0: 150, y0: 1110, w: 44, h: 140, bb: [135, 1090, 80, 170] },
   { id: 'transporter', t: 'transporter', x: 300, y: 1390, x0: 272, y0: 1280, w: 56, h: 110, bb: [258, 1260, 90, 140] },
   { id: 'insel', t: 'rbinsel', x: RB.x, y: RB.y + RB.ri, bb: [RB.x - 110, RB.y - 180, 220, 270] },

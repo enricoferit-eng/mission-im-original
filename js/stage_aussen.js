@@ -330,7 +330,7 @@ STAGE_DEFS.aussen = {
     return {
       update(dt) {
         flies.forEach(f => { f.ph += dt; f.x = 1450 + Math.sin(f.ph * 0.7) * 160; f.y = 480 + Math.sin(f.ph * 1.3) * 80; });
-        const p = play.p, under = p.x > PAV.x0 - 30 && p.x < PAV.x1 + 30 && p.y > PAV.y0 && p.y < PAV.y1 + 60;
+        const p = play.p, under = p.x > PAV.x0 - 90 && p.x < PAV.x1 + 90 && p.y > PAV.y0 - 60 && p.y < PAV.y1 + 140;
         fade = lerp(fade, under ? 0.14 : 0.95, Math.min(1, dt * 6));
         if (K.pause > 0) { K.pause -= dt; return; } if (dist(p.x, p.y, K.x, K.y) < 60) return;
         const [tx, ty] = route[K.i], d = dist(K.x, K.y, tx, ty), s2 = 75 * dt; if (d <= s2) { K.x = tx; K.y = ty; K.i = (K.i + 1) % route.length; if (Math.random() < 0.4) K.pause = 1.4; } else { K.x += (tx - K.x) / d * s2; K.y += (ty - K.y) / d * s2; }

@@ -724,7 +724,7 @@ class Play {
     overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
     this.t += dt;
-    this.zoom = W > H ? clamp(H / 560, 0.55, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6);
+    this.zoom = (W > H ? clamp(H / 560, 0.55, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6)) * (WORLD_W * WORLD_H > 2.5e6 ? 0.88 : 1);
     const p = this.p; p.t += dt;
     if (this.pending) { this.pending.t -= dt; if (this.pending.t <= 0) { const f = this.pending.fn; this.pending = null; f(); } }
     for (const k in this.shake) this.shake[k] = Math.max(0, this.shake[k] - dt);
@@ -1103,7 +1103,7 @@ class Play {
     const kind = this.kind, sp = this.sp;
     const newPiece = !sp.outfit; sp.outfit = true;
     // Belohnung: statt eines Skins gibt es 300 Taler extra (Skins kauft man im Laden)
-    const skin = DP(this.diff).equip, newSkin = false, bonus = sp.clears ? 50 : CLEAR_BONUS; addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!'); if (!this.mp && ACC() && !ACC().token) setTimeout(() => toast('Spielstand sichern?', 'Tippe im Menü oben links auf deinen Namen', 'lock'), 2500);
+    const skin = DP(this.diff).equip, newSkin = false, bonus = sp.clears ? 50 : CLEAR_BONUS; addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!'); if (this.stage === 'parkplatz' && !sp.clears) setTimeout(() => toast('Bonus-Bereich offen!', 'Das Chalet wartet hinter dem Parkplatz', 'star'), 3500); if (!this.mp && ACC() && !ACC().token) setTimeout(() => toast('Spielstand sichern?', 'Tippe im Menü oben links auf deinen Namen', 'lock'), 2500);
     const usedJoker = (this.st.jokersUsed || 0) > 0;
     sp.clears++; sp.run = null;
     Save.write();
@@ -1250,6 +1250,7 @@ class Play {
     const a = this.npcAnim[n.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 12 : 0;
     const zz = n.l ? HOUSE.fz : 0;
     drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { staff: true, ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
+    if (this.st.done[n.id]) { const hy = n.y - zz - 104; ell(c, n.x, hy, 13, 13); fs(c, '#06d6a0', 2.5); icon(c, 'check', n.x, hy, 17, '#fff'); }   // schon geholfen
   }
   drawSwingFrame(c) { drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
   drawSwingFrameRaw(c) {
@@ -1550,6 +1551,7 @@ class Play {
       UI.btn(bx - 46, by - 46, 92, 92, () => this.startSearch());
       if (!ACC().tut.search) drawHand(c, bx + 4, by + 30 + Math.abs(Math.sin(this.t * 4)) * 10, 1.4);
       if (this.diff === 'medium') {
+        if (!ACC().tut.nose) { ACC().tut.nose = true; toast('Spürnase', 'Rot = ganz nah, blau = weit weg', 'search'); }
         const h = this.heat(), px = bx - 30, py = by - 112;
         panel(c, px - 4, py, 68, 64, '#3d2c1f', 16);
         ell(c, px + 30, py + 18, 12, 9); fs(c, '#2b1d14', 2.5, '#000'); ell(c, px + 26, py + 15, 3, 2); c.fillStyle = 'rgba(255,255,255,.5)'; c.fill();

@@ -685,6 +685,408 @@
  },
  {
   "who": "erzaehler",
+  "text": "Dreh immer zwei Karten um.",
+  "key": "c732cb74",
+  "clean": "Dreh immer zwei Karten um."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Luftballons, damit sie platzen.",
+  "key": "00f14f83",
+  "clean": "Tippe auf die Luftballons, damit sie platzen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben im Kasten siehst du ein Ding.",
+  "key": "b20ef2c8",
+  "clean": "Oben im Kasten siehst du ein Ding."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zähl die Dinge im Bild.",
+  "key": "c97c0e80",
+  "clean": "Zähl die Dinge im Bild."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wähle unten eine Farbe.",
+  "key": "2058721b",
+  "clean": "Wähle unten eine Farbe."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, wenn das Seil unten bei deinen Füßen ist.",
+  "key": "1d0fe4f1",
+  "clean": "Tippe, wenn das Seil unten bei deinen Füßen ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Merk dir, unter welcher Servierglocke der Eisclown steht.",
+  "key": "30392d0f",
+  "clean": "Merk dir, unter welcher Servierglocke der Eisclown steht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe die Zahlen der Reihe nach an.",
+  "key": "aaf6de96",
+  "clean": "Tippe die Zahlen der Reihe nach an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau genau hin, welche Felder nacheinander aufleuchten.",
+  "key": "eee56ffc",
+  "clean": "Schau genau hin, welche Felder nacheinander aufleuchten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Räder, um sie zu drehen.",
+  "key": "99f6095d",
+  "clean": "Tippe auf die Räder, um sie zu drehen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Rohrteile, um sie zu drehen.",
+  "key": "1dd7b77d",
+  "clean": "Tippe auf die Rohrteile, um sie zu drehen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh Klötze auf die Wippe, bis sie gerade ist.",
+  "key": "65d00e62",
+  "clean": "Zieh Klötze auf die Wippe, bis sie gerade ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Mach alle Windlichter an.",
+  "key": "6797200a",
+  "clean": "Mach alle Windlichter an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring den ganzen Teller-Stapel auf das Tablett mit dem Stern.",
+  "key": "5aa8eeb3",
+  "clean": "Bring den ganzen Teller-Stapel auf das Tablett mit dem Stern."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben und unten sind fast gleiche Bilder.",
+  "key": "dd68abab",
+  "clean": "Oben und unten sind fast gleiche Bilder."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Ein Bild ist gespiegelt und schaut in die andere Richtung.",
+  "key": "ebe8d14c",
+  "clean": "Ein Bild ist gespiegelt und schaut in die andere Richtung."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wie geht die Reihe weiter?",
+  "key": "110785cc",
+  "clean": "Wie geht die Reihe weiter?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dein Tier läuft von allein.",
+  "key": "3baff90d",
+  "clean": "Dein Tier läuft von allein."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe genau dann, wenn der Zeiger im grünen Bereich ist.",
+  "key": "17cb1390",
+  "clean": "Tippe genau dann, wenn der Zeiger im grünen Bereich ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Küche schickt Essen raus!",
+  "key": "ecc38f5e",
+  "clean": "Die Küche schickt Essen raus!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du rutschst nach unten.",
+  "key": "2c992a56",
+  "clean": "Du rutschst nach unten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, um zum nächsten Platz zu laufen.",
+  "key": "28e3efcc",
+  "clean": "Tippe, um zum nächsten Platz zu laufen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Lauf mit den Pfeil-Knöpfen, spring mit dem großen Knopf (lange drücken = hoch springen).",
+  "key": "754aab2c",
+  "clean": "Lauf mit den Pfeil-Knöpfen, spring mit dem großen Knopf ."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Deck den Tisch für die Gäste!",
+  "key": "3b461bba",
+  "clean": "Deck den Tisch für die Gäste!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht.",
+  "key": "b0b1e048",
+  "clean": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben.",
+  "key": "4612edf7",
+  "clean": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an, von unten nach oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept.",
+  "key": "ce51de85",
+  "clean": "Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist.",
+  "key": "8033fcb1",
+  "clean": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht.",
+  "key": "aeca202a",
+  "clean": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt.",
+  "key": "0ceeba52",
+  "clean": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Das Gemüse rollt am Messer vorbei.",
+  "key": "9136e984",
+  "clean": "Das Gemüse rollt am Messer vorbei."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Töpfe werden immer heißer.",
+  "key": "1c0247fd",
+  "clean": "Die Töpfe werden immer heißer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bei einem Topf steigt der Schaum!",
+  "key": "badf0e89",
+  "clean": "Bei einem Topf steigt der Schaum!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Beweg die Pfanne mit dem Finger.",
+  "key": "9d32499e",
+  "clean": "Beweg die Pfanne mit dem Finger."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch schnell hin und her über den Teig, bis die Leiste voll ist.",
+  "key": "5dbc2e32",
+  "clean": "Wisch schnell hin und her über den Teig, bis die Leiste voll ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Das Ei schwingt hin und her.",
+  "key": "a0dd9ed5",
+  "clean": "Das Ei schwingt hin und her."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Räum alles in den Kühlschrank, sodass kein Fach frei bleibt.",
+  "key": "ac759bd7",
+  "clean": "Räum alles in den Kühlschrank, sodass kein Fach frei bleibt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Flammkuchen backen im Ofen.",
+  "key": "f97c2e82",
+  "clean": "Die Flammkuchen backen im Ofen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Der rote Pfeil zeigt, wie die Serviette gefaltet wird.",
+  "key": "74a76bed",
+  "clean": "Der rote Pfeil zeigt, wie die Serviette gefaltet wird."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Halte die Gläser auf dem Tablett!",
+  "key": "0529da8c",
+  "clean": "Halte die Gläser auf dem Tablett!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe die Spiegel an, damit sie sich drehen.",
+  "key": "7dd22464",
+  "clean": "Tippe die Spiegel an, damit sie sich drehen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Fliegen wollen ans Essen!",
+  "key": "5ceb2475",
+  "clean": "Fliegen wollen ans Essen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Noten fliegen herunter.",
+  "key": "89721a9c",
+  "clean": "Die Noten fliegen herunter."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Halte den Finger gedrückt, dann läuft das Getränk ins Glas.",
+  "key": "839dae5e",
+  "clean": "Halte den Finger gedrückt, dann läuft das Getränk ins Glas."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf einen Schirm, um ihn aufzuspannen – aber nur, wenn der Wind ruhig ist.",
+  "key": "fc97e57c",
+  "clean": "Tippe auf einen Schirm, um ihn aufzuspannen, aber nur, wenn der Wind ruhig ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Wespen wollen ans Eis!",
+  "key": "1046ea6c",
+  "clean": "Die Wespen wollen ans Eis!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf den Boden, dann fallen dort Krümel.",
+  "key": "2652803e",
+  "clean": "Tippe auf den Boden, dann fallen dort Krümel."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schnipp den Ball mit dem Finger nach oben.",
+  "key": "ab05966b",
+  "clean": "Schnipp den Ball mit dem Finger nach oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Der Regen kommt!",
+  "key": "db1d6ff6",
+  "clean": "Der Regen kommt!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Gabel kreist um den Topf.",
+  "key": "cf04f76e",
+  "clean": "Die Gabel kreist um den Topf."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Der Holzklotz wackelt hin und her.",
+  "key": "2f1597b9",
+  "clean": "Der Holzklotz wackelt hin und her."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch von unten nach oben über das Feuer, damit es groß bleibt.",
+  "key": "caafd3bc",
+  "clean": "Wisch von unten nach oben über das Feuer, damit es groß bleibt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schnipp den Schneeball nach oben.",
+  "key": "7e71dad2",
+  "clean": "Schnipp den Schneeball nach oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch in eine Richtung, dann rutscht deine Figur übers Eis, bis sie an einen Stein stößt.",
+  "key": "1e8e5457",
+  "clean": "Wisch in eine Richtung, dann rutscht deine Figur übers Eis, bis sie an einen Stein stößt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch den Eisstock mit Schwung nach oben.",
+  "key": "60beea76",
+  "clean": "Wisch den Eisstock mit Schwung nach oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh das grüne Auto mit dem Finger in die freie Parklücke.",
+  "key": "5b8f3794",
+  "clean": "Zieh das grüne Auto mit dem Finger in die freie Parklücke."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Wisch nach unten, wenn der Kreis gelb leuchtet – immer im Takt.",
+  "key": "b0eec2d4",
+  "clean": "Wisch nach unten, wenn der Kreis gelb leuchtet, immer im Takt."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Halte den Finger gedrückt, dann läuft deine Figur los.",
+  "key": "fd0160f5",
+  "clean": "Halte den Finger gedrückt, dann läuft deine Figur los."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Halte den Finger gedrückt, dann fährt das Auto.",
+  "key": "555e7127",
+  "clean": "Halte den Finger gedrückt, dann fährt das Auto."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau dir das Rezept oben an.",
+  "key": "1b0333d3",
+  "clean": "Schau dir das Rezept oben an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Der Koch wirft Essen hoch.",
+  "key": "7e591d11",
+  "clean": "Der Koch wirft Essen hoch."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Auf den Tischen gehen Kerzen aus.",
+  "key": "16e2fc7b",
+  "clean": "Auf den Tischen gehen Kerzen aus."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Jeder Gast hat eine Nummer.",
+  "key": "51b974de",
+  "clean": "Jeder Gast hat eine Nummer."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben siehst du eine Farbe.",
+  "key": "d0293cb3",
+  "clean": "Oben siehst du eine Farbe."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh mit dem Finger, dann spritzt der Rasensprenger dorthin.",
+  "key": "486adcc1",
+  "clean": "Zieh mit dem Finger, dann spritzt der Rasensprenger dorthin."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Die Schneekugel schwingt hin und her.",
+  "key": "67319d11",
+  "clean": "Die Schneekugel schwingt hin und her."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Oben steht, was das Parken kostet.",
+  "key": "5639c339",
+  "clean": "Oben steht, was das Parken kostet."
+ },
+ {
+  "who": "erzaehler",
   "text": "Probier es einfach aus!",
   "key": "8c9aba00",
   "clean": "Probier es einfach aus!"

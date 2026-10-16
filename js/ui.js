@@ -71,6 +71,7 @@ class Menu {
   enter() {
     FX.clear(); ensureProfile(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
     if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
+    { const m = META(), day = new Date().toISOString().slice(0, 10); if (m && m.giftDay !== day) { const first = !m.giftDay; m.giftDay = day; Save.write(); if (!first) setTimeout(() => addCoins(20, 'Tagesgeschenk!'), 900); } }
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
   }
   update(dt) { this.t += dt; }
@@ -84,6 +85,7 @@ class Menu {
     logo(c, W / 2, LY, ls);
     claimBand(c, CLAIMS.urlaub, W / 2, LY + 76 * ls, 15 * Math.min(1.2, Math.max(0.8, ls)));
     accountChip.lastW = accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
+    if (!a.token) { const bx = 12, by = 84; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }   // nur solange nicht gesichert
     soundBtn(c, W - 40, 40);
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
@@ -389,7 +391,7 @@ class AdminPanel {
     this.busy = true; const r = await Net.call({ action: 'admin', device: a.device }); this.busy = false;
     if (r && r.status === 200) { ADMIN_STATS = r.data; this.msg = ''; }
     else if (r && r.status === 401) { delete a.device; Save.write(false); this.msg = 'Passwort wurde geändert – bitte neu anmelden.'; }
-    else this.msg = 'Keine Verbindung zum Server.';
+    else this.msg = 'Gerade keine Verbindung. Versuch es gleich nochmal.';
   }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
@@ -438,7 +440,7 @@ class LoginScene {
       Save.data.accounts.admin.device = r.data.device;   // Gerät merken (kein Passwort gespeichert)
       Save.data.current = 'admin'; Save.write(false); Sfx.play('win'); passInput.value = ''; this.leave(new Menu()); setTimeout(() => { overlay = new AdminPanel(); }, 50); return;
     }
-    this.err = !r ? 'Keine Verbindung zum Server.' : 'Benutzer oder Passwort stimmt nicht.'; Sfx.play('bad');
+    this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : 'Benutzer oder Passwort stimmt nicht.'; Sfx.play('bad');
   }
   setMode(m) { this.mode = m; this.err = ''; nameInput.value = ''; nameInput.placeholder = m === 'code' ? 'z. B. K7P2-9QXA' : 'Dein Fantasiename'; nameInput.maxLength = m === 'code' ? 9 : 14; }
   async done(r) {
@@ -826,7 +828,7 @@ class StageMap {
       txt(c, info.sub, tx, cy + 52, 13, '#6b5a48', 'left', null);
       if (open) {
         const done = ALL_IDS.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
-        for (let q = 0; q < 6; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); }
+        for (let q = 0; q < 6; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); } txt(c, done + ' von ' + ALL_IDS.length + ' geschafft', tx + 100, cy + 79, 12, '#6b5a48', 'left', null);
         const pu = 1 + Math.sin(t * 6) * 0.07;
         c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 28, '#06d6a0', 'play', null); c.restore();
         UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
@@ -983,6 +985,7 @@ class Wardrobe {
     // Standard-Look
     const by = y + h - 50;
     rrPath(c, W / 2 - 70, by - 26, 140, 52, 18); fs(c, d.equip === null ? '#d8f5e3' : '#fff', 3);
+    txt(c, 'Ohne Skin', W / 2 + 22, by + 18, 11, '#6b5a48', 'center', null);
     drawAnimal(c, this.kind, W / 2 - 30, by + 20, 0.75, { look: DEFAULT_LOOK, cap: hasCap(this.kind), noShadow: true });
     if (d.equip === null) icon(c, 'check', W / 2 + 30, by, 24, '#06d6a0');
     UI.btn(W / 2 - 70, by - 26, 140, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
@@ -1209,6 +1212,9 @@ Save.load();
 resize();
 if (Save.data.seenTrailer) ensureProfile();
 const firstScene = () => (!Save.data.seenTrailer ? new Trailer() : ACC() ? new Menu() : new Accounts());
+try { history.pushState({ mio: 1 }, ''); window.addEventListener('popstate', () => { history.pushState({ mio: 1 }, ''); if (overlay && overlay.close) { overlay.close(); return; } if (overlay) { overlay = null; return; } if (scene instanceof Play) { if (scene.stop) scene.stop(); return; } if (!(scene instanceof Menu) && ACC()) setScene(new Menu()); }); } catch (e) { /* egal */ }
+// Tab im Hintergrund: laufende Aufgabe pausieren
+document.addEventListener('visibilitychange', () => { if (document.hidden && overlay instanceof GameOverlay && overlay.state === 'play') overlay.help = true; });
 { const mit = (/[?&]mit=([A-Za-z]{4})/.exec(location.search) || [])[1];   // Einladungslink: direkt dem Mehrspieler-Spiel beitreten
   if (mit && ACC() && ACC().token && Save.data.seenTrailer) { try { history.replaceState(null, '', location.pathname); } catch (e) {} const ms = new MultiScene(); setScene(ms); ms.join(mit.toUpperCase()); }
   else setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene()); }

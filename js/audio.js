@@ -42,7 +42,7 @@ const Tune = {
     const T = TUNES[this.id], st = 60 / T.bpm / 2;
     while (this.next < c.currentTime + 0.25) {
       const t = this.next, k = this.step % 16, bar = Math.floor(this.step / 16) % T.bass.length;
-      const m = T.mel[k]; if (m !== null) this.tone(N(m + (Math.floor(this.step / 64) % 2 ? 2 : 0)), t, st * 1.6, T.wave, T.vol * 0.7);
+      const m = T.mel[Math.floor(this.step / 32) % 2 ? 15 - k : k]; if (m !== null) this.tone(N(m + (Math.floor(this.step / 64) % 2 ? 2 : 0)), t, st * 1.6, T.wave, T.vol * 0.7);
       if (k % 4 === 0) this.tone(N(T.bass[bar] - 12), t, st * 3.5, 'triangle', T.vol * 1.0);
       if (T.bells && k % 2 === 0) { const b = c.createBufferSource(); b.buffer = noiseBuf(0.05); const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000; const g = c.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); b.connect(hp).connect(g).connect(c.destination); b.start(t); }
       this.next += st; this.step++;
@@ -57,11 +57,11 @@ function noise(dur, freq, vol, type = 'bandpass', q = 1) {
   try { const c = Sfx.ctx(), t = c.currentTime, s = c.createBufferSource(); s.buffer = noiseBuf(dur); const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q; const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); s.connect(f).connect(g).connect(c.destination); s.start(t); } catch (e) { /* egal */ }
 }
 const AMBIENT = {
-  kueche: () => { if (Math.random() < 0.5) noise(0.35, 3000, 0.012, 'highpass'); else Sfx.note(1800 + Math.random() * 600, 0.05, 'sine', 0.012); },          // Brutzeln, Teller klirren
-  gastraum: () => { Sfx.note(2200 + Math.random() * 800, 0.06, 'sine', 0.01); setTimeout(() => Sfx.note(2600 + Math.random() * 600, 0.05, 'sine', 0.008), 90); },   // Gläser
+  kueche: () => { if (Math.random() < 0.5) noise(0.35, 3000, 0.008, 'highpass'); else Sfx.note(1800 + Math.random() * 600, 0.05, 'sine', 0.012); },          // Brutzeln, Teller klirren
+  gastraum: () => { Sfx.note(2200 + Math.random() * 800, 0.06, 'sine', 0.006); setTimeout(() => Sfx.note(2600 + Math.random() * 600, 0.05, 'sine', 0.008), 90); },   // Gläser
   aussen: () => { const f = 2600 + Math.random() * 900; Sfx.note(f, 0.08, 'sine', 0.014, 1.3); setTimeout(() => Sfx.note(f * 1.1, 0.07, 'sine', 0.012, 1.25), 120); },   // Vögel
   spielplatz: () => { const f = 2400 + Math.random() * 900; Sfx.note(f, 0.08, 'sine', 0.012, 1.3); },
-  parkplatz: () => noise(1.4, 400, 0.02, 'lowpass'),                                                                                                      // Auto fährt vorbei
+  parkplatz: () => noise(1.4, 400, 0.01, 'lowpass'),                                                                                                      // Auto fährt vorbei
   chalet: () => { for (let k = 0; k < 3; k++) setTimeout(() => noise(0.04, 1500 + Math.random() * 2000, 0.02), k * 70 + Math.random() * 60); },           // Kaminfeuer knistert
 };
 const FLOOR_STEP = { kueche: 2400, gastraum: 1700, aussen: 900, spielplatz: 700, parkplatz: 1200, chalet: 500 };
@@ -74,7 +74,7 @@ const FLOOR_STEP = { kueche: 2400, gastraum: 1700, aussen: 900, spielplatz: 700,
     if (!inGame && !this.exiting) Tune.start(this.stage); else Tune.stop();
     if (inGame || !Sfx.on()) return;
     this.ambT = (this.ambT || 2) - dt; if (this.ambT <= 0) { this.ambT = 2.5 + Math.random() * 4; try { AMBIENT[this.stage] && AMBIENT[this.stage](); } catch (e) { /* egal */ } }
-    if (this.p.moving && !this.p.slide) { this.stepT = (this.stepT || 0) - dt; if (this.stepT <= 0) { this.stepT = 0.28; noise(0.06, FLOOR_STEP[this.stage] || 1000, 0.025); } }
+    if (this.p.moving && !this.p.slide) { this.stepT = (this.stepT || 0) - dt; if (this.stepT <= 0) { this.stepT = 0.28; noise(0.06, FLOOR_STEP[this.stage] || 1000, 0.012); } }
   };
   const cross0 = Play.prototype.crossTo;
   if (cross0) Play.prototype.crossTo = function (E) { noise(0.5, 900, 0.03, 'bandpass', 0.6); Sfx.note(520, 0.2, 'sine', 0.04, 1.5); return cross0.call(this, E); };

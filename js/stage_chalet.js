@@ -154,8 +154,8 @@ function drawBigHouse(g) {
   rrPath(g, B.x0, fy, B.x1 - B.x0, 130, 4); fs(g, '#6f4e37', 3);
   for (let y = fy + 16; y < B.y1; y += 16) line(g, B.x0 + 3, y, B.x1 - 3, y, 1.5, 'rgba(40,20,5,.35)', false);
   for (const wx of [B.x0 + 80, B.x0 + 190, B.x1 - 80]) { rrPath(g, wx - 34, fy + 26, 68, 56, 4); fs(g, '#5c3d2e', 3); rrPath(g, wx - 28, fy + 32, 56, 44, 2); g.fillStyle = '#ffe8a3'; g.fill(); line(g, wx, fy + 32, wx, fy + 76, 3, '#5c3d2e', false); }
-  rrPath(g, B.x1 - 210, fy + 30, 70, 100, 4); fs(g, '#3d2c1f', 3); ell(g, B.x1 - 152, fy + 82, 4, 4); g.fillStyle = '#ffd166'; g.fill();
-  ell(g, B.x1 - 175, fy + 18, 16, 16); g.lineWidth = 6; g.strokeStyle = '#2d6a4f'; g.stroke(); ell(g, B.x1 - 175, fy + 30, 4, 4); g.fillStyle = '#c1121f'; g.fill();   // Kranz
+  { const wx = B.x1 - 175; rrPath(g, wx - 34, fy + 26, 68, 56, 4); fs(g, '#5c3d2e', 3); rrPath(g, wx - 28, fy + 32, 56, 44, 2); g.fillStyle = '#ffe8a3'; g.fill(); }   // Fenster statt Tür (Haus ist nicht begehbar)
+  ell(g, B.x1 - 175, fy + 12, 14, 14); g.lineWidth = 6; g.strokeStyle = '#2d6a4f'; g.stroke();   // Kranz
 }
 const CDRAW = {
   huettentafel(c, d) {
