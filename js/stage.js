@@ -794,6 +794,12 @@ class Play {
     }
     let mx = 0, my = 0;
     const j = this.joy;
+    if (!j && !overlay && typeof KEYS !== 'undefined') {   // PC: Pfeiltasten oder WASD, Leertaste/E = ansprechen oder suchen
+      const kx = (KEYS.ArrowRight || KEYS.d || KEYS.D ? 1 : 0) - (KEYS.ArrowLeft || KEYS.a || KEYS.A ? 1 : 0), ky = (KEYS.ArrowDown || KEYS.s || KEYS.S ? 1 : 0) - (KEYS.ArrowUp || KEYS.w || KEYS.W ? 1 : 0);
+      if (kx || ky) { const n = Math.hypot(kx, ky); mx = kx / n; my = ky / n; p.path = null; p.target = null; }
+      const act = KEYS[' '] || KEYS.e || KEYS.E;
+      if (act && !this.keySearchHeld) { this.keySearchHeld = true; const T = this.interactables().filter(q => q.k !== 'spot' && this.inRange(q))[0]; if (T) this.interact(T); else this.startSearch(); } else if (!act) this.keySearchHeld = false;
+    }
     if (j && j.moved) {
       const dx = j.x - j.x0, dy = j.y - j.y0, d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 55);
       mx = (dx / d) * k; my = (dy / d) * k; p.path = null; p.target = null;
@@ -1097,7 +1103,7 @@ class Play {
     const kind = this.kind, sp = this.sp;
     const newPiece = !sp.outfit; sp.outfit = true;
     // Belohnung: statt eines Skins gibt es 300 Taler extra (Skins kauft man im Laden)
-    const skin = DP(this.diff).equip, newSkin = false, bonus = sp.clears ? 50 : CLEAR_BONUS; addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!');
+    const skin = DP(this.diff).equip, newSkin = false, bonus = sp.clears ? 50 : CLEAR_BONUS; addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!'); if (!this.mp && ACC() && !ACC().token) setTimeout(() => toast('Spielstand sichern?', 'Tippe im Menü oben links auf deinen Namen', 'lock'), 2500);
     const usedJoker = (this.st.jokersUsed || 0) > 0;
     sp.clears++; sp.run = null;
     Save.write();

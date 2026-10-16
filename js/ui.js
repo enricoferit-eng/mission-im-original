@@ -1209,5 +1209,7 @@ Save.load();
 resize();
 if (Save.data.seenTrailer) ensureProfile();
 const firstScene = () => (!Save.data.seenTrailer ? new Trailer() : ACC() ? new Menu() : new Accounts());
-setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene());
+{ const mit = (/[?&]mit=([A-Za-z]{4})/.exec(location.search) || [])[1];   // Einladungslink: direkt dem Mehrspieler-Spiel beitreten
+  if (mit && ACC() && ACC().token && Save.data.seenTrailer) { try { history.replaceState(null, '', location.pathname); } catch (e) {} const ms = new MultiScene(); setScene(ms); ms.join(mit.toUpperCase()); }
+  else setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene()); }
 requestAnimationFrame(frame);

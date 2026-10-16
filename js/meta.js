@@ -430,6 +430,9 @@ class LobbyScene {
     const o = this.lob.opts, stars = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff];
     txt(c, (o.size || 2) + ' Spieler · ' + (o.mode === 'team' ? 'Zusammen · ' + stars : (o.mode === '2v2' ? '2 gegen 2 · ' : 'Duell · ') + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars), W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
     txt(c, 'Spiel-Code', W / 2, y + 62, 13, '#6b5a48', 'center', null);
+    { const url = location.href.split('?')[0].split('#')[0] + '?mit=' + this.lob.code, bx = W / 2 + 140, by = y + 100;
+      roundBtn(c, bx, by, 20, '#caffbf', 'friends', async () => { const t = 'Spiel mit mir „Mission: Im Original“! Code: ' + this.lob.code; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t, url }); else { await navigator.clipboard.writeText(t + ' ' + url); toast('Link kopiert', 'Schick ihn deinen Freunden', 'friends'); } } catch (e) { /* abgebrochen */ } }, '#2d6a4f');
+      txt(c, 'Teilen', bx, by + 30, 11, '#6b5a48', 'center', null); }
     this.lob.code.split('').forEach((ch, i) => { const cx = W / 2 + (i - 1.5) * 52; rrPath(c, cx - 22, y + 74, 44, 52, 12); fs(c, '#fff', 3); txt(c, ch, cx, y + 101, 30, '#118ab2', 'center', null); });
     const size = o.size || 2, ppl = (this.lob.players || [this.lob.host, this.lob.guest].filter(Boolean)).slice(0, size); while (ppl.length < size) ppl.push(null);
     const gap = Math.min(110, (w - 40) / size);
@@ -474,7 +477,7 @@ class Match {
       if (P.length) this.other = { pos: P[0].pos, done: Math.max(...P.map(p => p.done || 0)), got: [].concat(...P.map(p => p.got || [])), sw: (P.find(p => p.sw) || {}).sw || 0, hold: P.some(p => p.hold), chestOpen: P.some(p => p.chestOpen), chest: P.some(p => p.chest), roof: P.some(p => p.roof), fin: P.some(p => p.fin), at: Math.max(...P.map(p => p.at || 0)) };
       const lob = r.data.lobby; if (lob.status === 'closed' && lob.left !== cleanL(ACC().login) && !this.over) this.over = 'left';
     }
-    if (!this.over && Date.now() - this.lastOther > 45000) this.over = 'lost';   // Verbindung zu allen anderen weg
+    if (!this.over && Date.now() - this.lastOther > 90000) this.over = 'lost';   // Verbindung zu allen anderen weg
   }
   stop() { this.over = 'done'; }
   leave() { api({ action: 'lobby_poll', code: this.code, leave: true }); this.stop(); }
