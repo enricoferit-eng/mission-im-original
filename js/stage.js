@@ -366,7 +366,7 @@ class Play {
       if (n.swing) return { id: n.id, swing: this.st.layout.seat, x: SWING.seats[this.st.layout.seat], y: SWING.y + 55, l: 0 };
       const p = n.pos[this.st.layout[n.id]]; let x = p[0], y = p[1];
       if (!p[2] && !canStand(0, x, y)) { const i = nearestFree(0, x, y); if (i >= 0) { x = (i % GW) * CELL + CELL / 2; y = Math.floor(i / GW) * CELL + CELL / 2; } }   // nie hinter/in Möbeln
-      return { id: n.id, x, y, l: p[2] };
+      return { id: n.id, x, y, l: p[2] || 0 };   // ohne Angabe: Boden (sonst findet die Wegsuche die Person nie)
     });
     this.p = { x: START.x, y: START.y, level: 0, dir: 1, t: 0, moving: false, path: null, target: null, slide: null, slideZ: 0 };
     this.camX = START.x; this.camY = START.y; this.zoom = 1;
@@ -758,6 +758,7 @@ class Play {
     overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
     this.t += dt;
+    if (overlay && this.joy) this.joy = null;   // ein Fenster ging auf, während der Finger lag: den Finger vergessen, sonst zählen keine Tipps mehr
     if (!this.mp && !document.hidden) { const a = ACC(), day = new Date().toISOString().slice(0, 10); if (a.playDay !== day) { a.playDay = day; a.playSec = 0; } a.playSec = (a.playSec || 0) + dt;   // Eltern-Timer
       if (a.limitMin && a.playSec > a.limitMin * 60 && !this.timeUp && !(overlay instanceof GameOverlay)) { this.timeUp = true; Save.write(); overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Dein Spielstand ist gespeichert – bis morgen!', onClose: () => setScene(new Menu()) }); } }
     this.zoom = (W > H ? clamp(H / 560, 0.6, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6)) * (WORLD_W * WORLD_H > 2.5e6 ? 0.88 : 1);
