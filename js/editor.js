@@ -40,7 +40,7 @@ class CharEditor {
   enter() { FX.clear(); Voice.say('Gestalte deine Figur.', true); }
   update(dt) { this.t += dt; }
   draw(c) {
-    skyBg(c);
+    themeBg(c, 'dress');
     const a = ACC(); if (!a) return; const u = a.custom;
     topBar(c, () => { Save.write(); this.back(); });
     txt(c, 'Figur bearbeiten', 104, 44, 22, '#fff', 'left', BRAND.olive);

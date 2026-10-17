@@ -21,6 +21,49 @@ function skyBg(c) {
   }
   c.fillStyle = 'rgba(255,255,255,.85)'; c.fillRect(0, gy - gh - 6, W, 8);
 }
+// Eigene Hintergründe je Bildschirm (Laden, Garderobe, Erfolge, Mehrspieler) – einmal gemalt und zwischengespeichert
+const BG_CACHE = {};
+function themeBg(c, kind) {
+  const key = kind + W + 'x' + H + 'x' + DPR; let cv2 = BG_CACHE[kind];
+  if (!cv2 || cv2.key !== key) {
+    cv2 = BG_CACHE[kind] = document.createElement('canvas'); cv2.key = key; cv2.width = Math.round(W * DPR); cv2.height = Math.round(H * DPR);
+    const g = cv2.getContext('2d'); g.setTransform(DPR, 0, 0, DPR, 0, 0); (THEME_BG[kind] || skyBg)(g);
+  }
+  c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(cv2, 0, 0); c.restore();
+}
+const THEME_BG = {
+  shop(c) {   // Marktladen: warme Wand, Regale, Holzboden, Markise
+    const fy = H * 0.72, g = c.createLinearGradient(0, 0, 0, fy); g.addColorStop(0, '#f8e7c9'); g.addColorStop(1, '#efd3a8'); c.fillStyle = g; c.fillRect(0, 0, W, fy);
+    for (let y = 120; y < fy - 30; y += 92) { c.fillStyle = 'rgba(141,90,59,.28)'; c.fillRect(0, y + 44, W, 8);
+      for (let x = (y / 3) % 50; x < W; x += 50) { const k = Math.floor(x * 7 + y) % 4; c.fillStyle = ['rgba(239,71,111,.18)', 'rgba(6,214,160,.18)', 'rgba(255,209,102,.3)', 'rgba(17,138,178,.16)'][k]; if (k % 2) { rrPath(c, x, y + 14, 30, 30, 6); c.fill(); } else { ell(c, x + 15, y + 30, 13, 14); c.fill(); } } }
+    c.fillStyle = '#c8925c'; c.fillRect(0, fy, W, H - fy); c.strokeStyle = 'rgba(90,55,30,.25)'; c.lineWidth = 2;
+    for (let y = fy + 18; y < H; y += 22) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    for (let x = 0; x < W; x += 34) { ell(c, x + 17, 4, 17, 14); c.fillStyle = (x / 34) % 2 ? '#fff' : '#ef476f'; c.fill(); }
+  },
+  dress(c) {   // Umkleide: Streifentapete, Vorhänge, Glühbirnen, Teppich
+    const fy = H * 0.74; c.fillStyle = '#efe1f7'; c.fillRect(0, 0, W, fy);
+    for (let x = 0; x < W; x += 36) { c.fillStyle = 'rgba(181,131,214,.18)'; c.fillRect(x, 0, 18, fy); }
+    c.fillStyle = '#e9a6c4'; c.fillRect(0, fy, W, H - fy); c.fillStyle = 'rgba(255,255,255,.25)'; for (let x = 10; x < W; x += 40) { ell(c, x, fy + (H - fy) / 2, 10, 4); c.fill(); }
+    for (const side of [0, 1]) { const x0 = side ? W - 70 : 0; const g = c.createLinearGradient(x0, 0, x0 + 70, 0); g.addColorStop(0, '#9d2b48'); g.addColorStop(0.5, '#c9415f'); g.addColorStop(1, '#9d2b48'); c.fillStyle = g; c.fillRect(x0, 0, 70, fy + 8);
+      c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 2; for (let k = 1; k < 4; k++) { c.beginPath(); c.moveTo(x0 + k * 17, 0); c.lineTo(x0 + k * 17, fy + 8); c.stroke(); } }
+    for (let x = 90; x < W - 80; x += 46) { ell(c, x, 10, 7, 8); c.fillStyle = '#fff3bf'; c.fill(); c.strokeStyle = '#c9a227'; c.lineWidth = 2; c.stroke(); }
+  },
+  trophy(c) {   // Pokal-Saal: blaue Wand, Regale mit Pokal-Schatten, Funkeln
+    const fy = H * 0.76, g = c.createLinearGradient(0, 0, 0, fy); g.addColorStop(0, '#2f5d7c'); g.addColorStop(1, '#3f7a9c'); c.fillStyle = g; c.fillRect(0, 0, W, fy);
+    for (let y = 130; y < fy - 20; y += 100) { c.fillStyle = 'rgba(201,162,39,.55)'; c.fillRect(0, y + 50, W, 7);
+      for (let x = 30 + (y % 60); x < W; x += 90) { c.fillStyle = 'rgba(255,209,102,.22)'; c.beginPath(); c.moveTo(x - 14, y + 8); c.lineTo(x + 14, y + 8); c.quadraticCurveTo(x + 12, y + 30, x + 3, y + 34); c.lineTo(x + 3, y + 42); c.lineTo(x + 10, y + 50); c.lineTo(x - 10, y + 50); c.lineTo(x - 3, y + 42); c.lineTo(x - 3, y + 34); c.quadraticCurveTo(x - 12, y + 30, x - 14, y + 8); c.fill(); } }
+    c.fillStyle = 'rgba(255,255,255,.5)'; for (let i = 0; i < 40; i++) { const x = (i * 157) % W, y = (i * 89) % fy; c.fillRect(x, y, 2, 2); }
+    c.fillStyle = '#7a4e2d'; c.fillRect(0, fy, W, H - fy); c.fillStyle = 'rgba(0,0,0,.12)'; for (let x = 0; x < W; x += 60) c.fillRect(x, fy, 3, H - fy);
+  },
+  park(c) {   // Treffpunkt im Park: Himmel, Wolken, Hügel, Wimpelkette
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#8fd3f4'); g.addColorStop(1, '#d6f1fb'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,.85)'; for (let i = 0; i < 5; i++) { const x = (i * 263 + 60) % W, y = 90 + (i * 37) % 70; ell(c, x, y, 40, 14); c.fill(); ell(c, x + 26, y - 8, 26, 14); c.fill(); }
+    c.fillStyle = '#9ccc6f'; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 20) c.lineTo(x, H * 0.66 + Math.sin(x / 120) * 18); c.lineTo(W, H); c.fill();
+    c.fillStyle = '#6fa84f'; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 20) c.lineTo(x, H * 0.78 + Math.sin(x / 90 + 2) * 12); c.lineTo(W, H); c.fill();
+    c.strokeStyle = 'rgba(61,44,31,.5)'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 60); c.quadraticCurveTo(W / 2, 100, W, 60); c.stroke();
+    for (let x = 14; x < W; x += 34) { const t = x / W, y = 60 + 4 * t * (1 - t) * 40 - 1; c.fillStyle = ['#ef476f', '#ffd166', '#06d6a0', '#118ab2'][Math.floor(x / 34) % 4]; c.beginPath(); c.moveTo(x - 9, y); c.lineTo(x + 9, y); c.lineTo(x, y + 18); c.fill(); }
+  },
+};
 // Titel: "Mission:" + das echte Im-Original-Logo
 function logo(c, x, y, s) {
   txt(c, 'Mission:', x, y - 58 * s, 26 * s, '#fff', 'center', BRAND.olive);
@@ -1002,7 +1045,7 @@ class Wardrobe {
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
-    c.fillStyle = 'rgba(16,28,18,.72)'; c.fillRect(0, 0, W, H);
+    themeBg(c, 'dress'); c.fillStyle = 'rgba(16,28,18,.25)'; c.fillRect(0, 0, W, H);   // Garderobe: eigene Umkleide statt abgedunkeltem Menü
     const land = W > H, w = Math.min(W - 20, land ? 860 : 560), h = Math.min(H - 20, 660), x = (W - w) / 2, y = (H - h) / 2;
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());

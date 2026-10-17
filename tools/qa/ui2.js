@@ -19,6 +19,7 @@ const { open, sleep } = require('./common'); const fs = require('fs');
   await S('verloren', () => { overlay = new GameOverlay('jump', { diff: 'medium', kind: 'challenge', item: 'tomate', seed: 3, onStop() {} }, () => {}); overlay.ready = true; overlay.cd = 0; overlay.state = 'lost'; overlay.timeLeft = 5; }, 800);
   await S('geschenke', () => { overlay = new GameOverlay('geschenke', { diff: 'hard', kind: 'challenge', item: 'tomate', seed: 3, onStop() {} }, () => {}); overlay.ready = true; overlay.cd = 0; }, 1500);
   await S('hilfe', () => { overlay = null; scene.helpOpen = true; });
+  await S('editor', () => { overlay = null; setScene(new CharEditor(() => setScene(new Menu()))); });
   await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
   await S('hoch_menu', () => { overlay = null; setScene(new Menu()); });
   console.log('ERR', [...new Set(errs)].join(' / ') || 'none'); await b.close();

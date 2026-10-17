@@ -109,7 +109,7 @@ class Shop {
   }
   buy(price, fn, ok) { if (price >= 150 && !ok) { overlay = new ConfirmDialog({ text: 'Für ' + price + ' Taler kaufen?', icon: 'coin', onYes: () => this.buy(price, fn, true) }); return; } const m = META(); if (m.coins < price) { Sfx.play('bad'); this.say('Dafür fehlen dir noch ' + (price - m.coins) + ' Taler.'); return; } m.coins -= price; fn(m); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 40); achieve('einkauf'); }
   draw(c) {
-    skyBg(c);
+    themeBg(c, 'shop');
     const m = META(); if (!m) return;
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
@@ -120,11 +120,11 @@ class Shop {
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
-      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, jh = 64, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 26 - jh - 14, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
+      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, jh = 64, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 36 - jh - 14, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
       const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;
       txt(c, 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min', W / 2, top + 4, 13, '#fff', 'center', BRAND.olive);
       D.forEach((o, i) => {
-        const x = x0 + i * (cw + gap), y = top + 20, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
+        const x = x0 + i * (cw + gap), y = top + 30, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
         rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : o.ex ? '#fff3bf' : '#fff', 3.5, o.ex ? '#c9a227' : OL);
         drawAnimal(c, kind, x + cw / 2, y + bob + ch - 60, Math.min(1.4, (ch - 66) / 80), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name, x + cw / 2, y + bob + ch - 52, 13, '#3d2c1f', 'center', null);
@@ -139,7 +139,7 @@ class Shop {
       { const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
         [['Aufgaben-Joker', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }, 'Schafft eine Aufgabe sofort.'],
          ['Such-Joker', 'search', 20, 5 - (m.dayS || 0), m.hint || 0, mm => { mm.hint = (mm.hint || 0) + 1; mm.dayS = (mm.dayS || 0) + 1; }, 'Zeigt sofort ein Versteck.']].forEach(([name, ic, price, left, have, give, desc], j) => {
-          const tw2 = cw * n + gap * (n - 1), bw = (tw2 - gap) / 2, x = x0 + j * (bw + gap), y = top + 20 + ch + 14, ok = left > 0, w = bw, h = jh;   /* Joker: eigene Zeile unter den Skins */
+          const tw2 = cw * n + gap * (n - 1), bw = (tw2 - gap) / 2, x = x0 + j * (bw + gap), y = top + 30 + ch + 14, ok = left > 0, w = bw, h = jh;   /* Joker: eigene Zeile unter den Skins */
           rrPath(c, x, y, w, h, 18); fs(c, ok ? '#e7f5ff' : '#e9ecef', 3.5);
           icon(c, ic, x + 34, y + h / 2, 38);
           txt(c, name, x + 62, y + 20, 14, '#3d2c1f', 'left', null);
@@ -214,8 +214,8 @@ class Shop {
       all.forEach(([k, price], i) => {
         const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap), own = ownedAnimals().includes(k), cur = ACC().char === k;
         rrPath(c, x, y, cw, ch, 16); fs(c, cur ? '#d8f5e3' : '#fff', 3);
-        drawAnimal(c, k, x + cw / 2, y + ch * 0.6, Math.min(1.6, ch / 115), { look: DEFAULT_LOOK, t: this.t + i, cap: false });
-        txt(c, ANIMAL_NAMES[k], x + cw / 2, y + ch - 30, 15, '#3d2c1f', 'center', null);
+        drawAnimal(c, k, x + cw / 2, y + ch - 38, Math.min(1.6, (ch - 42) / 76), { look: DEFAULT_LOOK, t: this.t + i, cap: false });   // Füße über dem Namen
+        txt(c, ANIMAL_NAMES[k], x + cw / 2, y + ch - 27, 14, '#3d2c1f', 'center', null);
         if (cur) txt(c, 'deine Figur', x + cw / 2, y + ch - 12, 12, '#2b9348', 'center', null);
         else if (own) txt(c, cw < 120 ? 'wählen' : 'antippen = wählen', x + cw / 2, y + ch - 12, 11, '#6b5a48', 'center', null);
         else { icon(c, 'coin', x + cw / 2 - 22, y + ch - 12, 16); txt(c, String(price), x + cw / 2 + 4, y + ch - 11, 13, '#8d5a3b', 'center', null); }
@@ -261,7 +261,7 @@ class Achievements {
   leave() { try { cv.removeEventListener('wheel', this.wheel); } catch (e) { /* egal */ } }
   update(dt) { this.t += dt; if (!this.drag && Math.abs(this.vel) > 5) { this.scroll += this.vel * dt; this.vel *= Math.pow(0.04, dt); } }
   draw(c) {
-    skyBg(c);
+    themeBg(c, 'trophy');
     const m = META(); if (!m) return;
     topBar(c, () => { this.leave(); this.back(); });
     const tab = this.tab, DF = ['easy', 'medium', 'hard'], hasD = (A, d) => !!m.ach[achKey(A.id, d)] || (d === 'medium' && !!m.ach[A.id]);
@@ -357,7 +357,7 @@ class MultiScene {
     if (r && r.status === 200) this.leave(new LobbyScene(r.data, r.data.opts.mode || 'duell')); else this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : r.status === 409 ? 'Dieses Spiel ist schon voll.' : 'Diesen Code gibt es nicht.';
   }
   draw(c) {
-    skyBg(c);
+    themeBg(c, 'park');
     topBar(c, () => (this.mode === 'menu' ? this.leave(new Menu()) : (this.mode = 'menu', nameInput.style.display = 'none')));
     icon(c, 'friends', 104, 44, 40); txt(c, 'Freunde & Mehrspieler', 130, 44, 20, '#fff', 'left', BRAND.olive);
     if (needOnline(c)) return;
@@ -461,16 +461,16 @@ class LobbyScene {
   start() { this.started = true; Sfx.play('win'); ACC().mpLast = { code: this.lob.code, at: Date.now() }; Save.write(); const m = new Match(this.lob, this.me); setScene(new Play(this.lob.opts.diff, { mp: m })); }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 1.5) { this.pollT = 0; this.poll(); } }
   draw(c) {
-    skyBg(c);
+    themeBg(c, 'park');
     topBar(c, () => { api({ action: 'lobby_poll', code: this.lob.code, leave: true }); setScene(new MultiScene()); });
-    const w = Math.min(W - 30, 460), h = Math.min(H - 150, 290), x = (W - w) / 2, y = 76, py = y + Math.min(190, h - 60);
+    const w = Math.min(W - 30, 460), h = Math.min(H - 150, 290), x = (W - w) / 2, y = 76, py = y + Math.min(190, h - 78);
     panel(c, x, y, w, h, '#fff7e6', 24);
     const o = this.lob.opts, stars = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff];
     txt(c, (o.size || 2) + ' Spieler · ' + (o.mode === 'team' ? 'Zusammen · ' + stars : (o.mode === '2v2' ? '2 gegen 2 · ' : 'Duell · ') + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Finale' : '') + ' · ' + stars), W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
     txt(c, 'Spiel-Code', W / 2, y + 62, 13, '#6b5a48', 'center', null);
-    { const url = location.href.split('?')[0].split('#')[0] + '?mit=' + this.lob.code, bx = W / 2 + 140, by = y + 100;
+    { const url = location.href.split('?')[0].split('#')[0] + '?mit=' + this.lob.code, bx = W / 2 + 140, by = y + 96;
       roundBtn(c, bx, by, 20, '#caffbf', 'friends', async () => { const t = 'Spiel mit mir „Mission: Im Original“! Code: ' + this.lob.code; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t, url }); else { await navigator.clipboard.writeText(t + ' ' + url); toast('Link kopiert', 'Schick ihn deinen Freunden', 'friends'); } } catch (e) { /* abgebrochen */ } }, '#2d6a4f');
-      txt(c, 'Teilen', bx, by + 30, 11, '#6b5a48', 'center', null);
+      if (h >= 270) txt(c, 'Teilen', bx, by + 30, 11, '#6b5a48', 'center', null);
       const Q = lobbyQR(url); if (Q && W > 620) { const n = Q.getModuleCount(), qs = Math.min(150, (W - x - w - 30)), cell = qs / (n + 2), qx = x + w + 14, qy = y; if (qs > 90) { rrPath(c, qx, qy, qs, qs + 22, 12); fs(c, '#fff', 3); c.fillStyle = '#212529'; for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (Q.isDark(r, k)) c.fillRect(qx + (k + 1) * cell, qy + (r + 1) * cell, cell + 0.4, cell + 0.4); txt(c, 'Mit Handy scannen', qx + qs / 2, qy + qs + 8, 11, '#6b5a48', 'center', null); } } }   /* QR-Code: Freunde scannen statt abtippen */
     this.lob.code.split('').forEach((ch, i) => { const cx = W / 2 + (i - 1.5) * 52; rrPath(c, cx - 22, y + 74, 44, 52, 12); fs(c, '#fff', 3); txt(c, ch, cx, y + 101, 30, '#118ab2', 'center', null); });
     const size = o.size || 2, ppl = (this.lob.players || [this.lob.host, this.lob.guest].filter(Boolean)).slice(0, size); while (ppl.length < size) ppl.push(null);
@@ -478,15 +478,14 @@ class LobbyScene {
     ppl.forEach((p, i) => { const cx = W / 2 + (i - (size - 1) / 2) * gap, cy = py, teamCol = o.mode === '2v2' ? (i % 2 ? '#ffc8dd' : '#bde0fe') : null; ell(c, cx, cy - 10, 30, 30); fs(c, p ? (teamCol || '#d8f3dc') : '#e9ecef', 3);
       if (p) { drawCritter(c, AVATARS[(p.avatar || 0) % 6], cx, cy + 14, 0.9, this.t + i, { noShadow: true }); txt(c, p.name, cx, cy + 40, 13, '#3d2c1f', 'center', null); }
       else { const b = Math.sin(this.t * 4 + i) * 3; txt(c, '?', cx, cy - 10 + b, 26, '#adb5bd', 'center', null); txt(c, 'wartet …', cx, cy + 40, 12, '#adb5bd', 'center', null); } });
-    txt(c, o.mode === 'team' ? 'alle zusammen' : o.mode === '2v2' ? 'Blau gegen Rosa' : 'jeder gegen jeden', W / 2, Math.min(py + 62, y + h - 14), 13, '#6b5a48', 'center', null);
     const need = o.mode === '2v2' ? 4 : 2, have = ppl.filter(Boolean).length;
+    txt(c, o.mode === 'team' ? 'alle zusammen' : o.mode === '2v2' ? (have < 4 ? 'Für 2 gegen 2 braucht ihr 4 (' + have + '/4)' : 'Blau gegen Rosa') : 'jeder gegen jeden', W / 2, Math.min(py + 62, y + h - 14), 13, '#6b5a48', 'center', null);
     if (this.me === 'host' && have >= need) {
       const pu = 1 + Math.sin(this.t * 5) * 0.05; c.save(); c.translate(W / 2, y + h + 34); c.scale(pu, pu); rrPath(c, -110, -26, 220, 52, 22); fs(c, '#06d6a0', 3.5); txt(c, 'Los geht’s!', 0, 1, 20, '#fff', 'center', BRAND.ink); c.restore();
       UI.btn(W / 2 - 110, y + h + 8, 220, 52, () => this.poll({ start: true }));
     } else if (this.me === 'host' && o.mode === '2v2' && have >= 2) {
       rrPath(c, W / 2 - 130, y + h + 8, 260, 48, 20); fs(c, '#ffd166', 3); txt(c, 'Ohne Teams starten (' + have + ' Spieler)', W / 2, y + h + 33, 15, '#3d2c1f', 'center', null);
       UI.btn(W / 2 - 130, y + h + 8, 260, 48, () => this.poll({ start: true, asDuel: true }));
-      txt(c, 'Für 2 gegen 2 braucht ihr 4. (' + have + '/4)', W / 2, y + h + 72, 13, '#fff', 'center', BRAND.ink);
     } else txt(c, this.me === 'guest' ? 'Warte, bis ' + this.lob.host.name + ' startet …' : have < need ? 'Sag deinen Freunden den Code! (' + have + '/' + need + ')' : 'Sag deinen Freunden den Code!', W / 2, y + h + 30, 15, '#fff', 'center', BRAND.ink);
   }
 }
