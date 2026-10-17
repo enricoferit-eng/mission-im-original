@@ -63,7 +63,7 @@ const Net = {
       return { status: r.status, data };
     } catch (e) { return null; }
   },
-  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0 }; },
+  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0, vol: a.vol || null, limitMin: a.limitMin || 0 }; },
   soon() { clearTimeout(this.tm); this.tm = setTimeout(() => this.syncNow(), 4000); },
   async syncNow(keep) {
     const a = ACC(); if (!a || !a.token) return;
@@ -91,7 +91,7 @@ setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.s
 function accFromServer(p) {
   const d = p.data || {}, diff = d.diff || {};
   ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
-  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin };
+  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}) };
 }
 function adoptAccount(p) {
   Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });
@@ -139,12 +139,12 @@ const Voice = {
       const ctx = Sfx.ctx(); let buf = this.bufs.get(k);
       if (!buf) { this.loading++; const r = await fetch('assets/voice/' + k + '.mp3'); buf = await ctx.decodeAudioData(await r.arrayBuffer()); this.loading--; this.bufs.set(k, buf); if (this.bufs.size > 60) this.bufs.delete(this.bufs.keys().next().value); }
       if (gen !== this.gen) return;
-      const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = 1; s.buffer = buf; s.connect(g).connect(ctx.destination);
+      const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = 1; s.buffer = buf; s.connect(g).connect(Sfx.voiceBus || ctx.destination);
       s.onended = () => { if (this.src === s) this.src = null; };
       this.src = s; s.start();
     } catch (e) { this.loading = Math.max(0, this.loading - 1); }
   },
-  on() { const a = ACC(); return !a || a.sound !== false; },
+  on() { const a = ACC(); if (a && a.sound === false) return false; const V = VOL(); return V.all > 0 && V.voice > 0; },   // Stimmen auf 0 = gar nicht vorlesen (nichts wartet darauf)
   // deutsche Stimmen, die besten zuerst (Premium/Enhanced/Natural klingen viel flüssiger)
   voices() {
     if (this.list && this.list.length) return this.list;
@@ -171,7 +171,7 @@ const Voice = {
         if (gen !== this.gen) return;
         const P = VOICE_OF[who] || VOICE_OF.erzaehler, L = this.voices();
         const u = new SpeechSynthesisUtterance(this.clean(text));
-        u.lang = 'de-DE'; u.pitch = P.pitch; u.rate = P.rate;
+        u.lang = 'de-DE'; u.pitch = P.pitch; u.rate = P.rate; { const V = VOL(); u.volume = clamp(V.all * V.voice, 0, 1); }   // Ersatz-Stimme folgt auch dem Regler
         // gibt es mehrere gute deutsche Stimmen, bekommen die Figuren verschiedene
         if (L.length) try { const good = L.filter(v => !/^(Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley)/i.test(v.name)); const pool = good.length ? good : L; u.voice = pool[P.pick % Math.min(pool.length, 3)] || pool[0]; } catch (e) { /* Standardstimme */ }
         speechSynthesis.speak(u);
@@ -197,8 +197,8 @@ const Sfx = {
   hook: null,
   on() { const acc = ACC(); return !(acc && acc.sound === false); },
   ctx() {
-    if (!this.ac) { this.ac = new (window.AudioContext || window.webkitAudioContext)();   // alles läuft über einen Haupt-Regler, Musik zusätzlich über einen eigenen
-      try { const out = this.ac.destination, m = this.ac.createGain(), mu = this.ac.createGain(); m.connect(out); mu.connect(m); Object.defineProperty(this.ac, 'destination', { value: m }); this.master = m; this.musicBus = mu; applyVolume(); } catch (e) { /* alter Browser: ohne Regler */ } }
+    if (!this.ac) { this.ac = new (window.AudioContext || window.webkitAudioContext)();   // Kanäle: Musik, Stimmen, Geräusche (Standard) – alle laufen über den Gesamt-Regler
+      try { const out = this.ac.destination, m = this.ac.createGain(), mu = this.ac.createGain(), vo = this.ac.createGain(), fx = this.ac.createGain(); m.connect(out); mu.connect(m); vo.connect(m); fx.connect(m); Object.defineProperty(this.ac, 'destination', { value: fx }); this.master = m; this.musicBus = mu; this.voiceBus = vo; this.sfxBus = fx; applyVolume(true); } catch (e) { /* alter Browser: ohne Regler */ } }
     if (this.ac.state === 'suspended') this.ac.resume(); return this.ac; },
   // einzelner Ton (für Combos, Countdown, Ticken)
   note(freq, dur = 0.12, type = 'triangle', vol = 0.08, slide = 1) {
@@ -214,8 +214,7 @@ const Sfx = {
     if (this.hook) this.hook(type);
     const acc = ACC(); if (acc && acc.sound === false) return;
     try {
-      if (!this.ac) this.ac = new (window.AudioContext || window.webkitAudioContext)();
-      const c = this.ac, t = c.currentTime;
+      const c = this.ctx(), t = c.currentTime;   // immer über ctx(), sonst laufen die Geräusche am Regler vorbei
       const P = {
         tap: [620, 0.06, 'sine', 1], good: [700, 0.18, 'triangle', 1.6], bad: [220, 0.22, 'square', 0.7],
         coin: [1250, 0.12, 'square', 1.3], win: [520, 0.5, 'triangle', 2], open: [380, 0.14, 'sine', 1.4],
@@ -234,7 +233,7 @@ const Sfx = {
   },
 };
 // Spannungs-Musik in den Aufgaben: Bass + Klick, das Tempo zieht an, wenn es eng wird
-function musicOff() { const a = typeof ACC === 'function' && ACC(); return !!(a && a.music === false); }
+function musicOff() { const V = VOL(); return V.music <= 0 || V.all <= 0; }
 const Music = {
   on: false, bpm: 110, next: 0, step: 0, timer: null,
   start(bpm = 110) {
@@ -244,7 +243,7 @@ const Music = {
   stop() { this.on = false; if (this.timer) clearInterval(this.timer); this.timer = null; },
   tempo(bpm) { this.bpm = clamp(bpm, 80, 190); },
   tick() {
-    if (!this.on) return; if (!Sfx.on()) { this.stop(); return; }
+    if (!this.on) return; if (!Sfx.on() || musicOff()) { this.stop(); return; }
     const c = Sfx.ac; if (!c) return;
     const PATS = [[110, 110, 131, 110, 98, 98, 147, 131], [131, 131, 165, 147, 110, 110, 98, 123], [98, 147, 131, 110, 123, 123, 165, 147]];
     const BASS = PATS[Math.floor(this.step / 64) % PATS.length];   // alle paar Takte eine neue Basslinie
@@ -343,7 +342,16 @@ function symPath(c, s, x, y, r) {
 }
 function drawSym(c, i, x, y, r, lw = 3) { symPath(c, SYMS[i].s, x, y, r); fs(c, SYMS[i].col, lw); }
 
-function applyVolume() { const a = typeof ACC === 'function' && Save.data ? ACC() : null; if (!Sfx.master) return; Sfx.master.gain.value = a && a.volAll != null ? a.volAll : 1; Sfx.musicBus.gain.value = a && a.volMusic != null ? a.volMusic : 1; }
+// Lautstärke: Gesamt, Musik, Stimmen, Geräusche (0 … 1); alte Einstellungen (volAll, volMusic, Musik aus) werden übernommen
+function VOL() {
+  const a = typeof ACC === 'function' && Save.data ? ACC() : null; if (!a) return { all: 1, music: 0.8, voice: 1, sfx: 1 };
+  if (!a.vol) { a.vol = { all: a.volAll != null ? a.volAll : 1, music: a.music === false ? 0 : a.volMusic != null ? a.volMusic : 0.8, voice: 1, sfx: 1 }; delete a.volAll; delete a.volMusic; delete a.music; }
+  return a.vol;
+}
+function applyVolume(now) {
+  if (!Sfx.master) return; const V = VOL(), c = Sfx.ac, t = c.currentTime, cv = v => v * v;   // quadratisch: fühlt sich gleichmäßiger an
+  for (const [bus, v] of [[Sfx.master, V.all], [Sfx.musicBus, V.music], [Sfx.voiceBus, V.voice], [Sfx.sfxBus, V.sfx]]) { if (!bus) continue; if (now) bus.gain.value = cv(v); else bus.gain.setTargetAtTime(cv(v), t, 0.03); }
+}
 // ---------- Icons (alles ohne Text) ----------
 function icon(c, name, x, y, s, col) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k);

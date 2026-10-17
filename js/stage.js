@@ -1640,7 +1640,7 @@ class Play {
       ];
       if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }
       helpPanel(c, T, () => { this.helpOpen = false; this.helpRead = false; Voice.stop(); }, false);
-      if (!this.mp) { const sy = H - 70; soundBtn(c, W - 40, sy); rrPath(c, W - 66, sy + 24, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Regler', W - 40, sy + 35, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, sy + 20, 56, 28, () => { overlay = new VolumePanel(); }); }   /* Ton im Hilfe-Fenster */
+      if (!this.mp) { const sy = H - 70; soundBtn(c, W - 40, sy); rrPath(c, W - 66, sy + 24, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, sy + 35, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, sy + 20, 56, 28, () => { overlay = new VolumePanel(); }); }   /* Ton im Hilfe-Fenster */
     }
     const j = this.joy;
     if (j && j.moved) {

@@ -77,14 +77,10 @@ function claimBand(c, text, x, y, size = 16, col = BRAND.olive) {
   txt(c, text, x, y + 1, size, col, 'center', null);
 }
 function soundBtn(c, x, y) {
-  // drei Stufen: alles an → ohne Musik → ganz aus
-  const a = ACC(), on = !!(a && a.sound), mus = on && a.music !== false;
-  roundBtn(c, x, y, 22, on ? '#d0ebff' : '#e9ecef', on ? 'sound' : 'mute', () => { if (!a) return;
-    if (a.sound && a.music !== false) { a.music = false; Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); toast('Musik aus', 'Stimme und Geräusche bleiben an', 'sound'); }
-    else if (a.sound) { a.sound = false; Voice.stop(); toast('Ton aus', 'Alles ist still', 'mute'); }
-    else { a.sound = true; a.music = true; Sfx.play('tap'); toast('Ton an', 'Musik, Stimme und Geräusche', 'sound'); }
-    Save.write(); });
-  if (on && !mus) { ell(c, x + 15, y + 15, 9, 9); fs(c, '#fff', 2); txt(c, '♪', x + 15, y + 16, 11, '#c1121f', 'center', null); line(c, x + 9, y + 21, x + 21, y + 9, 2, '#c1121f', false); }
+  // öffnet den Ton-Regler; kleines Zeichen, wenn alles stumm oder die Musik aus ist
+  const a = ACC(), V = VOL(), on = !!(a && a.sound !== false) && V.all > 0;
+  roundBtn(c, x, y, 22, on ? '#d0ebff' : '#e9ecef', on ? 'sound' : 'mute', () => { if (a) overlay = new VolumePanel(); });
+  if (on && V.music <= 0) { ell(c, x + 15, y + 15, 9, 9); fs(c, '#fff', 2); txt(c, '♪', x + 15, y + 16, 11, '#c1121f', 'center', null); line(c, x + 9, y + 21, x + 21, y + 9, 2, '#c1121f', false); }
 }
 function topBar(c, back) {
   if (back) roundBtn(c, 44, 44, 28, '#fff', 'back', back, '#ffd166');
@@ -139,7 +135,7 @@ class Menu {
     roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
     txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
     { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
-    rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Regler', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
+    rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
     if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
@@ -376,26 +372,56 @@ class ConfirmDialog {
   down() {} move() {} up() {}
 }
 // Lautstärke: alles + Musik getrennt (5 Stufen zum Antippen)
-class VolumePanel {
-  constructor() { this.t = 0; }
+class VolumePanel {   // Ton-Regler: Gesamt, Musik, Stimmen, Geräusche – zum Ziehen oder Antippen, beim Loslassen kommt eine Hörprobe
+  constructor() { this.t = 0; this.rows = []; this.drag = null; }
   update(dt) { this.t += dt; }
-  close() { if (overlay === this) overlay = null; }
+  close() { if (overlay === this) overlay = null; Save.write(); }
   draw(c) {
     const a = ACC(); if (!a) { this.close(); return; }
+    const V = VOL(), mute = a.sound === false;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
-    const w = Math.min(W - 30, 380), h = 250, x = (W - w) / 2, y = (H - h) / 2;
-    fitBegin(c, w, h + 30); panel(c, x, y, w, h, '#fff7e6', 24);
+    const w = Math.min(W - 30, 470), h = 340, x = (W - w) / 2, y = (H - h) / 2;
+    fitBegin(c, w, h + 20); panel(c, x, y, w, h, '#fff7e6', 24);
     roundBtn(c, x + w - 30, y + 30, 20, '#ced4da', 'cross', () => this.close());
-    txt(c, 'Lautstärke', x + 24, y + 32, 20, BRAND.olive, 'left', null);
-    [['volAll', 'Alles', 'sound'], ['volMusic', 'Musik', 'play']].forEach(([key, name, ic], r) => {
-      const yy = y + 92 + r * 76, v = a[key] != null ? a[key] : 1, lv = Math.round(v * 4);
-      icon(c, ic, x + 40, yy, 30); txt(c, name, x + 62, yy, 15, '#3d2c1f', 'left', null);
-      for (let k = 0; k <= 4; k++) { const bx = x + 140 + k * ((w - 170) / 4), on = k <= lv && lv > 0; ell(c, bx, yy, 14 + k * 1.5, 14 + k * 1.5); fs(c, on ? '#06d6a0' : '#e9ecef', 2.5); if (!k) txt(c, '0', bx, yy + 1, 12, on ? '#fff' : '#6b5a48', 'center', null);
-        UI.btn(bx - 22, yy - 26, 44, 52, () => { a[key] = k / 4; if (!a.sound && k) a.sound = true; Save.write(); applyVolume(); Sfx.play('tap'); }); }
+    txt(c, 'Ton', x + 24, y + 32, 22, BRAND.olive, 'left', null);
+    const m = c.getTransform(), d = DPR || 1, tx = x + 150, tw = w - 150 - 76; this.rows = [];
+    VOL_ROWS.forEach(([key, name, col, ico], r) => {
+      const yy = y + 86 + r * 56, v = V[key], dim = mute || (key !== 'all' && V.all <= 0);
+      VOL_ICON[ico](c, x + 40, yy, col); txt(c, name, x + 64, yy + 1, 15, '#3d2c1f', 'left', null);
+      rrPath(c, tx, yy - 7, tw, 14, 7); fs(c, '#e9ecef', 2, '#ced4da');
+      if (v > 0) { rrPath(c, tx, yy - 7, Math.max(14, tw * v), 14, 7); fs(c, dim ? '#adb5bd' : col, 0); }
+      const kx = tx + tw * v, on = this.drag === key; ell(c, kx, yy, on ? 17 : 15, on ? 17 : 15); fs(c, '#fff', 3, dim ? '#adb5bd' : col);
+      txt(c, v <= 0 ? 'aus' : Math.round(v * 100) + ' %', x + w - 38, yy + 1, 14, v <= 0 ? '#c1121f' : '#3d2c1f', 'center', null);
+      this.rows.push({ key, x0: (m.a * (tx - 18) + m.e) / d, x1: (m.a * (tx + tw + 18) + m.e) / d, y0: (m.d * (yy - 24) + m.f) / d, y1: (m.d * (yy + 24) + m.f) / d, sx0: (m.a * tx + m.e) / d, sw: (m.a * tw) / d });
     });
+    // unten: alles stumm / Standard
+    const by = y + h - 56;
+    rrPath(c, x + 24, by, 170, 40, 20); fs(c, mute ? '#ffd6a5' : '#fff', 3); icon(c, mute ? 'mute' : 'sound', x + 50, by + 20, 24); txt(c, mute ? 'Ton ist aus' : 'Alles stumm', x + 120, by + 21, 14, '#3d2c1f', 'center', null);
+    UI.btn(x + 24, by, 170, 40, () => { a.sound = mute; if (!mute) { Voice.stop(); Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); } Save.write(); applyVolume(); });
+    rrPath(c, x + w - 174, by, 150, 40, 20); fs(c, '#d8f5e3', 3); txt(c, 'Standard', x + w - 99, by + 21, 14, '#3d2c1f', 'center', null);
+    UI.btn(x + w - 174, by, 150, 40, () => { a.vol = { all: 1, music: 0.8, voice: 1, sfx: 1 }; a.sound = true; Save.write(); applyVolume(); });
     c.restore();
   }
-  down() {} move() {} up() {}
+  setFrom(px, key) { const R = this.rows.find(q => q.key === key); if (!R) return; const a = ACC(), V = VOL(); let v = clamp((px - R.sx0) / R.sw, 0, 1); v = v < 0.04 ? 0 : Math.round(v * 20) / 20; V[key] = v; if (v > 0 && a.sound === false) a.sound = true; applyVolume(); if (key === 'music' || key === 'all') { if (musicOff()) { Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); } } }
+  down(px, py) { const R = this.rows.find(q => px >= q.x0 && px <= q.x1 && py >= q.y0 && py <= q.y1); if (!R) return; this.drag = R.key; this.setFrom(px, R.key); }
+  move(px) { if (this.drag) this.setFrom(px, this.drag); }
+  up() { if (!this.drag) return; const k = this.drag; this.drag = null; Save.write(); volSample(k); }
+}
+const VOL_ROWS = [['all', 'Alles', '#118ab2', 'all'], ['music', 'Musik', '#9b5de5', 'music'], ['voice', 'Stimmen', '#ef476f', 'voice'], ['sfx', 'Geräusche', '#f4a261', 'sfx']];
+const VOL_ICON = {
+  all(c, x, y, col) { icon(c, 'sound', x, y, 30, col); },
+  music(c, x, y, col) { ell(c, x - 6, y + 8, 6, 5, -0.3); c.fillStyle = col; c.fill(); ell(c, x + 8, y + 5, 6, 5, -0.3); c.fill(); line(c, x - 1, y + 7, x - 1, y - 11, 3, col, false); line(c, x + 13, y + 4, x + 13, y - 14, 3, col, false); line(c, x - 1, y - 11, x + 13, y - 14, 4, col, false); },
+  voice(c, x, y, col) { rrPath(c, x - 14, y - 12, 28, 20, 8); fs(c, col, 0); polyPath(c, [[x - 6, y + 6], [x - 10, y + 14], [x + 2, y + 7]]); c.fill(); for (let k = -1; k <= 1; k++) { ell(c, x + k * 7, y - 2, 2.2, 2.2); c.fillStyle = '#fff'; c.fill(); c.fillStyle = col; } },
+  sfx(c, x, y, col) { c.beginPath(); c.moveTo(x - 11, y + 8); c.quadraticCurveTo(x - 10, y - 12, x, y - 12); c.quadraticCurveTo(x + 10, y - 12, x + 11, y + 8); c.closePath(); c.fillStyle = col; c.fill(); rrPath(c, x - 14, y + 6, 28, 5, 2); c.fill(); ell(c, x, y + 13, 3.5, 3.5); c.fill(); },
+};
+// Hörprobe nach dem Verschieben
+function volSample(key) {
+  if (!Sfx.on()) return;
+  if (key === 'voice') { Voice.say('So laut sind die Stimmen.', true); return; }
+  if (key === 'sfx') { Sfx.play('coin'); setTimeout(() => Sfx.play('good'), 160); return; }
+  try { const c = Sfx.ctx(), t = c.currentTime, bus = key === 'music' ? Sfx.musicBus : Sfx.sfxBus;
+    [0, 4, 7, 12].forEach((n, i) => { const o = c.createOscillator(), g = c.createGain(); o.type = 'triangle'; o.frequency.value = 523.25 * Math.pow(2, n / 12); g.gain.setValueAtTime(0.0001, t + i * 0.13); g.gain.exponentialRampToValueAtTime(0.07, t + i * 0.13 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.13 + 0.3); o.connect(g).connect(bus || c.destination); o.start(t + i * 0.13); o.stop(t + i * 0.13 + 0.32); });
+  } catch (e) { /* kein Audio */ }
 }
 // Eltern-Bereich: Spielzeit pro Tag + Datenschutz (mit kleiner Rechenaufgabe, damit Kinder nicht einfach umstellen)
 class ParentPanel {
