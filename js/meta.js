@@ -115,10 +115,11 @@ class Shop {
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     roundBtn(c, W - 212, 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
-    const tabs = [['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']], tw = Math.min(140, (W - 40) / 5 - 8);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'garderobe' ? '#d8f5e3' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
+    const tabs = [['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']].concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis-Laden']] : []), tw = Math.min(140, (W - 40) / tabs.length - 8);
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'garderobe' ? '#d8f5e3' : id === 'hw' ? '#ffb38a' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
-    if (this.tab === 'joker') {
+    if (this.tab === 'hw' && typeof hwShopDraw === 'function') hwShopDraw(this, c, top, bottom);   // Halloween: Kürbis-Laden
+    else if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
       const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, jh = 64, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 36 - jh - 14, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
       const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;

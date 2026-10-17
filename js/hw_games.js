@@ -1,6 +1,6 @@
 'use strict';
 // Halloween-Special: neue Aufgaben (Kürbis schnitzen, Zaubertrank, Gespenster fangen, Süßes sortieren,
-// Fledermaus-Flug, Spinnennetz, Besenflug, Süßes oder Saures, Kürbisse zählen) – sie ersetzen im Special die Aufgaben der Bereiche
+// Fledermaus-Flug, Spinnennetz, Besenflug, Süßes oder Saures, Kürbisse zählen) – nur im Geisterwald
 const HL = env => (env.diff === 'easy' ? 0 : env.diff === 'medium' ? 1 : 2);
 const hwFx = (c, list) => list.forEach(f => { c.globalAlpha = Math.max(0, 1 - f.t / 0.7); txt(c, f.s, f.x, f.y - f.t * 30, 18, f.ok ? '#80ed99' : '#ff8fa3', 'center', '#2b1a2f'); c.globalAlpha = 1; });
 function hwNight(c, top = '#2b1a4a', bot = '#5b2f62') {
@@ -334,15 +334,4 @@ Object.assign(HELP_TEXT, {
   hw_klingeln: 'Tippe zwei Türen an. Finde immer zwei gleiche Süßigkeiten.',
   hw_zaehlen: 'Zähle die Kürbisse und tippe unten die richtige Zahl an.',
 });
-
-if (HALLOWEEN) {
-  // Im Special bekommt jeder Bereich nur noch Halloween-Aufgaben (plus ein paar allgemeine Rätsel, die jetzt Halloween-Motive zeigen)
-  const POOLS = {
-    easy: ['hw_schnitzen', 'hw_trank', 'hw_suesses', 'hw_netz', 'hw_klingeln', 'hw_zaehlen', 'memory', 'shadow', 'findall'],
-    puzzle: ['hw_schnitzen', 'hw_trank', 'hw_klingeln', 'hw_zaehlen', 'hw_suesses', 'hw_netz', 'pairs', 'oddone', 'diff'],
-    std: ['hw_geister', 'hw_flug', 'hw_besen'],
-    sp: ['hw_geister', 'hw_besen', 'hw_flug'],
-    hard: ['hw_flug', 'hw_geister', 'hw_besen'],
-  };
-  for (const D of Object.values(STAGE_DEFS)) D.pools = POOLS;
-}
+// Diese Aufgaben gibt es nur im Geisterwald (siehe STAGE_DEFS.geisterwald.pools)

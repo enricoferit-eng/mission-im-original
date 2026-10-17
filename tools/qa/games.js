@@ -4,7 +4,7 @@ const { open } = require('./common');
   const { b, p, errs } = await open({ admin: true });
   const out = await p.evaluate(async () => {
     const bad = [], seen = new Set();
-    for (const a of ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet']) {
+    for (const a of ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'].concat(STAGE_DEFS.geisterwald ? ['geisterwald'] : [])) {
       setScene(new Play('medium', { stage: a }));
       const P = SG.pools || { easy: EASY_GAMES, puzzle: PUZZLES, std: CHALLENGES_STD, sp: CHALLENGES_SP, hard: CHALLENGES_HARD };
       const ids = [...new Set([].concat(P.easy, P.puzzle, P.std, P.sp, P.hard))].filter(Boolean);

@@ -1,5 +1,5 @@
 'use strict';
-// Halloween-Special: neue Fundsachen (30 Stück), je Bereich 12 davon, plus Bereichs-Namen, Texte und Aufgaben-Hintergründe
+// Halloween-Special: neue Fundsachen (30 Stück) für den Geisterwald
 Object.assign(ITEMS, {
   hw_kuerbis: { n: 'Kürbis', d(c, f) {
     for (const [dx, rw] of [[-9, 11], [9, 11], [0, 13]]) { ell(c, dx, 3, rw, 15); fs(c, f('#f77f00'), 2.5); }
@@ -156,13 +156,4 @@ Object.assign(ITEMS, {
   } },
 });
 const HW_ITEM_IDS = Object.keys(ITEMS).filter(k => /^hw_/.test(k));
-const HW_AREA_ITEMS = {
-  kueche: ['hw_kessel', 'hw_trank', 'hw_muffin', 'hw_apfel', 'hw_kuerbis', 'hw_schoko', 'hw_bonbon', 'hw_lolli', 'hw_popcorn', 'hw_buch', 'hw_kerze', 'hw_spinne'],
-  gastraum: ['hw_kerze', 'hw_laterne', 'hw_maske', 'hw_gespenst', 'hw_fledermaus', 'hw_kristall', 'hw_schoko', 'hw_gummibaer', 'hw_muffin', 'hw_eimer', 'hw_buch', 'hw_katze'],
-  aussen: ['hw_kuerbis', 'hw_besen', 'hw_hexenhut', 'hw_laterne', 'hw_blatt', 'hw_kastanie', 'hw_eichel', 'hw_apfel', 'hw_eule', 'hw_spinne', 'hw_fledermaus', 'hw_popcorn'],
-  spielplatz: ['hw_gespenst', 'hw_maske', 'hw_umhang', 'hw_zauberstab', 'hw_eimer', 'hw_lolli', 'hw_bonbon', 'hw_gummibaer', 'hw_katze', 'hw_kuerbis', 'hw_besen', 'hw_wurm'],
-  parkplatz: ['hw_laterne', 'hw_eimer', 'hw_maske', 'hw_umhang', 'hw_mond', 'hw_kristall', 'hw_zauberstab', 'hw_fledermaus', 'hw_wurm', 'hw_schoko', 'hw_hexenhut', 'hw_eule'],
-  chalet: ['hw_kerze', 'hw_kessel', 'hw_buch', 'hw_trank', 'hw_mond', 'hw_eule', 'hw_katze', 'hw_blatt', 'hw_kastanie', 'hw_eichel', 'hw_umhang', 'hw_gespenst'],
-};
-const HW_HERO = { kueche: 'hw_kessel', gastraum: 'hw_gespenst', aussen: 'hw_kuerbis', spielplatz: 'hw_eimer', parkplatz: 'hw_laterne', chalet: 'hw_eule' };
-const HW_NAME = { kueche: 'Hexenküche', gastraum: 'Geistersaal', aussen: 'Kürbisgarten', spielplatz: 'Gruselspielplatz', parkplatz: 'Nebelparkplatz', chalet: 'Spukhütte' };
+// alle 30 Sachen gibt es im Geisterwald zu finden

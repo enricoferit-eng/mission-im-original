@@ -45,6 +45,12 @@ CAST = {
   'p_petra':   ('kerstin-low', None, 0.97, 0.333, 0.8, -0.5, False),        # Petra: Busfahrerin
   'p_tim':     ('thorsten_emotional-medium', 6, 0.88, 0.4, 0.8, 7, True),   # Tim: Junge mit Fahrrad
   'leo':       ('thorsten_emotional-medium', 6, 0.85, 0.4, 0.8, 5, True),      # Leo: sportlich, schnell, überrascht
+  # Geisterwald (Halloween)
+  'h_hexe':    ('kerstin-low', None, 1.0, 0.5, 0.8, 4, True),               # Hexe Hilda: hoch, kichernd
+  'h_vamp':    ('thorsten_emotional-medium', 0, 0.92, 0.4, 0.8, 6, True),  # Vampir Vinz: Junge
+  'h_geist':   ('kerstin-low', None, 1.05, 0.4, 0.8, 6, True),              # Gespenst Greta: Mädchen
+  'h_bauer':   ('thorsten-high', None, 1.05, 0.6, 0.8, -3, True),           # Bauer Kurt: tief, gemütlich
+  'h_mond':    ('kerstin-low', None, 1.1, 0.333, 0.8, -1, False),           # Frau Mondschein: ruhig, geheimnisvoll
 }
 SAY = [('Joker', 'Dschoker'), ('Original-Blätter', 'Original Blätter'), ('Im Original', 'im Original')]
 texts = json.load(open(os.path.join(ROOT, 'tools', 'texts.json')))

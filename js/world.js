@@ -356,7 +356,7 @@ class WorldMap {
   const hud1 = Play.prototype.drawHud;
   Play.prototype.drawHud = function (c) {
     hud1.call(this, c);
-    if (this.mp) return;
+    if (this.mp || SG.solo) return;   // eigene Bereiche (Halloween-Map) haben keine Weltkarte
     const x = W - 46, y = 50;
     roundBtn(c, x, y, 21, '#caffbf', null, () => { Sfx.play('tap'); overlay = new WorldMap(this); }, '#2d6a4f');
     // kleines Karten-Symbol: 3 x 2 Kacheln

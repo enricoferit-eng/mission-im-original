@@ -41,11 +41,7 @@ const puppeteer = require('puppeteer-core');
     add(questText({ mode: 'lock', npc: 'gate' }), 'gate');
     Object.values(LEO_SAY).forEach(t => add(t, 'leo'));
     Object.values(SKINS).filter(sk => sk.ability).forEach(sk => add(ABILITIES[sk.ability].name + '. ' + abilityText(sk))); add('Dieser Skin hat keine besondere Fähigkeit.');
-    if (typeof HALLOWEEN !== 'undefined' && HALLOWEEN) {
-      add('Halloween-Special! In jedem Bereich liegen 8 leuchtende Bonbons. Sammle alle Bonbons in allen 6 Bereichen, dann bekommst du das Gespenst-Kostüm. Im Laden gibt es außerdem Halloween-Kostüme.');
-      add('Du hast alle Bonbons gefunden! Das Gespenst-Kostüm liegt in deiner Garderobe.');
-      add('Alle Bonbons in allen Bereichen! Du bekommst das Gespenst-Kostüm!'); for (let i = 1; i < 6; i++) add('Bonbon-Jagd: ' + i + ' von 6 Bereichen geschafft!');
-    }
+    if (typeof HW_SAY !== 'undefined' && HALLOWEEN) Object.values(HW_SAY).forEach(t => add(t));   // Halloween: Geisterwald-Fenster, Kürbis-Laden
     const seen = new Set(); return L.filter(x => !seen.has(x.key) && seen.add(x.key));
   });
   all.push(...out); }

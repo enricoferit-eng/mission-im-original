@@ -354,9 +354,10 @@ class Play {
     this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff];
     this.mp = opt.mp || null;   // Mehrspieler: eigener Durchgang (nicht gespeichert), gleiche Zufallswerte für beide
     this.stage = opt.stage || (opt.mp && opt.mp.stage) || 'spielplatz';
-    if (!this.mp && typeof worldPrepare === 'function') worldPrepare(this.stage, diff);   // Nachbar-Böden vorbereiten
+    const solo = STAGE_DEFS[this.stage] && STAGE_DEFS[this.stage].solo;   // eigener Bereich ohne Weltkarte (z. B. Halloween-Map)
+    if (!this.mp && !solo && typeof worldPrepare === 'function') worldPrepare(this.stage, diff);   // Nachbar-Böden vorbereiten
     useStage(this.stage);
-    if (!this.mp && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); solidDecor(); carveLinks(this.stage, diff); }
+    if (!this.mp && !solo && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); solidDecor(); carveLinks(this.stage, diff); }
     this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, this.stage);
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
     this.st = this.sp.run; this.st.clears = this.sp.clears;
@@ -392,7 +393,7 @@ class Play {
     this.leafPop = 0; this.justDone = null;
     if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
       const r = mulberry32(this.seedFor('leaves')), L = []; let g = 0;
-      while (L.length < LEAVES_PER_RUN && g++ < 4000) { const x = 60 + r() * 880, y = 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
+      while (L.length < LEAVES_PER_RUN && g++ < 4000) { const x = SG.solo ? 80 + r() * (WORLD_W - 160) : 60 + r() * 880, y = SG.solo ? 120 + r() * (WORLD_H - 220) : 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
       this.st.leaves = L; Save.write();
     }
     this.shake = {};
@@ -401,7 +402,7 @@ class Play {
     if (!SG.feat.racer) this.racer.state = 'off';
     for (const d of DECOR) if (SG.decorDraw && SG.decorDraw[d.t]) measureBB(SG.id + '_d_' + d.id, d.x, d.y, g => SG.decorDraw[d.t](g, d, 0, 0));   // Bildrahmen einmal vorab messen
     if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
-    if (!this.mp && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) { this.banner = { text: STAGE_NAME[this.stage], t: 0 }; this.fadeIn = 0.35; } }
+    if (!this.mp && !SG.solo && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) { this.banner = { text: STAGE_NAME[this.stage], t: 0 }; this.fadeIn = 0.35; } }
     if (opt.joy) this.joy = opt.joy;
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
@@ -1138,7 +1139,7 @@ class Play {
       p.moving = true;
       if (E.t > 8) { E.phase = 'out'; E.t = 0; }
     } else {
-      if (GATE.side === 'right') { p.x += spd * 0.7 * dt; p.y = lerp(p.y, GATE.iy, Math.min(1, dt * 5)); p.dir = 1; } else { p.y += spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); } p.moving = true;
+      if (GATE.side === 'right') { p.x += spd * 0.7 * dt; p.y = lerp(p.y, GATE.iy, Math.min(1, dt * 5)); p.dir = 1; } else if (GATE.side === 'top') { p.y -= spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); } else { p.y += spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); } p.moving = true;
       if (E.t > 1.6 && !E.done) { E.done = true; this.exiting = null; this.stageClear(); }
     }
   }
@@ -1153,7 +1154,7 @@ class Play {
     stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
     { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
     const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, bonus, diff: this.diff }, again => {
-      if (SG.finalExit && !again) { setScene(new StageMap(this.diff)); return; }
+      if (SG.finalExit && !again) { setScene(SG.solo ? new Menu() : new StageMap(this.diff)); return; }
       setScene(new Play(this.diff, SG.finalExit ? { stage: this.stage } : { stage: this.stage, enter: { x: this.p.x, y: this.p.y, dir: this.p.dir } }));
     }); };
     after();
@@ -1170,7 +1171,7 @@ class Play {
     c.fillStyle = SG.bg || '#86a866'; c.fillRect(0, 0, W, H);
     c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z)); LINE_K = z < 0.8 ? 1 + (0.8 - z) * 1.2 : 1;
     if (!GROUND) buildGround();
-    if (this.drawNbGrounds) this.drawNbGrounds(c);
+    if (this.drawNbGrounds && !SG.solo) this.drawNbGrounds(c);   // eigene Bereiche: kein Gelände drumherum
     c.drawImage(GROUND, 0, 0, WORLD_W, WORLD_H);
     const q = this.st.active;
     // Gegrabene Stellen + vergrabene Hinweise
