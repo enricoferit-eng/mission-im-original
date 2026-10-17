@@ -80,7 +80,7 @@ class Menu {
     // schwebende Leckereien im Hintergrund
     for (let i = 0; i < 9; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
     { const mo = new Date().getMonth(); if (mo === 11 || mo === 0) for (let i = 0; i < 26; i++) { const x = (i * 97 + Math.sin(this.t * 0.7 + i) * 30) % W, y = (this.t * (20 + (i % 5) * 6) + i * 61) % (H + 20) - 10; ell(c, x, y, 2 + (i % 3), 2 + (i % 3)); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill(); }   // Saison-Deko: Winter = Schneeflocken
-      else if (mo === 9 || mo === 10) [[60, H - 70], [W - 70, H - 62]].forEach(([px, py], i) => { if (W < 500) return; c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); });   // Herbst = Kürbisse
+      else if (mo === 9 || mo === 10) [[W / 2 - Math.min(300, W * 0.36), Math.min(150, H * 0.24)], [W / 2 + Math.min(300, W * 0.36), Math.min(150, H * 0.24)]].forEach(([px, py], i) => { if (W < 700) return; c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); });   // Herbst = Kürbisse
       else if (mo >= 3 && mo <= 4) for (let i = 0; i < 6; i++) { const x = 40 + i * (W - 80) / 5, y = H - 18; for (let k = 0; k < 5; k++) { ell(c, x + Math.cos(k * 1.26) * 6, y - 14 + Math.sin(k * 1.26) * 6, 4, 4); c.fillStyle = ['#ffc8dd', '#fff', '#ffd166'][i % 3]; c.fill(); } }   // Frühling = Blumen
     }
     const a = ACC(); if (!a) return;
@@ -356,7 +356,7 @@ class VolumePanel {
 }
 // Eltern-Bereich: Spielzeit pro Tag + Datenschutz (mit kleiner Rechenaufgabe, damit Kinder nicht einfach umstellen)
 class ParentPanel {
-  constructor() { this.t = 0; const a = 3 + Math.floor(Math.random() * 6), b = 4 + Math.floor(Math.random() * 6); this.q = { a, b, ok: a * b, ch: shuffle([a * b, a * b + a, a * b - b, a * b + 3]).slice(0, 3) }; if (!this.q.ch.includes(this.q.ok)) this.q.ch[0] = this.q.ok; this.q.ch = shuffle(this.q.ch); this.open = false; }
+  constructor() { this.t = 0; const a = 13 + Math.floor(Math.random() * 15), b = 6 + Math.floor(Math.random() * 4); this.q = { a, b, ok: a * b, ch: shuffle([a * b, a * b + 10, a * b - b, a * b + 4]).slice(0, 3) }; if (!this.q.ch.includes(this.q.ok)) this.q.ch[0] = this.q.ok; this.q.ch = shuffle(this.q.ch); this.open = false; }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {

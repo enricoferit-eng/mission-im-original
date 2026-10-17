@@ -114,7 +114,7 @@ function drawGroundChalet(g, R) {
   // rechter Garten: Vogelhaus, kleiner Schneemann, Schneeengel, Spuren – damit er nicht leer wirkt
   for (const [x, y] of [[1180, 980], [1420, 1160], [1300, 820]]) { ell(g, x, y, 28, 40); g.fillStyle = 'rgba(200,215,230,.55)'; g.fill(); for (const sd of [-1, 1]) { ell(g, x + sd * 30, y - 14, 18, 8, sd * 0.6); g.fill(); ell(g, x + sd * 14, y + 40, 9, 16); g.fill(); } ell(g, x, y - 46, 15, 15); g.fill(); }   // Schneeengel
   { const x = 1380, y = 960; ell(g, x, y + 4, 22, 7); g.fillStyle = 'rgba(0,0,0,.15)'; g.fill(); ell(g, x, y - 10, 20, 18); fs(g, '#fff', 2.5); ell(g, x, y - 36, 14, 13); fs(g, '#fff', 2.5); ell(g, x - 4, y - 39, 1.8, 1.8); g.fillStyle = OL; g.fill(); ell(g, x + 4, y - 39, 1.8, 1.8); g.fill(); polyPath(g, [[x, y - 35], [x + 11, y - 33], [x, y - 31]]); fs(g, '#f77f00', 1); rrPath(g, x - 15, y - 26, 30, 5, 2); fs(g, '#e63946', 1.5); }   // kleiner Schneemann
-  { const x = 1240, y = 1180; line(g, x, y, x, y - 70, 5, '#6f4e37'); rrPath(g, x - 18, y - 96, 36, 28, 4); fs(g, '#a0673a', 2.5); polyPath(g, [[x - 24, y - 94], [x, y - 116], [x + 24, y - 94]]); fs(g, '#fff', 2.5); ell(g, x, y - 82, 6, 6); g.fillStyle = '#3d2c1f'; g.fill(); ell(g, x + 12, y - 102, 5, 4); fs(g, '#e63946', 1.5); }   // Vogelhaus mit Rotkehlchen
+  for (const off of [-9, 9]) { g.beginPath(); g.moveTo(1100, 1080 + off); g.bezierCurveTo(1250, 1000 + off, 1350, 1250 + off, 1540, 1150 + off); g.lineWidth = 4; g.strokeStyle = 'rgba(150,170,190,.45)'; g.stroke(); }   // Schlittenspuren
   for (let k = 0; k < 18; k++) { const x = 1120 + k * 22, y = 1260 - Math.sin(k * 0.5) * 30; ell(g, x, y + (k % 2) * 8, 3, 4); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }   // Tierspuren
   // Zaun unten links/rechts vom Tor + seitlich
   for (let x = 10; x < WORLD_W; x += 40) if (Math.abs(x - 500) > 70) { rrPath(g, x - 5, 1338, 10, 50, 3); fs(g, '#8d5a3b', 2); ell(g, x, 1338, 7, 4); g.fillStyle = '#fff'; g.fill(); }
@@ -337,7 +337,7 @@ STAGE_DEFS.chalet = {
       update(dt) {
         { const p = play.p, onIce = ((p.x - 760) / 150) ** 2 + ((p.y - 1120 - CY) / 80) ** 2 < 1;   // Gag: auf dem zugefrorenen Teich rutscht man weiter
           if (ice.lx !== null && dt > 0) { const vx = (p.x - ice.lx) / dt, vy = (p.y - ice.ly) / dt; if (p.moving) { ice.vx = vx; ice.vy = vy; } }
-          if (onIce && !ice.on) { ice.on = true; Sfx.play('jump'); play.banner = { text: 'Huiii, ist das glatt!', t: 0 }; }
+          if (onIce && !ice.on) { ice.on = true; Sfx.play('jump'); if (!ice.said) { ice.said = true; play.banner = { text: 'Huiii, ist das glatt!', t: 0 }; } }
           if (!onIce) { ice.on = false; ice.vx = ice.vy = 0; }
           else if (!p.moving && Math.hypot(ice.vx, ice.vy) > 15 && !play.searching) { const ok = play.tryMove(p.x + ice.vx * dt, p.y + ice.vy * dt); ice.vx *= Math.pow(0.35, dt); ice.vy *= Math.pow(0.35, dt); if (!ok) ice.vx = ice.vy = 0; p.dir = ice.vx > 0 ? 1 : -1; }
           ice.lx = p.x; ice.ly = p.y; } flakes.forEach(f => { f.y += f.v * dt; f.ph += dt; f.x += Math.sin(f.ph) * 12 * dt; if (f.y > CH - CY) { f.y = -CY - 10; f.x = Math.random() * CW; } }); },

@@ -943,6 +943,7 @@ class Play {
     if (this.swinging) { this.pump(); return; }
     const w = this.s2w(sx, sy);
     if (this.tapOutside && this.tapOutside(w)) return;
+    if (this.guest && this.guest.on && dist(w.x, w.y, this.guest.x, this.guest.y - 40) < 40) { this.banner = { text: 'Hallo! Ich bin nur zu Besuch und brauche nichts.', t: 0 }; Sfx.play('tap'); return; }   // Gast ohne Auftrag
     let best = null, bd = 44;
     for (const T of this.interactables()) {
       const d = dist(w.x, w.y, T.sx, T.sy) * (T.k === 'spot' ? 1.15 : 1);
@@ -1629,17 +1630,11 @@ class Play {
         'Laufen: Tippe irgendwo hin oder zieh mit dem Finger.',
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
       ] : [
-        `Sprich mit den ${W_('dat')} mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.`,
-        `Die Dinge liegen ${W_('hide')}. Aber Vorsicht: Manchmal ist es nur ${W_('junk')}!`,
+        `Sprich mit den ${W_('dat')} mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen ${W_('hide')}.`,
         this.diff === 'medium' ? 'Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.' : 'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
-        this.diff === 'medium' ? 'Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah.' : 'Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau.',
-        `Hast du alles, bring es zurück ${W_('back')}. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.`,
-        'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
-        `Wenn du allen 5 ${W_('dat')} geholfen hast, wartet ${W_('gate')} die letzte große Aufgabe.`,
-        `Lauf über die leuchtenden ${(typeof COLLECT_NAME !== 'undefined' && COLLECT_NAME[this.stage]) || 'Sammel-Sachen'}: Wer alle 8 findet, bekommt einen Extra-Joker.`,
-        'Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker.',
-        'Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen.',
-        'Die ganze Anleitung findest du im Menü unter dem Buch.',
+        `Hast du alles, bring es zurück ${W_('back')}. Hast du allen 5 geholfen, wartet ${W_('gate')} die letzte große Aufgabe.`,
+        'Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen.',
+        'Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.',
       ];
       if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }
       helpPanel(c, T, () => { this.helpOpen = false; this.helpRead = false; Voice.stop(); }, false);

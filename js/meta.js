@@ -478,7 +478,7 @@ class LobbyScene {
     ppl.forEach((p, i) => { const cx = W / 2 + (i - (size - 1) / 2) * gap, cy = py, teamCol = o.mode === '2v2' ? (i % 2 ? '#ffc8dd' : '#bde0fe') : null; ell(c, cx, cy - 10, 30, 30); fs(c, p ? (teamCol || '#d8f3dc') : '#e9ecef', 3);
       if (p) { drawCritter(c, AVATARS[(p.avatar || 0) % 6], cx, cy + 14, 0.9, this.t + i, { noShadow: true }); txt(c, p.name, cx, cy + 40, 13, '#3d2c1f', 'center', null); }
       else { const b = Math.sin(this.t * 4 + i) * 3; txt(c, '?', cx, cy - 10 + b, 26, '#adb5bd', 'center', null); txt(c, 'wartet …', cx, cy + 40, 12, '#adb5bd', 'center', null); } });
-    txt(c, o.mode === 'team' ? 'alle zusammen' : o.mode === '2v2' ? 'Blau gegen Rosa' : 'jeder gegen jeden', W / 2, py + 62, 13, '#6b5a48', 'center', null);
+    txt(c, o.mode === 'team' ? 'alle zusammen' : o.mode === '2v2' ? 'Blau gegen Rosa' : 'jeder gegen jeden', W / 2, Math.min(py + 62, y + h - 14), 13, '#6b5a48', 'center', null);
     const need = o.mode === '2v2' ? 4 : 2, have = ppl.filter(Boolean).length;
     if (this.me === 'host' && have >= need) {
       const pu = 1 + Math.sin(this.t * 5) * 0.05; c.save(); c.translate(W / 2, y + h + 34); c.scale(pu, pu); rrPath(c, -110, -26, 220, 52, 22); fs(c, '#06d6a0', 3.5); txt(c, 'Los geht’s!', 0, 1, 20, '#fff', 'center', BRAND.ink); c.restore();

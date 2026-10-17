@@ -310,7 +310,7 @@ const STAGE_COL = { kueche: '#adb5bd', gastraum: '#d27d55', aussen: '#74c69d', s
   const hud0 = Play.prototype.drawHud;
   Play.prototype.drawHud = function (c) {
     this.coachTop = 0; hud0.call(this, c);
-    const name = STAGE_NAME[this.stage]; if (!name) return;
+    const name = STAGE_NAME[this.stage]; if (!name || this.helpOpen || overlay) return;   // nicht über Hilfe/Fenstern
     // über dem Hinweis-Band, damit sich nichts überdeckt
     c.font = `900 16px ${FONT}`; const w = c.measureText(name).width + 54, x = W / 2 - w / 2, y = this.coachTop ? this.coachTop - 40 : H - 42;
     rrPath(c, x, y, w, 32, 16); fs(c, 'rgba(255,255,255,.9)', 2.5); ell(c, x + 18, y + 16, 11, 11); fs(c, STAGE_COL[this.stage] || '#fff', 2);
