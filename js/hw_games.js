@@ -110,15 +110,16 @@ GAMES.hw_trank = { make(env) {
 
 // 3) Gespenster fangen: Gespenster gucken aus den Grabsteinen – schnell antippen! Fledermäuse nicht antippen.
 GAMES.hw_geister = { challenge: true, make(env) {
-  const r = env.r, L = HL(env), need = [6, 10, 14][L], up = [1.6, 1.2, 0.9][L] / env.slow;
+  const r = env.r, L = HL(env), need = [6, 10, 12][L], up = [1.7, 1.4, 1.15][L] / env.slow;
   const holes = []; for (let i = 0; i < 6; i++) holes.push({ x: 80 + (i % 3) * 120, y: 250 + Math.floor(i / 3) * 150, a: 0, kind: null, t: 0 });
   let got = 0, spT = 0.6, t = 0, fx = []; const fin = finisher(env);
   return {
     timeLimit: need * 2.2 + 6,
+    dbg: () => ({ holes, got, need }),
     hint: { type: 'tap', x: 200, y: 220 },
     update(dt) {
       t += dt; spT -= dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7);
-      if (spT <= 0 && !fin.on()) { spT = (L === 2 ? 0.5 : 0.75) / env.slow; const free = holes.filter(h => !h.kind); if (free.length) { const h = pick(free, r); h.kind = r() < [0.12, 0.22, 0.3][L] ? 'bat' : 'ghost'; h.t = up; h.a = 0; } }
+      if (spT <= 0 && !fin.on()) { spT = (L === 2 ? 0.5 : 0.75) / env.slow; const free = holes.filter(h => !h.kind); if (free.length) { const h = pick(free, r); h.kind = r() < [0.1, 0.18, 0.22][L] ? 'bat' : 'ghost'; h.t = up; h.a = 0; } }
       for (const h of holes) if (h.kind) { h.t -= dt; h.a = Math.min(1, h.a + dt * 6); if (h.t <= 0) { h.kind = null; } }
       fin.tick(dt);
     },
@@ -148,16 +149,18 @@ GAMES.hw_geister = { challenge: true, make(env) {
 // 4) Süßes sortieren: Zieh jede Süßigkeit in die passende Schale
 GAMES.hw_suesses = { make(env) {
   const r = env.r, L = HL(env), kinds = shuffle(['hw_bonbon', 'hw_lolli', 'hw_gummibaer', 'hw_schoko'], r).slice(0, L === 0 ? 2 : 3), n = [6, 9, 12][L];
-  const bowls = kinds.map((k, i) => ({ k, x: 200 + (i - (kinds.length - 1) / 2) * 130, y: 440, got: 0 }));
-  const sweets = []; for (let i = 0; i < n; i++) sweets.push({ k: kinds[i % kinds.length], x: 60 + r() * 280, y: 110 + r() * 180, done: false, rot: (r() - 0.5) * 0.8 });
+  const bowls = kinds.map((k, i) => ({ k, x: 200 + (i - (kinds.length - 1) / 2) * 130, y: 455, got: 0 }));
+  const cols = n <= 6 ? 3 : 4, rowsN = Math.ceil(n / cols), slots = []; for (let i = 0; i < n; i++) slots.push({ x: 60 + (i % cols) * (280 / (cols - 1)), y: 120 + Math.floor(i / cols) * (170 / Math.max(1, rowsN - 1)) });
+  const sweets = shuffle(slots, r).map((sl, i) => ({ k: kinds[i % kinds.length], x: sl.x + (r() - 0.5) * 18, y: sl.y + (r() - 0.5) * 14, done: false, rot: (r() - 0.5) * 0.8 }));   // feste Plätze: nichts liegt übereinander
   let drag = null, t = 0, fx = []; const fin = finisher(env);
   return {
-    hint: { type: 'drag', x: sweets[0].x, y: sweets[0].y, x2: bowls[kinds.indexOf(sweets[0].k)].x, y2: 440 },
+    hint: { type: 'drag', x: sweets[0].x, y: sweets[0].y, x2: bowls[kinds.indexOf(sweets[0].k)].x, y2: 455 },
     update(dt) { t += dt; fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7); fin.tick(dt); },
     draw(c) {
-      hwNight(c, '#3c1f4a', '#6b3a5a'); rrPath(c, 10, 90, 380, 230, 18); fs(c, '#7f4f24', 3); c.fillStyle = 'rgba(255,255,255,.08)'; for (let y = 110; y < 310; y += 30) c.fillRect(20, y, 360, 3);
+      hwNight(c, '#3c1f4a', '#6b3a5a'); rrPath(c, 10, 80, 380, 240, 18); fs(c, '#7f4f24', 3); c.fillStyle = 'rgba(255,255,255,.08)'; for (let y = 100; y < 310; y += 30) c.fillRect(20, y, 360, 3);
       hwLabel(c, 'Sortiere die Süßigkeiten!');
-      for (const b of bowls) { ell(c, b.x, b.y + 10, 58, 22); fs(c, '#f77f00', 3); ell(c, b.x, b.y, 54, 16); fs(c, '#3d2c1f', 2); drawItem(c, b.k, b.x, b.y + 48, 30); for (let k = 0; k < Math.min(b.got, 5); k++) drawItem(c, b.k, b.x - 24 + k * 12, b.y - 4, 26); }
+      for (const b of bowls) { rrPath(c, b.x - 34, b.y - 96, 68, 58, 14); fs(c, '#fff7e6', 3); drawItem(c, b.k, b.x, b.y - 67, 46); polyPath(c, [[b.x - 8, b.y - 39], [b.x + 8, b.y - 39], [b.x, b.y - 28]]); fs(c, '#fff7e6', 2);   /* großes Schild: welche Süßigkeit hier hinein gehört */
+        ell(c, b.x, b.y + 10, 58, 22); fs(c, '#f77f00', 3); ell(c, b.x, b.y, 54, 16); fs(c, '#3d2c1f', 2); for (let k = 0; k < Math.min(b.got, 5); k++) drawItem(c, b.k, b.x - 24 + k * 12, b.y - 4, 26); }
       for (const s of sweets) if (!s.done && s !== drag) { c.save(); c.translate(s.x, s.y); c.rotate(s.rot); drawItem(c, s.k, 0, 0, 50); c.restore(); }
       if (drag) drawItem(c, drag.k, drag.x, drag.y, 60);
       hwFx(c, fx);
@@ -166,7 +169,7 @@ GAMES.hw_suesses = { make(env) {
     move(x, y) { if (drag) { drag.x = x; drag.y = y; } },
     up() {
       if (!drag) return; const s = drag; drag = null;
-      const b = bowls.find(q => Math.abs(s.x - q.x) < 64 && Math.abs(s.y - q.y) < 60);
+      const b = bowls.find(q => Math.abs(s.x - q.x) < 64 && s.y > q.y - 110 && s.y < q.y + 50);   // auch aufs Schild ziehen zählt
       if (b && b.k === s.k) { s.done = true; b.got++; Sfx.play('good'); env.burst(b.x, b.y, 8); if (sweets.every(q => q.done)) fin.set(0.5); }
       else { if (b) { Sfx.play('bad'); fx.push({ s: 'Andere Schale!', x: s.x, y: s.y - 30, t: 0, ok: false }); } s.x = s.ox; s.y = s.oy; }
     },
@@ -175,22 +178,24 @@ GAMES.hw_suesses = { make(env) {
 
 // 5) Fledermaus-Flug: Tippen = flattern. Flieg durch die Lücken zwischen den Bäumen.
 GAMES.hw_flug = { challenge: true, make(env) {
-  const r = env.r, L = HL(env), need = [6, 9, 12][L], gap = [210, 175, 150][L], v = [120, 145, 170][L] * env.slow, gr = 520, flap = -250;
-  let by = 240, vy = 0, t = 0, inv = 0, passed = 0, started = false; const trees = []; let nx = 420; const fin = finisher(env);
+  const r = env.r, L = HL(env), need = [6, 9, 12][L], gap = [230, 210, 200][L], v = [110, 130, 140][L] * env.slow, gr = 520, flap = -250;
+  let by = 240, vy = 0, t = 0, inv = 0, passed = 0, started = false, hold = false; const trees = []; let nx = 420; const fin = finisher(env);
   const add = () => { trees.push({ x: nx, gy: 140 + r() * (300 - gap * 0.5), done: false }); nx += 210; };
   for (let i = 0; i < 3; i++) add();
   return {
     timeLimit: need * 2.2 + 8,
+    dbg: () => ({ by, vy, trees, gap, passed, need, started, hold }),
     hint: { type: 'tap', x: 200, y: 300 },
     update(dt) {
       t += dt; inv -= dt; if (!started) { by = 240 + Math.sin(t * 3) * 8; fin.tick(dt); return; }
-      vy = Math.min(360, vy + gr * dt); by += vy * dt;
+      vy = clamp(vy + (hold ? -1500 : 1100) * dt, -170, 170); by += vy * dt;   // gedrückt halten = steigen, loslassen = sinken (ruhig zu steuern)
       if (by < 40) { by = 40; vy = 0; } if (by > 470) { by = 470; vy = flap * 0.6; if (inv <= 0) { env.hit(); inv = 1; } }
       for (const tr of trees) { tr.x -= v * dt;
         if (!tr.done && tr.x < 120) { tr.done = true; passed++; Sfx.play('good'); env.burst(120, by, 6); if (passed >= need) fin.set(0.4); }
-        if (inv <= 0 && Math.abs(tr.x - 120) < 34 && (by < tr.gy - gap / 2 + 14 || by > tr.gy + gap / 2 - 14)) { env.hit(); inv = 1; vy = by < tr.gy ? 120 : -200; }
+        if (inv <= 0 && Math.abs(tr.x - 120) < 28 && (by < tr.gy - gap / 2 + 8 || by > tr.gy + gap / 2 - 8))   /* ehrliche, eher gnädige Trefferzone */ { env.hit(); inv = 1.4; vy = by < tr.gy ? 120 : -200; }
       }
-      while (trees.length && trees[0].x < -60) trees.shift(); if (nx - 210 < 600) { nx = trees[trees.length - 1].x + 210; add(); }
+      while (trees.length && trees[0].x < -60) trees.shift();
+      { const last = trees[trees.length - 1]; if (!last || last.x < 420) { nx = (last ? last.x : 420) + 210; add(); } }   // immer neue Bäume nachschieben
       fin.tick(dt);
     },
     draw(c) {
@@ -199,10 +204,11 @@ GAMES.hw_flug = { challenge: true, make(env) {
         rrPath(c, tr.x - 26, -10, 52, top + 10, 8); fs(c, '#3b2a20', 3); rrPath(c, tr.x - 26, bot, 52, GAME_H - bot + 10, 8); fs(c, '#3b2a20', 3);
         drawItem(c, 'hw_spinne', tr.x, top + 10, 30); jackO(c, tr.x, bot - 4, 1.1, 0.8); }
       c.fillStyle = '#1a1225'; c.fillRect(0, 495, GAME_W, 30);
-      hwLabel(c, started ? passed + ' / ' + need : 'Tippe zum Flattern!', 474);
+      hwLabel(c, started ? passed + ' / ' + need : 'Halten = hoch, loslassen = runter', 474);
       if (!(inv > 0 && Math.floor(t * 12) % 2)) { c.save(); c.translate(120, by); c.rotate(clamp(vy / 600, -0.5, 0.6)); drawItem(c, 'hw_fledermaus', 0, Math.sin(t * 20) * 2, 64); c.restore(); }
     },
-    down() { if (fin.on()) return; started = true; vy = flap; Sfx.note && Sfx.note(660, 0.06, 'triangle', 0.04); },
+    down() { if (fin.on()) return; started = true; hold = true; Sfx.note && Sfx.note(660, 0.06, 'triangle', 0.04); },
+    up() { hold = false; },
   };
 } };
 
@@ -235,14 +241,15 @@ GAMES.hw_netz = { make(env) {
 
 // 7) Besenflug: Schieb die Hexe hin und her, sammle Sterne und weich den Gewitterwolken aus
 GAMES.hw_besen = { challenge: true, make(env) {
-  const r = env.r, L = HL(env), need = [8, 11, 14][L], v = [200, 240, 290][L] * env.slow;
+  const r = env.r, L = HL(env), need = [8, 11, 13][L], v = [200, 230, 255][L] * env.slow;
   let got = 0, px = 200, tx = 200, spT = 0.4, inv = 0, t = 0; const its = []; const fin = finisher(env);
   return {
     timeLimit: need * 2.1 + 6,
+    dbg: () => ({ px, its, got, need }),
     hint: { type: 'swipe', x: 200, y: 440 },
     update(dt) {
       t += dt; inv -= dt; spT -= dt;
-      if (spT <= 0) { spT = [0.7, 0.55, 0.45][L] / env.slow; const good = r() < 0.55; its.push({ x: 50 + r() * 300, y: -40, good, ph: r() * 6 }); }
+      if (spT <= 0) { spT = [0.7, 0.55, 0.5][L] / env.slow; const good = r() < [0.6, 0.58, 0.6][L]; its.push({ x: 50 + r() * 300, y: -40, good, ph: r() * 6 }); }
       px = lerp(px, tx, Math.min(1, dt * 14));
       for (const o of its) { o.y += v * dt; o.ph += dt * 2;
         if (!o.done && dist(o.x, o.y, px, 430) < 42) { o.done = true;
@@ -328,7 +335,7 @@ Object.assign(HELP_TEXT, {
   hw_trank: 'Merk dir das Zaubertrank-Rezept. Tippe dann die Zutaten in der richtigen Reihenfolge an – sie fallen in den Kessel.',
   hw_geister: 'Gespenster gucken aus den Grabsteinen. Tippe sie schnell an! Aber lass die Fledermäuse in Ruhe.',
   hw_suesses: 'Zieh jede Süßigkeit in die Schale, auf der dieselbe Süßigkeit abgebildet ist.',
-  hw_flug: 'Tippe, dann flattert die Fledermaus nach oben. Flieg durch die Lücken zwischen den Bäumen.',
+  hw_flug: 'Halte den Finger auf dem Bildschirm, dann fliegt die Fledermaus nach oben. Lässt du los, sinkt sie. Flieg durch die Lücken zwischen den Bäumen.',
   hw_netz: 'Tippe die Punkte der Reihe nach an: erst die 1, dann die 2 und so weiter. Dann spinnt die Spinne ihr Netz.',
   hw_besen: 'Schieb die Hexe auf dem Besen hin und her. Sammle die Sterne und weich den Gewitterwolken aus.',
   hw_klingeln: 'Tippe zwei Türen an. Finde immer zwei gleiche Süßigkeiten.',

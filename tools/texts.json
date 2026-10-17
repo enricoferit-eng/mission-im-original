@@ -709,9 +709,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Tippe, dann flattert die Fledermaus nach oben. Flieg durch die Lücken zwischen den Bäumen.",
-  "key": "92671bb7",
-  "clean": "Tippe, dann flattert die Fledermaus nach oben. Flieg durch die Lücken zwischen den Bäumen."
+  "text": "Halte den Finger auf dem Bildschirm, dann fliegt die Fledermaus nach oben. Lässt du los, sinkt sie. Flieg durch die Lücken zwischen den Bäumen.",
+  "key": "c008d5a7",
+  "clean": "Halte den Finger auf dem Bildschirm, dann fliegt die Fledermaus nach oben. Lässt du los, sinkt sie. Flieg durch die Lücken zwischen den Bäumen."
  },
  {
   "who": "erzaehler",
@@ -1159,9 +1159,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Tippe, dann flattert die Fledermaus nach oben.",
-  "key": "e402d988",
-  "clean": "Tippe, dann flattert die Fledermaus nach oben."
+  "text": "Halte den Finger auf dem Bildschirm, dann fliegt die Fledermaus nach oben.",
+  "key": "8c2a95c4",
+  "clean": "Halte den Finger auf dem Bildschirm, dann fliegt die Fledermaus nach oben."
  },
  {
   "who": "erzaehler",
@@ -3826,6 +3826,12 @@
   "text": "Willkommen im Geisterwald! Hier gibt es Kürbismünzen. Damit kaufst du Halloween-Kostüme im Kürbis-Laden.",
   "key": "cd439fd0",
   "clean": "Willkommen im Geisterwald! Hier gibt es Kürbismünzen. Damit kaufst du Halloween-Kostüme im Kürbis-Laden."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Halloween-Event! Der Geisterwald wartet auf dich. Tippe rechts auf den leuchtenden Kürbis.",
+  "key": "6d78c630",
+  "clean": "Halloween-Event! Der Geisterwald wartet auf dich. Tippe rechts auf den leuchtenden Kürbis."
  },
  {
   "who": "erzaehler",

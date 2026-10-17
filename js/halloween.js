@@ -52,6 +52,7 @@ class HwLauncher {
     const w = Math.min(W - 24, 520), h = Math.min(H - 24, 330), x = (W - w) / 2, y = (H - h) / 2;
     panel(c, x, y, w, h, '#2b1a4a', 24); hwBats(c, this.t, 2);
     roundBtn(c, x + w - 26, y + 26, 18, '#ced4da', 'cross', () => this.close());
+    { const end = new Date(new Date().getFullYear(), 10, 2, 23, 59), days = Math.max(1, Math.ceil((end - Date.now()) / 864e5)); rrPath(c, x + w / 2 - 120, y - 16, 240, 30, 15); fs(c, '#ef476f', 3, '#fff'); txt(c, 'HALLOWEEN-EVENT · noch ' + days + (days === 1 ? ' Tag' : ' Tage'), x + w / 2, y - 1, 13, '#fff', 'center', null); }
     jackO(c, x + 44, y + 44, 1.6, 0.8); txt(c, 'Der Geisterwald', x + 76, y + 36, 22, '#ffd166', 'left', null);
     txt(c, 'Nur an Halloween: neue Leute, neue Sachen, neue Aufgaben', x + 76, y + 60, 12, '#e0c3fc', 'left', null);
     rrPath(c, x + 20, y + 84, w - 40, 54, 14); fs(c, 'rgba(255,255,255,.08)', 2, 'rgba(255,255,255,.25)');
@@ -69,6 +70,7 @@ class HwLauncher {
 }
 const HW_SAY = {
   launch: 'Willkommen im Geisterwald! Hier gibt es Kürbismünzen. Damit kaufst du Halloween-Kostüme im Kürbis-Laden.',
+  hint: 'Halloween-Event! Der Geisterwald wartet auf dich. Tippe rechts auf den leuchtenden Kürbis.',
   shopEmpty: 'Kürbismünzen gibt es nur im Geisterwald: für jedes Bonbon, für jede Person, der du hilfst, und für das Kürbistor.',
 };
 
@@ -98,9 +100,13 @@ if (HALLOWEEN) {
     hud0.call(this, c);
     if (this.mp || this.helpOpen) return;
     if (this.stage !== 'geisterwald') {   // aus jedem Bereich erreichbar: Knopf unter der Karte
-      const x = W - 46, y = 122, b = Math.sin(this.t * 2.4) * 1.5;
-      roundBtn(c, x, y + b, 21, '#3c096c', null, () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'In den Geisterwald reisen? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(this.diff, { stage: 'geisterwald' })); } }); }, '#f77f00');
-      jackO(c, x, y + b, 1.25, 0.6); txt(c, 'Geisterwald', x, y + 34, 11, '#ffd166', 'center', '#3c096c');
+      const x = W - 50, y = 146, pu = 1 + Math.sin(this.t * 4) * 0.07, gl = 0.5 + 0.5 * Math.sin(this.t * 3);   // groß, leuchtend, nicht zu übersehen
+      const go = () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'In den Geisterwald reisen? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(this.diff, { stage: 'geisterwald' })); } }); };
+      ell(c, x, y, 40 * pu, 40 * pu); c.fillStyle = `rgba(255,150,30,${0.25 + gl * 0.25})`; c.fill();
+      c.save(); c.translate(x, y); c.scale(pu, pu); ell(c, 0, 0, 27, 27); fs(c, '#3c096c', 3.5, '#f77f00'); jackO(c, 0, 1, 1.6, 0.8); c.restore();
+      rrPath(c, x - 26, y - 40, 52, 16, 8); fs(c, '#ef476f', 2, '#fff'); txt(c, 'EVENT', x, y - 31, 10, '#fff', 'center', null);
+      txt(c, 'Geisterwald', x, y + 40, 12, '#ffd166', 'center', '#3c096c');
+      UI.btn(x - 34, y - 42, 68, 92, go);
       return;
     }
     { const back = ((ACC() || {}).lastArea || {})[this.diff] || 'kueche', x = W - 46, y = 100;   // zurück in den Bereich, aus dem man kam
@@ -111,6 +117,12 @@ if (HALLOWEEN) {
   };
   if (Play.prototype.drawHud._src === undefined) Play.prototype.drawHud._src = hud0._src || hud0;
 
+  // Hinweis beim Betreten eines normalen Bereichs (einmal pro Sitzung)
+  const upd1 = Play.prototype.update;
+  Play.prototype.update = function (dt) {
+    upd1.call(this, dt);
+    if (!window.HW_HINTED && !this.mp && this.stage !== 'geisterwald' && this.t > 2.5 && !overlay && scene === this) { window.HW_HINTED = true; this.banner = { text: HW_SAY.hint, t: 0 }; Voice.say(HW_SAY.hint, true); }
+  };
   // Bereichs-Übersicht: Knopf zum Geisterwald unten links
   const smap0 = StageMap.prototype.draw;
   StageMap.prototype.draw = function (c) {
@@ -135,10 +147,15 @@ if (HALLOWEEN) {
   Menu.prototype.draw = function (c) {
     menu0.call(this, c);
     hwBats(c, this.t, 3);
-    const land = W > H, bw = 180, bx = land ? W - bw - 14 : W / 2 - bw / 2, by = land ? 94 : H - 128, b = Math.sin(this.t * 2.2) * 2;
-    rrPath(c, bx, by + b, bw, 40, 20); fs(c, '#3c096c', 3, '#f77f00'); jackO(c, bx + 22, by + 20 + b, 0.9, 0.6);
-    txt(c, 'Geisterwald', bx + 42, by + 13 + b, 13, '#ffd166', 'left', null); kmCoin(c, bx + 50, by + 29 + b, 0.6); txt(c, hwKM() + ' Kürbismünzen', bx + 58, by + 30 + b, 11, '#fff', 'left', null);
-    UI.btn(bx, by, bw, 40, () => { Sfx.play('tap'); overlay = new HwLauncher(); });
+    const land = W > H, bw = land ? Math.min(300, W - 560) > 220 ? Math.min(300, W - 560) : 250 : Math.min(W - 40, 320), bh = 56, bx = land ? W - bw - 12 : W / 2 - bw / 2, by = land ? 88 : H - 150, b = Math.sin(this.t * 2.2) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+    rrPath(c, bx - 5, by - 5 + b, bw + 10, bh + 10, 30); c.fillStyle = `rgba(255,140,20,${0.25 + gl * 0.3})`; c.fill();   // leuchtender Rand
+    rrPath(c, bx, by + b, bw, bh, 26); { const g = c.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, '#5a189a'); g.addColorStop(1, '#f77f00'); fs(c, g, 3, '#ffd166'); }
+    jackO(c, bx + 30, by + bh / 2 + b + Math.sin(this.t * 6) * 2, 1.5, 0.9);
+    txt(c, 'HALLOWEEN-EVENT', bx + 58, by + 19 + b, 15, '#ffd166', 'left', '#3c096c');
+    txt(c, 'Geisterwald – jetzt spielen ▶', bx + 58, by + 39 + b, 12, '#fff', 'left', null);
+    kmCoin(c, bx + bw - 26, by + 18 + b, 0.7); txt(c, String(hwKM()), bx + bw - 26, by + 40 + b, 11, '#fff', 'center', null);
+    UI.btn(bx - 5, by - 5, bw + 10, bh + 10, () => { Sfx.play('tap'); overlay = new HwLauncher(); });
+    if (!window.HW_POPPED && this.t > 0.7 && !overlay) { window.HW_POPPED = true; overlay = new HwLauncher(); }   // einmal pro Sitzung von selbst aufpoppen
   };
 }
 

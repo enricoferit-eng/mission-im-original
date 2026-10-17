@@ -69,7 +69,7 @@ const GWDECOR = [
   { id: 'lat2', t: 'laterne', x: 1120, y: 760, r: 8, bb: [1100, 650, 40, 116] },
   { id: 'lat3', t: 'laterne', x: 880, y: 1120, r: 8, bb: [860, 1010, 40, 116] },
   { id: 'lat4', t: 'laterne', x: 1500, y: 600, r: 8, bb: [1480, 490, 40, 116] },
-  { id: 'busch1', t: 'gbusch', x: 1900, y: 1350, r: 26, bb: [1850, 1300, 100, 60] },
+  { id: 'busch1', t: 'gbusch', x: 1780, y: 1290, r: 26, bb: [1730, 1240, 100, 60] },
   { id: 'busch2', t: 'gbusch', x: 620, y: 700, r: 26, bb: [570, 650, 100, 60] },
 ];
 const GWDRAW = {
