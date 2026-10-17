@@ -1279,7 +1279,9 @@ const firstScene = () => (!Save.data.seenTrailer ? new Trailer() : ACC() ? new M
 try { history.pushState({ mio: 1 }, ''); window.addEventListener('popstate', () => { history.pushState({ mio: 1 }, ''); if (overlay && overlay.close) { overlay.close(); return; } if (overlay) { overlay = null; return; } if (scene instanceof Play) { if (scene.stop) scene.stop(); return; } if (!(scene instanceof Menu) && ACC()) setScene(new Menu()); }); } catch (e) { /* egal */ }
 // Tab im Hintergrund: laufende Aufgabe pausieren
 document.addEventListener('visibilitychange', () => { if (document.hidden && overlay instanceof GameOverlay && overlay.state === 'play') overlay.help = true; });
-{ const mit = (/[?&]mit=([A-Za-z]{4})/.exec(location.search) || [])[1];   // Einladungslink: direkt dem Mehrspieler-Spiel beitreten
+// Start erst, wenn alle Skripte (auch meta.js usw.) geladen sind
+function boot() { const mit = (/[?&]mit=([A-Za-z]{4})/.exec(location.search) || [])[1];   // Einladungslink: direkt dem Mehrspieler-Spiel beitreten
   if (mit && ACC() && ACC().token && Save.data.seenTrailer) { try { history.replaceState(null, '', location.pathname); } catch (e) {} const ms = new MultiScene(); setScene(ms); ms.join(mit.toUpperCase()); }
   else setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene()); }
-requestAnimationFrame(frame);
+function bootAll() { boot(); requestAnimationFrame(frame); }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootAll); else bootAll();
