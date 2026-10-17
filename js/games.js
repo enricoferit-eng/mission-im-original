@@ -1486,35 +1486,37 @@ GAMES.balance_walk = { challenge: true, make(env) {
 } };
 
 GAMES.jump = { challenge: true, make(env) {
-  const r = env.r, v = (env.hard ? 310 : 255) * env.slow, G = 1600, JV = 620, n = env.hard ? 16 : 12;
+  const r = env.r, v = (env.hard ? 280 : env.diff === 'easy' ? 210 : 235) * env.slow, T = env.hard ? 0.85 : env.diff === 'easy' ? 1.05 : 0.95, JV = 520 / T, G = 2 * JV / T, n = env.hard ? 14 : 10;   // gnädiger: langsamer; Sprung immer gleich hoch (130), bei Leicht länger in der Luft
   const obs = [], clocks = []; let x = 520;
   for (let i = 0; i < n; i++) {
     const kind = r();
     if (kind < 0.38) { const w = env.hard ? 88 + r() * 32 : 72 + r() * 26; obs.push({ t: 'gap', x, w }); x += w; }
     else {
-      const h = 40 + r() * 16; obs.push({ t: 'hurdle', x, w: 44, h, id: pick(areaPick(['bauklotz', 'ball', 'eimerchen']), r) });
+      const h = 34 + r() * 12; obs.push({ t: 'hurdle', x, w: 44, h, id: pick(areaPick(['bauklotz', 'ball', 'eimerchen']), r) });
       if (env.hard && r() < 0.35) clocks.push({ x: x + 22, y: 315 });
-      if (kind > 0.8) { x += 44 + (env.hard ? 150 : 175); obs.push({ t: 'hurdle', x, w: 44, h: 40, id: heroId('bauklotz') }); }
+      if (kind > 0.8) { x += 44 + (env.hard ? 200 : 230); obs.push({ t: 'hurdle', x, w: 44, h: 36, id: heroId('bauklotz') }); }
       x += 44;
     }
     x += env.hard ? 220 + r() * 90 : 260 + r() * 100;
   }
   const end = x + 100, PX = 110;
-  let wx = 0, py = 0, vy = 0, falling = false, inv = 0, stun = 0, t = 0;
-  const overGap = () => obs.some(o => o.t === 'gap' && wx + PX > o.x + 10 && wx + PX < o.x + o.w - 10);
+  let wx = 0, py = 0, vy = 0, falling = false, inv = 0, stun = 0, t = 0, buf = 0, edge = 0;   // buf: ein Tipp kurz vor der Landung zählt trotzdem
+  const overGap = () => obs.some(o => o.t === 'gap' && wx + PX > o.x + 18 && wx + PX < o.x + o.w - 18);
   return {
+    dbg: () => ({ wx, py, obs, PX, v, T }),
     timeLimit: end / v + 4,
     hint: { type: 'tap', x: 200, y: 300 },
     update(dt) {
-      t += dt; inv -= dt; stun -= dt;
+      t += dt; inv -= dt; stun -= dt; buf -= dt;
       wx += v * (stun > 0 ? 0.5 : 1) * dt;
       vy -= G * dt; py += vy * dt;
-      if (!falling && py <= 0) { if (overGap()) falling = true; else { py = 0; vy = 0; } }
+      if (!falling && py <= 0) { py = 0; vy = 0; if (overGap()) { edge += dt; if (edge > 0.12) falling = true; } else edge = 0; }   // kurz über der Kante darf man noch abspringen
+      if (buf > 0 && !falling && py === 0) { vy = JV; py = 0.01; buf = 0; edge = 0; Sfx.play('jump'); }
       if (falling && py < -110) {
         const g = obs.filter(o => o.t === 'gap' && o.x < wx + PX + 20).pop();
         wx = (g ? g.x : wx) - 170; py = 0; vy = 0; falling = false; env.hit(); inv = 1;
       }
-      if (inv <= 0) for (const o of obs) if (o.t === 'hurdle' && wx + PX > o.x - 14 && wx + PX < o.x + o.w + 14 && py < o.h - 6) { env.hit(); inv = 1; stun = 0.5; break; }
+      if (inv <= 0) for (const o of obs) if (o.t === 'hurdle' && wx + PX > o.x - 2 && wx + PX < o.x + o.w + 2 && py < o.h - 12) { env.hit(); inv = 1; stun = 0.5; break; }
       for (const k of clocks) if (!k.done && Math.abs(wx + PX - k.x) < 36 && Math.abs(400 - py - 30 - k.y) < 55) { k.done = true; env.addTime(3); }
       if (wx + PX >= end) env.win();
     },
@@ -1531,7 +1533,7 @@ GAMES.jump = { challenge: true, make(env) {
       const fx = end - wx; if (fx < 440) { line(c, fx, 400, fx, 300, 5, '#495057'); polyPath(c, [[fx, 300], [fx + 46, 315], [fx, 330]]); fs(c, '#ef476f', 3); }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, PX, 400 - py, 1.5, { t, moving: py === 0, cap: hasCap(env.kind), noShadow: py !== 0 || falling });
     },
-    down() { if (!falling && py === 0) { vy = JV; Sfx.play('jump'); } },
+    down() { buf = 0.22; },   // wird im nächsten Schritt ausgeführt – auch wenn man etwas zu früh tippt
   };
 } };
 
