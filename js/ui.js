@@ -80,7 +80,7 @@ class Menu {
     // schwebende Leckereien im Hintergrund
     for (let i = 0; i < 9; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
     { const mo = new Date().getMonth(); if (mo === 11 || mo === 0) for (let i = 0; i < 26; i++) { const x = (i * 97 + Math.sin(this.t * 0.7 + i) * 30) % W, y = (this.t * (20 + (i % 5) * 6) + i * 61) % (H + 20) - 10; ell(c, x, y, 2 + (i % 3), 2 + (i % 3)); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill(); }   // Saison-Deko: Winter = Schneeflocken
-      else if (mo === 9 || mo === 10) [[W / 2 - Math.min(300, W * 0.36), Math.min(150, H * 0.24)], [W / 2 + Math.min(300, W * 0.36), Math.min(150, H * 0.24)]].forEach(([px, py], i) => { if (W < 700) return; c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); });   // Herbst = Kürbisse
+      else if (mo === 9 || mo === 10) { const k = W > H ? clamp(H / 560, 0.55, 1.2) : 0, py = 70 * k + 30; [[W / 2 - 185 * k, py], [W / 2 + 185 * k, py]].forEach(([px, py], i) => { if (W < 700 || !k) return; c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); c.scale(0.8, 0.8); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); }); }   // Herbst = Kürbisse (neben dem Logo, nie über Knöpfen)
       else if (mo >= 3 && mo <= 4) for (let i = 0; i < 6; i++) { const x = 40 + i * (W - 80) / 5, y = H - 18; for (let k = 0; k < 5; k++) { ell(c, x + Math.cos(k * 1.26) * 6, y - 14 + Math.sin(k * 1.26) * 6, 4, 4); c.fillStyle = ['#ffc8dd', '#fff', '#ffd166'][i % 3]; c.fill(); } }   // Frühling = Blumen
     }
     const a = ACC(); if (!a) return;
@@ -93,9 +93,9 @@ class Menu {
     soundBtn(c, W - 40, 40);
     if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 96 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 46, 96 + b], [W - 40, 88 + b], [W - 34, 96 + b]]); c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 110 + b, 12, '#fff', 'center', null); }   /* iPhone: Ton geht erst nach einer Berührung */
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
-    roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
-    txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 144, 72, 11, '#fff', 'center', BRAND.olive);
-    { const ex = land ? W - 202 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
+    roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
+    txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
+    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
     rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Regler', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
     if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
@@ -1283,5 +1283,11 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && ove
 function boot() { const mit = (/[?&]mit=([A-Za-z]{4})/.exec(location.search) || [])[1];   // Einladungslink: direkt dem Mehrspieler-Spiel beitreten
   if (mit && ACC() && ACC().token && Save.data.seenTrailer) { try { history.replaceState(null, '', location.pathname); } catch (e) {} const ms = new MultiScene(); setScene(ms); ms.join(mit.toUpperCase()); }
   else setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene()); }
-function bootAll() { boot(); requestAnimationFrame(frame); }
+class BootError {   // falls beim Start etwas schiefgeht: Meldung statt leerem grünem Bildschirm
+  constructor(e) { this.msg = String((e && e.message) || e); }
+  draw(c) { c.fillStyle = '#3a4a32'; c.fillRect(0, 0, W, H); txt(c, 'Hoppla, das Spiel konnte nicht starten.', W / 2, H / 2 - 50, 20, '#fff', 'center', null); txt(c, this.msg.slice(0, 90), W / 2, H / 2 - 18, 12, '#ffd166', 'center', null);
+    rrPath(c, W / 2 - 90, H / 2 + 10, 180, 44, 22); fs(c, '#06d6a0', 3, BRAND.ink); txt(c, 'Neu laden', W / 2, H / 2 + 32, 16, '#fff', 'center', null); UI.btn(W / 2 - 90, H / 2 + 10, 180, 44, () => location.reload()); }
+  update() {}
+}
+function bootAll() { try { boot(); } catch (e) { console.error(e); scene = new BootError(e); overlay = null; } requestAnimationFrame(frame); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootAll); else bootAll();

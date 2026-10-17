@@ -126,11 +126,11 @@ class Shop {
       D.forEach((o, i) => {
         const x = x0 + i * (cw + gap), y = top + 20, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
         rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : o.ex ? '#fff3bf' : '#fff', 3.5, o.ex ? '#c9a227' : OL);
-        rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = o.ex ? '#ef476f' : '#06d6a0'; c.fill(); txt(c, o.ex ? (cw < 170 ? 'Nur heute!' : 'NUR HEUTE · exklusiv') : '-' + o.off + ' % Rabatt', x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
-        drawAnimal(c, kind, x + cw / 2, y + bob + ch - 60, Math.min(1.4, ch / 135), { look: sk, cap: true, t: this.t + i });
+        drawAnimal(c, kind, x + cw / 2, y + bob + ch - 60, Math.min(1.4, (ch - 66) / 80), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name, x + cw / 2, y + bob + ch - 52, 13, '#3d2c1f', 'center', null);
         txt(c, RARITY[sk.rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + bob + ch - 34, 11, '#6b5a48', 'center', null);
-        if (sk.ability) { ell(c, x + 22, y + bob + 46, 15, 15); fs(c, '#fff3bf', 2, '#c9a227'); icon(c, ABIL_ICON[sk.ability], x + 22, y + bob + 46, 18); }
+        { const lab = o.ex ? (cw < 170 ? 'Nur heute!' : 'NUR HEUTE · exklusiv') : '-' + o.off + ' % Rabatt', lw = Math.min(cw - 24, lab.length * 7 + 20); rrPath(c, x + cw / 2 - lw / 2, y + bob - 9, lw, 20, 10); fs(c, o.ex ? '#ef476f' : '#06d6a0', 2, OL); txt(c, lab, x + cw / 2, y + bob + 1, 11, '#fff', 'center', null); }   // Schild auf der Kante, nicht über dem Kopf
+        if (sk.ability) { ell(c, x + 20, y + bob + 26, 13, 13); fs(c, '#fff3bf', 2, '#c9a227'); icon(c, ABIL_ICON[sk.ability], x + 20, y + bob + 26, 16); }
         if (own) txt(c, 'gekauft', x + cw / 2, y + bob + ch - 14, 13, '#2b9348', 'center', null);
         else { if (o.off) { txt(c, String(sk.price), x + cw / 2 - 30, y + bob + ch - 14, 11, '#adb5bd', 'center', null); line(c, x + cw / 2 - 42, y + bob + ch - 14, x + cw / 2 - 18, y + bob + ch - 14, 1.5, '#adb5bd', false); } icon(c, 'coin', x + cw / 2 - 2, y + bob + ch - 14, 16); txt(c, String(o.price), x + cw / 2 + 24, y + bob + ch - 13, 14, '#8d5a3b', 'center', null); }
         UI.btn(x, y + bob, cw, ch, () => { if (own) { wearSkin(o.id); this.say(sk.name + ' hast du jetzt an!'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); wearSkin(o.id); this.say(sk.name + ' gekauft und gleich angezogen!'); }); });
