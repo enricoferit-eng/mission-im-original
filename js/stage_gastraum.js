@@ -90,7 +90,7 @@ function drawGroundGastraum(g, R) {
   for (let k = 0; k < 3; k++) line(g, 180, 54 + k * 22, 260 - (k % 2) * 20, 54 + k * 22, 2.2, 'rgba(248,249,250,.8)', false); ell(g, 266, 104, 6, 5); g.fillStyle = '#f77f00'; g.fill();
   for (const [x0, w] of [[40, 110], [290, 250]]) for (let k = 0; k < 3; k++) {
     const y = 58 + k * 30; rrPath(g, x0, y, w, 5, 2); fs(g, '#a0673a', 1.5);
-    for (let m = 0; m < Math.floor(w / 13); m++) { const x = x0 + 6 + m * 13, kind = (m * 3 + k) % 4;
+    for (let m = 0; m < Math.floor(w / 22); m++) { const x = x0 + 8 + m * 22, kind = (m * 3 + k) % 4;   // weniger Flaschen, ruhigeres Regal
       if (kind < 2) { rrPath(g, x, y - 20, 7, 20, 2); fs(g, ['#2b9348', '#9d0208', '#e9c46a', '#1d3557', '#f77f00', '#adb5bd'][(m * 5 + k) % 6], 1.2); rrPath(g, x + 2, y - 26, 3, 7, 1); fs(g, '#343a40', 0.8); }
       else { rrPath(g, x - 1, y - 13, 9, 13, 2); g.fillStyle = 'rgba(210,235,250,.85)'; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(30,30,30,.6)'; g.stroke(); } }
   }
@@ -144,6 +144,9 @@ const GDECOR = [
   { id: 'tafel', t: 'tafel', x: 500, y: 1240, x0: 300, y0: 1170, w: 400, h: 46, bb: [270, 1100, 460, 160] },
   { id: 'kuebel1', t: 'kuebel', x: 150, y: 1285, r: 24, bb: [100, 1185, 100, 108] },
   { id: 'fass', t: 'fass', x: 860, y: 1285, r: 26, bb: [810, 1170, 100, 122] },
+  // rechter Teil des Glashauses: zwei Tische mehr, damit er nicht so leer wirkt
+  { id: 'tisch5', t: 'tisch4', x: 1060, y: 300, x0: 1005, y0: 235, w: 110, h: 64, seat: [], bb: [990, 175, 140, 150] },
+  { id: 'tisch6', t: 'tisch4', x: 1030, y: 690, x0: 975, y0: 625, w: 110, h: 64, seat: [], bb: [960, 565, 140, 150] },
 ];
 // Stuhl mit geblümtem Rücken (cremefarbener Sitz) – von vorne/hinten gesehen
 function flowerChair(c, x, y, back) {
@@ -181,6 +184,9 @@ const GDRAW = {
     for (let k = n - 1; k >= 0; k--) { const y = d.y0 + 20 + k * (d.h - 30) / n, sh = 1 - (n - 1 - k) * 0.025, w = d.w * sh, x = d.x0 + (d.w - w) / 2;
       rrPath(c, x, y, w, 18, 3); fs(c, k % 2 ? '#c08b55' : '#b07d4b', 2.5); line(c, x + 4, y + 4, x + w - 4, y + 4, 1.5, 'rgba(255,255,255,.3)', false); }
     for (const sx of [0, 1]) { const x0 = d.x0 + (sx ? d.w - 4 : 4); line(c, x0, d.y0 + d.h, x0 + (sx ? -8 : 8), d.y0 - 120, 7, '#868e96'); for (let k = 0; k < 9; k++) line(c, x0 + (sx ? -1 : 1) * k, d.y0 + d.h - k * 44, x0 + (sx ? -1 : 1) * k, d.y0 + d.h - k * 44 - 60, 2, '#adb5bd', false); line(c, x0, d.y0 + d.h - 60, x0 + (sx ? -8 : 8), d.y0 - 180, 3.5, '#6c757d'); }
+    // Kette mit Schild unten: die Empore ist zu
+    { const yb = d.y0 + d.h + 4, xl = d.x0 + 6, xr = d.x0 + d.w - 6; c.beginPath(); c.moveTo(xl, yb - 24); c.quadraticCurveTo((xl + xr) / 2, yb - 4, xr, yb - 24); c.lineWidth = 3; c.strokeStyle = '#495057'; c.stroke();
+      rrPath(c, (xl + xr) / 2 - 44, yb - 30, 88, 24, 5); fs(c, '#fff3bf', 2.5); txt(c, 'Empore zu', (xl + xr) / 2, yb - 17, 12, '#9d0208', 'center', null); }
     // Lichterkette mit Sternen am Geländer
     for (let k = 0; k < 7; k++) { const y = d.y0 + d.h - 70 - k * 50; ell(c, d.x0 + d.w + 2, y, 3.5, 4.5); c.fillStyle = '#ffe066'; c.fill(); }
   },

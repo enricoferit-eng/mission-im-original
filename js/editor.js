@@ -14,7 +14,7 @@ const FREE_COLS = ['#6bb544', '#ef476f', '#ffd166', '#118ab2'];
 function editPrice(kind, v) { if (kind === 'col') return FREE_COLS.includes(v) ? 0 : v === 'rainbow' ? 70 : 25; if (kind === 'pat') return v === '' ? 0 : v === 'stars' ? 45 : 30; if (kind === 'fur') return v === 'normal' ? 0 : v === 'rosa' ? 55 : 35; return 0; }
 function editOwned(kind, v) { const m = META(); return editPrice(kind, v) === 0 || (typeof isGameAdmin === 'function' && isGameAdmin()) || !!(m && m.unlocks && m.unlocks.includes(kind + ':' + v)); }
 function editBuy(kind, v, ok) { const m = META(), pr = editPrice(kind, v); if (!m) return; if (m.coins < pr) { Sfx.play('bad'); toast('Zu wenig Taler', 'Dafür brauchst du ' + pr + ' Taler', 'coin'); return; } m.coins -= pr; (m.unlocks = m.unlocks || []).push(kind + ':' + v); Save.write(); Sfx.play('win'); toast('Freigeschaltet!', '−' + pr + ' Taler', 'coin'); ok(); }
-const lockTag = (c, x, y, pr) => { rrPath(c, x - 24, y - 9, 48, 18, 9); fs(c, 'rgba(255,255,255,.95)', 2); icon(c, 'coin', x - 12, y, 12); txt(c, String(pr), x + 8, y + 1, 11, '#8d5a3b', 'center', null); };
+const lockTag = (c, x, y, pr) => { rrPath(c, x - 28, y - 11, 56, 22, 11); fs(c, '#ffd166', 2); icon(c, 'coin', x - 13, y, 15); txt(c, String(pr), x + 9, y + 1, 13, '#3d2c1f', 'center', null); };   // Preis statt Schloss: man sieht sofort, was es kostet
 const EDIT_PATS = [['', 'Ohne'], ['dots', 'Punkte'], ['stripes', 'Streifen'], ['stars', 'Sterne'], ['leaf', 'Blatt']];
 function customLook() {
   const a = ACC(), u = a && a.custom; if (!u) return null;

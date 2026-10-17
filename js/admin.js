@@ -25,7 +25,9 @@ function adminBoost() {
   Play.prototype.drawHud = function (c) {
     hud0.call(this, c);
     if (!isGameAdmin() || this.mp) return;
-    const on = !!this.showSpots, x = W - 46, y = H - 150;
+    const on = !!this.showSpots, x = W - 46, y = H - 150, open = !!ACC().adminOpen;
+    rrPath(c, x - 30, y + 54, 60, 22, 11); fs(c, 'rgba(255,255,255,.85)', 2); txt(c, open ? 'Admin ▾' : 'Admin ▸', x, y + 65, 11, '#3d2c1f', 'center', null); UI.btn(x - 32, y + 50, 64, 30, () => { ACC().adminOpen = !open; Save.write(); });   // einklappbar
+    if (!open) return;
     roundBtn(c, x, y, 24, on ? '#ffd166' : '#e9ecef', 'search', () => { this.showSpots = !this.showSpots; Sfx.play('tap'); }, '#3d2c1f');
     txt(c, 'Verstecke', x, y + 34, 11, '#fff', 'center', BRAND.olive);
     // Auftrag sofort erledigen: alle Sachen des laufenden Auftrags bekommen
@@ -40,9 +42,9 @@ function adminBoost() {
       SPOTS.forEach(s => {
         const px = s.px != null ? s.px : s.x, py = s.py != null ? s.py : s.y, used = q && q.hidden.some((h, i) => h.spot === s.id && !q.got[i]);
         line(c, s.x, s.y, px, py, 2, 'rgba(255,255,255,.7)', false);
-        ell(c, s.x, s.y, s.reach * 0.4, s.reach * 0.18); c.lineWidth = 2; c.strokeStyle = 'rgba(17,138,178,.9)'; c.stroke();
-        ell(c, px, py, used ? 16 + Math.sin(t * 6) * 3 : 11, used ? 16 + Math.sin(t * 6) * 3 : 11); fs(c, used ? '#ef476f' : 'rgba(255,214,10,.9)', 2.5);
-        txt(c, s.id.replace(/^s_/, ''), px, py - 22, 10, '#fff', 'center', OL);
+        if (used) { ell(c, s.x, s.y, s.reach * 0.4, s.reach * 0.18); c.lineWidth = 2; c.strokeStyle = 'rgba(17,138,178,.9)'; c.stroke(); }
+        ell(c, px, py, used ? 11 + Math.sin(t * 6) * 2 : 6, used ? 11 + Math.sin(t * 6) * 2 : 6); fs(c, used ? '#ef476f' : 'rgba(255,214,10,.75)', 1.5);   // kleiner, damit die Deko sichtbar bleibt
+        if (used) txt(c, s.id.replace(/^s_/, ''), px, py - 18, 10, '#fff', 'center', OL);
       });
       if (q) q.hidden.forEach((h, i) => { if (h.px == null && !q.got[i]) { ell(c, h.x, h.y, 18, 18); fs(c, '#ef476f', 3); } });
     }

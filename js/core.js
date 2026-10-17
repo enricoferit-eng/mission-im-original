@@ -196,7 +196,10 @@ const Sfx = {
   ac: null,
   hook: null,
   on() { const acc = ACC(); return !(acc && acc.sound === false); },
-  ctx() { if (!this.ac) this.ac = new (window.AudioContext || window.webkitAudioContext)(); if (this.ac.state === 'suspended') this.ac.resume(); return this.ac; },
+  ctx() {
+    if (!this.ac) { this.ac = new (window.AudioContext || window.webkitAudioContext)();   // alles läuft über einen Haupt-Regler, Musik zusätzlich über einen eigenen
+      try { const out = this.ac.destination, m = this.ac.createGain(), mu = this.ac.createGain(); m.connect(out); mu.connect(m); Object.defineProperty(this.ac, 'destination', { value: m }); this.master = m; this.musicBus = mu; applyVolume(); } catch (e) { /* alter Browser: ohne Regler */ } }
+    if (this.ac.state === 'suspended') this.ac.resume(); return this.ac; },
   // einzelner Ton (für Combos, Countdown, Ticken)
   note(freq, dur = 0.12, type = 'triangle', vol = 0.08, slide = 1) {
     if (!this.on()) return;
@@ -247,7 +250,7 @@ const Music = {
     const BASS = PATS[Math.floor(this.step / 64) % PATS.length];   // alle paar Takte eine neue Basslinie
     while (this.next < c.currentTime + 0.15) {
       const t = this.next, st = this.step % 16, beat = st % 2 === 0;
-      const env = (o, g, vol, dur) => { g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02); };
+      const env = (o, g, vol, dur) => { g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); o.connect(g).connect(Sfx.musicBus || c.destination); o.start(t); o.stop(t + dur + 0.02); };
       if (beat) { const o = c.createOscillator(), g = c.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(BASS[(st / 2) | 0], t); env(o, g, 0.07, 0.16); }
       if (st % 4 === 0) { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12); env(o, g, 0.12, 0.13); }
       { const o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.setValueAtTime(beat ? 5200 : 6400, t); env(o, g, beat ? 0.012 : 0.007, 0.03); }
@@ -271,8 +274,9 @@ function rrPath(c, x, y, w, h, r) {
 function ell(c, x, y, rx, ry, rot = 0) { c.beginPath(); c.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot, 0, TAU); }
 function fs(c, fill, lw = 3, stroke) {
   if (fill) { c.fillStyle = fill; c.fill(); }
-  if (lw) { c.lineWidth = lw; c.strokeStyle = stroke || OL; c.stroke(); }
+  if (lw) { c.lineWidth = lw * LINE_K; c.strokeStyle = stroke || OL; c.stroke(); }
 }
+let LINE_K = 1;   // auf kleinen Bildschirmen (stark verkleinerte Welt) etwas dickere Umrisse
 function starPath(c, x, y, R, r, n = 5, rot = -Math.PI / 2) {
   c.beginPath();
   for (let i = 0; i < n * 2; i++) {
@@ -295,7 +299,10 @@ function line(c, x1, y1, x2, y2, w, col, outline = true) {
   if (outline) { c.lineWidth = w + 5; c.strokeStyle = OL; c.stroke(); }
   c.lineWidth = w; c.strokeStyle = col; c.stroke();
 }
+const TXT_DARK = { '#adb5bd': '#7b848c', '#868e96': '#5f676e', '#999': '#666', '#aaa': '#6b6b6b', '#6c757d': '#555c63', '#8a7d70': '#6b5d50', '#a0938a': '#6f6258' };
 function txt(c, s, x, y, size, col = '#fff', align = 'center', ol = OL) {
+  if (!ol && TXT_DARK[col]) col = TXT_DARK[col];   // graue Schrift auf hellem Grund: dunkler, damit man sie lesen kann
+  if (size < 12 && typeof DPR !== "undefined") { const T = c.getTransform(); if (Math.abs(T.a - DPR) < 0.01) size = 12; }   // Bildschirm-Schrift nie kleiner als 12 px
   c.font = `900 ${size}px ${FONT}`;
   c.textAlign = align; c.textBaseline = 'middle'; c.lineJoin = 'round';
   if (ol) { c.lineWidth = Math.max(3, size * 0.2); c.strokeStyle = ol; c.strokeText(s, x, y); }
@@ -336,6 +343,7 @@ function symPath(c, s, x, y, r) {
 }
 function drawSym(c, i, x, y, r, lw = 3) { symPath(c, SYMS[i].s, x, y, r); fs(c, SYMS[i].col, lw); }
 
+function applyVolume() { const a = typeof ACC === 'function' && Save.data ? ACC() : null; if (!Sfx.master) return; Sfx.master.gain.value = a && a.volAll != null ? a.volAll : 1; Sfx.musicBus.gain.value = a && a.volMusic != null ? a.volMusic : 1; }
 // ---------- Icons (alles ohne Text) ----------
 function icon(c, name, x, y, s, col) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k);

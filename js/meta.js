@@ -50,6 +50,7 @@ function achieve(id) {
   const A = ACHIEVEMENTS.find(x => x.id === id); if (!A) return;
   m.ach[k] = Date.now(); m.coins += A.coins; Save.write();
   toast('Erfolg: ' + A.name, '+' + A.coins + ' Taler', 'trophy');
+  setTimeout(() => { try { Sfx.note(784, 0.18, 'triangle', 0.08); setTimeout(() => Sfx.note(1047, 0.3, 'triangle', 0.08), 140); FX.sparkle(W / 2, 56, 26, '#ffd23f'); } catch (e) {} }, 250);   // kurze Feier
   if (['g_swing', 'g_race', 'g_pigeons', 'g_slide'].every(x => m.ach[achKey(x)])) achieve('geheim');
 }
 function stat(key, inc = 1) {
@@ -113,22 +114,23 @@ class Shop {
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
-    roundBtn(c, W - 230, 44, 24, '#d8f5e3', 'hanger', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; });
-    const tabs = [['joker', 'Tages-Shop'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Tiere'], ['figur', 'Figur']], tw = Math.min(140, (W - 40) / 5 - 8);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : '#fff', 3); txt(c, name, x + tw / 2, 101, 16, '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'figur') { const back = () => setScene(new Shop(this.back)); setScene(new CharEditor(back)); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
+    roundBtn(c, W - 212, 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
+    const tabs = [['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']], tw = Math.min(140, (W - 40) / 5 - 8);
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'garderobe' ? '#d8f5e3' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
-      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length + 2, gap = 12, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 26, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
+      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, jh = 64, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 26 - jh - 14, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
       const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;
       txt(c, 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min', W / 2, top + 4, 13, '#fff', 'center', BRAND.olive);
       D.forEach((o, i) => {
         const x = x0 + i * (cw + gap), y = top + 20, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
         rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : o.ex ? '#fff3bf' : '#fff', 3.5, o.ex ? '#c9a227' : OL);
         rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = o.ex ? '#ef476f' : '#06d6a0'; c.fill(); txt(c, o.ex ? (cw < 170 ? 'Nur heute!' : 'NUR HEUTE · exklusiv') : '-' + o.off + ' % Rabatt', x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
-        drawAnimal(c, kind, x + cw / 2, y + bob + ch * 0.62, Math.min(1.6, ch / 120), { look: sk, cap: true, t: this.t + i });
+        drawAnimal(c, kind, x + cw / 2, y + bob + ch - 60, Math.min(1.4, ch / 135), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name, x + cw / 2, y + bob + ch - 52, 13, '#3d2c1f', 'center', null);
-        txt(c, RARITY[sk.rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + bob + ch - 34, 10, '#6b5a48', 'center', null);
+        txt(c, RARITY[sk.rarity].name + (sk.ability ? ' · ' + ABILITIES[sk.ability].name : ''), x + cw / 2, y + bob + ch - 34, 11, '#6b5a48', 'center', null);
+        if (sk.ability) { ell(c, x + 22, y + bob + 46, 15, 15); fs(c, '#fff3bf', 2, '#c9a227'); icon(c, ABIL_ICON[sk.ability], x + 22, y + bob + 46, 18); }
         if (own) txt(c, 'gekauft', x + cw / 2, y + bob + ch - 14, 13, '#2b9348', 'center', null);
         else { if (o.off) { txt(c, String(sk.price), x + cw / 2 - 30, y + bob + ch - 14, 11, '#adb5bd', 'center', null); line(c, x + cw / 2 - 42, y + bob + ch - 14, x + cw / 2 - 18, y + bob + ch - 14, 1.5, '#adb5bd', false); } icon(c, 'coin', x + cw / 2 - 2, y + bob + ch - 14, 16); txt(c, String(o.price), x + cw / 2 + 24, y + bob + ch - 13, 14, '#8d5a3b', 'center', null); }
         UI.btn(x, y + bob, cw, ch, () => { if (own) { wearSkin(o.id); this.say(sk.name + ' hast du jetzt an!'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); wearSkin(o.id); this.say(sk.name + ' gekauft und gleich angezogen!'); }); });
@@ -137,15 +139,13 @@ class Shop {
       { const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
         [['Aufgaben-Joker', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }, 'Schafft eine Aufgabe sofort.'],
          ['Such-Joker', 'search', 20, 5 - (m.dayS || 0), m.hint || 0, mm => { mm.hint = (mm.hint || 0) + 1; mm.dayS = (mm.dayS || 0) + 1; }, 'Zeigt sofort ein Versteck.']].forEach(([name, ic, price, left, have, give, desc], j) => {
-          const i = D.length + j, x = x0 + i * (cw + gap), y = top + 20, bob = Math.sin(this.t * 2 + i) * 2, ok = left > 0;
-          rrPath(c, x, y + bob, cw, ch, 18); fs(c, '#e7f5ff', 3.5);
-          rrPath(c, x + 8, y + bob + 8, cw - 16, 22, 11); c.fillStyle = '#118ab2'; c.fill(); txt(c, 'Heute noch ' + Math.max(0, left), x + cw / 2, y + bob + 19, 11, '#fff', 'center', null);
-          icon(c, ic, x + cw / 2, y + bob + ch * 0.4, Math.min(70, cw * 0.5));
-          txt(c, name, x + cw / 2, y + bob + ch - 66, 13, '#3d2c1f', 'center', null);
-          wrapLines(c, desc, cw - 14, 10).slice(0, 2).forEach((l, k) => txt(c, l, x + cw / 2, y + bob + ch - 48 + k * 12, 10, '#6b5a48', 'center', null));
-          txt(c, 'Du hast: ' + have, x + cw / 2, y + bob + ch - 24, 10, '#2b9348', 'center', null);
-          icon(c, 'coin', x + cw / 2 - 14, y + bob + ch - 9, 14); txt(c, String(price), x + cw / 2 + 8, y + bob + ch - 8, 13, '#8d5a3b', 'center', null);
-          UI.btn(x, y + bob, cw, ch, () => { if (!ok) { this.say('Morgen gibt es wieder welche.'); Sfx.play('bad'); return; } this.buy(price, give); });
+          const tw2 = cw * n + gap * (n - 1), bw = (tw2 - gap) / 2, x = x0 + j * (bw + gap), y = top + 20 + ch + 14, ok = left > 0, w = bw, h = jh;   /* Joker: eigene Zeile unter den Skins */
+          rrPath(c, x, y, w, h, 18); fs(c, ok ? '#e7f5ff' : '#e9ecef', 3.5);
+          icon(c, ic, x + 34, y + h / 2, 38);
+          txt(c, name, x + 62, y + 20, 14, '#3d2c1f', 'left', null);
+          txt(c, 'Du hast ' + have + ' · heute noch ' + Math.max(0, left), x + 62, y + 42, 12, '#2b9348', 'left', null);
+          rrPath(c, x + w - 78, y + h / 2 - 16, 68, 32, 14); fs(c, '#ffd166', 2.5); icon(c, 'coin', x + w - 60, y + h / 2, 16); txt(c, String(price), x + w - 34, y + h / 2 + 1, 14, '#3d2c1f', 'center', null);
+          UI.btn(x, y, w, h, () => { if (!ok) { this.say('Morgen gibt es wieder welche.'); Sfx.play('bad'); return; } this.buy(price, give); });
         }); }
     } else if (this.tab === 'joker2') {
       const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
@@ -169,7 +169,7 @@ class Shop {
       if (!n) { panel(c, W / 2 - 170, cy - 50, 340, 100, '#fff7e6', 22); txt(c, 'Du hast schon alle Skins!', W / 2, cy - 10, 18, BRAND.olive, 'center', null); txt(c, 'Bald gibt es neue im Tages-Shop.', W / 2, cy + 18, 13, '#6b5a48', 'center', null); }
       else {
         const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 2.2), 3)) : (this.radA || 0);
-        pool.forEach((o, i) => { const a0 = ang + i * seg, a1 = a0 + seg; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + seg / 2) * R * 0.62, cy + Math.sin(a0 + seg / 2) * R * 0.62); drawAnimal(c, ACC().char || 'cat', 0, 14, R / 150, { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
+        pool.forEach((o, i) => { const a0 = ang + i * seg, a1 = a0 + seg; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + seg / 2) * R * 0.64, cy + Math.sin(a0 + seg / 2) * R * 0.64); drawAnimal(c, ACC().char || 'cat', 0, 18, R / (n > 6 ? 118 : 100), { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
         ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
         if (sp && this.t - sp.t0 > 2.3 && !sp.done) { sp.done = true; const id = pool[sp.k][0], mm = META(); mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6; }
         if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
@@ -193,7 +193,7 @@ class Shop {
         const [id, name, rarity, price] = P.o, x = P.x, own = m.skins.includes(id), sk = SKINS[id];
         rrPath(c, x, y, cw, ch, 16); fs(c, own ? '#d8f5e3' : '#fff', 3, rarity === 'legend' ? '#c9a227' : rarity === 'rare' ? '#118ab2' : OL);
         drawAnimal(c, kind, x + cw / 2, y + ch * 0.66, Math.min(1.4, ch / 115), { look: sk, cap: true, t: this.t });
-        rrPath(c, x + 6, y + 6, cw - 12, 18, 9); c.fillStyle = RARITY[rarity].col; c.fill(); txt(c, sk.ability ? ABILITIES[sk.ability].name : RARITY[rarity].name, x + cw / 2, y + 15, 10, '#3d2c1f', 'center', null);
+        rrPath(c, x + 6, y + 6, cw - 12, 18, 9); c.fillStyle = RARITY[rarity].col; c.fill(); txt(c, sk.ability ? ABILITIES[sk.ability].name : RARITY[rarity].name, x + cw / 2 + (sk.ability ? 7 : 0), y + 15, 10, '#3d2c1f', 'center', null); if (sk.ability) icon(c, ABIL_ICON[sk.ability], x + 16, y + 15, 14);
         txt(c, name, x + cw / 2, y + ch - 30, 11, '#3d2c1f', 'center', null);
         if (own) txt(c, DP(CUR_DIFF || 'medium').equip === id ? '✓ an' : 'antippen = anziehen', x + cw / 2, y + ch - 12, cw < 120 ? 10 : 12, '#2b9348', 'center', null);
         else { icon(c, 'coin', x + cw / 2 - 20, y + ch - 12, 15); txt(c, String(price), x + cw / 2 + 6, y + ch - 11, 13, '#8d5a3b', 'center', null); }
@@ -208,6 +208,8 @@ class Shop {
         txt(c, Math.round(this.sc / maxS * 100) + '%', bx, (top + bottom) / 2, 11, '#fff', 'center', BRAND.olive); }
       if (maxS > 0) { const h = (bottom - top) * (bottom - top) / (bottom - top + maxS), y = top + (bottom - top - h) * (this.sc / maxS); rrPath(c, W - 9, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill(); }
     } else {
+      { const bw = 220, bx = W / 2 - bw / 2, by = H - 52; rrPath(c, bx, by, bw, 40, 18); fs(c, '#ffd166', 3); icon(c, 'hanger', bx + 28, by + 20, 22); txt(c, 'Aussehen gestalten', bx + 46, by + 21, 15, '#3d2c1f', 'left', null); UI.btn(bx, by, bw, 40, () => { const back = () => { const s2 = new Shop(this.back); s2.tab = 'tiere'; setScene(s2); }; setScene(new CharEditor(back)); }); }
+      const bottom = H - 62;
       const all = BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS), cols = W > H ? (all.length > 12 ? 9 : 6) : 3, gap = 10, cw = Math.min(140, (W - 30 - gap * (cols - 1)) / cols), ch = Math.min(180, (bottom - top - gap) / Math.ceil(all.length / cols) - gap), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
       all.forEach(([k, price], i) => {
         const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap), own = ownedAnimals().includes(k), cur = ACC().char === k;
@@ -242,7 +244,7 @@ class SkinInfo {
     rrPath(c, x + 150, y + 66, 110, 22, 11); c.fillStyle = R.col; c.fill(); txt(c, R.name, x + 205, y + 77, 12, '#3d2c1f', 'center', null);
     if (sk.ability) {
       const A = ABILITIES[sk.ability];
-      txt(c, 'Fähigkeit: ' + A.name, x + 150, y + 112, 16, '#c9762f', 'left', null);
+      icon(c, ABIL_ICON[sk.ability], x + 162, y + 112, 22); txt(c, 'Fähigkeit: ' + A.name, x + 180, y + 112, 16, '#c9762f', 'left', null);
       wrapLines(c, abilityText(sk), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
       wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei Mittel und Schwer.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
     } else wrapLines(c, 'Dieser Skin hat keine besondere Fähigkeit – er sieht einfach gut aus! Fähigkeiten haben nur legendäre Skins.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
@@ -254,7 +256,7 @@ SkinInfo.prototype.freezeBg = true;
 
 // ---------- Erfolge ansehen ----------
 class Achievements {
-  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.scroll = 0; this.drag = null; this.tab = CUR_DIFF || 'medium'; this.vel = 0; }
+  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.scroll = 0; this.drag = null; this.tab = 'lvl'; this.vel = 0; }
   enter() { FX.clear(); this.wheel = e => { this.scroll += e.deltaY; e.preventDefault(); }; try { cv.addEventListener('wheel', this.wheel, { passive: false }); } catch (e) { /* egal */ } }
   leave() { try { cv.removeEventListener('wheel', this.wheel); } catch (e) { /* egal */ } }
   update(dt) { this.t += dt; if (!this.drag && Math.abs(this.vel) > 5) { this.scroll += this.vel * dt; this.vel *= Math.pow(0.04, dt); } }
@@ -262,28 +264,31 @@ class Achievements {
     skyBg(c);
     const m = META(); if (!m) return;
     topBar(c, () => { this.leave(); this.back(); });
-    const tab = this.tab, has = A => !!m.ach[achKey(A.id, tab)] || (tab === 'medium' && !!m.ach[A.id]);
+    const tab = this.tab, DF = ['easy', 'medium', 'hard'], hasD = (A, d) => !!m.ach[achKey(A.id, d)] || (d === 'medium' && !!m.ach[A.id]);
+    const has = A => tab === 'all' ? hasD(A, 'medium') || !!m.ach[A.id] : DF.every(d => hasD(A, d));   /* pro Stufe: Bronze (Leicht), Silber (Mittel), Gold (Schwer) in einer Karte */
     const LIST = ACHIEVEMENTS.filter(A => (tab === 'all') === GENERAL_ACH.has(A.id)).sort((a, b) => a.coins - b.coins || a.name.localeCompare(b.name));
-    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + LIST.filter(has).length + '/' + LIST.length, 130, 44, 20, '#fff', 'left', BRAND.olive);
+    const nDone = tab === 'all' ? LIST.filter(has).length : LIST.reduce((n, A) => n + DF.filter(d => hasD(A, d)).length, 0), nAll = tab === 'all' ? LIST.length : LIST.length * 3;
+    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + nDone + '/' + nAll, 130, 44, 20, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     // Reiter: Leicht / Mittel / Schwer
-    const tw = Math.min(110, (W - 40) / 4), tx0 = W / 2 - tw * 2, ty = 74;
-    [['all', 'Allgemein'], ['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']].forEach(([d, n], i) => { const x = tx0 + i * tw, sel = d === tab; rrPath(c, x + 3, ty, tw - 6, 30, 14); fs(c, sel ? '#ffd166' : 'rgba(255,255,255,.8)', 2.5); txt(c, n, x + tw / 2, ty + 15, 14, '#3d2c1f', 'center', null); UI.btn(x + 3, ty, tw - 6, 30, () => { this.tab = d; this.scroll = 0; }); });
-    const cols = W > 700 ? 2 : 1, gap = 10, cw = Math.min(420, (W - 30 - gap * (cols - 1)) / cols), ch = 64, x0 = (W - (cw * cols + gap * (cols - 1))) / 2, top = 116;
+    const tw = Math.min(150, (W - 40) / 2), tx0 = W / 2 - tw, ty = 74;
+    [['lvl', 'Pro Stufe'], ['all', 'Allgemein']].forEach(([d, n], i) => { const x = tx0 + i * tw, sel = d === tab; rrPath(c, x + 3, ty, tw - 6, 30, 14); fs(c, sel ? '#ffd166' : 'rgba(255,255,255,.8)', 2.5); txt(c, n, x + tw / 2, ty + 15, 14, '#3d2c1f', 'center', null); UI.btn(x + 3, ty, tw - 6, 30, () => { this.tab = d; this.scroll = 0; }); });
+    if (tab !== 'all') txt(c, 'Bronze = Leicht · Silber = Mittel · Gold = Schwer', W / 2, 114, 12, '#fff', 'center', BRAND.olive);
+    const cols = W > 700 ? 2 : 1, gap = 10, cw = Math.min(420, (W - 30 - gap * (cols - 1)) / cols), ch = 64, x0 = (W - (cw * cols + gap * (cols - 1))) / 2, top = tab !== 'all' ? 128 : 116;
     const rows = Math.ceil(LIST.length / cols), maxScroll = Math.max(0, top + rows * (ch + gap) - H + 16);
     this.scroll = clamp(this.scroll, 0, maxScroll);
     c.save(); c.beginPath(); c.rect(0, top - 4, W, H - top + 4); c.clip();
     LIST.forEach((A, i) => {
-      const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap) - this.scroll, done = has(A);
+      const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + gap) - this.scroll, done = tab === 'all' ? has(A) : DF.some(d => hasD(A, d));
       if (y > H || y + ch < top - 4) return;
       rrPath(c, x, y, cw, ch, 18); fs(c, done ? '#fff7e6' : 'rgba(255,255,255,.75)', 3);
       ell(c, x + 32, y + ch / 2, 22, 22); fs(c, done ? '#ffd166' : '#dee2e6', 2.5); icon(c, done ? 'trophy' : (A.secret ? 'question' : 'lock'), x + 32, y + ch / 2, 26, done ? undefined : '#868e96');
-      const hidden = A.secret && !done, st = m.st[A.stat && GENERAL_ACH.has(A.stat) ? A.stat : achKey(A.stat, tab)] || (tab === 'medium' ? m.st[A.stat] : 0) || 0;
+      const sd = tab === 'all' ? 'medium' : DF.find(d => !hasD(A, d)) || 'hard', hidden = A.secret && !done, st = m.st[A.stat && GENERAL_ACH.has(A.stat) ? A.stat : achKey(A.stat, sd)] || (sd === 'medium' ? m.st[A.stat] : 0) || 0;
       txt(c, hidden ? 'Geheimer Erfolg' : A.name, x + 64, y + 22, 15, done ? BRAND.olive : '#495057', 'left', null);
       const desc = hidden ? (A.area ? 'Ein Geheimnis im Bereich ' + A.area + ' …' : 'Entdecke es selbst …') : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, st) + '/' + A.need + ')' : '');
-      wrapLines(c, desc, cw - 140, 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null));
-      icon(c, 'coin', x + cw - 50, y + ch / 2, 18); txt(c, String(A.coins), x + cw - 38, y + ch / 2 + 1, 14, '#8d5a3b', 'left', null);
-      if (done) icon(c, 'check', x + cw - 14, y + 14, 16, '#06d6a0');
+      wrapLines(c, desc, cw - (tab === 'all' ? 140 : 180), 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null));
+      if (tab === 'all') { icon(c, 'coin', x + cw - 50, y + ch / 2, 18); txt(c, String(A.coins), x + cw - 38, y + ch / 2 + 1, 14, '#8d5a3b', 'left', null); if (done) icon(c, 'check', x + cw - 14, y + 14, 16, '#06d6a0'); }
+      else DF.forEach((d, k) => { const on = hasD(A, d), mx = x + cw - 100 + k * 34, my = y + ch / 2; ell(c, mx, my, 14, 14); fs(c, on ? ['#cd7f32', '#c0c0c0', '#ffd700'][k] : '#e9ecef', 2.5, on ? '#6b4a1f' : ['#e0b08a', '#d0d0d0', '#f5d76e'][k]); txt(c, 'LMS'[k], mx, my + 1, 12, on ? '#fff' : '#adb5bd', 'center', on ? 'rgba(0,0,0,.35)' : null); });
     });
     c.restore();
     if (maxScroll > 0) { const h = (H - top) * (H - top) / (H - top + maxScroll), y = top + (H - top - h) * (this.scroll / maxScroll); rrPath(c, W - 8, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); }
@@ -304,17 +309,37 @@ function needOnline(c, back) {
   panel(c, x, y, w, h, '#fff7e6', 24);
   icon(c, 'friends', W / 2, y + 40, 44);
   wrapLines(c, 'Für Freunde und Mehrspieler brauchst du ein gesichertes Konto. Tippe auf „Spielstand sichern“.', w - 40, 15).forEach((l, i) => txt(c, l, W / 2, y + 84 + i * 20, 15, '#3d2c1f', 'center', null));
-  rrPath(c, W / 2 - 110, y + h - 56, 220, 44, 18); fs(c, '#06d6a0', 3); txt(c, 'Spielstand sichern', W / 2, y + h - 33, 16, '#fff', 'center', BRAND.ink);
-  UI.btn(W / 2 - 110, y + h - 56, 220, 44, () => setScene(new NewAccount({ migrate: Save.data.current })));
+  const qa = a && Array.isArray(a.code) && a.code.length === 4 && a.name, bw = qa ? Math.min(190, (w - 40) / 2) : 220;
+  rrPath(c, W / 2 - (qa ? bw + 6 : 110), y + h - 56, bw, 44, 18); fs(c, qa ? '#bde0fe' : '#06d6a0', 3); txt(c, qa ? 'Selbst einrichten' : 'Spielstand sichern', W / 2 - (qa ? bw / 2 + 6 : 0), y + h - 33, 15, qa ? '#3d2c1f' : '#fff', 'center', qa ? null : BRAND.ink);
+  UI.btn(W / 2 - (qa ? bw + 6 : 110), y + h - 56, bw, 44, () => setScene(new NewAccount({ migrate: Save.data.current })));
+  if (qa) {   // Gast-Modus: mit einem Tipp sichern – mit dem Namen und Code, die man schon hat
+    rrPath(c, W / 2 + 6, y + h - 56, bw, 44, 18); fs(c, '#06d6a0', 3); txt(c, quickSecure.busy ? '…' : 'Sofort mitspielen', W / 2 + 6 + bw / 2, y + h - 33, 15, '#fff', 'center', BRAND.ink);
+    UI.btn(W / 2 + 6, y + h - 56, bw, 44, () => quickSecure());
+  }
   return true;
+}
+async function quickSecure() {
+  if (quickSecure.busy) return; quickSecure.busy = true;
+  const a = ACC(), na = new NewAccount({ migrate: Save.data.current }); na.avatar = a.avatar || 0;
+  try {
+    for (let k = 0; k < 4; k++) {
+      na.name = (k ? a.name.slice(0, 10) + Math.floor(10 + rnd() * 89) : a.name).slice(0, 14); na.err = '';
+      await na.register(a.code.slice());
+      if (ACC() && ACC().token) { toast('Gesichert!', 'Jetzt kannst du mitspielen', 'friends'); setScene(new MultiScene()); return; }
+      if (!/Namen gibt es schon/.test(na.err || '')) break;
+    }
+    toast('Hat nicht geklappt', na.err || 'Versuch es gleich nochmal', 'friends');
+  } finally { quickSecure.busy = false; }
 }
 function wearSkin(id) { ['easy', 'medium', 'hard'].forEach(d => { DP(d).equip = id; }); Save.write(); Sfx.play('good'); }
 function api(body) { const a = ACC(); return Net.call(Object.assign({ login: a.login, token: a.token }, body)); }
 
+// Punkte für die Freundes-Bestenliste: geschaffte Bereiche (je Stufe) × 10 + Erfolge
+function myScore() { let n = 0; try { ['easy', 'medium', 'hard'].forEach(d => STAGE_ORDER.forEach(id => { if (SP(d, id).clears > 0) n += 10; })); n += Object.keys(META().ach || {}).length; } catch (e) {} return n; }
 class MultiScene {
   constructor() { this.t = 0; this.data = null; this.err = ''; this.busy = false; this.mode = 'menu'; this.opts = { mode: 'duell', size: 2, diff: CUR_DIFF || 'medium', kids: 3, boss: false, live: true, stage: 'spielplatz', stages: ['spielplatz'] }; this.pollT = 0; }
   enter() { FX.clear(); nameInput.value = ''; if (ACC() && ACC().token) this.refresh(); }
-  async refresh() { const r = await api({ action: 'friends' }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Gerade keine Verbindung. Versuch es gleich nochmal.'; }
+  async refresh() { const r = await api({ action: 'friends', score: myScore() }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Gerade keine Verbindung. Versuch es gleich nochmal.'; }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 8 && ACC() && ACC().token) { this.pollT = 0; this.refresh(); } }
   leave(s) { nameInput.style.display = 'none'; nameInput.blur(); setScene(s); }
   async addFriend() {
@@ -369,23 +394,26 @@ class MultiScene {
     UI.btn(lx + lw - 136, top + 8, 124, 32, () => { this.mode = 'add'; this.err = ''; nameInput.value = ''; });
     const d = this.data;
     let yy = top + 52;
+    { const L = ACC().mpLast; if (L && Date.now() - L.at < 30 * 60000) { rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#caffbf', 2.5); txt(c, 'Spiel ' + L.code + ' läuft noch', lx + 22, yy + 22, 14, '#3d2c1f', 'left', null);
+      rrPath(c, lx + lw - 120, yy + 6, 100, 32, 12); fs(c, '#06d6a0', 2); txt(c, 'Zurück ins Spiel', lx + lw - 70, yy + 22, 11, '#fff', 'center', null); UI.btn(lx + lw - 120, yy + 6, 100, 32, () => { ACC().mpLast = null; this.join(L.code); }); yy += 52; } }   /* nach Verbindungsabbruch wieder beitreten */
     if (d && d.invites && d.invites.length) d.invites.slice(-2).forEach(inv => {
       rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#ffd166', 2.5); txt(c, inv.from.name + ' lädt dich ein!', lx + 22, yy + 22, 14, '#3d2c1f', 'left', null);
       rrPath(c, lx + lw - 100, yy + 6, 80, 32, 12); fs(c, '#06d6a0', 2); txt(c, 'Mitspielen', lx + lw - 60, yy + 22, 12, '#fff', 'center', null); UI.btn(lx + lw - 100, yy + 6, 80, 32, () => this.join(inv.code)); yy += 52;
     });
     if (!d) txt(c, this.err || 'Lade …', lx + lw / 2, yy + 20, 14, '#6b5a48', 'center', null);
     else if (!d.friends.length) wrapLines(c, 'Noch keine Freunde. Füge Freunde mit ihrem Fantasienamen hinzu!', lw - 40, 13).forEach((l, i) => txt(c, l, lx + lw / 2, yy + 16 + i * 18, 13, '#6b5a48', 'center', null));
-    else d.friends.slice(0, Math.floor((top + lh - yy) / 46)).forEach(f => {
+    else { txt(c, 'Bestenliste – du: ★ ' + myScore(), lx + 18, yy + 8, 12, '#6b5a48', 'left', null); yy += 20; }
+    if (d && d.friends.length) d.friends.slice().sort((p1, p2) => (p2.score || 0) - (p1.score || 0)).slice(0, Math.floor((top + lh - yy) / 46)).forEach(f => {
       rrPath(c, lx + 10, yy, lw - 20, 40, 14); fs(c, '#fff', 2);
       drawCritter(c, AVATARS[(f.avatar || 0) % 6], lx + 30, yy + 36, 0.5, this.t, { noShadow: true });
       ell(c, lx + 46, yy + 12, 5, 5); c.fillStyle = f.online ? '#06d6a0' : '#adb5bd'; c.fill();
-      txt(c, f.name, lx + 56, yy + 21, 14, '#3d2c1f', 'left', null);
+      txt(c, f.name, lx + 56, yy + 21, 14, '#3d2c1f', 'left', null); txt(c, '★ ' + (f.score || 0), lx + lw - 112, yy + 21, 12, '#c9762f', 'right', null);
       rrPath(c, lx + lw - 100, yy + 5, 80, 30, 12); fs(c, '#bde0fe', 2); txt(c, 'Einladen', lx + lw - 60, yy + 20, 12, '#3d2c1f', 'center', null);
       UI.btn(lx + lw - 100, yy + 5, 80, 30, () => this.create(f.login)); yy += 46;
     });
     // Spiel einstellen
     panel(c, rx, ry, rw, rh, '#fff7e6', 22);
-    const o = this.opts, duel = o.mode !== 'team', multi = o.mode === 'duell', nRows = duel ? 6 : 5, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
+    const o = this.opts, duel = o.mode !== 'team', multi = o.mode === 'duell', more = !!this.more, nRows = more ? (duel ? 6 : 5) + 0.6 : 3.6, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
     const seg = (y, label, vals, isSel, set, maxW = 150) => {
       txt(c, label, rx + 16, y, 13, '#6b5a48', 'left', null); const bw = Math.min(maxW, (rw - 32) / vals.length - 6);
       vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = isSel(v); rrPath(c, bx, y + 10, bw, bh, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 10 + bh / 2, bw < 80 ? 11 : 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, bh, () => { set(v); Sfx.play('tap'); }); });
@@ -394,16 +422,19 @@ class MultiScene {
     seg(y, 'Modus', [['duell', small || rw < 520 ? 'Jeder gegen jeden' : 'Jeder gegen jeden'], ['team', 'Alle zusammen'], ['2v2', '2 gegen 2']], v => o.mode === v, v => { o.mode = v; if (v !== 'duell') o.stages = [o.stages[0]]; if (v === '2v2') { o.size = 4; o.boss = false; } o.stage = o.stages[0]; }, 180); y += rowH;
     seg(y, 'Wie viele Spieler?', [[2, '2'], [3, '3'], [4, '4']], v => (o.mode === '2v2' ? v === 4 : o.size === v), v => { if (o.mode === '2v2') { o.size = 4; this.err = '2 gegen 2 braucht genau 4 Spieler.'; } else o.size = v; }, 90); y += rowH;
     seg(y, multi ? 'Bereiche (mehrere = nacheinander)' : 'Bereich', STAGE_ORDER.map(id => [id, small || rw < 560 ? { kueche: 'Küche', gastraum: 'Innen', aussen: 'Außen', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' }[id] : STAGE_INFO[id].name]), v => o.stages.includes(v), v => { if (!multi) o.stages = [v]; else if (o.stages.includes(v)) { if (o.stages.length > 1) o.stages = o.stages.filter(x => x !== v); } else o.stages = STAGE_ORDER.filter(x => x === v || o.stages.includes(x)); o.stage = o.stages[0]; }); y += rowH;
+    { const lab = more ? 'Weniger Optionen ▲' : 'Mehr Optionen ▼ (' + { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff] + ', ' + o.kids + (o.mode === 'team' ? ' Aufträge' : ' Leute') + (duel ? ', Finale ' + (o.boss ? 'ja' : 'nein') : '') + ')'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 26; rrPath(c, rx + 16, y + 2, lw, 28, 14); fs(c, 'rgba(255,255,255,.7)', 2, 'rgba(61,44,31,.3)'); txt(c, lab, rx + 29, y + 17, 13, '#6b5a48', 'left', null); UI.btn(rx + 16, y + 2, lw, 28, () => { this.more = !more; Sfx.play('tap'); }); y += rowH * 0.6; }   /* selten gebrauchte Einstellungen eingeklappt */
+    if (more) {
     seg(y, 'Stufe', [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']], v => o.diff === v, v => (o.diff = v)); y += rowH;
     seg(y, o.mode === 'team' ? 'Wie viele Aufträge? (1 = ein großer Team-Auftrag)' : 'Wie vielen Leuten pro Bereich helfen?', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], v => o.kids === v, v => (o.kids = v), 90); y += rowH;
     if (duel) {
       
       const hw = (rw - 44) / 2;
-      [[hw < 300 ? 'Boss-Level' : 'Boss-Level am Ende', o.boss, () => (o.boss = o.mode === '2v2' ? false : !o.boss)], [hw < 300 ? 'Gegner sehen' : 'Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
+      [[hw < 300 ? 'Finale' : 'Finale am Ende', o.boss, () => (o.boss = o.mode === '2v2' ? false : !o.boss)], [hw < 300 ? 'Gegner sehen' : 'Gegner live sehen', o.live, () => (o.live = !o.live)]].forEach(([lab, on, fn], i) => {
         const bx = rx + 14 + i * (hw + 16), boxH = bh + 12; rrPath(c, bx, y - 4, hw, boxH, 14); fs(c, 'rgba(255,255,255,.55)', 2, 'rgba(61,44,31,.35)');
         txt(c, lab, bx + 10, y + boxH / 2 - 4, 12, '#6b5a48', 'left', null);
         const tw2 = Math.min(64, hw / 5); [['Ja', true], ['Nein', false]].forEach(([n, v], k) => { const tx = bx + hw - 8 - (2 - k) * (tw2 + 4), sel = on === v; rrPath(c, tx, y + 2, tw2, bh, 12); fs(c, sel ? (v ? '#06d6a0' : '#ffd166') : '#fff', 2.5); txt(c, n, tx + tw2 / 2, y + 2 + bh / 2, 13, '#3d2c1f', 'center', null); UI.btn(tx, y + 2, tw2, bh, () => { if (on !== v) fn(); Sfx.play('tap'); }); });
       });
+    }
     }
     const by = ry + rh - 34, bw2 = (rw - 42) / 2;
     rrPath(c, rx + 14, by - 22, bw2, 44, 16); fs(c, '#06d6a0', 3); txt(c, this.busy ? '…' : 'Spiel erstellen', rx + 14 + bw2 / 2, by, 15, '#fff', 'center', BRAND.ink); UI.btn(rx + 14, by - 22, bw2, 44, () => { if (!this.busy) this.create(); });
@@ -412,6 +443,13 @@ class MultiScene {
   }
 }
 
+// QR-Code-Bibliothek erst laden, wenn man sie braucht
+function lobbyQR(url) {
+  if (lobbyQR.url === url && lobbyQR.q) return lobbyQR.q;
+  if (typeof qrcode === 'function') { try { const q = qrcode(0, 'M'); q.addData(url); q.make(); lobbyQR.url = url; lobbyQR.q = q; return q; } catch (e) { return null; } }
+  if (!lobbyQR.loading) { lobbyQR.loading = true; const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; document.head.appendChild(sc); }
+  return null;
+}
 // Warteraum: Code zeigen, auf Mitspieler warten, Host startet
 class LobbyScene {
   constructor(lobby, mode) { this.lob = lobby; this.mode = lobby.opts.mode || mode || 'duell'; this.t = 0; this.pollT = 0; this.me = null; this.started = false; }
@@ -420,7 +458,7 @@ class LobbyScene {
     const r = await api(Object.assign({ action: 'lobby_poll', code: this.lob.code }, extra));
     if (r && r.status === 200) { this.lob = r.data.lobby; this.me = r.data.me; if (this.lob.status === 'run' && !this.started) this.start(); if (this.lob.status === 'closed' && !this.started) { setScene(new MultiScene()); } }
   }
-  start() { this.started = true; Sfx.play('win'); const m = new Match(this.lob, this.me); setScene(new Play(this.lob.opts.diff, { mp: m })); }
+  start() { this.started = true; Sfx.play('win'); ACC().mpLast = { code: this.lob.code, at: Date.now() }; Save.write(); const m = new Match(this.lob, this.me); setScene(new Play(this.lob.opts.diff, { mp: m })); }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 1.5) { this.pollT = 0; this.poll(); } }
   draw(c) {
     skyBg(c);
@@ -428,11 +466,12 @@ class LobbyScene {
     const w = Math.min(W - 30, 460), h = Math.min(H - 150, 290), x = (W - w) / 2, y = 76, py = y + Math.min(190, h - 60);
     panel(c, x, y, w, h, '#fff7e6', 24);
     const o = this.lob.opts, stars = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[o.diff];
-    txt(c, (o.size || 2) + ' Spieler · ' + (o.mode === 'team' ? 'Zusammen · ' + stars : (o.mode === '2v2' ? '2 gegen 2 · ' : 'Duell · ') + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Boss-Level' : '') + ' · ' + stars), W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
+    txt(c, (o.size || 2) + ' Spieler · ' + (o.mode === 'team' ? 'Zusammen · ' + stars : (o.mode === '2v2' ? '2 gegen 2 · ' : 'Duell · ') + o.kids + (o.kids === 1 ? ' Person' : ' Leute') + ' pro Bereich' + (o.boss ? ' + Finale' : '') + ' · ' + stars), W / 2, y + 30, Math.min(18, w / 22), BRAND.olive, 'center', null);
     txt(c, 'Spiel-Code', W / 2, y + 62, 13, '#6b5a48', 'center', null);
     { const url = location.href.split('?')[0].split('#')[0] + '?mit=' + this.lob.code, bx = W / 2 + 140, by = y + 100;
       roundBtn(c, bx, by, 20, '#caffbf', 'friends', async () => { const t = 'Spiel mit mir „Mission: Im Original“! Code: ' + this.lob.code; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t, url }); else { await navigator.clipboard.writeText(t + ' ' + url); toast('Link kopiert', 'Schick ihn deinen Freunden', 'friends'); } } catch (e) { /* abgebrochen */ } }, '#2d6a4f');
-      txt(c, 'Teilen', bx, by + 30, 11, '#6b5a48', 'center', null); }
+      txt(c, 'Teilen', bx, by + 30, 11, '#6b5a48', 'center', null);
+      const Q = lobbyQR(url); if (Q && W > 620) { const n = Q.getModuleCount(), qs = Math.min(150, (W - x - w - 30)), cell = qs / (n + 2), qx = x + w + 14, qy = y; if (qs > 90) { rrPath(c, qx, qy, qs, qs + 22, 12); fs(c, '#fff', 3); c.fillStyle = '#212529'; for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (Q.isDark(r, k)) c.fillRect(qx + (k + 1) * cell, qy + (r + 1) * cell, cell + 0.4, cell + 0.4); txt(c, 'Mit Handy scannen', qx + qs / 2, qy + qs + 8, 11, '#6b5a48', 'center', null); } } }   /* QR-Code: Freunde scannen statt abtippen */
     this.lob.code.split('').forEach((ch, i) => { const cx = W / 2 + (i - 1.5) * 52; rrPath(c, cx - 22, y + 74, 44, 52, 12); fs(c, '#fff', 3); txt(c, ch, cx, y + 101, 30, '#118ab2', 'center', null); });
     const size = o.size || 2, ppl = (this.lob.players || [this.lob.host, this.lob.guest].filter(Boolean)).slice(0, size); while (ppl.length < size) ppl.push(null);
     const gap = Math.min(110, (w - 40) / size);
@@ -444,6 +483,10 @@ class LobbyScene {
     if (this.me === 'host' && have >= need) {
       const pu = 1 + Math.sin(this.t * 5) * 0.05; c.save(); c.translate(W / 2, y + h + 34); c.scale(pu, pu); rrPath(c, -110, -26, 220, 52, 22); fs(c, '#06d6a0', 3.5); txt(c, 'Los geht’s!', 0, 1, 20, '#fff', 'center', BRAND.ink); c.restore();
       UI.btn(W / 2 - 110, y + h + 8, 220, 52, () => this.poll({ start: true }));
+    } else if (this.me === 'host' && o.mode === '2v2' && have >= 2) {
+      rrPath(c, W / 2 - 130, y + h + 8, 260, 48, 20); fs(c, '#ffd166', 3); txt(c, 'Ohne Teams starten (' + have + ' Spieler)', W / 2, y + h + 33, 15, '#3d2c1f', 'center', null);
+      UI.btn(W / 2 - 130, y + h + 8, 260, 48, () => this.poll({ start: true, asDuel: true }));
+      txt(c, 'Für 2 gegen 2 braucht ihr 4. (' + have + '/4)', W / 2, y + h + 72, 13, '#fff', 'center', BRAND.ink);
     } else txt(c, this.me === 'guest' ? 'Warte, bis ' + this.lob.host.name + ' startet …' : have < need ? 'Sag deinen Freunden den Code! (' + have + '/' + need + ')' : 'Sag deinen Freunden den Code!', W / 2, y + h + 30, 15, '#fff', 'center', BRAND.ink);
   }
 }

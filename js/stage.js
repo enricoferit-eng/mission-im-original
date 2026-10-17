@@ -120,7 +120,7 @@ function findPath(sx, sy, sl, tx, ty, tl, exact) {
   const h = i => { const dx = Math.abs(i % GW - tx0), dy = Math.abs(Math.floor(i / GW) - ty0); return Math.max(dx, dy) + 0.414 * Math.min(dx, dy); };
   const st = sl * N + s; g[st] = 0; push(h(s), st);
   let goal = -1, iter = 0, best = st, bestH = h(s);   // best: am nächsten erreichbare Stelle, falls das Ziel selbst nicht erreichbar ist
-  while (heap.length && iter++ < 30000) {
+  while (heap.length && iter++ < 90000) {
     const [, n] = pop(); if (closed[n]) continue; closed[n] = 1;
     const l = n >= N ? 1 : 0, i = n - l * N;
     { const hi = h(i); if (hi < bestH) { bestH = hi; best = n; } }
@@ -144,7 +144,18 @@ function findPath(sx, sy, sl, tx, ty, tl, exact) {
   for (let n = goal; n >= 0 && n !== st; n = came[n]) { const l = n >= N ? 1 : 0, i = n - l * N; out.push({ x: (i % GW) * CELL + 12.5, y: Math.floor(i / GW) * CELL + 12.5, l }); }
   out.reverse();
   if (exact && out.length && canStand(tl, tx, ty) && cellIdx(tx, ty) === t) out.push({ x: tx, y: ty, l: tl });
-  return out;
+  return smoothPath(sx, sy, sl, out);
+}
+function smoothPath(sx, sy, sl, out) {   // Zickzack glätten: Zwischenpunkte weglassen, wenn die gerade Linie frei ist
+  if (out.length < 3) return out;
+  const free = (ax, ay, bx, by, l) => { const n = Math.ceil(dist(ax, ay, bx, by) / 8); for (let k = 1; k < n; k++) { const x = ax + (bx - ax) * k / n, y = ay + (by - ay) * k / n, i = cellIdx(x, y); if (i < 0 || !canStand(l, x, y) || ST[i] || SL[i]) return false; } return true; };
+  const res = []; let cx = sx, cy = sy, cl = sl, k = 0;
+  while (k < out.length) {
+    let j = k;
+    while (j + 1 < out.length && out[j + 1].l === cl && out[k].l === cl && free(cx, cy, out[j + 1].x, out[j + 1].y, cl)) j++;
+    res.push(out[j]); cx = out[j].x; cy = out[j].y; cl = out[j].l; k = j + 1;
+  }
+  return res;
 }
 
 // ---------- Boden einmal vorzeichnen ----------
@@ -173,10 +184,10 @@ function drawGroundSpielplatz(g, R) {
   // Hackschnitzel (hell, warm)
   rrPath(g, 64, 194, 872, 984, 30); g.fillStyle = CHIP_BASE; g.fill();
   g.save(); rrPath(g, 64, 194, 872, 984, 30); g.clip();
-  for (let i = 0; i < 17000; i++) { g.fillStyle = CHIP_COLS[i % 6]; ell(g, 64 + R() * 872, 194 + R() * 984, 2 + R() * 3.5, 1 + R() * 1.6, R() * 3); g.fill(); }
+  for (let i = 0; i < 9000; i++) { g.fillStyle = CHIP_COLS[i % 6];   /* ruhigeres Muster: weniger Schnitzel */ ell(g, 64 + R() * 872, 194 + R() * 984, 2 + R() * 3.5, 1 + R() * 1.6, R() * 3); g.fill(); }
   for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(255,240,210,.12)'; ell(g, 64 + R() * 872, 194 + R() * 984, 40 + R() * 60, 25 + R() * 30, R() * 3); g.fill(); }
-  for (let i = 0; i < 160; i++) { const x = 70 + R() * 860, y = 200 + R() * 970, s = 2 + R() * 3; g.fillStyle = ['#b9b2a6', '#d4cec4', '#9e978b'][i % 3]; ell(g, x, y, s * 1.3, s, R() * 3); g.fill(); g.fillStyle = 'rgba(255,255,255,.4)'; ell(g, x - s * 0.4, y - s * 0.4, s * 0.4, s * 0.3); g.fill(); }
-  for (let i = 0; i < 70; i++) { const x = 70 + R() * 860, y = 200 + R() * 970, a = R() * 6; g.save(); g.translate(x, y); g.rotate(a); ell(g, 0, 0, 6, 3); g.fillStyle = ['#9cbf6b', '#c9a24a', '#b5654a'][i % 3]; g.fill(); g.strokeStyle = 'rgba(60,40,20,.4)'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-5, 0); g.lineTo(5, 0); g.stroke(); g.restore(); }
+  for (let i = 0; i < 70; i++) { const x = 70 + R() * 860, y = 200 + R() * 970, s = 2 + R() * 3; g.fillStyle = ['#b9b2a6', '#d4cec4', '#9e978b'][i % 3]; ell(g, x, y, s * 1.3, s, R() * 3); g.fill(); g.fillStyle = 'rgba(255,255,255,.4)'; ell(g, x - s * 0.4, y - s * 0.4, s * 0.4, s * 0.3); g.fill(); }
+  for (let i = 0; i < 30; i++) { const x = 70 + R() * 860, y = 200 + R() * 970, a = R() * 6; g.save(); g.translate(x, y); g.rotate(a); ell(g, 0, 0, 6, 3); g.fillStyle = ['#9cbf6b', '#c9a24a', '#b5654a'][i % 3]; g.fill(); g.strokeStyle = 'rgba(60,40,20,.4)'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-5, 0); g.lineTo(5, 0); g.stroke(); g.restore(); }
   rrPath(g, 64, 194, 872, 984, 30); g.lineWidth = 30; g.strokeStyle = 'rgba(80,55,30,.13)'; g.stroke(); g.lineWidth = 14; g.strokeStyle = 'rgba(80,55,30,.12)'; g.stroke();
   g.restore();
   rrPath(g, 64, 194, 872, 984, 30); g.lineWidth = 7; g.strokeStyle = '#c9c2b6'; g.stroke(); g.lineWidth = 2; g.strokeStyle = OL; g.stroke();
@@ -399,8 +410,8 @@ class Play {
   get role() { return this.mp ? this.mp.idx % 2 : 0; }   // Team-Rolle (Schalter/Leiter): abwechselnd 0/1   // Spieler 1 = Gastgeber, Spieler 2 = Gast
   off(q, i) { return q.got[i] || !!(q.team && q.owner && q.owner[i] !== (this.mp ? this.mp.idx : 0)); }   // auf meiner Karte nicht (mehr) da
   pickRole(arr, r) {
-    // Bereichs-eigene Spezial-Aufgaben kommen doppelt so oft dran wie die allgemeinen
-    const GEN = new Set(EASY_GAMES.concat(PUZZLES, CHALLENGES_STD, CHALLENGES_SP, CHALLENGES_HARD)), w = arr.concat(arr.filter(g => !GEN.has(g)));
+    // Bereichs-eigene Spezial-Aufgaben kommen öfter dran als die allgemeinen
+    const GEN = new Set(EASY_GAMES.concat(PUZZLES, CHALLENGES_STD, CHALLENGES_SP, CHALLENGES_HARD)), sp = arr.filter(g => !GEN.has(g)), w = arr.concat(sp, sp);   /* Spezial-Aufgaben dreifach gewichtet */
     const i = Math.floor(r() * w.length); return w[(i + (this.mp && w.length > 1 ? this.mp.idx : 0)) % w.length];
   }
   seedFor(tag) { let h = 2166136261; for (const ch of String(tag)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return ((this.mp ? this.mp.seed : Date.now()) ^ h) >>> 0; }
@@ -446,7 +457,11 @@ class Play {
     M.set({ pos: { x: Math.round(p.x), y: Math.round(p.y), l: p.level, z: Math.round(this.z() + (this.swingZ || 0)), k: this.kind }, done: this.mpKidsDone(), ids: NPC_DEFS.filter(n => this.st.done[n.id]).map(n => n.id), got: q && q.team ? q.got.map((g, i) => (g ? i : -1)).filter(i => i >= 0) : [], sw: sw + 1, hold, chestOpen: !!(cq && cq.chestOpen), chest: !!(cq && cq.chest), roof: !!(cq && cq.roof) });
     const o = M.other, fresh = o && Date.now() - M.lastOther < 3500;
     this.ghosts = this.ghosts || {};
-    for (const O of M.others || []) { const op = O.prog && O.prog.pos; if (!op || O.gone) { delete this.ghosts[O.idx]; continue; } const g = this.ghosts[O.idx] || (this.ghosts[O.idx] = { x: op.x, y: op.y, z: 0, name: O.name, mate: M.mode === 'team' || O.mate }); g.l = op.l; g.k = op.k; g.moving = dist(g.x, g.y, op.x, op.y) > 4; g.x = lerp(g.x, op.x, Math.min(1, dt * 4)); g.y = lerp(g.y, op.y, Math.min(1, dt * 4)); g.z = lerp(g.z, op.z || 0, Math.min(1, dt * 4)); }
+    for (const O of M.others || []) { const op = O.prog && O.prog.pos; if (!op || O.gone) { delete this.ghosts[O.idx]; continue; } const g = this.ghosts[O.idx] || (this.ghosts[O.idx] = { x: op.x, y: op.y, z: 0, name: O.name, mate: M.mode === 'team' || O.mate }); g.l = op.l; g.k = op.k;
+      if (g.tx !== op.x || g.ty !== op.y) { g.tx = op.x; g.ty = op.y; g.spd = Math.max(90, dist(g.x, g.y, op.x, op.y) / 1.1); }   /* gleichmäßig zum neuesten Punkt laufen statt ruckartig hinterherspringen */
+      const dd = dist(g.x, g.y, g.tx, g.ty), st2 = g.spd * dt; if (dd > 500) { g.x = g.tx; g.y = g.ty; } else if (dd > st2) { if (Math.abs(g.tx - g.x) > 2) g.dir = g.tx > g.x ? 1 : -1; g.x += (g.tx - g.x) / dd * st2; g.y += (g.ty - g.y) / dd * st2; } else { g.x = g.tx; g.y = g.ty; }
+      g.moving = dd > 3; g.z = lerp(g.z, op.z || 0, Math.min(1, dt * 6));
+      const em = O.prog.emo; if (em && em.at !== g.emoAt) { g.emoAt = em.at; if (Date.now() - em.at < 6000) { g.emo = { k: em.k, t: 0 }; Sfx.play('pop'); } } if (g.emo) { g.emo.t += dt; if (g.emo.t > 3) g.emo = null; } }
     if (false && o && o.pos) { const g = this.ghost || (this.ghost = { x: o.pos.x, y: o.pos.y, z: 0 }); g.tx = o.pos.x; g.ty = o.pos.y; g.l = o.pos.l; g.tz = o.pos.z || 0; g.k = o.pos.k; g.x = lerp(g.x, g.tx, Math.min(1, dt * 4)); g.y = lerp(g.y, g.ty, Math.min(1, dt * 4)); g.z = lerp(g.z, g.tz, Math.min(1, dt * 4)); g.moving = dist(g.x, g.y, g.tx, g.ty) > 4; }
     if (q && q.team) {
       // Funde des Partners zählen mit
@@ -487,9 +502,10 @@ class Play {
     }
     if (M.over === 'left' || M.over === 'lost') this.mpEnd('gone');
     if (this.toastTeam) { this.toastTeam.t += dt; if (this.toastTeam.t > 2.6) this.toastTeam = null; }
+    if (this.myEmo) { this.myEmo.t += dt; if (this.myEmo.t > 3) this.myEmo = null; }
   }
   mpEnd(kind) {
-    if (this.mpOver) return; this.mpOver = kind; const M = this.mp; overlay = null;
+    if (this.mpOver) return; this.mpOver = kind; const M = this.mp; overlay = null; if (ACC()) ACC().mpLast = null;
     const kids = M.opts.kids || 1, mine = (M.si || 0) * kids + this.mpKidsDone(), perKid = MP_COINS.perKid * mine;
     if (kind === 'team') { M.set({ fin: true }); M.sync(); setTimeout(() => M.stop(), 2500); stat('teams'); const c = MP_COINS.team + 15 * (this.teamDone || kids); addCoins(c, 'Zusammen geschafft!'); overlay = new MatchResult({ team: true, title: 'Zusammen geschafft!', sub: 'Tolles Teamwork mit ' + M.otherName + '! Ihr habt ' + (this.teamDone || kids) + ' ' + W_('dat') + ' geholfen.', coins: c }); return; }
     if (kind === 'gone') { M.stop(); const c = MP_COINS.lose + perKid; addCoins(c, 'Mehrspieler'); overlay = new MatchResult({ title: 'Spiel beendet', sub: M.otherName + ' ist nicht mehr da – die Verbindung ist weg.', coins: c }); return; }
@@ -522,7 +538,7 @@ class Play {
     if (R.path.length) R.path[R.path.length - 1].cp = true;
     R.path = R.path.concat(findPath(R.cp.x, R.cp.y, 0, top.x, top.y, 1, true) || []);
     R.speed = { easy: 150, medium: 162, hard: 166 }[this.diff];   // Lauf auf Zeit: wer den direkten Weg nimmt (Fahne, Treppe, Rutsche), ist knapp schneller
-    R.leoTime = R.path.reduce((s2, w, i) => s2 + dist(i ? R.path[i - 1].x : R.x, i ? R.path[i - 1].y : R.y, w.x, w.y), 0) / R.speed + 0.8;
+    R.leoTime = R.path.reduce((s2, w, i) => s2 + dist(i ? R.path[i - 1].x : R.x, i ? R.path[i - 1].y : R.y, w.x, w.y), 0) / R.speed * 1.07 + 0.8;   // Wege sind jetzt geglättet (kürzer) – Leo bleibt gleich schnell wie vorher
     this.banner = { text: 'Erst zur gelben Fahne, dann die Rutsche runter ins Ziel! Die Zeit läuft, sobald du losläufst.', t: 0 }; Voice.say(LEO_SAY.start, true, 'leo');
   }
   updateRace(dt) {
@@ -609,7 +625,7 @@ class Play {
       if (this.idleT > 9 && !this.coachSaid.search) { this.coachSaid.search = true; this.banner = { text: W_('search'), t: 0 }; Voice.say(this.banner.text, true); }
       return;
     }
-    if (!first && this.idleT < 7) return;
+    if (!first && this.idleT < ((a && a.stats && a.stats.clears) || (META() && META().st && META().st.clears) ? 18 : 9)) return;   /* wer schon Bereiche geschafft hat, braucht die Hand selten */
     const P = T.npc === 'gate' ? { x: GATE.x, y: GATE.y, l: 0 } : this.npcs.find(n => n.id === T.npc); if (!P) return;
     const z = P.l ? HOUSE.fz : 0, sp = this.w2s(P.x, P.y - 40, z);
     if (sp.x > 30 && sp.x < W - 30 && sp.y > 100 && sp.y < H - 70) {
@@ -718,13 +734,32 @@ class Play {
     for (const l of lv) if (canStand(l, nx, ny)) { p.x = nx; p.y = ny; p.level = l; return true; }
     return false;
   }
+  // ab und zu schlendert ein Gast ohne Auftrag durch den Bereich (macht es lebendiger)
+  updateGuest(dt) {
+    if (this.mp || typeof STAFF_PEOPLE === 'undefined') return;
+    if (this.guest === undefined) { const own = new Set(NPC_DEFS.map(n => n.id)), ids = Object.keys(STAFF_PEOPLE).filter(k => !own.has(k)); this.guest = ids.length && Math.random() < 0.6 ? { id: ids[Math.floor(Math.random() * ids.length)], x: 0, y: 0, tx: 0, ty: 0, wait: 2, on: false, dir: 1 } : null; }
+    const g = this.guest; if (!g) return;
+    const pick = () => { for (let k = 0; k < 40; k++) { const x = 80 + Math.random() * (WORLD_W - 160), y = 200 + Math.random() * (WORLD_H - 260); if (canStand(0, x, y) && dist(x, y, this.p.x, this.p.y) > 120) return [x, y]; } return null; };
+    if (!g.on) { const q = pick(); if (!q) return; g.x = q[0]; g.y = q[1]; g.tx = g.x; g.ty = g.y; g.on = true; }
+    const d = dist(g.x, g.y, g.tx, g.ty);
+    if (d < 3) { g.wait -= dt; if (g.wait <= 0) { const q = pick(); if (q && findPath(g.x, g.y, 0, q[0], q[1], 0, true)) { g.path = findPath(g.x, g.y, 0, q[0], q[1], 0, true); g.tx = q[0]; g.ty = q[1]; } g.wait = 3 + Math.random() * 4; } }
+    if (g.path && g.path.length) { const w = g.path[0], dd = dist(g.x, g.y, w.x, w.y), st = 55 * dt; if (dd <= st) { g.x = w.x; g.y = w.y; g.path.shift(); } else { g.dir = w.x > g.x ? 1 : -1; g.x += (w.x - g.x) / dd * st; g.y += (w.y - g.y) / dd * st; } if (!g.path.length) { g.tx = g.x; g.ty = g.y; } }
+    g.moving = !!(g.path && g.path.length);
+  }
+  seeThru(bb, d) {   // hohe Dinge (Palmen, Schränke) werden durchsichtig, wenn die Figur dahinter steht
+    if (!bb || bb[3] < 170) return 1;
+    const p = this.p, py = p.y - 30;
+    return p.x > bb[0] + 10 && p.x < bb[0] + bb[2] - 10 && py > bb[1] && p.y < d.y + (d.zy || 0) - 4 ? 0.45 : 1;
+  }
   onStairs() { const i = cellIdx(this.p.x, this.p.y); return i >= 0 && !!ST[i]; }
   // ---- Ablauf ----
   stop() { if (this.mp && !this.mpOver && !(overlay instanceof ConfirmDialog)) { overlay = new ConfirmDialog({ text: 'Mehrspieler-Spiel wirklich verlassen? Die anderen spielen dann ohne dich weiter.', icon: 'stop', onYes: () => { this.mpOver = 'left'; this.stop(); } }); return; }
     overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
     this.t += dt;
-    this.zoom = (W > H ? clamp(H / 560, 0.55, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6)) * (WORLD_W * WORLD_H > 2.5e6 ? 0.88 : 1);
+    if (!this.mp && !document.hidden) { const a = ACC(), day = new Date().toISOString().slice(0, 10); if (a.playDay !== day) { a.playDay = day; a.playSec = 0; } a.playSec = (a.playSec || 0) + dt;   // Eltern-Timer
+      if (a.limitMin && a.playSec > a.limitMin * 60 && !this.timeUp && !(overlay instanceof GameOverlay)) { this.timeUp = true; Save.write(); overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Dein Spielstand ist gespeichert – bis morgen!', onClose: () => setScene(new Menu()) }); } }
+    this.zoom = (W > H ? clamp(H / 560, 0.6, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6)) * (WORLD_W * WORLD_H > 2.5e6 ? 0.88 : 1);
     const p = this.p; p.t += dt;
     if (this.pending) { this.pending.t -= dt; if (this.pending.t <= 0) { const f = this.pending.fn; this.pending = null; f(); } }
     for (const k in this.shake) this.shake[k] = Math.max(0, this.shake[k] - dt);
@@ -768,6 +803,7 @@ class Play {
     }
     else { this.joy = null; this.p.moving = false; }
     this.updatePigeons(dt);
+    this.updateGuest(dt);
     // Kellner auf der Terrasse (Deko, ohne Auftrag)
     if (this.extras && this.extras.update) this.extras.update(dt);
     if (this.nbExtras) this.nbExtras.forEach(e => e.ex.update && e.ex.update(dt));
@@ -778,7 +814,7 @@ class Play {
     const wb = this.wb || { x0: 0, y0: 0, x1: WORLD_W, y1: WORLD_H };
     const tx = wb.x1 - wb.x0 < hw * 2 ? (wb.x0 + wb.x1) / 2 : clamp(p.x, wb.x0 + hw, wb.x1 - hw);
     const ty = wb.y1 - wb.y0 < hh * 2 ? (wb.y0 + wb.y1) / 2 : clamp(p.y - z - 30, wb.y0 + hh, wb.y1 - hh);
-    const k = Math.min(1, dt * 6); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
+    const k = Math.min(1, dt * 8.5); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
   }
   updatePlayer(dt) {
     const p = this.p, spd = ABIL_VAL.turbo[ability('turbo')];
@@ -806,14 +842,19 @@ class Play {
     }
     if (mx || my) {
       const s = spd * dt * (WORLD_W * WORLD_H > 2.5e6 ? 1.2 : 1); const a = this.tryMove(p.x + mx * s, p.y); const b = this.tryMove(p.x, p.y + my * s);
-      p.moving = a || b; if (Math.abs(mx) > 0.15) p.dir = mx > 0 ? 1 : -1;
+      let sl = false;
+      if (!a && !b) for (const k of [1, -1]) { const rx = -my * k, ry = mx * k; if (this.tryMove(p.x + (mx * 0.5 + rx * 0.7) * s, p.y + (my * 0.5 + ry * 0.7) * s)) { sl = true; break; } }   /* an Möbelecken entlanggleiten statt hängen bleiben */
+      p.moving = a || b || sl; if (Math.abs(mx) > 0.15) p.dir = mx > 0 ? 1 : -1;
     } else if (p.path && p.path.length) {
-      const w = p.path[0], dx = w.x - p.x, dy = w.y - p.y, d = Math.hypot(dx, dy), s = spd * dt * (p.path.length > 12 ? 1.5 : p.path.length > 6 ? 1.25 : 1) * (WORLD_W * WORLD_H > 2.5e6 ? 1.2 : 1);   // lange Wege schneller
+      const w = p.path[0], dx = w.x - p.x, dy = w.y - p.y, d = Math.hypot(dx, dy), rem = dist(p.x, p.y, p.path[p.path.length - 1].x, p.path[p.path.length - 1].y), s = spd * dt * (rem > 300 ? 1.5 : rem > 150 ? 1.25 : 1) * (WORLD_W * WORLD_H > 2.5e6 ? 1.2 : 1);   // lange Wege schneller
       if (d <= s) { p.x = w.x; p.y = w.y; p.level = w.l; p.path.shift(); }
       else { p.x += (dx / d) * s; p.y += (dy / d) * s; const i = cellIdx(p.x, p.y); if (i >= 0 && !ST[i]) p.level = w.l; }
       if (Math.abs(dx) > 2) p.dir = dx > 0 ? 1 : -1;
       p.moving = true;
     } else p.moving = false;
+    this.stillT = p.moving ? 0 : (this.stillT || 0) + dt;   /* still neben einem Versteck stehen = automatisch suchen (nicht bei Schwer) */
+    if (this.stillT > 1.1 && !this.autoSearched && this.diff !== 'hard' && this.canSearch()) { const q = this.st.active; if (q.hidden.some((h, i) => !this.off(q, i) && h.l === p.level && dist(p.x, p.y, peekOf(h).x, peekOf(h).y) < Math.min(60, h.reach || 60))) { this.autoSearched = true; this.startSearch(); return; } }
+    if (p.moving) this.autoSearched = false;
     const ci = cellIdx(p.x, p.y);
     if (p.level === 1 && ci >= 0 && SL[ci]) { p.slide = { t: 0 }; p.path = null; p.target = null; p.y = clamp(p.y, SLIDE.y0 + 8, SLIDE.y1 - 8); Sfx.play('jump'); return; }
     if (p.target) {
@@ -998,13 +1039,13 @@ class Play {
       const g = this.pickRole(cand, r); used.push(g); return g;
     });
     // Täuschungen: an anderen Stellen guckt auch etwas heraus (Stöckchen, Blatt, Steinchen, Kronkorken)
-    const decoys = [], nd = this.diff === 'hard' ? 3 : 2;
+    const decoys = [], nd = this.diff === 'hard' ? 3 : this.diff === 'easy' ? 0 : 2;
     // Täuschungen auch an Möbeln: dort, wo nichts versteckt ist, guckt manchmal nur Krimskrams hervor
     const freeSp = shuffle(SPOTS.filter(s2 => s2.px != null && !hidden.some(h => h.spot === s2.id)), r), nFurn = freeSp.length ? Math.ceil(nd * 0.6) : 0;
     for (let k = 0; k < nFurn && k < freeSp.length; k++) { const s2 = freeSp[k], dd = DECOR_BY[s2.decor]; decoys.push({ x: s2.x, y: s2.y, px: s2.px, py: s2.py, rot: s2.rot || 0, front: !!s2.front, zy: dd ? dd.y + (dd.zy || 0) : s2.py, kind: pick(SG.junk, r), done: false, reach: 60 }); }
     for (let k = decoys.length; k < nd; k++) {
       let x = 0, y = 0, g = 0;
-      do { x = 95 + r() * 810; y = 240 + r() * 900; g++; }
+      do { x = 95 + r() * (WORLD_W === 1000 ? 810 : WORLD_W - 190); y = 240 + r() * (WORLD_H === 1400 ? 900 : WORLD_H - 340); g++; }
       while (g < 300 && (!canStand(0, x, y) || hidden.some(h => dist(peekOf(h).x, peekOf(h).y, x, y) < 110) || decoys.some(d => dist(d.x, d.y, x, y) < 110) || dist(x, y, START.x, START.y) < 120));
       decoys.push({ x: Math.round(x), y: Math.round(y), kind: pick(SG.junk, r), done: false });
     }
@@ -1018,7 +1059,7 @@ class Play {
     overlay = new GameOverlay(gid, { diff: this.diff, kind: ch ? 'challenge' : 'puzzle', item: q.items[k], slow, seed: (q.seed + k * 7919) >>> 0, onStop: () => this.stop(), joker: this.jokerApi(), bonus: () => this.bonusLeft() }, ok => {
       if (!ok) return;
       if (ch && !ACC().tut.challenge) ACC().tut.challenge = true;
-      ACC().recent = (ACC().recent || []).concat([gid]).slice(-8);
+      ACC().recent = (ACC().recent || []).concat([gid]).slice(-14);
       q.got[k] = true; if (q.hint === k) q.hint = null; Save.write();
       const s = this.w2s(h.x, h.y, (h.l ? HOUSE.fz : 0) + 20);
       FX.flyTo(s.x, s.y, W / 2, 104, (c, x, y, sc) => drawItem(c, q.items[k], x, y, 44 * sc));
@@ -1126,7 +1167,7 @@ class Play {
   draw(c) {
     const z = this.zoom, p = this.p, t = this.t, pz = this.z();
     c.fillStyle = SG.bg || '#86a866'; c.fillRect(0, 0, W, H);
-    c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z));
+    c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z)); LINE_K = z < 0.8 ? 1 + (0.8 - z) * 1.2 : 1;
     if (!GROUND) buildGround();
     if (this.drawNbGrounds) this.drawNbGrounds(c);
     c.drawImage(GROUND, 0, 0, WORLD_W, WORLD_H);
@@ -1145,7 +1186,7 @@ class Play {
     const L = [];
     this.peeksUp = [];
     if (q && this.diff !== 'easy') {
-      const hard = this.diff === 'hard', size = hard ? 42 : 50, sink = hard ? 0.05 : -0.15;
+      const hard = this.diff === 'hard', size = hard ? 46 : 50, sink = hard ? 0 : -0.15;
       q.hidden.forEach((h, i) => {
         if (this.off(q, i)) return;
         const pk = peekOf(h), tilt = ((i * 37) % 7 - 3) * 0.12;
@@ -1169,7 +1210,7 @@ class Play {
       (q.decoys || []).forEach(d => { if (d.done) return; if (d.px != null) L.push({ y: d.zy + (d.front ? 0.5 : -0.5), f: () => { c.save(); c.translate(d.px, d.py + 6); c.rotate(d.rot); drawJunk(c, 0, 0, d.kind, hard ? 1.25 : 1.4); c.restore(); } }); else L.push({ y: d.y + 0.5, f: () => drawJunk(c, d.x, d.y, d.kind, hard ? 1.25 : 1.4) }); });
     }
     const dig = this.searching ? Math.abs(Math.sin(this.searching.t * 18)) * 0.25 : 0;
-    const drawPlayer = () => drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir });
+    const drawPlayer = () => { drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir }); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); };
     // nur zeichnen, was im Bild ist
     const vx0 = this.camX - W / 2 / z - 120, vx1 = this.camX + W / 2 / z + 120, vy0 = this.camY - H / 2 / z - 40, vy1 = this.camY + H / 2 / z + 260;
     const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
@@ -1186,15 +1227,17 @@ class Play {
       else if (d.t === 'cypress') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 42, d.y - 232, 84, 246, g => drawCypress(g, d.x, d.y))) });
       else if (d.t === 'planter') L.push({ y: d.y, f: () => sh > 0 ? drawPlanter(c, d.x, d.y, t, sh) : drawSprite(c, sprite(k, d.x - 52, d.y - 72, 104, 90, g => drawPlanter(g, d.x, d.y, 0, 0))) });
       else if (d.t === 'lamp') L.push({ y: d.y, f: () => drawSprite(c, sprite(k, d.x - 16, d.y - 190, 54, 200, g => lampRaw(g, d))) });
-      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = measureBB(k, d.x, d.y, g => fn(g, d, 0, 0)); L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0))) : fn(c, d, t, sh)) }); }
+      else if (SG.decorDraw && SG.decorDraw[d.t]) { const fn = SG.decorDraw[d.t], bb = measureBB(k, d.x, d.y, g => fn(g, d, 0, 0)); L.push({ y: d.y + (d.zy || 0), f: () => (bb && !(sh > 0) && !d.anim ? drawSprite(c, sprite(k, bb[0], bb[1], bb[2], bb[3], g => fn(g, d, 0, 0)), this.seeThru(bb, d)) : fn(c, d, t, sh)) }); }
       else if (d.t === 'bench') L.push({ y: d.y + 10, f: () => sh > 0 ? benchRaw(c, d, Math.sin(sh * 60) * 2) : drawSprite(c, sprite(k, d.x - 52, d.y - 26, 104, 52, g => benchRaw(g, d, 0))) });
     }
     for (const n of this.npcs) if (!n.l && n.swing === undefined && vis(n.x, n.y)) L.push({ y: n.y, f: () => this.drawNpc(c, n) });
     if (this.waiter && SG.feat.waiter) L.push({ y: 160, f: () => drawWaiter(c, this.waiter.x, 160, 1.05, t, this.waiter.dir, FOOD6[this.waiter.dish]) });
     for (const b of this.pigeons) if (vis(b.x, b.y)) L.push({ y: b.fly > 0 ? b.y + 200 : b.y, f: () => drawPigeon(c, b.x, b.y - (b.fly > 0 ? 40 + Math.sin(b.fly * 2.2) * 40 : 0), 1.3, b.t, b.dir, b.fly > 0) });
     // Mehrspieler: Mitspieler-Figur + Team-Objekte (Schatzkiste mit Doppel-Schalter, Leiter)
+    if (this.guest && this.guest.on) { const g = this.guest; L.push({ y: g.y, f: () => { c.save(); if (g.dir < 0) { c.translate(g.x, 0); c.scale(-1, 1); c.translate(-g.x, 0); } drawPerson(c, g.id, g.x, g.y + (g.moving ? -Math.abs(Math.sin(t * 9)) * 2 : 0), 1.05, t, { ph: 2 }); c.restore(); } }); }
     for (const g of Object.values(this.ghosts || {})) { if (!g.k) continue; const up = g.z > 1; L.push({ y: up ? HOUSE.y + HOUSE.h + 2 : g.y, f: () => {
-      c.globalAlpha = 0.85; drawAnimal(c, g.k, g.x, g.y - g.z, 1.12, { t: t + 3, moving: g.moving, look: DEFAULT_LOOK, cap: false }); c.globalAlpha = 1;
+      c.globalAlpha = 0.85; drawAnimal(c, g.k, g.x, g.y - g.z, 1.12, { t: t + 3, moving: g.moving, dir: g.dir || 1, look: DEFAULT_LOOK, cap: false }); c.globalAlpha = 1;
+      if (g.emo) emoBubble(c, g.x, g.y - g.z - 120, g.emo);
       c.font = `900 13px ${FONT}`; const nw = c.measureText(g.name).width + 16; rrPath(c, g.x - nw / 2, g.y - g.z - 92, nw, 22, 11); c.fillStyle = g.mate ? 'rgba(17,138,178,.9)' : 'rgba(239,71,111,.9)'; c.fill(); txt(c, g.name, g.x, g.y - g.z - 81, 13, '#fff', 'center', null);
     } }); }
     if (this.coop) { const C = this.coop, q = this.st.active, cq = (q && q.coop) || {}, open = cq.chestOpen, o = this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
@@ -1219,10 +1262,10 @@ class Play {
       if (R.state === 'ready' || R.state === 'run') { const F = R.fin; L.push({ y: F.y - 1, f: () => { line(c, F.x + 18, F.y, F.x + 18, F.y - 70, 4, '#6c757d'); polyPath(c, [[F.x + 18, F.y - 70], [F.x + 52, F.y - 60], [F.x + 18, F.y - 50]]); fs(c, '#ef476f', 2.5); ell(c, F.x, F.y, 40, 14); c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.8)'; c.setLineDash([8, 6]); c.stroke(); c.setLineDash([]); } }); }
     }
     for (const lf of this.st.leaves) if (!lf.got && vis(lf.x, lf.y)) L.push({ y: lf.y, f: () => {
-      const b = Math.sin(t * 3 + lf.x) * 5, gl = 0.5 + 0.5 * Math.sin(t * 4 + lf.y);
+      const b = Math.sin(t * 1.6 + lf.x) * 3, gl = 0.5 + 0.5 * Math.sin(t * 1.8 + lf.y);   /* ruhiger: langsames Schweben statt Blinken */
       c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, lf.x, lf.y + 2, 12, 4); c.fill();
-      ell(c, lf.x, lf.y - 18 + b, 16 + gl * 4, 16 + gl * 4); c.fillStyle = `rgba(199,244,100,${0.25 + gl * 0.25})`; c.fill();
-      drawCollect(c, this.stage, lf.x, lf.y - 18 + b, 2.6, -0.5 + Math.sin(t * 2 + lf.x) * 0.3);
+      ell(c, lf.x, lf.y - 18 + b, 17 + gl * 2, 17 + gl * 2); c.fillStyle = `rgba(199,244,100,${0.3 + gl * 0.12})`; c.fill();
+      drawCollect(c, this.stage, lf.x, lf.y - 18 + b, 2.6, -0.5 + Math.sin(t * 1.2 + lf.x) * 0.15);
     } });
     if (SG.feat.swing) { L.push({ y: SWING.y, f: () => this.drawSwingFrame(c) }); SWING.seats.forEach((sx, k) => { const off = this.seatOff(k); L.push({ y: SWING.y + off + 1, f: () => this.drawSeat(c, sx, off, k) }); }); }
     if (SG.feat.slide) L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
@@ -1240,7 +1283,7 @@ class Play {
     if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
       if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
     this.drawMarkers(c);
-    c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    c.setTransform(DPR, 0, 0, DPR, 0, 0); LINE_K = 1;
     const vg = c.createRadialGradient(W * 0.35, H * 0.3, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
     vg.addColorStop(0, 'rgba(255,240,200,.10)'); vg.addColorStop(0.6, 'rgba(255,240,200,0)'); vg.addColorStop(1, 'rgba(40,25,10,.30)');
     c.fillStyle = vg; c.fillRect(0, 0, W, H);
@@ -1280,7 +1323,11 @@ class Play {
     c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0 + 10, y0 - fz + 25); c.lineTo(x1 - 5, y0 + 26); c.stroke();
     line(c, x0, y0 - fz - 6, x1, y0 - 6, 5, '#dee2e6'); line(c, x0, y1 - fz - 2, x1, y1 - 2, 5, '#dee2e6');
   }
-  drawStairs(c) { drawSprite(c, sprite('stairs', 605, 600, 90, 240, g => this.drawStairsRaw(g))); }
+  drawStairs(c) {
+    drawSprite(c, sprite('stairs', 605, 600, 90, 240, g => this.drawStairsRaw(g)));
+    const p = this.p, { x, y, w, h } = STAIRS;   // Treppe deutlich zeigen: hier geht es nach oben ins Spielhaus
+    if (p.level === 0 && !this.mp && dist(p.x, p.y, x + w / 2, y + h) < 280) { const b = Math.abs(Math.sin(this.t * 3)) * 8, ax = x + w / 2, ay = y + h + 26 - b; c.save(); c.globalAlpha = 0.9; polyPath(c, [[ax, ay - 22], [ax + 16, ay], [ax + 6, ay], [ax + 6, ay + 14], [ax - 6, ay + 14], [ax - 6, ay], [ax - 16, ay]]); fs(c, '#ffd23f', 2.5); c.restore(); }
+  }
   drawStairsRaw(c) {
     const { x, y, w, h } = STAIRS, fz = HOUSE.fz, top = y - fz, bot = y + h;
     line(c, x - 4, bot, x - 4, top, 8, '#8d5a3b'); line(c, x + w + 4, bot, x + w + 4, top, 8, '#8d5a3b');
@@ -1348,8 +1395,13 @@ class Play {
     const t = this.t, q = this.st.active, diff = this.diff, p = this.p;
     const marks = this.npcs.map(n => { const P = this.npcPos(n); return { id: n.id, x: n.x, y: P.hy - P.hz - 72 }; });
     marks.push({ id: 'gate', x: GATE.x, y: GATE.y - 128 });
+    if (SG.feat.racer && this.racer && this.racer.state === 'idle' && !this.mp && dist(p.x, p.y, this.racer.x, this.racer.y) < 260) {   // Leo lädt zum Wettrennen ein
+      const R = this.racer, b = Math.sin(t * 3) * 3, bx = R.x, by = R.y - 118 + b; c.font = `900 13px ${FONT}`; const tw = c.measureText('Wettrennen? Tipp mich an!').width + 22;
+      rrPath(c, bx - tw / 2, by - 15, tw, 30, 14); fs(c, '#fff', 2.5); polyPath(c, [[bx - 6, by + 14], [bx + 6, by + 14], [bx, by + 24]]); fs(c, '#fff', 0); txt(c, 'Wettrennen? Tipp mich an!', bx, by + 1, 13, '#3d2c1f', 'center', null);
+    }
+    { let bd = 1e9; this.nearOpen = null; for (const m of marks) { const s = this.npcState(m.id); if (s !== 'open' && s !== 'waiting') continue; const d = dist(m.x, m.y, p.x, p.y); if (d < bd) { bd = d; this.nearOpen = m.id; } } }
     for (const m of marks) {
-      const s = this.npcState(m.id), bx = m.x, by = m.y, bob = Math.sin(t * 4 + m.x) * 4;
+      const s = this.npcState(m.id), bx = m.x, by = m.y, bob = m.id === this.nearOpen || s === 'boss' || s === 'ready' ? Math.sin(t * 4 + m.x) * 4 : 0;
       if (s === 'done') { if (m.id !== 'gate') { ell(c, bx, by + 8, 13, 13); fs(c, '#06d6a0', 3); icon(c, 'check', bx, by + 8, 20); } continue; }
       if (s === 'locked') continue;
       const big = s === 'boss' || s === 'ready';
@@ -1364,7 +1416,7 @@ class Play {
       else if (s === 'active') icon(c, 'search', 0, 0, 26);
       else if (s === 'busy') { const e = this.st.easy[m.id]; txt(c, '!', 0, 1, 26, '#fff'); if (e) for (let i = 0; i < e.steps.length; i++) { ell(c, (i - (e.steps.length - 1) / 2) * 8, r + 16, 3, 3); fs(c, i < e.idx ? '#ffd23f' : '#fff', 1.5); } }
       else txt(c, '!', 0, 1, 28, OL, 'center', null);
-      if (s === 'open' || s === 'waiting') { c.globalAlpha = 0.6 * (0.5 + 0.5 * Math.sin(t * 6)); ell(c, 0, 0, r + 6, r + 6); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke(); }
+      if ((s === 'open' || s === 'waiting') && m.id === this.nearOpen) { c.globalAlpha = 0.6 * (0.5 + 0.5 * Math.sin(t * 6)); ell(c, 0, 0, r + 6, r + 6); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke(); }   /* nur die nächste Person pulsiert – weniger Gewusel */
       c.restore();
     }
     // Fähigkeiten: Metalldetektor (Pfeil zum nächsten Versteck), Adlerauge (Verstecke leuchten)
@@ -1423,7 +1475,7 @@ class Play {
     if (this.fadeIn > 0) { c.fillStyle = `rgba(20,30,20,${this.fadeIn / 0.35 * 0.8})`; c.fillRect(0, 0, W, H); this.fadeIn -= 1 / 60; }   // Bereichswechsel weich einblenden
     roundBtn(c, 46, 46, 25, '#fff', 'stop', () => this.stop());
     roundBtn(c, 106, 46, 20, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
-    soundBtn(c, W - 40, 46);
+    if (this.mp) soundBtn(c, W - 40, 46);   /* sonst steckt der Ton-Knopf im Hilfe-Fenster (weniger Knöpfe oben) */
     { const n = this.st.leaves.filter(o => o.got).length, k = 1 + this.leafPop * 0.35;
       rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       c.save(); c.translate(174, 46); c.scale(k, k); drawCollect(c, this.stage, 0, 0, 2.2, -0.5); c.restore();
@@ -1475,6 +1527,7 @@ class Play {
         if (hint) { c.font = `900 15px ${FONT}`; const hw = Math.min(W - 30, c.measureText(hint).width + 30); rrPath(c, W / 2 - hw / 2, H - 58, hw, 36, 18); c.fillStyle = 'rgba(17,138,178,.92)'; c.fill(); txt(c, hint, W / 2, H - 40, Math.min(15, 15 * (W - 60) / c.measureText(hint).width), '#fff', 'center', null); }
       }
       if (this.toastTeam) { const q2 = this.toastTeam, k = ease.back(clamp(q2.t * 3, 0, 1)); c.save(); c.globalAlpha = clamp(2.6 - q2.t, 0, 1); c.translate(W / 2, H * 0.3); c.scale(k, k); txt(c, q2.text, 0, 0, 22, '#fff', 'center', OL); c.restore(); }
+      if (!this.mpOver) MP_EMO.forEach((e, i) => { const ex = 30, ey = H * 0.4 + i * 50; ell(c, ex, ey, 20, 20); fs(c, 'rgba(255,255,255,.88)', 2); c.font = `22px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(e, ex, ey + 1); UI.btn(ex - 22, ey - 22, 44, 44, () => { if (this.myEmo && this.myEmo.t < 1) return; this.mp.set({ emo: { k: i, at: Date.now() } }); this.myEmo = { k: i, t: 0 }; Sfx.play('pop'); }); });   /* Emoji an die anderen schicken */
     }
     // Bonus-Uhr: Kind schnell geholfen = Extra-Joker
     { const bq = this.bonusQuest(), left = bq ? this.bonusLimit(bq.npc) - (bq.q.tt || 0) : -1;
@@ -1578,7 +1631,7 @@ class Play {
       ] : [
         `Sprich mit den ${W_('dat')} mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen.`,
         `Die Dinge liegen ${W_('hide')}. Aber Vorsicht: Manchmal ist es nur ${W_('junk')}!`,
-        'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
+        this.diff === 'medium' ? 'Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.' : 'Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen.',
         this.diff === 'medium' ? 'Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah.' : 'Halte nach kleinen Zipfeln und einem kurzen Glitzern Ausschau.',
         `Hast du alles, bring es zurück ${W_('back')}. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf.`,
         'Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.',
@@ -1590,6 +1643,7 @@ class Play {
       ];
       if (!this.helpRead) { this.helpRead = true; Voice.say(T.join(' '), true); }
       helpPanel(c, T, () => { this.helpOpen = false; this.helpRead = false; Voice.stop(); }, false);
+      if (!this.mp) { const sy = H - 70; soundBtn(c, W - 40, sy); rrPath(c, W - 66, sy + 24, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Regler', W - 40, sy + 35, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, sy + 20, 56, 28, () => { overlay = new VolumePanel(); }); }   /* Ton im Hilfe-Fenster */
     }
     const j = this.joy;
     if (j && j.moved) {
@@ -1615,6 +1669,8 @@ function drawCollect(c, stage, x, y, s, rot) {
   else if (stage === 'chalet') { for (let k = 0; k < 6; k++) { const a = k * TAU / 6; line(c, 0, 0, Math.cos(a) * 12, Math.sin(a) * 12, 2.5, '#a5d8ff'); line(c, Math.cos(a) * 7, Math.sin(a) * 7, Math.cos(a + 0.5) * 10, Math.sin(a + 0.5) * 10, 1.5, '#a5d8ff', false); } ell(c, 0, 0, 3, 3); fs(c, '#fff', 1.5); }
   c.restore();
 }
+const MP_EMO = ['👍', '😂', '😮', '❤️'];
+function emoBubble(c, x, y, e) { const k = ease.back(clamp(e.t * 4, 0, 1)), a = clamp(3 - e.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(x, y - e.t * 6); c.scale(k, k); ell(c, 0, 0, 24, 24); fs(c, '#fff', 2.5); c.font = `28px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(MP_EMO[e.k] || '👍', 0, 2); c.restore(); }
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
 const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schnell geholfen = +1 Joker (Tor: +30 s)
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
@@ -1639,11 +1695,12 @@ function questText(o) {
   if (o.mode === 'busy') return 'Hilf zuerst ' + NPC_SHORT[o.other] + ', danach bin ich dran!';
   if (o.mode === 'progress') return W_('progress');
   if (o.npc === 'gate') return W_('gateAsk');
-  return (NPC_LINES[o.npc] || '') + ' Kannst du diese Sachen für mich finden?';
+  return (NPC_LINES[o.npc] || '') + ' ' + QUEST_ASK[(o.v || 0) % QUEST_ASK.length];
 }
+const QUEST_ASK = ['Kannst du diese Sachen für mich finden?', 'Hilfst du mir, diese Sachen zu suchen?', 'Findest du diese Sachen für mich? Das wäre super!'];   // abwechselnd, damit es nicht immer gleich klingt
 
 class QuestDialog {
-  constructor(o) { this.o = o; this.t = 0; Voice.say(questText(o), true, o.npc); }   // jedes Kind spricht mit eigener Stimme
+  constructor(o) { this.o = o; this.t = 0; if (o.v == null) o.v = Math.floor(Math.random() * QUEST_ASK.length); Voice.say(questText(o), true, o.npc); }   // jedes Kind spricht mit eigener Stimme
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; Voice.stop(); }
   draw(c) {

@@ -215,8 +215,9 @@ STAGE_DEFS.parkplatz = {
     return {
       update(dt) {
         const p = play.p, P = pos(), ahead = { x: RB.x + Math.cos(A.ang - 0.35) * A.rr, y: RB.y + Math.sin(A.ang - 0.35) * A.rr };
-        if (dist(p.x, p.y, ahead.x, ahead.y) < 70 || dist(p.x, p.y, P.x, P.y) < 50) return;
-        A.ang -= dt * 0.55;
+        if ((dist(p.x, p.y, ahead.x, ahead.y) < 55 || dist(p.x, p.y, P.x, P.y) < 42) && A.wait < 1.2) { A.wait += dt; return; }   // hält kurz an, fährt dann vorsichtig weiter
+        if (A.wait > 0 && dist(p.x, p.y, P.x, P.y) > 90) A.wait = 0;
+        A.ang -= dt * (A.wait > 0 ? 0.35 : 0.8);
       },
       draw(c, L, vis, t) {
         const P = pos(); if (vis(P.x, P.y)) L.push({ y: P.y + 40, f: () => drawCar(c, P.x, P.y, A.ang - Math.PI, '#118ab2', 1.05, { lights: true }) });

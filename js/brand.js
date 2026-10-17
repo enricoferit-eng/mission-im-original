@@ -233,14 +233,15 @@ const UNIFORM_NAMES = ['Service-Schürze', 'Koch-Jacke', 'Kellner-Weste', 'Eis-T
 // Seltenheit: 4 normal, 1 selten, 1 legendär (mit Fähigkeit – nur bei Mittel und Schwer)
 // Fähigkeiten haben Stufen 1–4: je später der Bereich, desto stärker die Skins dort
 const ABIL_VAL = {
-  turbo: [180, 215, 245, 270, 300], detektor: [1, 1.3, 1.6, 1.8, 2.1], adlerauge: [0, 200, 290, 380, 470], extraherz: [3, 4, 5, 5, 6],
-  zeitplus: [0, 4, 7, 10, 14], glueck: [150, 90, 65, 45, 30], magnet: [34, 80, 110, 140, 180], jokerplus: [0, 1, 1, 2, 3], bonuszeit: [0, 15, 20, 30, 45], sternschutz: [1, 0.8, 0.7, 0.6, 0.5],
+  // stärker als früher, damit man den Unterschied wirklich merkt
+  turbo: [180, 225, 260, 290, 320], detektor: [1, 1.4, 1.7, 1.9, 2.2], adlerauge: [0, 230, 320, 410, 500], extraherz: [4, 5, 6, 7, 8],
+  zeitplus: [0, 6, 10, 14, 18], glueck: [150, 80, 55, 40, 25], magnet: [34, 95, 130, 165, 210], jokerplus: [0, 1, 2, 2, 3], bonuszeit: [0, 20, 30, 40, 55], sternschutz: [1, 0.75, 0.6, 0.5, 0.4],
 };
 const ABILITIES = {
   detektor: { name: 'Metalldetektor', f: l => 'Du findest Dinge aus ' + (l >= 3 ? 'fast doppelter' : 'größerer') + ' Entfernung' + (l >= 2 ? ', und ein Pfeil zeigt dir das nächste Versteck.' : '.') },
   adlerauge: { name: 'Adlerauge', f: l => 'Verstecke im Umkreis von ' + Math.round(ABIL_VAL.adlerauge[l] / 25) + ' Schritten leuchten golden auf.' },
   turbo: { name: 'Turbo-Schuhe', f: l => 'Du läufst ' + Math.round((ABIL_VAL.turbo[l] / 180 - 1) * 100) + ' % schneller durch die Welt.' },
-  extraherz: { name: 'Extra-Herz', f: l => 'In Geschicklichkeits-Aufgaben hast du ' + ABIL_VAL.extraherz[l] + ' statt 3 Herzen.' },
+  extraherz: { name: 'Extra-Herz', f: l => 'In Geschicklichkeits-Aufgaben hast du ' + ABIL_VAL.extraherz[l] + ' statt 4 Herzen.' },
   zeitplus: { name: 'Zeit-Uhr', f: l => 'In Geschicklichkeits-Aufgaben hast du ' + ABIL_VAL.zeitplus[l] + ' Sekunden mehr Zeit.' },
   glueck: { name: 'Glücksklee', f: l => 'Der Hilfe-Stern lädt sich schon nach ' + ABIL_VAL.glueck[l] + ' Sekunden statt nach 150.' },
   magnet: { name: 'Sammel-Magnet', f: l => 'Sammel-Sachen fliegen dir aus ' + ['', 'etwas größerer', 'größerer', 'großer', 'sehr großer'][l] + ' Entfernung zu.' },
@@ -250,6 +251,8 @@ const ABILITIES = {
 };
 
 const ABIL_KEYS = Object.keys(ABILITIES);
+// jede Fähigkeit hat ein eigenes Symbol – so erkennt man sie auch ohne Lesen
+const ABIL_ICON = { detektor: 'search', adlerauge: 'star', turbo: 'shoe', extraherz: 'heart', zeitplus: 'clock', glueck: 'starE', magnet: 'bag', jokerplus: 'joker', bonuszeit: 'hourglass', sternschutz: 'crown' };
 const RARITY = { common: { name: 'Normal', col: '#e9ecef', w: 1 }, rare: { name: 'Selten', col: '#4dabf7', w: 0.6 }, legend: { name: 'Legendär', col: '#ffc300', w: 0.35 } };
 SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di) => stageSkins(stage, diff).forEach((id, i) => {
   const k = (i * 2 + di + si * 5) % UNIFORM_LOOKS.length;

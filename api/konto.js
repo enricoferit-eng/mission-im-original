@@ -120,10 +120,10 @@ const friendsFile = l => 'friends/' + l + '.json', invFile = l => 'invites/' + l
 const lobbyFile = c => 'lobbies/' + c + '.json', progFile = (c, l) => 'lobbies/' + c + '/' + l + '.json';
 const LOBBY_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const pub = (l, acc) => ({ login: fmtLogin(l), name: acc.name, avatar: acc.avatar || 0 });
-async function touch(l) { await writeJSON(seenFile(l), { t: Date.now() }); }
+async function touch(l, score) { const o = { t: Date.now() }; if (Number.isInteger(score) && score >= 0 && score < 10000) o.score = score; else { const old = await readJSON(seenFile(l)).catch(() => null); if (old && old.score != null) o.score = old.score; } await writeJSON(seenFile(l), o); }
 async function friendList(l) {
   const f = (await readJSON(friendsFile(l))) || { list: [] };
-  const out = await Promise.all(f.list.map(async x => { const s = await readJSON(seenFile(cleanLogin(x.login))).catch(() => null); return { ...x, online: !!(s && Date.now() - s.t < 90000) }; }));
+  const out = await Promise.all(f.list.map(async x => { const s = await readJSON(seenFile(cleanLogin(x.login))).catch(() => null); return { ...x, online: !!(s && Date.now() - s.t < 90000), score: (s && s.score) || 0 }; }));   // score: für die Freundes-Bestenliste
   const inv = ((await readJSON(invFile(l))) || { list: [] }).list.filter(i => Date.now() - i.at < 15 * 60000);
   return { friends: out, invites: inv };
 }
@@ -140,7 +140,7 @@ async function friend_add(b) {
 }
 async function friends(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  await touch(a.l);
+  await touch(a.l, b.score);
   return [200, await friendList(a.l)];
 }
 async function friend_remove(b) {
@@ -166,7 +166,7 @@ async function lobby_join(b) {
   const code = String(b.code || '').toUpperCase().replace(/[^A-Z]/g, ''), lob = code.length === 4 && (await readJSON(lobbyFile(code)));
   if (!lob || Date.now() - lob.created > 60 * 60000) return [404, { error: 'not_found' }];
   lob.players = lob.players || [lob.host].concat(lob.guest ? [lob.guest] : []);
-  if (lob.players.some(p => cleanLogin(p.login) === a.l)) return [200, lob];
+  if (lob.players.some(p => cleanLogin(p.login) === a.l)) { if ((lob.gone || []).includes(a.l) && lob.status !== 'closed') { lob.gone = lob.gone.filter(x => x !== a.l); await writeJSON(lobbyFile(code), lob); } return [200, lob]; }   // wieder beitreten (z. B. nach Verbindungsabbruch)
   if (lob.status === 'run' || lob.players.length >= ((lob.opts && lob.opts.size) || 2)) return [409, { error: 'full' }];
   lob.players.push(pub(a.l, a.acc)); lob.guest = lob.players[1]; lob.status = 'ready'; await writeJSON(lobbyFile(code), lob);
   const inv = await readJSON(invFile(a.l)); if (inv) { inv.list = inv.list.filter(i => i.code !== code); await writeJSON(invFile(a.l), inv); }
@@ -184,6 +184,7 @@ async function lobby_poll(b) {
   if (idx < 0) return [403, { error: 'not_member' }];
   const oth = lob.players.map((p, i) => ({ p, i })).filter(x => x.i !== idx);
   const tasks = [Promise.all(oth.map(x => readJSON(progFile(code, cleanLogin(x.p.login))).catch(() => null)))];
+  if (b.start && b.asDuel && isHost && lob.status === 'ready' && lob.opts && lob.opts.mode === '2v2' && lob.players.length >= 2) { lob.opts.mode = 'duell'; lob.opts.size = lob.players.length; }   // 2 gegen 2, aber zu wenige da: als Duell starten
   const need = lob.opts && lob.opts.mode === '2v2' ? 4 : 2;
   if (b.start && isHost && lob.players.length >= need && lob.status === 'ready') { lob.status = 'run'; lob.started = Date.now(); tasks.push(writeJSON(lobbyFile(code), lob), (async () => { const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.matches++; await writeJSON('stats/mp.json', st); })()); }
   if (b.leave) { if (!lob.gone.includes(l)) lob.gone.push(l); if (isHost && lob.status !== 'run') lob.status = 'closed'; if (lob.players.length - lob.gone.length < 2) lob.status = 'closed'; lob.left = l; tasks.push(writeJSON(lobbyFile(code), lob)); }

@@ -314,6 +314,7 @@ class Tutorial {
     txt(c, 'Anleitung · ' + ch.title, 76, 34, 18, '#fff', 'left', BRAND.ink);
     const n = TUT_CHAPTERS.length, bx = v.land ? W * 0.45 : 16, bw = W - bx - 70;
     for (let i = 0; i < n; i++) { const x = bx + (i / n) * bw, w = bw / n - 4; rrPath(c, x, 50, w, 7, 3.5); c.fillStyle = i < this.i ? BRAND.lime : 'rgba(255,255,255,.3)'; c.fill(); if (i === this.i) { rrPath(c, x, 50, w * clamp(S.trying ? 1 : this.t / ch.dur, 0, 1), 7, 3.5); c.fillStyle = '#fff'; c.fill(); } }
+    for (let i = 0; i < n; i++) { const x = bx + (i / n) * bw; UI.btn(x, 36, bw / n, 34, () => { this.list = false; this.paused = false; this.begin(i); }); }   // Kapitel direkt antippen
     soundBtn(c, W - 34, 34);
     // "Video"
     c.save(); rrPath(c, v.x, v.y, v.w, v.h, 18); c.clip();
@@ -340,6 +341,13 @@ class Tutorial {
     c.save(); c.translate(nx, by); c.scale(pu, pu); roundBtn(c, 0, 0, 32, canNext ? '#06d6a0' : '#adb5bd', 'play', null); c.restore();
     UI.btn(nx - 38, by - 38, 76, 76, () => { if (this.i < n - 1) this.begin(this.i + 1); else this.finish(); });
     if (!canNext) txt(c, 'überspringen', nx, by + 44, 11, '#fff', 'center', null);
+    roundBtn(c, tx + 226, by, 22, '#ffd166', 'book', () => { this.list = !this.list; });   // Kapitel-Liste
+    if (this.list) {
+      c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H); UI.btn(0, 0, W, H, () => {});   // darunter nichts antippbar
+      const cols = W > 600 ? 2 : 1, iw = Math.min(280, (W - 40) / cols - 10), ih = 38, rows = Math.ceil(n / cols), lw = cols * (iw + 10) + 20, lh2 = rows * (ih + 6) + 70, lx = (W - lw) / 2, ly = Math.max(8, (H - lh2) / 2);
+      panel(c, lx, ly, lw, lh2, '#fff7e6', 20); txt(c, 'Kapitel', lx + 20, ly + 26, 18, BRAND.olive, 'left', null); roundBtn(c, lx + lw - 26, ly + 26, 18, '#ced4da', 'cross', () => { this.list = false; });
+      TUT_CHAPTERS.forEach((C, i) => { const x = lx + 15 + (i % cols) * (iw + 10), y = ly + 52 + Math.floor(i / cols) * (ih + 6); rrPath(c, x, y, iw, ih, 12); fs(c, i === this.i ? '#ffd166' : '#fff', 2); txt(c, (i + 1) + '. ' + C.title, x + 12, y + ih / 2, 14, '#3d2c1f', 'left', null); UI.btn(x, y, iw, ih, () => { this.list = false; this.paused = false; this.begin(i); }); });
+    }
   }
   down(x, y) { const ch = this.ch(), S = this.S; if (!S.trying || S.done) return; const p = this.toV(x, y); if (p.x < 0 || p.y < 0 || p.x > TV.w || p.y > TV.h) return; if (ch.tap) ch.tap(S, p.x, p.y); if (ch.press) ch.press(S, p.x, p.y); }
   move(x, y) { const ch = this.ch(), S = this.S; if (!S.trying || !ch.drag) return; const p = this.toV(x, y); ch.drag(S, p.x, p.y); }

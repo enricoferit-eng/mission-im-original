@@ -79,7 +79,8 @@ GAMES.auffangen = { challenge: true, make(env) {
       kitchenBg(c, 470); txtGot(c, got, need);
       drawPersonMini(c, 200, 120);
       for (const o of items) { c.save(); c.translate(o.x, o.y); c.rotate(o.a);
-        if (o.k === 'burnt') { ell(c, 0, 0, 20, 12); fs(c, '#343a40', 2.5); for (let k = 0; k < 2; k++) { ell(c, -6 + k * 12, -18 - Math.sin(t * 6 + k) * 4, 5, 5); c.fillStyle = 'rgba(80,80,80,.5)'; c.fill(); } }
+        if (o.k === 'burnt') { c.rotate(-o.a); for (let k = 0; k < 3; k++) { const ph = (t * 1.4 + k / 3) % 1; ell(c, -8 + k * 8 + Math.sin(t * 3 + k) * 3, -14 - ph * 30, 6 + ph * 6, 6 + ph * 6); c.fillStyle = `rgba(60,60,60,${0.7 * (1 - ph)})`; c.fill(); } c.rotate(o.a);   /* angebrannt: tiefschwarz mit dickem Rauch */
+          ell(c, 0, 0, 22, 12); fs(c, '#111', 3); line(c, -10, -3, -2, 2, 2, '#ff6b35', false); line(c, 4, -4, 12, 1, 2, '#ff6b35', false); }
         else if (o.k === 'pfannkuchen') { ell(c, 0, 0, 22, 12); fs(c, '#f4c87a', 2.5); ell(c, 0, -2, 12, 6); c.fillStyle = '#e9a94f'; c.fill(); }
         else drawIngr(c, o.k, 0, 0, 0.8);
         c.restore(); }
@@ -282,6 +283,7 @@ function drawSnowBall(c, x, y, s, head) {
 }
 
 // 8) Geschenke packen: Zieh jedes Geschenk in den Sack mit der gleichen Schleifenfarbe
+const GIFT_SYM = ['heart', 'star', 'crown', 'check'];
 GAMES.geschenke = { make(env) {
   const r = env.r, L = L6(env), COLS = ['#e63946', '#118ab2', '#2b9348', '#ffd166'].slice(0, 2 + Math.min(2, L + 1)), need = 6 + L * 3;
   const sacks = COLS.map((col, i) => ({ col, x: 200 + (i - (COLS.length - 1) / 2) * (360 / COLS.length), y: 430, n: 0 }));
@@ -298,11 +300,11 @@ GAMES.geschenke = { make(env) {
     },
     draw(c) {
       chaletBg(c, 330, t); txtGot(c, got, need);
-      sacks.forEach(s => { c.beginPath(); c.moveTo(s.x - 42, s.y - 20); c.quadraticCurveTo(s.x - 60, s.y + 70, s.x, s.y + 70); c.quadraticCurveTo(s.x + 60, s.y + 70, s.x + 42, s.y - 20); c.closePath(); fs(c, '#a0673a', 3); ell(c, s.x, s.y - 20, 42, 12); fs(c, '#6b4423', 3); rrPath(c, s.x - 40, s.y - 6, 80, 12, 6); fs(c, s.col, 2.5); });
-      gifts.forEach(g => drawGift(c, g.x, g.y, g.s, g.box, g.col));
+      sacks.forEach((s, i) => { c.beginPath(); c.moveTo(s.x - 42, s.y - 20); c.quadraticCurveTo(s.x - 60, s.y + 70, s.x, s.y + 70); c.quadraticCurveTo(s.x + 60, s.y + 70, s.x + 42, s.y - 20); c.closePath(); fs(c, '#a0673a', 3); ell(c, s.x, s.y - 20, 42, 12); fs(c, '#6b4423', 3); rrPath(c, s.x - 40, s.y - 6, 80, 12, 6); fs(c, s.col, 2.5); ell(c, s.x, s.y + 32, 20, 20); fs(c, s.col, 2.5); icon(c, GIFT_SYM[i], s.x, s.y + 32, 26, '#fff'); });   /* Symbol zusätzlich zur Farbe */
+      gifts.forEach(g => { drawGift(c, g.x, g.y, g.s, g.box, g.col); const i = COLS.indexOf(g.col); ell(c, g.x + 22 * g.s, g.y + 18 * g.s, 11, 11); fs(c, g.col, 2); icon(c, GIFT_SYM[i], g.x + 22 * g.s, g.y + 18 * g.s, 14, '#fff'); });
       fxText(c, fx);
     },
-    down(x, y) { if (fin.on()) return; drag = gifts.slice().reverse().find(g => Math.abs(x - g.x) < 36 && Math.abs(y - g.y) < 36) || null; if (drag) Sfx.play('tap'); },
+    down(x, y) { if (fin.on()) return; drag = gifts.slice().reverse().find(g => Math.abs(x - g.x) < 46 && Math.abs(y - g.y) < 46) || null; if (drag) Sfx.play('tap'); },
     move(x, y) { if (drag) { drag.x = x; drag.y = y; } },
     up(x, y) {
       const g = drag; drag = null; if (!g) return;
@@ -324,7 +326,7 @@ function drawGift(c, x, y, s, box, rib) {
 // 9) Parkschein: Wirf genau den Betrag in den Automaten, der angezeigt wird
 GAMES.parkschein = { make(env) {
   const r = env.r, L = L6(env), rounds = 2 + (L === 2 ? 1 : 0);
-  const COINS = L === 0 ? [100, 200] : L === 1 ? [50, 100, 200] : [10, 20, 50, 100, 200];
+  const COINS = L === 0 ? [100, 200] : L === 1 ? [50, 100, 200] : [20, 50, 100, 200];   // Schwer: ohne 10-Cent-Münzen (weniger Kleinkram)
   let price = 0, paid = 0, round = 0, t = 0, fx = [], ticket = 0, flying = []; const fin = finisher(env);
   const newPrice = () => { const step = L === 0 ? 100 : L === 1 ? 50 : 10; price = step * (1 + Math.floor(r() * (L === 0 ? 4 : L === 1 ? 7 : 30))); if (price < 100) price += 100; paid = 0; };
   newPrice();

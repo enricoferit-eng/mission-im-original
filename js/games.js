@@ -21,7 +21,7 @@ class GameOverlay {
     const o = this.opts, self = this;
     this.state = 'play'; this.t = 0; this.endT = 0; this.touched = false; this.flash = 0;
     this.timed = o.diff === 'hard' && !!GAMES[this.id].challenge;   // nur Schwer-Challenges: Leben + Zeit
-    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? [4, 5, 6, 6, 7][ability('extraherz')] : 4; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
+    this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? ABIL_VAL.extraherz[ability('extraherz')] : 4; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
     this.env = {
       diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1,
       r: mulberry32(((o.seed || 7) + this.retries * 977) >>> 0),
@@ -44,7 +44,7 @@ class GameOverlay {
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
     GAME_MOTION = o.diff === 'easy' ? 0.7 : o.diff === 'hard' ? 1.3 : 1;
-    this.cd = 1; this.ready = false; /* statt 3-2-1: das Kind drückt selbst auf „Los!“ */ this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
+    this.ready = this.retries > 0 || !!(o.steps && o.steps.i > 0); this.cd = this.ready ? 0.35 : 1; /* statt 3-2-1: das Kind drückt selbst auf „Los!“ – beim nochmal Versuchen und bei Folgeaufgaben geht es gleich los */ this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
     this.par = parTime(this.id, o.diff, o.kind); this.thr = [this.par, Math.round(this.par * 1.7)];
     const burst0 = this.env.burst; this.env.burst = (x, y, n) => { burst0(x, y, n); self.good(x, y); };
     Sfx.hook = type => { if (overlay === self && type === 'bad') self.miss(); };
@@ -52,8 +52,8 @@ class GameOverlay {
     // Beim ersten Mal erklärt sich jede Aufgabe/Challenge automatisch mit Text (Spiel ist so lange pausiert)
     // Beim ersten Mal: kurzer Hinweis über dem Spielfeld (vorgelesen) + Zeigehand – kein Textfenster, das Spiel startet sofort
     this.tip = null; this.lastTouch = 0;
-    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(helpShort(me.id), true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
-    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 80) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
+    if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 18) { setTimeout(say, 100); return; } Voice.say(helpShort(me.id), true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
+    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 18) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
     this.cdWait = this.tip ? 1.2 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + ABIL_VAL.zeitplus[ability('zeitplus')] : 0;
@@ -65,7 +65,7 @@ class GameOverlay {
     if (this.state === 'won' || this.help || this.jokerLeft() <= 0) return false;
     if (this.state === 'lost') return true;
     if (typeof isGameAdmin === 'function' && isGameAdmin()) return this.state === 'play';   // Admin: Joker sofort
-    const wait = this.opts.diff === 'easy' ? 40 : this.opts.diff === 'medium' ? 60 : 75;
+    const wait = this.opts.diff === 'easy' ? 25 : this.opts.diff === 'medium' ? 50 : 70;
     return this.retries >= 2 || this.t > wait;
   }
   useJoker() {
@@ -354,6 +354,11 @@ class GameOverlay {
       const p = this.toScreen(200, 318), r = 44 * Math.min(1.3, this.s * 1.3);
       roundBtn(c, p.x - r * 1.3, p.y, r, '#06d6a0', 'retry', () => { this.retries++; this.start(); });
       roundBtn(c, p.x + r * 1.3, p.y, r * 0.8, '#adb5bd', 'cross', () => this.finish(false));
+      if ((this.timed || this.opts.kind === 'challenge') && !this.contUsed) {   // einmal pro Aufgabe: einfach weitermachen statt von vorn (2 Herzen, mindestens 12 Sekunden)
+        const q = this.toScreen(200, 410), bw = 190 * Math.min(1.2, this.s * 1.2), bh = 50 * Math.min(1.2, this.s * 1.2), pu = 1 + Math.sin(this.t * 5) * 0.04;
+        c.save(); c.translate(q.x, q.y); c.scale(pu, pu); rrPath(c, -bw / 2, -bh / 2, bw, bh, bh / 2); fs(c, '#ffd166', 3.5); icon(c, 'play', -bw / 2 + 28, 0, bh * 0.6); txt(c, 'Weiterspielen', 14, 1, Math.round(bh * 0.36), '#3d2c1f', 'center', null); c.restore();
+        UI.btn(q.x - bw / 2, q.y - bh / 2, bw, bh, () => { this.contUsed = true; this.state = 'play'; this.lives = Math.max(this.lives, 2); this.timeLeft = Math.max(this.timeLeft, 12); this.lastTick = 99; Sfx.play('good'); });
+      }
     }
     this.drawJoker(c);
     this.drawBonus(c);
@@ -459,11 +464,13 @@ function dragKit(objs, onDrop, opt = {}) {
       for (let i = objs.length - 1; i >= 0; i--) {
         const o = objs[i];
         if (o.locked) continue;
-        if (Math.abs(x - o.x) < o.hw && Math.abs(y - o.y) < o.hh) {
+        if (Math.abs(x - o.x) < o.hw + 10 && Math.abs(y - o.y) < o.hh + 10) {   // etwas großzügiger greifen (Finger auf dem Handy)
           k.drag = o; k.ox = o.x - x; k.oy = o.y - y; o.back = false;
           objs.splice(i, 1); objs.push(o); Sfx.play('tap'); return o;
         }
       }
+      { let best = null, bd = 1e9; for (let i = 0; i < objs.length; i++) { const o = objs[i]; if (o.locked) continue; const d = Math.hypot((x - o.x) / (o.hw + 10), (y - o.y) / (o.hh + 10)); if (d < 1.5 && d < bd) { bd = d; best = i; } }   // knapp daneben: das nächste Teil nehmen
+        if (best !== null) { const o = objs[best]; k.drag = o; k.ox = 0; k.oy = 0; o.back = false; objs.splice(best, 1); objs.push(o); Sfx.play('tap'); return o; } }
       return null;
     },
     move(x, y) { if (k.drag) { k.drag.x = x + k.ox; k.drag.y = y + k.oy; } },
@@ -661,7 +668,8 @@ GAMES.puzzle = { make(env) {
     draw(c) {
       bgEasy(c);
       rrPath(c, bx - 8, by - 8, P * 3 + 16, P * 3 + 16, 14); fs(c, '#e9d8a6', 4);
-      rrPath(c, 318, 22, 72, 72, 10); fs(c, '#fff', 3); c.drawImage(img, 322, 26, 64, 64);
+      if (!env.hard) { c.globalAlpha = 0.22; c.drawImage(img, bx, by, P * 3, P * 3); c.globalAlpha = 1; }   /* blasses Vorbild im Rahmen: leichter zu erkennen, wo ein Teil hingehört */
+      rrPath(c, 312, 18, 82, 82, 10); fs(c, '#fff', 3); c.drawImage(img, 316, 22, 74, 74);
       c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 2; c.setLineDash([5, 5]);
       for (let i = 1; i < 3; i++) { c.beginPath(); c.moveTo(bx + i * P, by); c.lineTo(bx + i * P, by + 3 * P); c.moveTo(bx, by + i * P); c.lineTo(bx + 3 * P, by + i * P); c.stroke(); }
       c.setLineDash([]);
@@ -2020,7 +2028,7 @@ GAMES.platform = { challenge: true, make(env) {
   const P = { x: 60, y: GY - 1, vx: 0, vy: 0, w: 26, h: 40, on: false, coyote: 0, buf: 0, dir: 1 };
   let spawn = { x: 60, y: GY - 1 }, cam = 0, inv = 0, t = 0, won = false;
   const held = new Map(); // pointerId -> 'L'|'R'|'J'
-  const btn = { L: { x: 58, y: 470 }, R: { x: 150, y: 470 }, J: { x: 335, y: 462 } };
+  const btn = { L: { x: 50, y: 474 }, R: { x: 132, y: 474 }, J: { x: 348, y: 468 } };   // nah an den Ecken: Daumen erreichen sie auch auf dem Tablet
   const solids = () => plats.concat(movers);
   const hurt = () => { if (inv > 0) return; env.hit(); inv = 1.2; P.vy = -380; P.vx = -P.dir * 160; };
   const respawn = () => { env.hit(); inv = 1.2; P.x = spawn.x; P.y = spawn.y; P.vx = P.vy = 0; };
@@ -2104,10 +2112,10 @@ GAMES.platform = { challenge: true, make(env) {
     down(px, py, id) {
       let k = null;
       if (dist(px, py, btn.J.x, btn.J.y) < 70 || px > 260) k = 'J';
-      else if (px < 104) k = 'L'; else if (px < 230) k = 'R';
+      else if (px < 91) k = 'L'; else if (px < 230) k = 'R';
       if (k) held.set(id, k);
     },
-    move(px, py, id) { if (!held.has(id) || held.get(id) === 'J') return; held.set(id, px < 104 ? 'L' : 'R'); },
+    move(px, py, id) { if (!held.has(id) || held.get(id) === 'J') return; held.set(id, px < 91 ? 'L' : 'R'); },
     up(px, py, id) { held.delete(id); },
   };
 } };

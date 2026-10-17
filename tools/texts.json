@@ -1123,6 +1123,48 @@
  },
  {
   "who": "erzaehler",
+  "text": "Zum Bereich Küche reisen?",
+  "key": "b894e39c",
+  "clean": "Zum Bereich Küche reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Innenbereich reisen?",
+  "key": "183162b0",
+  "clean": "Zum Bereich Innenbereich reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Außenbereich reisen?",
+  "key": "679e8787",
+  "clean": "Zum Bereich Außenbereich reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Spielplatz reisen?",
+  "key": "06ec4bf4",
+  "clean": "Zum Bereich Spielplatz reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Parkplatz reisen?",
+  "key": "76e3e07b",
+  "clean": "Zum Bereich Parkplatz reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Chalet reisen?",
+  "key": "8d55f333",
+  "clean": "Zum Bereich Chalet reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.",
+  "key": "7b5f2633",
+  "clean": "So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen, und jeden Tag gibt es ein Tagesgeschenk."
+ },
+ {
+  "who": "erzaehler",
   "text": "Schau hinter Steine und Büsche – dann tippe auf die Lupe!",
   "key": "9813c3ce",
   "clean": "Schau hinter Steine und Büsche, dann tippe auf die Lupe!"
@@ -1195,9 +1237,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Sammel-Sachen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "a28cc2b0",
-  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Sammel-Sachen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Sammel-Sachen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "103e1df9",
+  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Sammel-Sachen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -1243,6 +1285,18 @@
  },
  {
   "who": "hase",
+  "text": "Ich hab beim Spielen meine Sachen verloren! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "c4ce2ea9",
+  "clean": "Ich hab beim Spielen meine Sachen verloren! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "hase",
+  "text": "Ich hab beim Spielen meine Sachen verloren! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "7c93d2d4",
+  "clean": "Ich hab beim Spielen meine Sachen verloren! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "hase",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
   "key": "1e594894",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
@@ -1276,6 +1330,18 @@
   "text": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Kannst du diese Sachen für mich finden?",
   "key": "5123255b",
   "clean": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "fuchs",
+  "text": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "05d70075",
+  "clean": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "fuchs",
+  "text": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "2bcc2680",
+  "clean": "Ich wollte gerade spielen, und jetzt sind meine Spielsachen weg! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "fuchs",
@@ -1315,6 +1381,18 @@
  },
  {
   "who": "igel",
+  "text": "Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "c47cbae2",
+  "clean": "Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "igel",
+  "text": "Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "90271119",
+  "clean": "Ich war kurz an der Eistheke, und jetzt sind meine Sachen verschwunden! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "igel",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
   "key": "1d5b6a0e",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
@@ -1351,6 +1429,18 @@
  },
  {
   "who": "waschbaer",
+  "text": "Ich will weiterspielen, aber überall fehlt etwas! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "c839f61b",
+  "clean": "Ich will weiterspielen, aber überall fehlt etwas! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Ich will weiterspielen, aber überall fehlt etwas! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "1b8f17ea",
+  "clean": "Ich will weiterspielen, aber überall fehlt etwas! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "waschbaer",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!",
   "key": "fa86ece9",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Steinen und Büschen und im Hackschnitzel!"
@@ -1384,6 +1474,18 @@
   "text": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Kannst du diese Sachen für mich finden?",
   "key": "90706518",
   "clean": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "eule",
+  "text": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "47c78212",
+  "clean": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "eule",
+  "text": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "ab93c329",
+  "clean": "Vom Spielhaus aus sehe ich alles, nur meine Sachen nicht! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "eule",
@@ -1429,9 +1531,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "be95bc1a",
-  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "baf1c9bf",
+  "clean": "Sprich mit den Kindern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Steinen und Büschen oder gucken aus dem Boden. Aber Vorsicht: Manchmal ist es nur ein Stöckchen! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Kind. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte große Aufgabe. Lauf über die leuchtenden Original-Blätter: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -1477,6 +1579,18 @@
  },
  {
   "who": "k_marco",
+  "text": "Heute ist richtig was los in der Küche, und mir fehlen Sachen! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "1e999b1e",
+  "clean": "Heute ist richtig was los in der Küche, und mir fehlen Sachen! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "k_marco",
+  "text": "Heute ist richtig was los in der Küche, und mir fehlen Sachen! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "50ff2dd5",
+  "clean": "Heute ist richtig was los in der Küche, und mir fehlen Sachen! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "k_marco",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!",
   "key": "ae564fe2",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!"
@@ -1510,6 +1624,18 @@
   "text": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Kannst du diese Sachen für mich finden?",
   "key": "3537ec65",
   "clean": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_luca",
+  "text": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "612e8de7",
+  "clean": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "k_luca",
+  "text": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "d64cf5e6",
+  "clean": "Gleich müssen die Flammkuchen in den Ofen, aber meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "k_luca",
@@ -1549,6 +1675,18 @@
  },
  {
   "who": "k_tom",
+  "text": "Beim Spülen ist mir einiges verloren gegangen! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "bbdcfb88",
+  "clean": "Beim Spülen ist mir einiges verloren gegangen! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "k_tom",
+  "text": "Beim Spülen ist mir einiges verloren gegangen! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "61372c4b",
+  "clean": "Beim Spülen ist mir einiges verloren gegangen! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "k_tom",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!",
   "key": "f56ba3f4",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!"
@@ -1585,6 +1723,18 @@
  },
  {
   "who": "k_nina",
+  "text": "Im Lager ist alles durcheinander. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?",
+  "key": "2178b272",
+  "clean": "Im Lager ist alles durcheinander. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "k_nina",
+  "text": "Im Lager ist alles durcheinander. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!",
+  "key": "10f5d5c9",
+  "clean": "Im Lager ist alles durcheinander. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "k_nina",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!",
   "key": "1eacdeee",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in Töpfe und Kisten, auf die Wagen und hinter den Kühlschrank!"
@@ -1618,6 +1768,18 @@
   "text": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Kannst du diese Sachen für mich finden?",
   "key": "0fcb9e11",
   "clean": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "k_lea",
+  "text": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Hilfst du mir, diese Sachen zu suchen?",
+  "key": "74d607e3",
+  "clean": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "k_lea",
+  "text": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Findest du diese Sachen für mich? Das wäre super!",
+  "key": "c8ffcdb2",
+  "clean": "Die Gäste warten schon! Mir fehlen noch ein paar Sachen. Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "k_lea",
@@ -1663,9 +1825,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Kochmützen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "f3ff88a6",
-  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Kochmützen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Kochmützen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "d0cba1f5",
+  "clean": "Sprich mit den Mitarbeitern mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Töpfen und Kisten, auf den Servierwagen und hinter Kühlschrank, Fässern und Säcken. Aber Vorsicht: Manchmal ist es nur eine Nudel oder ein Kronkorken! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Mitarbeiter. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte große Aufgabe. Lauf über die leuchtenden Kochmützen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -1723,6 +1885,18 @@
  },
  {
   "who": "g_rosi",
+  "text": "Ach je, ich habe beim Kaffeetrinken ein paar Sachen verlegt! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "e66dcffc",
+  "clean": "Ach je, ich habe beim Kaffeetrinken ein paar Sachen verlegt! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "g_rosi",
+  "text": "Ach je, ich habe beim Kaffeetrinken ein paar Sachen verlegt! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "173f0c8f",
+  "clean": "Ach je, ich habe beim Kaffeetrinken ein paar Sachen verlegt! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "g_rosi",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!",
   "key": "dbf6d53c",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!"
@@ -1756,6 +1930,18 @@
   "text": "Wir wollten gerade bestellen, aber auf unserem Tisch fehlt etwas! Kannst du diese Sachen für mich finden?",
   "key": "30bf4fc9",
   "clean": "Wir wollten gerade bestellen, aber auf unserem Tisch fehlt etwas! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "g_becker",
+  "text": "Wir wollten gerade bestellen, aber auf unserem Tisch fehlt etwas! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "0213476b",
+  "clean": "Wir wollten gerade bestellen, aber auf unserem Tisch fehlt etwas! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "g_becker",
+  "text": "Wir wollten gerade bestellen, aber auf unserem Tisch fehlt etwas! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "63def95a",
+  "clean": "Wir wollten gerade bestellen, aber auf unserem Tisch fehlt etwas! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "g_becker",
@@ -1795,6 +1981,18 @@
  },
  {
   "who": "g_lina",
+  "text": "Heute ist mein Geburtstag, und meine Party-Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "0e8553b2",
+  "clean": "Heute ist mein Geburtstag, und meine Party-Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "g_lina",
+  "text": "Heute ist mein Geburtstag, und meine Party-Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "46110909",
+  "clean": "Heute ist mein Geburtstag, und meine Party-Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "g_lina",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!",
   "key": "081c7c9b",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!"
@@ -1831,6 +2029,18 @@
  },
  {
   "who": "g_schulz",
+  "text": "Ich habe für meine Familie gedeckt, aber ein paar Sachen sind verschwunden! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "cca6289d",
+  "clean": "Ich habe für meine Familie gedeckt, aber ein paar Sachen sind verschwunden! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "g_schulz",
+  "text": "Ich habe für meine Familie gedeckt, aber ein paar Sachen sind verschwunden! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "e8a59268",
+  "clean": "Ich habe für meine Familie gedeckt, aber ein paar Sachen sind verschwunden! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "g_schulz",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!",
   "key": "0594dfd0",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, auf die Bar und hinter die Palmen!"
@@ -1864,6 +2074,18 @@
   "text": "Ich wollte nur kurz zur Bar, und jetzt finde ich meine Sachen nicht mehr! Kannst du diese Sachen für mich finden?",
   "key": "897dd752",
   "clean": "Ich wollte nur kurz zur Bar, und jetzt finde ich meine Sachen nicht mehr! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "g_ben",
+  "text": "Ich wollte nur kurz zur Bar, und jetzt finde ich meine Sachen nicht mehr! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "8ad28464",
+  "clean": "Ich wollte nur kurz zur Bar, und jetzt finde ich meine Sachen nicht mehr! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "g_ben",
+  "text": "Ich wollte nur kurz zur Bar, und jetzt finde ich meine Sachen nicht mehr! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "9922b797",
+  "clean": "Ich wollte nur kurz zur Bar, und jetzt finde ich meine Sachen nicht mehr! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "g_ben",
@@ -1909,9 +2131,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Kaffeebohnen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "aa7b0ce3",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Kaffeebohnen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Kaffeebohnen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "7cc9353c",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter Tischen, auf der Bar, hinter Palmen und in Kübeln und im Weinfass. Aber Vorsicht: Manchmal ist es nur ein Korken oder ein Strohhalm! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte große Aufgabe. Lauf über die leuchtenden Kaffeebohnen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -1957,6 +2179,18 @@
  },
  {
   "who": "a_weber",
+  "text": "Ich wollte die Sonne genießen, aber meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "d344ba12",
+  "clean": "Ich wollte die Sonne genießen, aber meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "a_weber",
+  "text": "Ich wollte die Sonne genießen, aber meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "e90a6b29",
+  "clean": "Ich wollte die Sonne genießen, aber meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "a_weber",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
   "key": "4753a9ca",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
@@ -1990,6 +2224,18 @@
   "text": "Der Wind hat ein paar Sachen von meinem Tisch geweht! Kannst du diese Sachen für mich finden?",
   "key": "10067809",
   "clean": "Der Wind hat ein paar Sachen von meinem Tisch geweht! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "a_hoffmann",
+  "text": "Der Wind hat ein paar Sachen von meinem Tisch geweht! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "b64d00ab",
+  "clean": "Der Wind hat ein paar Sachen von meinem Tisch geweht! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "a_hoffmann",
+  "text": "Der Wind hat ein paar Sachen von meinem Tisch geweht! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "b67ed49a",
+  "clean": "Der Wind hat ein paar Sachen von meinem Tisch geweht! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "a_hoffmann",
@@ -2029,6 +2275,18 @@
  },
  {
   "who": "a_klaus",
+  "text": "Ich habe hier draußen ein Nickerchen gemacht, und jetzt fehlt etwas! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "7f503c54",
+  "clean": "Ich habe hier draußen ein Nickerchen gemacht, und jetzt fehlt etwas! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "a_klaus",
+  "text": "Ich habe hier draußen ein Nickerchen gemacht, und jetzt fehlt etwas! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "6b65f3e7",
+  "clean": "Ich habe hier draußen ein Nickerchen gemacht, und jetzt fehlt etwas! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "a_klaus",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
   "key": "3ce7c4d5",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
@@ -2065,6 +2323,18 @@
  },
  {
   "who": "a_mila",
+  "text": "Ich habe beim Spielen auf der Terrasse meine Sachen verloren! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "8de69da4",
+  "clean": "Ich habe beim Spielen auf der Terrasse meine Sachen verloren! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "a_mila",
+  "text": "Ich habe beim Spielen auf der Terrasse meine Sachen verloren! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "0e8da3d7",
+  "clean": "Ich habe beim Spielen auf der Terrasse meine Sachen verloren! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "a_mila",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!",
   "key": "d766ad80",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in die Blumentöpfe, unter die Tische und in den Brunnen!"
@@ -2098,6 +2368,18 @@
   "text": "Ich war kurz am Brunnen, und jetzt sind meine Sachen verschwunden! Kannst du diese Sachen für mich finden?",
   "key": "e8b9a3d3",
   "clean": "Ich war kurz am Brunnen, und jetzt sind meine Sachen verschwunden! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "a_noah",
+  "text": "Ich war kurz am Brunnen, und jetzt sind meine Sachen verschwunden! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "e16c3b7d",
+  "clean": "Ich war kurz am Brunnen, und jetzt sind meine Sachen verschwunden! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "a_noah",
+  "text": "Ich war kurz am Brunnen, und jetzt sind meine Sachen verschwunden! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "32a9a788",
+  "clean": "Ich war kurz am Brunnen, und jetzt sind meine Sachen verschwunden! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "a_noah",
@@ -2143,9 +2425,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Sonnenblumen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "887fc3da",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Sonnenblumen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Sonnenblumen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "09957273",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen in Blumentöpfen, unter Tischen, im Brunnen, in Kissenboxen und hinter Bäumen. Aber Vorsicht: Manchmal ist es nur ein Blatt oder ein Kronkorken! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte große Aufgabe. Lauf über die leuchtenden Sonnenblumen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -2191,6 +2473,18 @@
  },
  {
   "who": "c_gerda",
+  "text": "In der warmen Hütte habe ich meine Sachen verlegt! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "5d9bd2ef",
+  "clean": "In der warmen Hütte habe ich meine Sachen verlegt! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "c_gerda",
+  "text": "In der warmen Hütte habe ich meine Sachen verlegt! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "1e4c6e4e",
+  "clean": "In der warmen Hütte habe ich meine Sachen verlegt! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "c_gerda",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!",
   "key": "bd9c22f6",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!"
@@ -2224,6 +2518,18 @@
   "text": "Ich war Schlitten fahren, und jetzt sind meine Sachen im Schnee verschwunden! Kannst du diese Sachen für mich finden?",
   "key": "072ce389",
   "clean": "Ich war Schlitten fahren, und jetzt sind meine Sachen im Schnee verschwunden! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "c_felix",
+  "text": "Ich war Schlitten fahren, und jetzt sind meine Sachen im Schnee verschwunden! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "941eaa2b",
+  "clean": "Ich war Schlitten fahren, und jetzt sind meine Sachen im Schnee verschwunden! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "c_felix",
+  "text": "Ich war Schlitten fahren, und jetzt sind meine Sachen im Schnee verschwunden! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "ac5bcb1a",
+  "clean": "Ich war Schlitten fahren, und jetzt sind meine Sachen im Schnee verschwunden! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "c_felix",
@@ -2263,6 +2569,18 @@
  },
  {
   "who": "c_berger",
+  "text": "Gleich gibt es Fondue, aber mir fehlt noch etwas! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "95deeaec",
+  "clean": "Gleich gibt es Fondue, aber mir fehlt noch etwas! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "c_berger",
+  "text": "Gleich gibt es Fondue, aber mir fehlt noch etwas! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "85a8db1f",
+  "clean": "Gleich gibt es Fondue, aber mir fehlt noch etwas! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "c_berger",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!",
   "key": "a962eeb0",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!"
@@ -2299,6 +2617,18 @@
  },
  {
   "who": "c_toni",
+  "text": "Nach dem Skifahren finde ich meine Sachen nicht mehr! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "e93dcc08",
+  "clean": "Nach dem Skifahren finde ich meine Sachen nicht mehr! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "c_toni",
+  "text": "Nach dem Skifahren finde ich meine Sachen nicht mehr! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "7f8ff5cb",
+  "clean": "Nach dem Skifahren finde ich meine Sachen nicht mehr! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "c_toni",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!",
   "key": "c7b47667",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!"
@@ -2332,6 +2662,18 @@
   "text": "Ich wollte einen Schneemann bauen, aber meine Sachen sind weg! Kannst du diese Sachen für mich finden?",
   "key": "d3ef2361",
   "clean": "Ich wollte einen Schneemann bauen, aber meine Sachen sind weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "c_anna",
+  "text": "Ich wollte einen Schneemann bauen, aber meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "02791b93",
+  "clean": "Ich wollte einen Schneemann bauen, aber meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "c_anna",
+  "text": "Ich wollte einen Schneemann bauen, aber meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "d8064d42",
+  "clean": "Ich wollte einen Schneemann bauen, aber meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "c_anna",
@@ -2377,9 +2719,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Schneeflocken: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "6cef6e0c",
-  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Schneeflocken: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Schneeflocken: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "a6df1cfd",
+  "clean": "Sprich mit den Gästen mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen unter den Tischen, beim Christbaum, im Holzstapel, hinter Tannen und dem Schneemann. Aber Vorsicht: Manchmal ist es nur ein Tannenzapfen oder ein Schneeball! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zum Gast. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte große Aufgabe. Lauf über die leuchtenden Schneeflocken: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -2437,6 +2779,18 @@
  },
  {
   "who": "p_schmidt",
+  "text": "Ich passe auf den Parkplatz auf, aber mir ist einiges abhandengekommen! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "801daaf0",
+  "clean": "Ich passe auf den Parkplatz auf, aber mir ist einiges abhandengekommen! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Ich passe auf den Parkplatz auf, aber mir ist einiges abhandengekommen! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "34696ad3",
+  "clean": "Ich passe auf den Parkplatz auf, aber mir ist einiges abhandengekommen! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "p_schmidt",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!",
   "key": "a221a552",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!"
@@ -2470,6 +2824,18 @@
   "text": "Wir wollen nach Hause fahren, aber ich finde meine Sachen nicht! Kannst du diese Sachen für mich finden?",
   "key": "37133672",
   "clean": "Wir wollen nach Hause fahren, aber ich finde meine Sachen nicht! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "p_julia",
+  "text": "Wir wollen nach Hause fahren, aber ich finde meine Sachen nicht! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "af0dd144",
+  "clean": "Wir wollen nach Hause fahren, aber ich finde meine Sachen nicht! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "p_julia",
+  "text": "Wir wollen nach Hause fahren, aber ich finde meine Sachen nicht! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "519aa637",
+  "clean": "Wir wollen nach Hause fahren, aber ich finde meine Sachen nicht! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "p_julia",
@@ -2509,6 +2875,18 @@
  },
  {
   "who": "p_karl",
+  "text": "Mein Auto steht hier irgendwo, und meine Sachen auch! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "5305df6d",
+  "clean": "Mein Auto steht hier irgendwo, und meine Sachen auch! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "p_karl",
+  "text": "Mein Auto steht hier irgendwo, und meine Sachen auch! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "9b5cfcd8",
+  "clean": "Mein Auto steht hier irgendwo, und meine Sachen auch! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "p_karl",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!",
   "key": "0945d904",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!"
@@ -2545,6 +2923,18 @@
  },
  {
   "who": "p_petra",
+  "text": "Mein Bus fährt gleich, aber mir fehlen noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "dfd6a594",
+  "clean": "Mein Bus fährt gleich, aber mir fehlen noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "p_petra",
+  "text": "Mein Bus fährt gleich, aber mir fehlen noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "bb112527",
+  "clean": "Mein Bus fährt gleich, aber mir fehlen noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "p_petra",
   "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!",
   "key": "8a8f041e",
   "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!"
@@ -2578,6 +2968,18 @@
   "text": "Ich bin mit dem Fahrrad da, und jetzt ist meine Ausrüstung weg! Kannst du diese Sachen für mich finden?",
   "key": "881d213a",
   "clean": "Ich bin mit dem Fahrrad da, und jetzt ist meine Ausrüstung weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "p_tim",
+  "text": "Ich bin mit dem Fahrrad da, und jetzt ist meine Ausrüstung weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "68f6ba5c",
+  "clean": "Ich bin mit dem Fahrrad da, und jetzt ist meine Ausrüstung weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "p_tim",
+  "text": "Ich bin mit dem Fahrrad da, und jetzt ist meine Ausrüstung weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "3b90822f",
+  "clean": "Ich bin mit dem Fahrrad da, und jetzt ist meine Ausrüstung weg! Findest du diese Sachen für mich? Das wäre super!"
  },
  {
   "who": "p_tim",
@@ -2623,9 +3025,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen. Aber Vorsicht: Manchmal ist es nur ein Kronkorken oder ein Zettel! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zur Person. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Leuten geholfen hast, wartet an der Schranke zur Straße die letzte große Aufgabe. Lauf über die leuchtenden Sterne: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "94ca31e3",
-  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen. Aber Vorsicht: Manchmal ist es nur ein Kronkorken oder ein Zettel! Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zur Person. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Leuten geholfen hast, wartet an der Schranke zur Straße die letzte große Aufgabe. Lauf über die leuchtenden Sterne: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen. Aber Vorsicht: Manchmal ist es nur ein Kronkorken oder ein Zettel! Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zur Person. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Leuten geholfen hast, wartet an der Schranke zur Straße die letzte große Aufgabe. Lauf über die leuchtenden Sterne: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt – in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "4121bad4",
+  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Die Dinge liegen hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen. Aber Vorsicht: Manchmal ist es nur ein Kronkorken oder ein Zettel! Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Die Spürnase zeigt dir, wie nah du an einem Versteck bist: viele rote Striche = ganz nah. Hast du alles, bring es zurück zur Person. Wenn du lange nichts findest, leuchtet der Hilfe-Stern auf. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich. Wenn du allen 5 Leuten geholfen hast, wartet an der Schranke zur Straße die letzte große Aufgabe. Lauf über die leuchtenden Sterne: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Oben rechts öffnet die Karte die ganze Welt, in freigeschaltete Bereiche kannst du dich dort direkt bringen lassen. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
@@ -2683,27 +3085,27 @@
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. (Stufe 1 von 4) – gibt es nur im Bereich Innenbereich.",
-  "key": "6cd01b72",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. , gibt es nur im Bereich Innenbereich."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 4 Herzen. (Stufe 1 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "8ac75484",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 4 Herzen. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf. (Stufe 2 von 4) – gibt es nur im Bereich Innenbereich.",
-  "key": "0b568565",
-  "clean": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf. , gibt es nur im Bereich Innenbereich."
+  "text": "Adlerauge. Verstecke im Umkreis von 13 Schritten leuchten golden auf. (Stufe 2 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "f5f63f8a",
+  "clean": "Adlerauge. Verstecke im Umkreis von 13 Schritten leuchten golden auf. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. (Stufe 1 von 4) – gibt es nur im Bereich Innenbereich.",
-  "key": "71f49418",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. , gibt es nur im Bereich Innenbereich."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit. (Stufe 1 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "1b7f367e",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. (Stufe 2 von 4) – gibt es nur im Bereich Innenbereich.",
-  "key": "3b435533",
-  "clean": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. , gibt es nur im Bereich Innenbereich."
+  "text": "Turbo-Schuhe. Du läufst 44 % schneller durch die Welt. (Stufe 2 von 4) – gibt es nur im Bereich Innenbereich.",
+  "key": "f5b866a8",
+  "clean": "Turbo-Schuhe. Du läufst 44 % schneller durch die Welt. , gibt es nur im Bereich Innenbereich."
  },
  {
   "who": "erzaehler",
@@ -2713,9 +3115,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. (Stufe 2 von 4) – gibt es nur im Bereich Küche.",
-  "key": "e0e89adf",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. , gibt es nur im Bereich Küche."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 6 statt 4 Herzen. (Stufe 2 von 4) – gibt es nur im Bereich Küche.",
+  "key": "d5390b33",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 6 statt 4 Herzen. , gibt es nur im Bereich Küche."
  },
  {
   "who": "erzaehler",
@@ -2725,21 +3127,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit. (Stufe 2 von 4) – gibt es nur im Bereich Küche.",
-  "key": "fbc8c1db",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit. , gibt es nur im Bereich Küche."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit. (Stufe 2 von 4) – gibt es nur im Bereich Küche.",
+  "key": "f688bee7",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit. , gibt es nur im Bereich Küche."
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. (Stufe 2 von 4) – gibt es nur im Bereich Außenbereich.",
-  "key": "a281ed05",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. , gibt es nur im Bereich Außenbereich."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 2 von 4) – gibt es nur im Bereich Außenbereich.",
+  "key": "c13a2c90",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. , gibt es nur im Bereich Außenbereich."
  },
  {
   "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150. (Stufe 3 von 4) – gibt es nur im Bereich Außenbereich.",
-  "key": "1d1f19aa",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150. , gibt es nur im Bereich Außenbereich."
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 40 Sekunden statt nach 150. (Stufe 3 von 4) – gibt es nur im Bereich Außenbereich.",
+  "key": "09400d77",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 40 Sekunden statt nach 150. , gibt es nur im Bereich Außenbereich."
  },
  {
   "who": "erzaehler",
@@ -2755,15 +3157,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer. (Stufe 1 von 4) – gibt es nur im Bereich Chalet.",
-  "key": "42355896",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer. , gibt es nur im Bereich Chalet."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 25 % langsamer. (Stufe 1 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "716a2be5",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 25 % langsamer. , gibt es nur im Bereich Chalet."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt. (Stufe 3 von 4) – gibt es nur im Bereich Chalet.",
-  "key": "623eff06",
-  "clean": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt. , gibt es nur im Bereich Chalet."
+  "text": "Turbo-Schuhe. Du läufst 61 % schneller durch die Welt. (Stufe 3 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "69fc3d9a",
+  "clean": "Turbo-Schuhe. Du läufst 61 % schneller durch die Welt. , gibt es nur im Bereich Chalet."
  },
  {
   "who": "erzaehler",
@@ -2779,15 +3181,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. (Stufe 3 von 4) – gibt es nur im Bereich Chalet.",
-  "key": "d590c406",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. , gibt es nur im Bereich Chalet."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 7 statt 4 Herzen. (Stufe 3 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "0cb12ab7",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 7 statt 4 Herzen. , gibt es nur im Bereich Chalet."
  },
  {
   "who": "erzaehler",
-  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 45 Sekunden mehr Zeit. (Stufe 4 von 4) – gibt es nur im Bereich Chalet.",
-  "key": "0de9718c",
-  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 45 Sekunden mehr Zeit. , gibt es nur im Bereich Chalet."
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 55 Sekunden mehr Zeit. (Stufe 4 von 4) – gibt es nur im Bereich Chalet.",
+  "key": "0e0664c7",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 55 Sekunden mehr Zeit. , gibt es nur im Bereich Chalet."
  },
  {
   "who": "erzaehler",
@@ -2797,21 +3199,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. (Stufe 2 von 4) – gibt es nur im Bereich Spielplatz.",
-  "key": "7af103f9",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. , gibt es nur im Bereich Spielplatz."
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 55 Sekunden statt nach 150. (Stufe 2 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "3cd2e48e",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 55 Sekunden statt nach 150. , gibt es nur im Bereich Spielplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 3 von 4) – gibt es nur im Bereich Spielplatz.",
-  "key": "7a52a421",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. , gibt es nur im Bereich Spielplatz."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 50 % langsamer. (Stufe 3 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "138e25a4",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 50 % langsamer. , gibt es nur im Bereich Spielplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. (Stufe 1 von 4) – gibt es nur im Bereich Spielplatz.",
-  "key": "b51a033e",
-  "clean": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. , gibt es nur im Bereich Spielplatz."
+  "text": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden auf. (Stufe 1 von 4) – gibt es nur im Bereich Spielplatz.",
+  "key": "5af4b559",
+  "clean": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden auf. , gibt es nur im Bereich Spielplatz."
  },
  {
   "who": "erzaehler",
@@ -2827,51 +3229,51 @@
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. (Stufe 1 von 4) – gibt es nur im Bereich Parkplatz.",
-  "key": "8d1d9f45",
-  "clean": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. , gibt es nur im Bereich Parkplatz."
+  "text": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden auf. (Stufe 1 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "4e0272d0",
+  "clean": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden auf. , gibt es nur im Bereich Parkplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit. (Stufe 3 von 4) – gibt es nur im Bereich Parkplatz.",
-  "key": "f6ed236c",
-  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit. , gibt es nur im Bereich Parkplatz."
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 40 Sekunden mehr Zeit. (Stufe 3 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "d8c812eb",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 40 Sekunden mehr Zeit. , gibt es nur im Bereich Parkplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke im Umkreis von 19 Schritten leuchten golden auf. (Stufe 4 von 4) – gibt es nur im Bereich Parkplatz.",
-  "key": "812da9a3",
-  "clean": "Adlerauge. Verstecke im Umkreis von 19 Schritten leuchten golden auf. , gibt es nur im Bereich Parkplatz."
+  "text": "Adlerauge. Verstecke im Umkreis von 20 Schritten leuchten golden auf. (Stufe 4 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "8148ecb7",
+  "clean": "Adlerauge. Verstecke im Umkreis von 20 Schritten leuchten golden auf. , gibt es nur im Bereich Parkplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. (Stufe 1 von 4) – gibt es nur im Bereich Parkplatz.",
-  "key": "66fae381",
-  "clean": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. , gibt es nur im Bereich Parkplatz."
+  "text": "Turbo-Schuhe. Du läufst 25 % schneller durch die Welt. (Stufe 1 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "8e6fd782",
+  "clean": "Turbo-Schuhe. Du läufst 25 % schneller durch die Welt. , gibt es nur im Bereich Parkplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 3 von 4) – gibt es nur im Bereich Parkplatz.",
-  "key": "d7d361f8",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. , gibt es nur im Bereich Parkplatz."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 50 % langsamer. (Stufe 3 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "bb55e3f3",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 50 % langsamer. , gibt es nur im Bereich Parkplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 67 % schneller durch die Welt. (Stufe 4 von 4) – gibt es nur im Bereich Parkplatz.",
-  "key": "fafb5c30",
-  "clean": "Turbo-Schuhe. Du läufst 67 % schneller durch die Welt. , gibt es nur im Bereich Parkplatz."
+  "text": "Turbo-Schuhe. Du läufst 78 % schneller durch die Welt. (Stufe 4 von 4) – gibt es nur im Bereich Parkplatz.",
+  "key": "45d44108",
+  "clean": "Turbo-Schuhe. Du läufst 78 % schneller durch die Welt. , gibt es nur im Bereich Parkplatz."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt. (Stufe 3 von 4)",
-  "key": "14f41706",
-  "clean": "Turbo-Schuhe. Du läufst 50 % schneller durch die Welt."
+  "text": "Turbo-Schuhe. Du läufst 61 % schneller durch die Welt. (Stufe 3 von 4)",
+  "key": "661bc81a",
+  "clean": "Turbo-Schuhe. Du läufst 61 % schneller durch die Welt."
  },
  {
   "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150. (Stufe 3 von 4)",
-  "key": "b5beca96",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 45 Sekunden statt nach 150."
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 40 Sekunden statt nach 150. (Stufe 3 von 4)",
+  "key": "696adc9f",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 40 Sekunden statt nach 150."
  },
  {
   "who": "erzaehler",
@@ -2881,15 +3283,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 3 von 4)",
-  "key": "ae5f2820",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 50 % langsamer. (Stufe 3 von 4)",
+  "key": "2295996b",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 50 % langsamer."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit. (Stufe 2 von 4)",
-  "key": "aa3885fa",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 7 Sekunden mehr Zeit."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit. (Stufe 2 von 4)",
+  "key": "b204b82e",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
@@ -2899,27 +3301,27 @@
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf. (Stufe 2 von 4)",
-  "key": "9dcdd6e8",
-  "clean": "Adlerauge. Verstecke im Umkreis von 12 Schritten leuchten golden auf."
+  "text": "Adlerauge. Verstecke im Umkreis von 13 Schritten leuchten golden auf. (Stufe 2 von 4)",
+  "key": "4274d98d",
+  "clean": "Adlerauge. Verstecke im Umkreis von 13 Schritten leuchten golden auf."
  },
  {
   "who": "erzaehler",
-  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 20 Sekunden mehr Zeit. (Stufe 2 von 4)",
-  "key": "09654861",
-  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 20 Sekunden mehr Zeit."
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit. (Stufe 2 von 4)",
+  "key": "91af6694",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 30 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen. (Stufe 3 von 4)",
-  "key": "4cdade06",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 3 Herzen."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 7 statt 4 Herzen. (Stufe 3 von 4)",
+  "key": "48d9a7f1",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 7 statt 4 Herzen."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit. (Stufe 3 von 4)",
-  "key": "b204b82e",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 10 Sekunden mehr Zeit."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 14 Sekunden mehr Zeit. (Stufe 3 von 4)",
+  "key": "ede06f1a",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 14 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
@@ -2929,9 +3331,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150. (Stufe 2 von 4)",
-  "key": "b8c99828",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 65 Sekunden statt nach 150."
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 55 Sekunden statt nach 150. (Stufe 2 von 4)",
+  "key": "faa9245d",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 55 Sekunden statt nach 150."
  },
  {
   "who": "erzaehler",
@@ -2941,27 +3343,27 @@
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt. (Stufe 1 von 4)",
-  "key": "797d4109",
-  "clean": "Turbo-Schuhe. Du läufst 19 % schneller durch die Welt."
+  "text": "Turbo-Schuhe. Du läufst 25 % schneller durch die Welt. (Stufe 1 von 4)",
+  "key": "6176888a",
+  "clean": "Turbo-Schuhe. Du läufst 25 % schneller durch die Welt."
  },
  {
   "who": "erzaehler",
-  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit. (Stufe 1 von 4)",
-  "key": "2400533b",
-  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 4 Sekunden mehr Zeit."
+  "text": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit. (Stufe 1 von 4)",
+  "key": "151be999",
+  "clean": "Zeit-Uhr. In Geschicklichkeits-Aufgaben hast du 6 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
-  "text": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf. (Stufe 1 von 4)",
-  "key": "b2dea6ad",
-  "clean": "Adlerauge. Verstecke im Umkreis von 8 Schritten leuchten golden auf."
+  "text": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden auf. (Stufe 1 von 4)",
+  "key": "5c12e988",
+  "clean": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden auf."
  },
  {
   "who": "erzaehler",
-  "text": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt. (Stufe 2 von 4)",
-  "key": "664e0ba6",
-  "clean": "Turbo-Schuhe. Du läufst 36 % schneller durch die Welt."
+  "text": "Turbo-Schuhe. Du läufst 44 % schneller durch die Welt. (Stufe 2 von 4)",
+  "key": "ac98562b",
+  "clean": "Turbo-Schuhe. Du läufst 44 % schneller durch die Welt."
  },
  {
   "who": "erzaehler",
@@ -2977,21 +3379,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer. (Stufe 1 von 4)",
-  "key": "fe71d936",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 20 % langsamer."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 25 % langsamer. (Stufe 1 von 4)",
+  "key": "0102c2bb",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 25 % langsamer."
  },
  {
   "who": "erzaehler",
-  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit. (Stufe 1 von 4)",
-  "key": "960d514d",
-  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 15 Sekunden mehr Zeit."
+  "text": "Bonus-Uhr. Bei der Bonus-Jagd hast du 20 Sekunden mehr Zeit. (Stufe 1 von 4)",
+  "key": "09654861",
+  "clean": "Bonus-Uhr. Bei der Bonus-Jagd hast du 20 Sekunden mehr Zeit."
  },
  {
   "who": "erzaehler",
-  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer. (Stufe 2 von 4)",
-  "key": "91881f79",
-  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 30 % langsamer."
+  "text": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer. (Stufe 2 von 4)",
+  "key": "ae5f2820",
+  "clean": "Sternen-Schild. Die Zündschnur bei den Tempo-Sternen brennt 40 % langsamer."
  },
  {
   "who": "erzaehler",
@@ -3001,15 +3403,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen. (Stufe 1 von 4)",
-  "key": "1645afc5",
-  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 4 statt 3 Herzen."
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 4 Herzen. (Stufe 1 von 4)",
+  "key": "b7e6902f",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 5 statt 4 Herzen."
  },
  {
   "who": "erzaehler",
-  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 90 Sekunden statt nach 150. (Stufe 1 von 4)",
-  "key": "553d3b20",
-  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 90 Sekunden statt nach 150."
+  "text": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 80 Sekunden statt nach 150. (Stufe 1 von 4)",
+  "key": "75ecbdb3",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt sich schon nach 80 Sekunden statt nach 150."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 6 statt 4 Herzen. (Stufe 2 von 4)",
+  "key": "090f0d72",
+  "clean": "Extra-Herz. In Geschicklichkeits-Aufgaben hast du 6 statt 4 Herzen."
  },
  {
   "who": "erzaehler",

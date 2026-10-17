@@ -141,8 +141,10 @@ function drawGroundKueche(g, R) {
 }
 function drawGroundKuecheAlt(g, R) {
   // grauer Sprenkelboden
-  g.fillStyle = '#9aa0a6'; g.fillRect(0, 0, WORLD_W, WORLD_H);
-  for (let i = 0; i < 26000; i++) { g.fillStyle = ['#8d939a', '#b1b6bb', '#a5abb0', '#7e848a', '#c3c7cb'][i % 5]; g.fillRect(R() * WORLD_W, 120 + R() * (WORLD_H - 120), 2.2, 2.2); }
+  g.fillStyle = '#b3a596'; g.fillRect(0, 0, WORLD_W, WORLD_H);   // warmer Fliesenboden statt nur Grau
+  for (let i = 0; i < 20000; i++) { g.fillStyle = ['#a8998a', '#c2b5a7', '#b9ab9c', '#9d8e80', '#cbbfb2'][i % 5]; g.fillRect(R() * WORLD_W, 120 + R() * (WORLD_H - 120), 2.2, 2.2); }
+  g.strokeStyle = 'rgba(90,70,55,.16)'; g.lineWidth = 1.5; for (let x = 0; x < WORLD_W; x += 50) { g.beginPath(); g.moveTo(x, 128); g.lineTo(x, WORLD_H); g.stroke(); } for (let y = 128; y < WORLD_H; y += 50) { g.beginPath(); g.moveTo(0, y); g.lineTo(WORLD_W, y); g.stroke(); }
+  for (const [x, y, w, h, col] of [[208, 330, 40, 420, '#c1121f'], [752, 330, 40, 280, '#1971c2'], [440, 760, 160, 36, '#2b9348']]) { rrPath(g, x, y, w, h, 8); fs(g, col, 2, 'rgba(0,0,0,.35)'); g.fillStyle = 'rgba(255,255,255,.12)'; for (let k = 6; k < Math.max(w, h) - 4; k += 10) w > h ? g.fillRect(x + k, y + 4, 3, h - 8) : g.fillRect(x + 4, y + k, w - 8, 3); }   // farbige Anti-Rutsch-Matten vor Herd, Salatstation und Pass
   for (let i = 0; i < 30; i++) { g.fillStyle = 'rgba(255,255,255,.05)'; ell(g, R() * WORLD_W, 150 + R() * 1200, 60 + R() * 80, 30 + R() * 40); g.fill(); }
   // Bodenabläufe (Gitter)
   for (const [x, y] of [[320, 640], [700, 880], [520, 1150]]) { rrPath(g, x - 16, y - 12, 32, 24, 3); fs(g, '#495057', 2); g.strokeStyle = '#212529'; g.lineWidth = 1; for (let k = -12; k < 16; k += 5) { g.beginPath(); g.moveTo(x + k, y - 10); g.lineTo(x + k, y + 10); g.stroke(); } ell(g, x, y + 18, 30, 8); g.fillStyle = 'rgba(80,60,40,.12)'; g.fill(); }

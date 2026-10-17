@@ -14,6 +14,8 @@ const puppeteer = require('puppeteer-core');
     add('Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft.');
     add('Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt.');
     add('Wähle deine Figur.');
+    STAGE_ORDER.forEach(id => add('Zum Bereich ' + STAGE_NAME[id] + ' reisen?'));
+    add('So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.');
     add('Schau hinter Steine und Büsche – dann tippe auf die Lupe!');
     add('Tippe, wenn die Schaukel ganz außen ist – so holst du Schwung!');
     ['Lauf zum Tor und tippe es an!', 'Bring die Sachen zurück – tippe den Mitarbeiter an!', 'Tippe einen Mitarbeiter mit ! an.'].forEach(t => add(t));
@@ -25,12 +27,12 @@ const puppeteer = require('puppeteer-core');
     // Mitarbeiter: Aufträge in ihrer eigenen Stimme
     // Texte jedes Bereichs (Hinweise, Tor, Auftraggeber)
     Object.keys(STAGE_DEFS).forEach(sid => { useStage(sid); ['gateTap', 'lock', 'progress', 'gateAsk', 'search'].forEach(k => add(W_(k), k === 'lock' || k === 'gateAsk' ? 'gate' : 'erzaehler')); add('Bring die Sachen zurück – tippe ' + W_('the') + ' an!'); add('Tippe ' + W_('a') + ' mit ! an.');
-      const ids = STAGE_DEFS[sid].npcs.map(n => n.id); ids.concat(['gate']).forEach(n => { add(questText({ mode: 'offer', npc: n }), n); add(questText({ mode: 'progress', npc: n }), n); ids.filter(o => o !== n).forEach(o => n !== 'gate' && add(questText({ mode: 'busy', npc: n, other: o }), n)); });
+      const ids = STAGE_DEFS[sid].npcs.map(n => n.id); ids.concat(['gate']).forEach(n => { QUEST_ASK.forEach((_, v) => add(questText({ mode: 'offer', npc: n, v }), n)); add(questText({ mode: 'progress', npc: n }), n); ids.filter(o => o !== n).forEach(o => n !== 'gate' && add(questText({ mode: 'busy', npc: n, other: o }), n)); });
       ['easy', 'medium', 'hard'].forEach(d => { const src = (Play.prototype.drawHud._src || Play.prototype.drawHud).toString(); const m = src.match(/const T = this\.diff === 'easy' \? \[([\s\S]*?)\] : \[([\s\S]*?)\];/); const T = (function () { return eval('[' + m[d === 'easy' ? 1 : 2] + ']'); }).call({ diff: d, stage: sid }); add(T.join(' ')); }); });
     useStage('spielplatz');
     const npcs = ['hase', 'fuchs', 'igel', 'waschbaer', 'eule', 'gate'];
     npcs.forEach(n => {
-      add(questText({ mode: 'offer', npc: n }), n);
+      QUEST_ASK.forEach((_, v) => add(questText({ mode: 'offer', npc: n, v }), n));
       add(questText({ mode: 'progress', npc: n }), n);
       npcs.filter(o => o !== n && o !== 'gate').forEach(o => add(questText({ mode: 'busy', npc: n, other: o }), n));
     });

@@ -58,7 +58,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   const L = o.look || lookOf(kind);
   const bob = mv ? Math.abs(Math.sin(t * 12)) * 3 : Math.sin(t * 2.2) * 0.8;
   c.save(); c.translate(x, y); c.scale(s, s);
-  if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, (o.shadowY || 0), 17, 6); c.fill(); }
+  if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, (o.shadowY || 0), 16, 6); c.fill(); }
   if (L.sparkle) { for (let i = 0; i < 3; i++) { const a = t * 1.5 + i * 2.1, tw = 0.5 + 0.5 * Math.sin(t * 5 + i); c.globalAlpha = tw; starPath(c, Math.cos(a) * 22, -26 + Math.sin(a) * 26, 3.5, 1.4, 4); c.fillStyle = L.sparkle; c.fill(); c.globalAlpha = 1; } }
   c.scale(o.dir || 1, 1);
   c.lineJoin = 'round'; c.lineCap = 'round';
@@ -224,7 +224,7 @@ const KIDS = {
 function drawKid(c, id, x, y, s, t = 0, o = {}) {
   const K = KIDS[id];
   c.save(); c.translate(x, y); c.scale(s, s); c.lineJoin = 'round'; c.lineCap = 'round';
-  if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, 0, 15, 5.5); c.fill(); }
+  if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, 0, 16, 6); c.fill(); }
   const bob = Math.sin(t * 2.5 + (o.ph || 0)) * 1.2; c.translate(0, -bob);
   // Haare hinten (lange Haare / Zöpfe)
   if (K.style === 'long') { rrPath(c, -14, -44, 28, 30, 10); fs(c, K.hair, 2.5); }

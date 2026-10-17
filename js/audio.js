@@ -35,7 +35,7 @@ const Tune = {
     try { const c = Sfx.ctx(); this.on = true; this.id = id; this.step = 0; this.next = c.currentTime + 0.1; this.timer = setInterval(() => this.tick(), 60); } catch (e) { /* kein Audio */ }
   },
   stop() { this.on = false; this.id = null; if (this.timer) clearInterval(this.timer); this.timer = null; },
-  tone(f, t, dur, wave, vol) { const c = Sfx.ac, o = c.createOscillator(), g = c.createGain(); o.type = wave; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.05); },
+  tone(f, t, dur, wave, vol) { const c = Sfx.ac, o = c.createOscillator(), g = c.createGain(); o.type = wave; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(Sfx.musicBus || c.destination); o.start(t); o.stop(t + dur + 0.05); },
   tick() {
     if (!this.on) return; if (!Sfx.on() || musicOff()) { this.stop(); return; }
     const c = Sfx.ac; if (!c || c.state !== 'running') return;

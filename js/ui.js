@@ -55,13 +55,12 @@ function totalSkins(a = ACC()) {
 }
 const AVATARS = ['hase', 'fuchs', 'igel', 'waschbaer', 'eule', 'baer'];
 function accountChip(c, x, y, a, onTap) {
-  c.font = `900 18px ${FONT}`; const w = Math.max(120, c.measureText(a.name).width + 86);
+  c.font = `900 18px ${FONT}`; const w = Math.max(110, c.measureText(a.name).width + 76);
   panel(c, x, y, w, 52, '#fff7e6', 26);
   ell(c, x + 26, y + 26, 20, 20); fs(c, '#d8f3dc', 2.5);
   drawCritter(c, AVATARS[a.avatar % 6], x + 26, y + 42, 0.62, 0, { noShadow: true });
-  txt(c, a.name, x + 52, y + 19, 17, '#3d2c1f', 'left', null);
-  icon(c, 'hanger', x + 60, y + 38, 16); txt(c, String(ownedSkins(a)), x + 72, y + 39, 13, '#8d5a3b', 'left', null);
-  ell(c, x + w - 14, y + 14, 5, 5); c.fillStyle = Net.status(a).col; c.fill();
+  txt(c, a.name, x + 52, y + 27, 17, '#3d2c1f', 'left', null);   // nur Name + Figur (Skins stehen in der Garderobe)
+  ell(c, x + w - 14, y + 14, 7, 7); c.fillStyle = Net.status(a).col; c.fill(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke();
   if (onTap) UI.btn(x, y, w, 52, onTap);
   return w;
 }
@@ -73,36 +72,47 @@ class Menu {
     if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
     { const m = META(), day = new Date().toISOString().slice(0, 10); if (m && m.giftDay !== day) { const first = !m.giftDay; m.giftDay = day; Save.write(); if (!first) setTimeout(() => addCoins(20, 'Tagesgeschenk!'), 900); } }
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
+    applyVolume();
   }
   update(dt) { this.t += dt; }
   draw(c) {
     skyBg(c);
     // schwebende Leckereien im Hintergrund
     for (let i = 0; i < 9; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
+    { const mo = new Date().getMonth(); if (mo === 11 || mo === 0) for (let i = 0; i < 26; i++) { const x = (i * 97 + Math.sin(this.t * 0.7 + i) * 30) % W, y = (this.t * (20 + (i % 5) * 6) + i * 61) % (H + 20) - 10; ell(c, x, y, 2 + (i % 3), 2 + (i % 3)); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill(); }   // Saison-Deko: Winter = Schneeflocken
+      else if (mo === 9 || mo === 10) [[60, H - 70], [W - 70, H - 62]].forEach(([px, py], i) => { if (W < 500) return; c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); });   // Herbst = Kürbisse
+      else if (mo >= 3 && mo <= 4) for (let i = 0; i < 6; i++) { const x = 40 + i * (W - 80) / 5, y = H - 18; for (let k = 0; k < 5; k++) { ell(c, x + Math.cos(k * 1.26) * 6, y - 14 + Math.sin(k * 1.26) * 6, 4, 4); c.fillStyle = ['#ffc8dd', '#fff', '#ffd166'][i % 3]; c.fill(); } }   // Frühling = Blumen
+    }
     const a = ACC(); if (!a) return;
     const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.2) : clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
-    const LY = land ? 70 * ls + 18 : Math.max(132, H * 0.15);
+    const LY = land ? 70 * ls + 18 : Math.max(170, H * 0.18);
     logo(c, W / 2, LY, ls);
     claimBand(c, CLAIMS.urlaub, W / 2, LY + 76 * ls, 15 * Math.min(1.2, Math.max(0.8, ls)));
     accountChip.lastW = accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
     if (!a.token) { const bx = 12, by = 84; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }   // nur solange nicht gesichert
     soundBtn(c, W - 40, 40);
+    if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 96 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 46, 96 + b], [W - 40, 88 + b], [W - 34, 96 + b]]); c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 110 + b, 12, '#fff', 'center', null); }   /* iPhone: Ton geht erst nach einer Berührung */
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 144, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
-    txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 144, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Ton', W - 40, 72, 11, '#fff', 'center', BRAND.olive);
+    txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 144, 72, 11, '#fff', 'center', BRAND.olive);
+    { const ex = land ? W - 202 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
+    rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Regler', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
     if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
     { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }]];
       const bw = Math.min(170, (W - 70) / 4), by = H - (land ? 38 : 46);
-      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - 1.5) * (bw + 10) - bw / 2; rrPath(c, x, by - 24, bw, 48, 20); fs(c, col, 3); icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); UI.btn(x, by - 24, bw, 48, fn); });
+      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - 1.5) * (bw + 10) - bw / 2; rrPath(c, x, by - 24, bw, 48, 20); fs(c, col, 3);
+        if (bw < 130) { icon(c, ic, x + bw / 2, by - 7, 24); txt(c, label, x + bw / 2, by + 14, 12, '#3d2c1f', 'center', null); }   // schmal (Hochformat): Symbol über dem Wort
+        else { icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); }
+        UI.btn(x, by - 24, bw, 48, fn); });
     }
     { const cw = accountChip.lastW || 0; coinChip(c, 12 + (cw || 170) + 10, 40); }
     DIFFS.forEach((d, i) => {
       let x, y, w, h;
-      if (wide) { w = Math.min(240, (W - 80) / 3); h = Math.min(bottom - top, w * 1.35); x = W / 2 + (i - 1) * (w + 20) - w / 2; y = top + (bottom - top - h) / 2; }
-      else { w = Math.min(W - 40, 400); h = Math.min(190, (bottom - top - 28) / 3); x = (W - w) / 2; y = top + i * (h + 14); }
+      if (wide) { w = Math.min(215, (W - 100) / 3); h = Math.min(bottom - top - 10, w * 1.25); x = W / 2 + (i - 1) * (w + 28) - w / 2; y = top + (bottom - top - h) / 2; }
+      else { w = Math.min(W - 40, 380); h = Math.min(160, (bottom - top - 40) / 3); x = (W - w) / 2; y = top + i * (h + 18); }
       const bob = Math.sin(this.t * 2 + i) * 2;
       panel(c, x, y + bob, w, h, d.col, 24);
       CUR_DIFF = d.id; const kind = ANIMAL_OF[d.id], sp = SP(d.id, 'spielplatz');
@@ -118,11 +128,12 @@ class Menu {
         icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
       }
       if (sp.clears > 0) icon(c, 'crown', x + w - 26, y + bob + 24, 30);
-      UI.btn(x, y + bob, w, h, () => { Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); setScene(!sp0.clears && !sp0.run && !g0.clears && !g0.run ? new Play(d.id, { stage: startArea(d.id) }) : new StageMap(d.id)); });
+      UI.btn(x, y + bob, w, h, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); setScene(!sp0.clears && !sp0.run && !g0.clears && !g0.run ? new Play(d.id, { stage: startArea(d.id) }) : new StageMap(d.id)); });
     });
   }
 }
 
+Menu.prototype.portraitOk = true;   // das Menü geht auch im Hochformat, gespielt wird quer
 // ---------- Zum Home-Bildschirm hinzufügen (Handy/Tablet im Browser) ----------
 // Im Browser stören Adressleiste und Knöpfe – als App vom Home-Bildschirm läuft das Spiel im Vollbild.
 let INSTALL_PROMPT = null;
@@ -224,10 +235,10 @@ class CodePad {
     panel(c, x + sx, y, w, h, '#fff7e6', 26);
     if (this.o.acc) { ell(c, W / 2, y + 46, 30, 30); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[this.o.acc.avatar % 6], W / 2, y + 70, 0.95, this.t, { noShadow: true }); txt(c, this.o.acc.name, W / 2, y + 96, 18, '#3d2c1f', 'center', null); }
     else { icon(c, 'lock', W / 2, y + 50, 46); txt(c, 'Dein Geheim-Code', W / 2, y + 92, 18, '#3d2c1f', 'center', null); }
-    for (let i = 0; i < 4; i++) { const cx = W / 2 + (i - 1.5) * 62 + sx, cy = y + 150; rrPath(c, cx - 26, cy - 26, 52, 52, 12); fs(c, '#fff', 3); if (this.code[i] !== undefined) drawSym(c, this.code[i], cx, cy, 17); }
+    for (let i = 0; i < 4; i++) { const cx = W / 2 + (i - 1.5) * 62 + sx, cy = y + 150; rrPath(c, cx - 26, cy - 26, 52, 52, 12); fs(c, '#fff', 3); if (this.code[i] !== undefined) drawSym(c, this.code[i], cx, cy, 20); }
     for (let k = 0; k < 6; k++) {
       const cx = W / 2 + ((k % 3) - 1) * 92, cy = y + 238 + Math.floor(k / 3) * 88;
-      ell(c, cx, cy, 36, 36); fs(c, '#fff', 4); drawSym(c, k, cx, cy, 20);
+      ell(c, cx, cy, 39, 39); fs(c, '#fff', 4); drawSym(c, k, cx, cy, 25);
       UI.btn(cx - 40, cy - 40, 80, 80, () => this.add(k));
     }
     roundBtn(c, x + 46, y + h - 44, 26, '#ced4da', 'cross', () => { this.close(); if (this.o.onCancel) this.o.onCancel(); });
@@ -321,6 +332,54 @@ class ConfirmDialog {
   }
   down() {} move() {} up() {}
 }
+// Lautstärke: alles + Musik getrennt (5 Stufen zum Antippen)
+class VolumePanel {
+  constructor() { this.t = 0; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; }
+  draw(c) {
+    const a = ACC(); if (!a) { this.close(); return; }
+    c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
+    const w = Math.min(W - 30, 380), h = 250, x = (W - w) / 2, y = (H - h) / 2;
+    fitBegin(c, w, h + 30); panel(c, x, y, w, h, '#fff7e6', 24);
+    roundBtn(c, x + w - 30, y + 30, 20, '#ced4da', 'cross', () => this.close());
+    txt(c, 'Lautstärke', x + 24, y + 32, 20, BRAND.olive, 'left', null);
+    [['volAll', 'Alles', 'sound'], ['volMusic', 'Musik', 'play']].forEach(([key, name, ic], r) => {
+      const yy = y + 92 + r * 76, v = a[key] != null ? a[key] : 1, lv = Math.round(v * 4);
+      icon(c, ic, x + 40, yy, 30); txt(c, name, x + 62, yy, 15, '#3d2c1f', 'left', null);
+      for (let k = 0; k <= 4; k++) { const bx = x + 140 + k * ((w - 170) / 4), on = k <= lv && lv > 0; ell(c, bx, yy, 14 + k * 1.5, 14 + k * 1.5); fs(c, on ? '#06d6a0' : '#e9ecef', 2.5); if (!k) txt(c, '0', bx, yy + 1, 12, on ? '#fff' : '#6b5a48', 'center', null);
+        UI.btn(bx - 22, yy - 26, 44, 52, () => { a[key] = k / 4; if (!a.sound && k) a.sound = true; Save.write(); applyVolume(); Sfx.play('tap'); }); }
+    });
+    c.restore();
+  }
+  down() {} move() {} up() {}
+}
+// Eltern-Bereich: Spielzeit pro Tag + Datenschutz (mit kleiner Rechenaufgabe, damit Kinder nicht einfach umstellen)
+class ParentPanel {
+  constructor() { this.t = 0; const a = 3 + Math.floor(Math.random() * 6), b = 4 + Math.floor(Math.random() * 6); this.q = { a, b, ok: a * b, ch: shuffle([a * b, a * b + a, a * b - b, a * b + 3]).slice(0, 3) }; if (!this.q.ch.includes(this.q.ok)) this.q.ch[0] = this.q.ok; this.q.ch = shuffle(this.q.ch); this.open = false; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; }
+  draw(c) {
+    const a = ACC(); if (!a) { this.close(); return; }
+    c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
+    const w = Math.min(W - 30, 460), h = this.open ? 360 : 220, x = (W - w) / 2, y = (H - h) / 2;
+    fitBegin(c, w, h + 20); panel(c, x, y, w, h, '#fff7e6', 24);
+    roundBtn(c, x + w - 30, y + 30, 20, '#ced4da', 'cross', () => this.close());
+    txt(c, 'Für Eltern', x + 24, y + 32, 20, BRAND.olive, 'left', null);
+    if (!this.open) {
+      txt(c, 'Bitte rechnen: ' + this.q.a + ' × ' + this.q.b + ' = ?', W / 2, y + 90, 18, '#3d2c1f', 'center', null);
+      this.q.ch.forEach((v, i) => { const bx = W / 2 + (i - 1) * 100; rrPath(c, bx - 40, y + 120, 80, 50, 16); fs(c, '#fff', 3); txt(c, String(v), bx, y + 146, 20, '#3d2c1f', 'center', null); UI.btn(bx - 40, y + 120, 80, 50, () => { if (v === this.q.ok) { this.open = true; Sfx.play('good'); } else { Sfx.play('bad'); this.close(); } }); });
+    } else {
+      txt(c, 'Spielzeit pro Tag', x + 24, y + 74, 15, '#3d2c1f', 'left', null);
+      [[0, 'ohne'], [20, '20 Min'], [30, '30 Min'], [45, '45 Min'], [60, '60 Min']].forEach(([m, n], i) => { const bw = (w - 48) / 5 - 6, bx = x + 24 + i * (bw + 6), on = (a.limitMin || 0) === m; rrPath(c, bx, y + 90, bw, 40, 14); fs(c, on ? '#ffd166' : '#fff', 2.5); txt(c, n, bx + bw / 2, y + 110, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 90, bw, 40, () => { a.limitMin = m; Save.write(); Sfx.play('tap'); }); });
+      const used = Math.round((a.playDay === new Date().toISOString().slice(0, 10) ? a.playSec || 0 : 0) / 60); txt(c, 'Heute gespielt: ' + used + ' Min', x + 24, y + 148, 13, '#6b5a48', 'left', null);
+      txt(c, 'Datenschutz', x + 24, y + 186, 15, '#3d2c1f', 'left', null);
+      wrapLines(c, 'Das Spiel fragt keine echten Namen, E-Mails oder Fotos ab und zeigt keine Werbung. Gespeichert werden nur Fantasiename, Bilder-Code und Spielstand – auf dem Gerät und, wenn man ihn sichert, auf unserem Server. Konten lassen sich jederzeit im Konto-Fenster löschen.', w - 48, 13).forEach((l, i) => txt(c, l, x + 24, y + 210 + i * 18, 13, '#3d2c1f', 'left', null));
+    }
+    c.restore();
+  }
+  down() {} move() {} up() {}
+}
 class MsgDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
@@ -348,7 +407,7 @@ class AccountPanel {
   close() { if (overlay === this) overlay = null; }
   draw(c) {
     const a = ACC(); if (!a) { this.close(); return; }
-    const w = Math.min(W - 24, 400), h = 470, x = (W - w) / 2, y = (H - h) / 2;
+    const w = Math.min(W - 24, 400), h = 520, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
     fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fff7e6', 26);
@@ -357,7 +416,7 @@ class AccountPanel {
     UI.btn(x + 14, y + 14, 112, 36, () => { this.close(); setScene(new CharEditor(() => setScene(new Menu()))); });
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
     txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
-    const st = Net.status(a); ell(c, W / 2 - 70, y + 160, 6, 6); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - 58, y + 161, 13, '#8d5a3b', 'left', null);
+    { const st = Net.status(a); c.font = `900 13px ${FONT}`; const sw = c.measureText(st.text).width + 40; rrPath(c, W / 2 - sw / 2, y + 148, sw, 26, 13); fs(c, '#fff', 2, st.col); ell(c, W / 2 - sw / 2 + 14, y + 161, 7, 7); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - sw / 2 + 26, y + 162, 13, '#3d2c1f', 'left', null); }   /* online/offline deutlich */
     if (a.admin) {
       rrPath(c, W / 2 - 130, y + 195, 260, 60, 20); fs(c, '#ffd166', 3.5); txt(c, 'Admin: Statistik & Test', W / 2, y + 225, 18, '#3d2c1f', 'center', null);
       UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); overlay = new AdminPanel(); });
@@ -366,17 +425,17 @@ class AccountPanel {
       c.save(); c.translate(W / 2, y + 225); c.scale(pu, pu); rrPath(c, -130, -30, 260, 60, 20); fs(c, '#06d6a0', 3.5); txt(c, 'Spielstand sichern', 0, -6, 19, '#fff', 'center', BRAND.ink); txt(c, 'mit Namen + Geheim-Code', 0, 15, 12, '#fff', 'center', null); c.restore();
       UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); setScene(new NewAccount({ migrate: Save.data.current })); });
     } else {
-      txt(c, 'Dein Login-Code:', W / 2, y + 196, 15, '#8d5a3b', 'center', null);
-      rrPath(c, W / 2 - 110, y + 210, 220, 44, 12); fs(c, '#fff', 3); txt(c, a.login || '–', W / 2, y + 233, 24, '#118ab2', 'center', null);
+      txt(c, 'Dein Login-Code (nur falls du den Namen vergisst):', W / 2, y + 196, 12, '#8d5a3b', 'center', null);
+      const L = String(a.login || '–').replace('-', ''); [L.slice(0, 4), L.slice(4)].forEach((part, k) => { const bx = W / 2 - 112 + k * 116; rrPath(c, bx, y + 210, 108, 44, 12); fs(c, k ? '#ffe5ec' : '#e7f5ff', 3); txt(c, part, bx + 54, y + 233, 24, k ? '#c9184a' : '#118ab2', 'center', null); });   /* in zwei Hälften: leichter zu merken */
     }
-    txt(c, 'Dein Geheim-Code:', W / 2, y + 282, 15, '#8d5a3b', 'center', null);
-    if (this.showCode) a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 56; rrPath(c, cx - 23, y + 296, 46, 46, 12); fs(c, '#fff', 3); drawSym(c, k, cx, y + 319, 15); });
-    else { rrPath(c, W / 2 - 110, y + 296, 220, 46, 12); fs(c, '#e9ecef', 3); txt(c, 'antippen zum Zeigen', W / 2, y + 320, 15, '#495057', 'center', null); UI.btn(W / 2 - 110, y + 296, 220, 46, () => { this.showCode = true; }); }
-    const by = y + h - 56;
-    rrPath(c, x + 20, by - 26, w / 2 - 30, 52, 18); fs(c, '#ffd166', 3); txt(c, 'Abmelden', x + 20 + (w / 2 - 30) / 2, by, 17, '#3d2c1f', 'center', null);
-    UI.btn(x + 20, by - 26, w / 2 - 30, 52, () => { Net.syncNow(); Save.data.current = null; Save.write(); this.close(); setScene(new Accounts()); });
-    rrPath(c, x + w / 2 + 10, by - 26, w / 2 - 30, 52, 18); fs(c, '#ffc8c8', 3); txt(c, 'Konto löschen', x + w / 2 + 10 + (w / 2 - 30) / 2, by, 17, '#9d0208', 'center', null);
-    UI.btn(x + w / 2 + 10, by - 26, w / 2 - 30, 52, () => askDelete(Save.data.current, a));
+    txt(c, 'Dein Geheim-Code (zum Anmelden mit deinem Namen):', W / 2, y + 282, 12, '#8d5a3b', 'center', null);
+    if (this.showCode) a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 64; rrPath(c, cx - 28, y + 296, 56, 56, 14); fs(c, '#fff', 3); drawSym(c, k, cx, y + 324, 21); });
+    else { rrPath(c, W / 2 - 110, y + 296, 220, 52, 12); fs(c, '#e9ecef', 3); txt(c, 'antippen zum Zeigen', W / 2, y + 322, 15, '#495057', 'center', null); UI.btn(W / 2 - 110, y + 296, 220, 52, () => { this.showCode = true; }); }
+    const by = y + h - 92;
+    rrPath(c, W / 2 - 110, by - 26, 220, 52, 18); fs(c, '#ffd166', 3); txt(c, 'Abmelden', W / 2, by, 17, '#3d2c1f', 'center', null);
+    UI.btn(W / 2 - 110, by - 26, 220, 52, () => { Net.syncNow(); Save.data.current = null; Save.write(); this.close(); setScene(new Accounts()); });
+    txt(c, 'Konto löschen', x + w - 24, y + h - 20, 12, '#9d0208', 'right', null);   /* klein und weit weg vom Abmelden, damit man es nicht aus Versehen trifft */
+    UI.btn(x + w - 120, y + h - 36, 110, 32, () => askDelete(Save.data.current, a));
     c.restore();
   }
   down() {} move() {} up() {}
@@ -780,7 +839,7 @@ class StageMap {
     c.fillStyle = '#7cb95a'; c.fillRect(0, G.bot - 10, W, H);
     c.save(); c.translate(-this.camX, 0);
     // Deko entlang des Wegs
-    for (let i = 0; i < G.mapW / 90; i++) {
+    for (let i = 0; i < G.mapW / 90; i += 2) {   // weniger Deko: nur jede zweite Stelle
       const x = i * 90 + 30, yy = (i % 2 ? H * 0.64 : G.bot - 4) + ((i * 37) % 19);
       if (x < this.camX - 80 || x > this.camX + W + 80) continue;
       if (i % 3 === 0) cypress(c, x, yy, 70); else if (i % 3 === 1) { drawPotPalm(c, x, yy, 0.5, t + i); } else { ell(c, x, yy - 8, 18, 12); fs(c, '#52b788', 3); ell(c, x + 4, yy - 12, 5, 4); c.fillStyle = ['#ef476f', '#ffd166', '#fff'][i % 3]; c.fill(); }
@@ -788,7 +847,7 @@ class StageMap {
     // Weg: breiter Kiesweg + Punkte; schon gelaufener Teil leuchtet
     c.lineCap = 'round'; c.lineJoin = 'round';
     c.beginPath(); P.list.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.lineWidth = 30; c.strokeStyle = '#6b4f2a'; c.stroke(); c.lineWidth = 24; c.strokeStyle = '#e9dfcc'; c.stroke();
-    for (let i = 0; i < P.list.length; i += 6) { const p = P.list[i], open = i <= P.at[OPEN_STAGES.map(o => STAGE_ORDER.indexOf(o)).reduce((a, b) => Math.max(a, b), 0)]; ell(c, p.x, p.y, 4, 4); c.fillStyle = open ? '#c9a46b' : 'rgba(150,130,100,.45)'; c.fill(); }
+    if (false) for (let i = 0; i < P.list.length; i += 6) { const p = P.list[i], open = i <= P.at[OPEN_STAGES.map(o => STAGE_ORDER.indexOf(o)).reduce((a, b) => Math.max(a, b), 0)]; ell(c, p.x, p.y, 4, 4); c.fillStyle = open ? '#c9a46b' : 'rgba(150,130,100,.45)'; c.fill(); }
     // Knoten
     G.nodes.forEach((n, i) => {
       const open = OPEN_STAGES.includes(n.id), sp = SP(this.diff, n.id), here = i === this.cur, R = 40;
@@ -952,11 +1011,12 @@ class Wardrobe {
     txt(c, '', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
-    txt(c, 'Antippen zum Anziehen · Legendär → Selten → Normal', x + w / 2, y + 33, 14, '#6b5a48', 'center', null);
+    if (w > 560) txt(c, 'Antippen zum Anziehen', x + w / 2 + 60, y + 33, 14, '#6b5a48', 'center', null);
     const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
-    const RK = { legend: 0, rare: 1, common: 2 }, ids = [...best.values()].sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
+    { const on = !!this.abilOnly, fw = 150, fx = x + 66, fy = y + 18; rrPath(c, fx, fy, fw, 28, 14); fs(c, on ? '#ffd60a' : '#fff', 2.5); icon(c, on ? 'check' : 'star', fx + 16, fy + 14, 16); txt(c, 'Nur mit Fähigkeit', fx + 30, fy + 15, 12, '#3d2c1f', 'left', null); UI.btn(fx, fy, fw, 28, () => { this.abilOnly = !on; this.sc = 0; Sfx.play('tap'); }); }   /* Filter */
+    const RK = { legend: 0, rare: 1, common: 2 }, ids = [...best.values()].filter(id => !this.abilOnly || (SKINS[id] && SKINS[id].ability)).sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
     // Laden-Skins: eine lange Liste zum Runterscrollen (Finger ziehen oder Mausrad)
     const top = y + 60, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
     this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
@@ -972,7 +1032,7 @@ class Wardrobe {
         const sk = SKINS[sid] || {};
         drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.6, Math.min(1.5, ch / 120), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name || '', cx + cw / 2, cy + ch - 34, cw < 110 ? 10 : 12, '#3d2c1f', 'center', null);
-        if (sk.ability) { const A = ABILITIES[sk.ability], lv = skinLevel(sk); rrPath(c, cx + 5, cy + ch - 24, cw - 10, 19, 9); fs(c, '#ffd60a', 1.5); txt(c, A.name + ' ' + '★'.repeat(lv), cx + cw / 2, cy + ch - 14, cw < 110 ? 9 : 10, BRAND.ink, 'center', null); }
+        if (sk.ability) { const A = ABILITIES[sk.ability], lv = skinLevel(sk); rrPath(c, cx + 5, cy + ch - 24, cw - 10, 19, 9); fs(c, '#ffd60a', 1.5); icon(c, ABIL_ICON[sk.ability], cx + 16, cy + ch - 14, 14); txt(c, (cw < 120 ? '' : A.name + ' ') + '★'.repeat(lv), cx + cw / 2 + 8, cy + ch - 14, cw < 110 ? 10 : 11, BRAND.ink, 'center', null); }
       } else if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
       if (rar) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
@@ -1145,12 +1205,15 @@ function tryLandscape() {
   } catch (e) { /* egal */ }
 }
 let rotT = 0;
+let lastInput = 0;
 function frame(now) {
+  if (!(scene instanceof Play) && !overlay && !TAPS.length && now - lastInput > 1500 && document.visibilityState === 'visible') { frame.odd = !frame.odd; if (frame.odd) { requestAnimationFrame(frame); return; } }   // Menüs: nur 30 Bilder/s, schont den Akku
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); UI.next = [];
   if (Music.on && !(overlay instanceof GameOverlay)) Music.stop();
   // Leistung messen: dauerhaft unter ~45 Bildern/s -> Auflösung senken
   Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
+  if (!(scene instanceof Play) && !overlay) { Perf.acc = 0; Perf.n = 0; }   /* gemessen wird nur im Spiel (Menüs laufen absichtlich langsamer) */
   if (Perf.acc > 2) { const avg = Perf.acc / Perf.n; if (avg > 0.022 && Perf.cap > 1.01 && document.visibilityState === 'visible') { Perf.cap = Math.max(1, Perf.cap - 0.25); resize(); } Perf.acc = 0; Perf.n = 0; }
   if (TOUCH && H > W && !(scene && scene.portraitOk)) { rotT += dt; try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
   try {
@@ -1180,7 +1243,7 @@ function frame(now) {
 }
 const swallowed = new Set(), TAPS = [];
 cv.addEventListener('pointerdown', e => {
-  e.preventDefault(); TAPS.push({ x: e.clientX, y: e.clientY, t: 0 });
+  e.preventDefault(); lastInput = performance.now(); TAPS.push({ x: e.clientX, y: e.clientY, t: 0 });
   try { if (Sfx.on()) Sfx.ctx(); } catch (err) { /* Audio erst nach einer Berührung erlaubt (iPhone) */ }
   tryLandscape();
   if (TOUCH && H > W && !(scene && scene.portraitOk)) return;
@@ -1190,6 +1253,7 @@ cv.addEventListener('pointerdown', e => {
   const tgt = overlay || scene; if (tgt && tgt.down) tgt.down(e.clientX, e.clientY, e.pointerId);
 });
 cv.addEventListener('pointermove', e => {
+  lastInput = performance.now();
   if (swallowed.has(e.pointerId)) return;
   const tgt = overlay || scene; if (tgt && tgt.move) tgt.move(e.clientX, e.clientY, e.pointerId);
 });

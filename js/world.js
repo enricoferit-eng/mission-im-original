@@ -92,7 +92,15 @@ function paintTerrain(g, B, R) {
   // Hecken + Bäume rund um die Anlage (nicht auf den Bereichen)
   const inArea = (x, y, m = 120) => Object.keys(WORLD_XY).some(k => x > WORLD_XY[k][0] - m && x < WORLD_XY[k][0] + areaW(k) + m && y > WORLD_XY[k][1] - m && y < WORLD_XY[k][1] + areaH(k) + 200);
   const onRoad = (x, y) => (x > 4650 && x < 5150) || (y > 4450 && y < 4950) || (x < 100 && y > 1500 && y < 3100);
-  for (let k = 0; k < 260; k++) { const x = B.x0 + R() * W0, y = B.y0 + R() * H0; if (inArea(x, y) || onRoad(x, y)) continue; terrainTree(g, x, y, 50 + R() * 30, ['#40916c', '#52b788', '#2d6a4f'][k % 3]); }
+  for (let k = 0; k < 260; k++) { const x = B.x0 + R() * W0, y = B.y0 + R() * H0, rr = 50 + R() * 30; if (inArea(x, y) || onRoad(x, y)) continue;   // gemischt: Laubbäume, Nadelbäume, Büsche, blühende Bäume
+    const kind = k % 5;
+    if (kind === 3) { g.fillStyle = 'rgba(0,0,0,.18)'; ell(g, x + rr * 0.4, y + 6, rr * 0.8, rr * 0.35); g.fill(); rrPath(g, x - 5, y - 20, 10, 24, 3); fs(g, '#6f4e37', 2); for (let j = 0; j < 3; j++) { polyPath(g, [[x - rr * (0.75 - j * 0.18), y - 16 - j * rr * 0.45], [x, y - 16 - (j + 1.4) * rr * 0.45], [x + rr * (0.75 - j * 0.18), y - 16 - j * rr * 0.45]]); fs(g, j % 2 ? '#2d6a4f' : '#1b4332', 2.5); } }
+    else if (kind === 4) { for (const [dx, dy, s2] of [[-rr * 0.4, 0, 0.5], [rr * 0.35, 4, 0.45], [0, -rr * 0.25, 0.55]]) { ell(g, x + dx, y + dy, rr * s2, rr * s2 * 0.8); fs(g, '#74c69d', 2.5); } }
+    else terrainTree(g, x, y, rr, ['#40916c', '#52b788', '#2d6a4f'][k % 3]);
+    if (kind === 1 && k % 3 === 0) for (let j = 0; j < 9; j++) { ell(g, x + (R() - 0.5) * rr * 1.4, y - rr * (0.7 + R() * 0.9), 6, 6); g.fillStyle = ['#ffc8dd', '#fff', '#ffafcc'][j % 3]; g.fill(); }   // blühend
+  }
+  // Wiese rechts vom Außenbereich: Blumenbeete
+  for (const [x, y, w, h] of [[4050, 1150, 260, 90], [4300, 1500, 220, 80], [4000, 1800, 300, 90]]) { rrPath(g, x, y, w, h, 40); fs(g, '#8d6346', 3); for (let j = 0; j < w * h / 260; j++) { const fx = x + 14 + R() * (w - 28), fy = y + 12 + R() * (h - 24); ell(g, fx, fy, 7, 7); g.fillStyle = ['#ef476f', '#ffd166', '#9b5de5', '#fff', '#f77f00'][j % 5]; g.fill(); ell(g, fx, fy, 2.5, 2.5); g.fillStyle = '#ffd60a'; g.fill(); } }
   // Wiese zwischen Spielplatz, Terrasse, Chalet und Parkplatz: Hecke mit kleinem Weg
   for (let x = 2100; x < 2900; x += 30) { ell(g, x, 2560, 26, 22); fs(g, x % 60 ? '#2d6a4f' : '#40916c', 2); }
 }
@@ -155,7 +163,11 @@ Object.assign(Play.prototype, {
     return true;
   },
   drawNbGrounds(c) {
-    { const T = terrainImage(), [X0, Y0] = WORLD_XY[this.stage]; c.drawImage(T.cv, T.B.x0 - X0, T.B.y0 - Y0, T.B.x1 - T.B.x0, T.B.y1 - T.B.y0); }   // Gelände unter allem
+    { const T = terrainImage(), [X0, Y0] = WORLD_XY[this.stage]; c.drawImage(T.cv, T.B.x0 - X0, T.B.y0 - Y0, T.B.x1 - T.B.x0, T.B.y1 - T.B.y0);   // Gelände unter allem
+      // ab und zu fährt ein Auto auf der L114 vorbei
+      const P = [[4900, T.B.y0], [4900, 3700], [4500, 4500], [3000, 4700], [T.B.x0, 4700]], len = []; let tot = 0; for (let k = 1; k < P.length; k++) { const l = dist(P[k - 1][0], P[k - 1][1], P[k][0], P[k][1]); len.push(l); tot += l; }
+      for (const [off, col, dir] of [[0, '#e63946', 1], [0.45, '#118ab2', -1]]) { const per = tot / 520 + 9, ph = ((this.t / per) + off) % 1, dd = (dir > 0 ? ph : 1 - ph) * (tot + 4000) - 2000; if (dd < 0 || dd > tot) continue; let rem = dd, k = 0; while (k < len.length - 1 && rem > len[k]) { rem -= len[k]; k++; } const a = P[k], b = P[k + 1], f = rem / len[k], gx = a[0] + (b[0] - a[0]) * f, gy = a[1] + (b[1] - a[1]) * f, ang = Math.atan2(b[1] - a[1], b[0] - a[0]) + (dir < 0 ? Math.PI : 0), side = dir > 0 ? 70 : -70; const nx = -Math.sin(Math.atan2(b[1] - a[1], b[0] - a[0])) * side, ny = Math.cos(Math.atan2(b[1] - a[1], b[0] - a[0])) * side;
+        const x = gx + nx - X0, y = gy + ny - Y0; if (x > this.camX - W && x < this.camX + W && y > this.camY - H && y < this.camY + H) drawCar(c, x, y, ang + Math.PI / 2, col, 1.3, { lights: true }); } }
     for (const N of this.nb || []) {
       if (!this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       if (N.fog) { drawFog(c, N.ox, N.oy, N.fog, this.t); continue; }
@@ -235,6 +247,8 @@ function pushLinkBarriers(c, L, sid, ox, oy, diff, t) {
     else if (Lk.side === 'bottom') L.push({ y: TH - 4 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedDoors(c, m, TH - 4, r1 - r0 + 20, t); c.restore(); } });
     else if (Lk.side === 'left') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, 14, r0 - 10, r1 + 10, t); c.restore(); } });
     else if (Lk.side === 'right') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, TW - 14, r0 - 10, r1 + 10, t); c.restore(); } });
+    { const bx = Lk.side === 'bottom' ? m : Lk.side === 'left' ? 60 : TW - 60, by = Lk.side === 'bottom' ? TH - 110 : m - 70, bob = Math.sin(t * 2.5) * 5;   /* schwebendes Schloss: schon von weitem sieht man, dass es hier (noch) nicht weitergeht */
+      L.push({ y: 99980, f: () => { c.save(); c.translate(ox, oy); ell(c, bx, by + bob, 26, 26); fs(c, 'rgba(255,255,255,.92)', 3); icon(c, 'lock', bx, by + bob, 30); c.restore(); } }); }
   }
 }
 function drawLockedDoors(c, x, y, w, t) {
@@ -330,8 +344,10 @@ class WorldMap {
       rrPath(c, x + tw / 2 - lw / 2, y + th - 26, lw, 20, 9); fs(c, here ? '#ffd166' : open ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.7)', 1.5);
       txt(c, lab, x + tw / 2, y + th - 15, Math.max(10, Math.min(14, tw / 8)), open ? '#35452F' : '#868e96', 'center', null);
       if (here) { const p = this.play.p, pu = 1 + Math.sin(this.t * 6) * 0.2; ell(c, x + p.x * sc, y + p.y * sc, 8 * pu, 8 * pu); fs(c, '#ef476f', 2.5); }
-      if (open && !here) UI.btn(x, y, tw, th, () => { this.close(); Sfx.play('win'); Save.write(); setScene(new Play(this.play.diff, { stage: id })); });
-      else if (!open) UI.btn(x, y, tw, th, () => { Sfx.play('bad'); const i = STAGE_ORDER.indexOf(id); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_NAME[STAGE_ORDER[i - 1]], 'lock'); });
+      if (open && !cl && !here) { const pu = 1 + Math.sin(this.t * 5) * 0.12, bx = x + tw - 12, by = y + 12; ell(c, bx, by, 11 * pu, 11 * pu); fs(c, '#ffd166', 2); txt(c, '!', bx, by + 1, 15, '#35452F', 'center', null); }   /* hier gibt es noch etwas zu tun */
+      const bw = Math.max(tw, 70), bh = Math.max(th, 54), bx0 = x + tw / 2 - bw / 2, by0 = y + th / 2 - bh / 2;   /* kleine Bereiche: größere Tippfläche */
+      if (open && !here) UI.btn(bx0, by0, bw, bh, () => { Sfx.play('tap'); const pl = this.play; overlay = new ConfirmDialog({ text: 'Zum Bereich ' + STAGE_NAME[id] + ' reisen?', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(pl.diff, { stage: id })); } }); });
+      else if (!open) UI.btn(bx0, by0, bw, bh, () => { Sfx.play('bad'); const i = STAGE_ORDER.indexOf(id); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_NAME[STAGE_ORDER[i - 1]], 'lock'); });
     }
     c.restore();
   }
@@ -341,7 +357,7 @@ class WorldMap {
   Play.prototype.drawHud = function (c) {
     hud1.call(this, c);
     if (this.mp) return;
-    const x = W - 46, y = 108;
+    const x = W - 46, y = 50;
     roundBtn(c, x, y, 21, '#caffbf', null, () => { Sfx.play('tap'); overlay = new WorldMap(this); }, '#2d6a4f');
     // kleines Karten-Symbol: 3 x 2 Kacheln
     for (let r = 0; r < 2; r++) for (let k = 0; k < 3; k++) { rrPath(c, x - 13 + k * 9, y - 9 + r * 9, 8, 8, 2); c.fillStyle = (r + k) % 2 ? '#2d6a4f' : '#74c69d'; c.fill(); }
