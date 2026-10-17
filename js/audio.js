@@ -44,7 +44,7 @@ const Tune = {
       const t = this.next, k = this.step % 16, bar = Math.floor(this.step / 16) % T.bass.length;
       const m = T.mel[Math.floor(this.step / 32) % 2 ? 15 - k : k]; if (m !== null) this.tone(N(m + (Math.floor(this.step / 64) % 2 ? 2 : 0)), t, st * 1.6, T.wave, T.vol * 0.7);
       if (k % 4 === 0) this.tone(N(T.bass[bar] - 12), t, st * 3.5, 'triangle', T.vol * 1.0);
-      if (T.bells && k % 2 === 0) { const b = c.createBufferSource(); b.buffer = noiseBuf(0.05); const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000; const g = c.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); b.connect(hp).connect(g).connect(c.destination); b.start(t); }
+      if (T.bells && k % 2 === 0) { const b = c.createBufferSource(); b.buffer = noiseBuf(0.05); const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000; const g = c.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); b.connect(hp).connect(g).connect(Sfx.musicBus || c.destination); b.start(t); }
       this.next += st; this.step++;
     }
   },
