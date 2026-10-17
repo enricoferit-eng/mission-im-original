@@ -1283,9 +1283,9 @@ class Play {
     if (SG.overlay) SG.overlay(c, this, t);   // z. B. Deckenlampen über allem
     if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
       if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
+    if (typeof hwWorldFx === 'function') { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); hwWorldFx(this, c, t); c.restore(); }   // Halloween-Stimmung (nur im Special), unter den Ausrufezeichen
     this.drawMarkers(c);
     c.setTransform(DPR, 0, 0, DPR, 0, 0); LINE_K = 1;
-    if (typeof hwWorldFx === 'function') hwWorldFx(this, c, t);   // Halloween-Stimmung (nur im Special)
     const vg = c.createRadialGradient(W * 0.35, H * 0.3, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
     vg.addColorStop(0, 'rgba(255,240,200,.10)'); vg.addColorStop(0.6, 'rgba(255,240,200,0)'); vg.addColorStop(1, 'rgba(40,25,10,.30)');
     c.fillStyle = vg; c.fillRect(0, 0, W, H);

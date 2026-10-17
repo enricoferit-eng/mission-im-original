@@ -875,8 +875,8 @@ class StageMap {
   draw(c) {
     const G = this.geo(), P = this.pts, t = this.t, kind = ANIMAL_OF[this.diff], d = DIFFS.find(q => q.id === this.diff);
     // Himmel + Hügel mit Parallaxe
-    const sky = c.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#8fd3f4'); sky.addColorStop(0.55, '#d6f2fb'); sky.addColorStop(1, '#bfe3a5'); c.fillStyle = sky; c.fillRect(0, 0, W, H);
-    ell(c, W - 90, 110, 34, 34); fs(c, '#ffd166', 0);
+    const hw = typeof HALLOWEEN !== 'undefined' && HALLOWEEN, sky = c.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, hw ? '#2b1a4a' : '#8fd3f4'); sky.addColorStop(0.55, hw ? '#7b3f72' : '#d6f2fb'); sky.addColorStop(1, hw ? '#4f6b3a' : '#bfe3a5'); c.fillStyle = sky; c.fillRect(0, 0, W, H);
+    ell(c, W - 90, 110, 34, 34); fs(c, hw ? '#fff3bf' : '#ffd166', 0); if (hw) { ell(c, W - 78, 102, 30, 30); fs(c, '#3a2350', 0); hwBats(c, t, 3); }   // Halloween: Nacht mit Mond
     for (let i = 0; i < 6; i++) { const cx = ((i * 260 - this.camX * 0.2 + t * 12) % (W + 300) + W + 300) % (W + 300) - 150, cy = 90 + (i % 3) * 34; c.fillStyle = 'rgba(255,255,255,.85)'; ell(c, cx, cy, 46, 16); c.fill(); ell(c, cx + 26, cy - 10, 28, 16); c.fill(); }
     [[0.35, '#a3d483', 0.55], [0.6, '#8cc46a', 0.7]].forEach(([sp, col, hy]) => { c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W + 20; x += 20) { const wx = x + this.camX * sp; c.lineTo(x, H * hy + Math.sin(wx / 160) * 26 + Math.sin(wx / 63) * 9); } c.lineTo(W, H); c.closePath(); c.fillStyle = col; c.fill(); });
     c.fillStyle = '#7cb95a'; c.fillRect(0, G.bot - 10, W, H);
@@ -1055,7 +1055,7 @@ class Wardrobe {
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
     if (w > 560) txt(c, 'Antippen zum Anziehen', x + w / 2 + 60, y + 33, 14, '#6b5a48', 'center', null);
-    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]), Object.keys(SKINS).filter(id => /^hw_/.test(id))).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
+    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]), Object.keys(SKINS).filter(id => /^hwskin_/.test(id))).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
     { const on = !!this.abilOnly, fw = 150, fx = x + 66, fy = y + 18; rrPath(c, fx, fy, fw, 28, 14); fs(c, on ? '#ffd60a' : '#fff', 2.5); icon(c, on ? 'check' : 'star', fx + 16, fy + 14, 16); txt(c, 'Nur mit Fähigkeit', fx + 30, fy + 15, 12, '#3d2c1f', 'left', null); UI.btn(fx, fy, fw, 28, () => { this.abilOnly = !on; this.sc = 0; Sfx.play('tap'); }); }   /* Filter */

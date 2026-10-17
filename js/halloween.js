@@ -1,5 +1,5 @@
-// Halloween-Special: Kürbisse statt Sammel-Sachen, Abendstimmung mit Fledermäusen und Gespenstern,
-// Kürbis-Jagd über alle 6 Bereiche (Belohnung: Gespenst-Kostüm), Halloween-Kostüme im Laden.
+// Halloween-Special: Bonbons statt Sammel-Sachen, Abendstimmung mit Fledermäusen und Gespenstern,
+// Bonbon-Jagd über alle 6 Bereiche (Belohnung: Gespenst-Kostüm), Halloween-Kostüme im Laden.
 // Probeversion: immer an. Vor dem Veröffentlichen auf den Zeitraum stellen (HW_FROM/HW_TO).
 const HW_FORCE = true, HW_FROM = '10-24', HW_TO = '11-02';
 const HALLOWEEN = (() => {
@@ -8,11 +8,11 @@ const HALLOWEEN = (() => {
 })();
 const HW_AREAS = ['kueche', 'gastraum', 'aussen', 'spielplatz', 'parkplatz', 'chalet'];
 const HW_SKINS = [
-  ['hw_vampir', 'Kleiner Vampir', 'rare', 90, { uniform: 'weste', uCol: '#212529', uCol2: '#c1121f', cap: '#212529', scarf: '#c1121f', sparkle: '#ff8fa3' }],
-  ['hw_hexe', 'Hexen-Lehrling', 'rare', 90, { uniform: 'pulli', uCol: '#5a189a', uCol2: '#80ed99', cap: '#3c096c', scarf: '#80ed99', pat: 'stars', sparkle: '#c77dff' }],
-  ['hw_kuerbis', 'Kürbis-Kopf', 'rare', 90, { uniform: 'latz', uCol: '#f77f00', uCol2: '#2b9348', cap: '#f77f00', scarf: '#2b9348', pat: 'stripes' }],
+  ['hwskin_vampir', 'Kleiner Vampir', 'rare', 90, { uniform: 'weste', uCol: '#212529', uCol2: '#c1121f', cap: '#212529', scarf: '#c1121f', sparkle: '#ff8fa3' }],
+  ['hwskin_hexe', 'Hexen-Lehrling', 'rare', 90, { uniform: 'pulli', uCol: '#5a189a', uCol2: '#80ed99', cap: '#3c096c', scarf: '#80ed99', pat: 'stars', sparkle: '#c77dff' }],
+  ['hwskin_kuerbis', 'Kürbis-Kopf', 'rare', 90, { uniform: 'latz', uCol: '#f77f00', uCol2: '#2b9348', cap: '#f77f00', scarf: '#2b9348', pat: 'stripes' }],
 ];
-const HW_GHOST = ['hw_gespenst', 'Gespenst-Kostüm', 'legend', 0, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#dee2e6', cap: '#f8f9fa', scarf: '#ced4da', sparkle: '#e7f5ff' }, 'magnet'];
+const HW_GHOST = ['hwskin_gespenst', 'Gespenst-Kostüm', 'legend', 0, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#dee2e6', cap: '#f8f9fa', scarf: '#ced4da', sparkle: '#e7f5ff' }, 'magnet'];
 HW_SKINS.forEach(([id, name, rarity, price, look]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, lvl: 2 }, look); });
 { const [id, name, rarity, price, look, ab] = HW_GHOST; SKINS[id] = Object.assign({ name, rarity, price, exclusive: true, ability: ab, lvl: 3 }, look); }
 function hwMeta() { const m = META(); if (!m) return null; m.hw = m.hw || { areas: [] }; return m.hw; }
@@ -30,13 +30,13 @@ function jackO(c, x, y, s, glow = 1) {
 }
 
 if (HALLOWEEN) {
-  // 1) Sammel-Sachen werden überall zu Kürbissen
-  for (const k of Object.keys(COLLECT_NAME)) COLLECT_NAME[k] = 'Kürbisse';
-  COLLECT_NAME.spielplatz = 'Kürbisse';
+  // 1) Sammel-Sachen werden überall zu Bonbons
+  for (const k of Object.keys(COLLECT_NAME)) COLLECT_NAME[k] = 'Bonbons';
+  COLLECT_NAME.spielplatz = 'Bonbons';
   const origCollect = drawCollect;
-  drawCollect = function (c, stage, x, y, s, rot) { jackO(c, x, y, s / 2.4, 0); };   // eslint-disable-line no-func-assign
+  drawCollect = function (c, stage, x, y, s, rot) { c.save(); c.translate(x, y); c.rotate(rot * 0.5); drawItem(c, 'hw_bonbon', 0, 0, 17 * s); c.restore(); };   // Bonbons: nicht verwechselbar mit den Deko-Kürbissen   // eslint-disable-line no-func-assign
 
-  // 2) Kürbis-Jagd: alle Kürbisse eines Bereichs = Haken; alle 6 Bereiche = Gespenst-Kostüm
+  // 2) Bonbon-Jagd: alle Bonbons eines Bereichs = Haken; alle 6 Bereiche = Gespenst-Kostüm
   const origLeaves = Play.prototype.updateLeaves;
   Play.prototype.updateLeaves = function () {
     const before = this.st.leaves.filter(o => o.got).length;
@@ -44,11 +44,11 @@ if (HALLOWEEN) {
     const after = this.st.leaves.filter(o => o.got).length;
     if (this.mp || after === before || after !== this.st.leaves.length) return;
     const hw = hwMeta(); if (!hw || hw.areas.includes(this.stage)) return;
-    hw.areas.push(this.stage); addCoins(15, 'Kürbis-Jagd');
+    hw.areas.push(this.stage); addCoins(15, 'Bonbon-Jagd');
     if (hw.areas.length >= HW_AREAS.length && !META().skins.includes(HW_GHOST[0])) {
       META().skins.push(HW_GHOST[0]);
-      setTimeout(() => { FX.confetti(W / 2, H * 0.3, 90); Sfx.play('win'); this.banner = { text: 'Alle Kürbisse in allen Bereichen! Du bekommst das Gespenst-Kostüm!', t: 0 }; }, 2200);
-    } else setTimeout(() => { this.banner = { text: 'Kürbis-Jagd: ' + hw.areas.length + ' von 6 Bereichen geschafft!', t: 0 }; }, 2200);
+      setTimeout(() => { FX.confetti(W / 2, H * 0.3, 90); Sfx.play('win'); this.banner = { text: 'Alle Bonbons in allen Bereichen! Du bekommst das Gespenst-Kostüm!', t: 0 }; }, 2200);
+    } else setTimeout(() => { this.banner = { text: 'Bonbon-Jagd: ' + hw.areas.length + ' von 6 Bereichen geschafft!', t: 0 }; }, 2200);
     Save.write();
   };
 
@@ -85,8 +85,8 @@ if (HALLOWEEN) {
     const hw = hwMeta(), n = hw ? hw.areas.length : 0, land = W > H, bw = 172, bx = land ? W - bw - 14 : W / 2 - bw / 2, by = land ? 94 : H - 128;
     const b = Math.sin(this.t * 2.2) * 2;
     rrPath(c, bx, by + b, bw, 38, 19); fs(c, '#3c096c', 3, '#f77f00'); jackO(c, bx + 22, by + 19 + b, 0.85, 0.6);
-    txt(c, 'Halloween-Special', bx + 42, by + 13 + b, 12, '#ffd166', 'left', null); txt(c, 'Kürbis-Jagd ' + n + '/6', bx + 42, by + 29 + b, 11, '#fff', 'left', null);
-    UI.btn(bx, by, bw, 38, () => { overlay = new MsgDialog({ icon: 'star', text: n >= 6 ? 'Du hast alle Kürbisse gefunden! Das Gespenst-Kostüm liegt in deiner Garderobe.' : 'Halloween-Special! In jedem Bereich sind 8 Kürbisse versteckt. Sammle alle Kürbisse in allen 6 Bereichen, dann bekommst du das Gespenst-Kostüm. Im Laden gibt es außerdem Halloween-Kostüme.' }); });
+    txt(c, 'Halloween-Special', bx + 42, by + 13 + b, 12, '#ffd166', 'left', null); txt(c, 'Bonbon-Jagd ' + n + '/6', bx + 42, by + 29 + b, 11, '#fff', 'left', null);
+    UI.btn(bx, by, bw, 38, () => { overlay = new MsgDialog({ icon: 'star', text: n >= 6 ? 'Du hast alle Bonbons gefunden! Das Gespenst-Kostüm liegt in deiner Garderobe.' : 'Halloween-Special! In jedem Bereich liegen 8 leuchtende Bonbons. Sammle alle Bonbons in allen 6 Bereichen, dann bekommst du das Gespenst-Kostüm. Im Laden gibt es außerdem Halloween-Kostüme.' }); });
   };
 
   // 5) Laden: an Halloween ist das Tages-Angebot ein Halloween-Kostüm

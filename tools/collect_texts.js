@@ -4,7 +4,9 @@ const puppeteer = require('puppeteer-core');
 (async () => {
   const b = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: 'new' });
   const p = await b.newPage();
-  await p.goto('file://' + __dirname + '/../index.html');
+  const all = [];
+  for (const q of ['?halloween=0', '?halloween=1']) {   // normale Fassung und Halloween-Special
+  await p.goto('file://' + __dirname + '/../index.html' + q);
   const out = await p.evaluate(() => {
     const L = [], add = (text, who = 'erzaehler') => { if (text) L.push({ who, text, key: Voice.key(text, who), clean: Voice.clean(text) }); };
     STORY_SAY.forEach(t => add(t));
@@ -39,8 +41,14 @@ const puppeteer = require('puppeteer-core');
     add(questText({ mode: 'lock', npc: 'gate' }), 'gate');
     Object.values(LEO_SAY).forEach(t => add(t, 'leo'));
     Object.values(SKINS).filter(sk => sk.ability).forEach(sk => add(ABILITIES[sk.ability].name + '. ' + abilityText(sk))); add('Dieser Skin hat keine besondere Fähigkeit.');
+    if (typeof HALLOWEEN !== 'undefined' && HALLOWEEN) {
+      add('Halloween-Special! In jedem Bereich liegen 8 leuchtende Bonbons. Sammle alle Bonbons in allen 6 Bereichen, dann bekommst du das Gespenst-Kostüm. Im Laden gibt es außerdem Halloween-Kostüme.');
+      add('Du hast alle Bonbons gefunden! Das Gespenst-Kostüm liegt in deiner Garderobe.');
+      add('Alle Bonbons in allen Bereichen! Du bekommst das Gespenst-Kostüm!'); for (let i = 1; i < 6; i++) add('Bonbon-Jagd: ' + i + ' von 6 Bereichen geschafft!');
+    }
     const seen = new Set(); return L.filter(x => !seen.has(x.key) && seen.add(x.key));
   });
-  process.stdout.write(JSON.stringify(out, null, 1));
+  all.push(...out); }
+  const seen = new Set(); process.stdout.write(JSON.stringify(all.filter(x => !seen.has(x.key) && seen.add(x.key)), null, 1));
   await b.close();
 })();

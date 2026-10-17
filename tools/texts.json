@@ -685,6 +685,60 @@
  },
  {
   "who": "erzaehler",
+  "text": "Schau dir den kleinen Kürbis an. Tippe unten Augen, Nase und Mund an, bis dein Kürbis genauso aussieht.",
+  "key": "ecf600af",
+  "clean": "Schau dir den kleinen Kürbis an. Tippe unten Augen, Nase und Mund an, bis dein Kürbis genauso aussieht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Merk dir das Zaubertrank-Rezept. Tippe dann die Zutaten in der richtigen Reihenfolge an – sie fallen in den Kessel.",
+  "key": "4b9c25ab",
+  "clean": "Merk dir das Zaubertrank-Rezept. Tippe dann die Zutaten in der richtigen Reihenfolge an, sie fallen in den Kessel."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gespenster gucken aus den Grabsteinen. Tippe sie schnell an! Aber lass die Fledermäuse in Ruhe.",
+  "key": "7f8954f7",
+  "clean": "Gespenster gucken aus den Grabsteinen. Tippe sie schnell an! Aber lass die Fledermäuse in Ruhe."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zieh jede Süßigkeit in die Schale, auf der dieselbe Süßigkeit abgebildet ist.",
+  "key": "2870720b",
+  "clean": "Zieh jede Süßigkeit in die Schale, auf der dieselbe Süßigkeit abgebildet ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, dann flattert die Fledermaus nach oben. Flieg durch die Lücken zwischen den Bäumen.",
+  "key": "92671bb7",
+  "clean": "Tippe, dann flattert die Fledermaus nach oben. Flieg durch die Lücken zwischen den Bäumen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe die Punkte der Reihe nach an: erst die 1, dann die 2 und so weiter. Dann spinnt die Spinne ihr Netz.",
+  "key": "01960afe",
+  "clean": "Tippe die Punkte der Reihe nach an: erst die 1, dann die 2 und so weiter. Dann spinnt die Spinne ihr Netz."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schieb die Hexe auf dem Besen hin und her. Sammle die Sterne und weich den Gewitterwolken aus.",
+  "key": "9eecd3c7",
+  "clean": "Schieb die Hexe auf dem Besen hin und her. Sammle die Sterne und weich den Gewitterwolken aus."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe zwei Türen an. Finde immer zwei gleiche Süßigkeiten.",
+  "key": "b4794bb7",
+  "clean": "Tippe zwei Türen an. Finde immer zwei gleiche Süßigkeiten."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zähle die Kürbisse und tippe unten die richtige Zahl an.",
+  "key": "3242e6ad",
+  "clean": "Zähle die Kürbisse und tippe unten die richtige Zahl an."
+ },
+ {
+  "who": "erzaehler",
   "text": "Dreh immer zwei Karten um.",
   "key": "c732cb74",
   "clean": "Dreh immer zwei Karten um."
@@ -1084,6 +1138,48 @@
   "text": "Oben steht, was das Parken kostet.",
   "key": "5639c339",
   "clean": "Oben steht, was das Parken kostet."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau dir den kleinen Kürbis an.",
+  "key": "b83bc3ae",
+  "clean": "Schau dir den kleinen Kürbis an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Merk dir das Zaubertrank-Rezept.",
+  "key": "51d55b8f",
+  "clean": "Merk dir das Zaubertrank-Rezept."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gespenster gucken aus den Grabsteinen.",
+  "key": "0655078e",
+  "clean": "Gespenster gucken aus den Grabsteinen."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe, dann flattert die Fledermaus nach oben.",
+  "key": "e402d988",
+  "clean": "Tippe, dann flattert die Fledermaus nach oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe die Punkte der Reihe nach an: erst die 1, dann die 2 und so weiter.",
+  "key": "0d5a7a26",
+  "clean": "Tippe die Punkte der Reihe nach an: erst die 1, dann die 2 und so weiter."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schieb die Hexe auf dem Besen hin und her.",
+  "key": "051285c7",
+  "clean": "Schieb die Hexe auf dem Besen hin und her."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe zwei Türen an.",
+  "key": "3bacf413",
+  "clean": "Tippe zwei Türen an."
  },
  {
   "who": "erzaehler",
@@ -3409,8 +3505,908 @@
  },
  {
   "who": "erzaehler",
+  "text": "Sammel-Magnet. Sammel-Sachen fliegen dir aus großer Entfernung zu. (Stufe 3 von 4)",
+  "key": "779960eb",
+  "clean": "Sammel-Magnet. Sammel-Sachen fliegen dir aus großer Entfernung zu."
+ },
+ {
+  "who": "erzaehler",
   "text": "Dieser Skin hat keine besondere Fähigkeit.",
   "key": "7ae64372",
   "clean": "Dieser Skin hat keine besondere Fähigkeit."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Hexenküche reisen?",
+  "key": "30991d98",
+  "clean": "Zum Bereich Hexenküche reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Geistersaal reisen?",
+  "key": "ffea4e54",
+  "clean": "Zum Bereich Geistersaal reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Kürbisgarten reisen?",
+  "key": "687ab285",
+  "clean": "Zum Bereich Kürbisgarten reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Gruselspielplatz reisen?",
+  "key": "7c4e29b4",
+  "clean": "Zum Bereich Gruselspielplatz reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Nebelparkplatz reisen?",
+  "key": "3346c7bd",
+  "clean": "Zum Bereich Nebelparkplatz reisen?"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Zum Bereich Spukhütte reisen?",
+  "key": "c02ff631",
+  "clean": "Zum Bereich Spukhütte reisen?"
+ },
+ {
+  "who": "gate",
+  "text": "Dieser Durchgang ist verhext. Er geht erst auf, wenn du allen fünf geholfen hast.",
+  "key": "68ecdbfe",
+  "clean": "Dieser Durchgang ist verhext. Er geht erst auf, wenn du allen fünf geholfen hast."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "dac2aa95",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "gate",
+  "text": "Das Tor ist verhext! Bring mir diese Sachen, dann geht es zum Nebelparkplatz.",
+  "key": "8a2f1374",
+  "clean": "Das Tor ist verhext! Bring mir diese Sachen, dann geht es zum Nebelparkplatz."
+ },
+ {
+  "who": "hase",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "437d29aa",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "hase",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "5d039286",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "hase",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "b060da0f",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "hase",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "a586964a",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "0ec38014",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "288f2a7c",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "3d4916e1",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "fuchs",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "a9a99edc",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "igel",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "3fbc097c",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "igel",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "0483dfd4",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "igel",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "89b4d269",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "igel",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "79006fe8",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "c733dad1",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "e0e30c93",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "b71c9fb8",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "waschbaer",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "aafb69a7",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "eule",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "3442ff1a",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "eule",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "d0fca716",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "eule",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "a8880abf",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "eule",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "82f8b404",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "gate",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "3124faea",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Kinder mit dem gelben Ausrufezeichen. Jedes Kind hat 4 Aufgaben für dich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "b83c23ea",
+  "clean": "Tippe auf die Kinder mit dem gelben Ausrufezeichen. Jedes Kind hat 4 Aufgaben für dich. Wenn du allen 5 Kindern geholfen hast, wartet am Tor zum Parkplatz die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "gate",
+  "text": "Die Tür zum Geistersaal ist verhext! Bring mir diese Sachen, dann löse ich den Zauber.",
+  "key": "f8881680",
+  "clean": "Die Tür zum Geistersaal ist verhext! Bring mir diese Sachen, dann löse ich den Zauber."
+ },
+ {
+  "who": "k_marco",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "5a572dff",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "95f740d5",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "cf0c2736",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "k_marco",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "47799d4f",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "698a67ac",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "b1162424",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "090ed099",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "k_luca",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "776b717c",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "5c175b97",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "04aff77d",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "79a148ae",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "k_tom",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "3ffe99ed",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "f4b26ef1",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "51715d33",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "c7a62858",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "k_nina",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "f8b7cc3b",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "9b5d8d91",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "2e896fd3",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "fcd477f8",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "k_lea",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "7913e7e7",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "2f733de1",
+  "clean": "Tippe auf die Mitarbeiter mit dem gelben Ausrufezeichen. Jeder Mitarbeiter hat 4 Aufgaben für dich. Wenn du allen 5 Mitarbeitern geholfen hast, wartet an der Schwingtür zum Innenbereich die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "gate",
+  "text": "Die Tür zum Kürbisgarten ist verhext! Bring mir diese Sachen, dann löse ich den Zauber.",
+  "key": "bd5e7c15",
+  "clean": "Die Tür zum Kürbisgarten ist verhext! Bring mir diese Sachen, dann löse ich den Zauber."
+ },
+ {
+  "who": "g_rosi",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "ccebfe92",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "g_rosi",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "5432063e",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "g_rosi",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "05e39cd7",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "g_rosi",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "5e1dd1bc",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "g_becker",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "eb11980f",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "g_becker",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "fb3fb7c5",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "g_becker",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "0d9c1d06",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "g_becker",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "e9dbe8bf",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "g_lina",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "08597301",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "g_lina",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "11d58363",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "g_lina",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "61e158a8",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "g_lina",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "28f164e5",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "g_schulz",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "d306c110",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "g_schulz",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "f55c7500",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "g_schulz",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "5b5301dd",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "g_schulz",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "c1e73dc8",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "g_ben",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "9540cac8",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "g_ben",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "432f3628",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "g_ben",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "4f14e175",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "g_ben",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "8aa7632c",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "222ad8b2",
+  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet an der Glastür zur Terrasse die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "gate",
+  "text": "Das Gartentor ist verhext! Bring mir diese Sachen, dann kommst du zum Gruselspielplatz.",
+  "key": "3149a10a",
+  "clean": "Das Gartentor ist verhext! Bring mir diese Sachen, dann kommst du zum Gruselspielplatz."
+ },
+ {
+  "who": "a_weber",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "6fe768ec",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "a_weber",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "bad37ee4",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "a_weber",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "d6cd9859",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "a_weber",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "31604db6",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "a_hoffmann",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "8253fd2c",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "a_hoffmann",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "e64404a4",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "a_hoffmann",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "3b566219",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "a_hoffmann",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "a8da0756",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "a_klaus",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "0bc431c1",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "a_klaus",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "ce8047a3",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "a_klaus",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "109307e8",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "a_klaus",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "ee1965d9",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "a_mila",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "04094fa8",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "a_mila",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "0f24c108",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "a_mila",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "664d21d5",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "a_mila",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "136efff8",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "a_noah",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "f2514955",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "a_noah",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "52ea759f",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "a_noah",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "0a7856bc",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "a_noah",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "23578417",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "ad7e402a",
+  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Gartentor zum Spielplatz die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "gate",
+  "text": "Die Hüttentür ist verhext! Bring mir diese Sachen, dann ist die Halloween-Nacht gerettet.",
+  "key": "6e802099",
+  "clean": "Die Hüttentür ist verhext! Bring mir diese Sachen, dann ist die Halloween-Nacht gerettet."
+ },
+ {
+  "who": "c_gerda",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "e82a8bdc",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "c_gerda",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "4da0b6b4",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "c_gerda",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "e9339ac9",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "c_gerda",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "74878188",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "c_felix",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "977609ed",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "c_felix",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "2ae9dfa7",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "c_felix",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "21a26614",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "c_felix",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "1baedf2b",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "c_berger",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "c57103d8",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "c_berger",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "d0ce3dd8",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "c_berger",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "233f0e85",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "c_berger",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "dedcb48a",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "c_toni",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "8a01851f",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "c_toni",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "9566e875",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "c_toni",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "3855bbd6",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "c_toni",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "4c88d3ef",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "c_anna",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "9c966bf1",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "c_anna",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "b4cdbc33",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "c_anna",
+  "text": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "f6980d58",
+  "clean": "Mein Halloween-Kostüm ist noch nicht fertig! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "c_anna",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "51c8feb5",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "e4edea16",
+  "clean": "Tippe auf die Gäste mit dem gelben Ausrufezeichen. Jeder Gast hat 4 Aufgaben für dich. Wenn du allen 5 Gästen geholfen hast, wartet am Holztor unten die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "gate",
+  "text": "Die Schranke ist verhext! Bring mir diese Sachen, dann geht es zur Spukhütte.",
+  "key": "21f03f15",
+  "clean": "Die Schranke ist verhext! Bring mir diese Sachen, dann geht es zur Spukhütte."
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "da5665ec",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "fda8dde4",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "1ea27d59",
+  "clean": "Gleich geht es los mit Süßes oder Saures, aber mir fehlt noch was! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "6b82e554",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "p_julia",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "ba21ba4f",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "p_julia",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "f1c15285",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "p_julia",
+  "text": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "004123c6",
+  "clean": "Ein freches Gespenst hat meine Sachen versteckt! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "p_julia",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "4ebe0c79",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "p_karl",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "0319f46c",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "p_karl",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "02ed0b64",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "p_karl",
+  "text": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "e85373d9",
+  "clean": "Für die Gruselparty fehlen mir noch ein paar Sachen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "p_karl",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "b88e8d36",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "p_petra",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "b9262ed6",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "p_petra",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "1bacc22a",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "p_petra",
+  "text": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "99e278fb",
+  "clean": "Die Hexe hat alles durcheinandergezaubert! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "p_petra",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "95285368",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "p_tim",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!",
+  "key": "cf042c5e",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Kannst du diese Sachen für mich finden? Sonst gibt es nachher keine Süßigkeiten!"
+ },
+ {
+  "who": "p_tim",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!",
+  "key": "c868bc82",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Hilfst du mir, diese Sachen zu suchen? Ein Gespenst hat sie versteckt!"
+ },
+ {
+  "who": "p_tim",
+  "text": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!",
+  "key": "bef740a3",
+  "clean": "Huch! Eine Fledermaus hat meine Sachen weggetragen! Findest du diese Sachen für mich? Das wäre schaurig-schön!"
+ },
+ {
+  "who": "p_tim",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken – Gespenster verstecken gern Sachen!",
+  "key": "58db013e",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau in alle Ecken, Gespenster verstecken gern Sachen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Leute mit dem gelben Ausrufezeichen. Jede Person hat 4 Aufgaben für dich. Wenn du allen 5 Leuten geholfen hast, wartet an der Schranke zur Straße die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "043b1183",
+  "clean": "Tippe auf die Leute mit dem gelben Ausrufezeichen. Jede Person hat 4 Aufgaben für dich. Wenn du allen 5 Leuten geholfen hast, wartet an der Schranke zur Straße die letzte Aufgabe. Lauf über die leuchtenden Bonbons: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Halloween-Special! In jedem Bereich liegen 8 leuchtende Bonbons. Sammle alle Bonbons in allen 6 Bereichen, dann bekommst du das Gespenst-Kostüm. Im Laden gibt es außerdem Halloween-Kostüme.",
+  "key": "5feac709",
+  "clean": "Halloween-Special! In jedem Bereich liegen 8 leuchtende Bonbons. Sammle alle Bonbons in allen 6 Bereichen, dann bekommst du das Gespenst-Kostüm. Im Laden gibt es außerdem Halloween-Kostüme."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du hast alle Bonbons gefunden! Das Gespenst-Kostüm liegt in deiner Garderobe.",
+  "key": "2c1ffebd",
+  "clean": "Du hast alle Bonbons gefunden! Das Gespenst-Kostüm liegt in deiner Garderobe."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Alle Bonbons in allen Bereichen! Du bekommst das Gespenst-Kostüm!",
+  "key": "aebbbcb0",
+  "clean": "Alle Bonbons in allen Bereichen! Du bekommst das Gespenst-Kostüm!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonbon-Jagd: 1 von 6 Bereichen geschafft!",
+  "key": "832f7a45",
+  "clean": "Bonbon-Jagd: 1 von 6 Bereichen geschafft!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonbon-Jagd: 2 von 6 Bereichen geschafft!",
+  "key": "1a3ddb6e",
+  "clean": "Bonbon-Jagd: 2 von 6 Bereichen geschafft!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonbon-Jagd: 3 von 6 Bereichen geschafft!",
+  "key": "cb2d7463",
+  "clean": "Bonbon-Jagd: 3 von 6 Bereichen geschafft!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonbon-Jagd: 4 von 6 Bereichen geschafft!",
+  "key": "ec00d664",
+  "clean": "Bonbon-Jagd: 4 von 6 Bereichen geschafft!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bonbon-Jagd: 5 von 6 Bereichen geschafft!",
+  "key": "754eac99",
+  "clean": "Bonbon-Jagd: 5 von 6 Bereichen geschafft!"
  }
 ]
