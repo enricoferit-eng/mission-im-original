@@ -14,7 +14,7 @@ try { document.addEventListener('visibilitychange', () => { if (document.hidden)
 class GameOverlay {
   // opts: { diff, kind:'easy'|'puzzle'|'challenge', item, steps:{i,n}, slow, seed, onStop }
   constructor(id, opts, done) {
-    this.id = id; this.opts = opts; this.done = done; this.retries = 0;
+    this.id = id; this.opts = opts; this.done = done; this.retries = 0; this.playT = 0;   // playT: reine Spielzeit (auch über Neustarts) für die Zeit-Statistik
     this.start();
   }
   start() {
@@ -237,7 +237,7 @@ class GameOverlay {
     if (this.state === 'play' && !this.tickPressure(dt)) return;        // Countdown läuft
     if (this.state !== 'play') Music.stop();
     if (this.state === 'play') {
-      this.g.update(dt);
+      this.playT += dt; this.g.update(dt);
       if (this.timed && this.state === 'play') {
         this.timeLeft -= dt;
         const sec = Math.ceil(this.timeLeft);
@@ -247,7 +247,7 @@ class GameOverlay {
     } else if (this.state === 'won') {
       this.endT += dt;
       if (this.starsOn()) for (let i = 0; i < this.stars; i++) if (this.endT > 0.35 + i * 0.28 && this.won3 <= i) { this.won3 = i + 1; Sfx.note([523, 659, 784][i], 0.25, 'triangle', 0.09, 1.02); const sp = this.toScreen(200 + (i - 1) * 74, 380); FX.sparkle(sp.x, sp.y, 14, '#ffd23f'); }
-      if (!this.statDone) { this.statDone = true; if (this.starsOn() && this.stars === 3 && !this.usedJoker && typeof stat === 'function') stat('stars3'); }
+      if (!this.statDone) { this.statDone = true; if (!this.usedJoker) gameTimeStat(this.id, this.opts.diff, this.playT); if (this.starsOn() && this.stars === 3 && !this.usedJoker && typeof stat === 'function') stat('stars3'); }
       if (this.endT > (this.starsOn() ? 2.1 : 1.25)) this.finish(true);
     }
     else this.endT += dt;
@@ -1389,6 +1389,13 @@ GAMES.count = { make(env) {
   };
 } };
 
+// Wie lange Kinder wirklich für eine Aufgabe brauchen (je Stufe): Anzahl + Summe, wird mit dem Konto gespeichert – Grundlage, um GAME_SEC nachzustellen
+function gameTimeStat(id, diff, sec) {
+  const a = typeof ACC === 'function' && ACC(); if (!a || !diff || !(sec > 0.5) || sec > 900 || a.admin) return;
+  const gt = a.gt || (a.gt = {}), k = id + '|' + diff, e = gt[k] || (gt[k] = [0, 0]);
+  if (e[0] >= 50) { e[1] *= 49 / 50; e[0] = 49; }   // nur die letzten ~50 zählen
+  e[0]++; e[1] = Math.round((e[1] + sec) * 10) / 10;
+}
 // ===== CHALLENGES (Typ 1): Geschicklichkeit; bei Schwer mit 3 Leben + Zeit-Balken + Bonus-Uhren =====
 GAMES.run = { challenge: true, make(env) {
   const r = env.r, sp = (env.hard ? 315 : 250) * env.slow, rows = env.hard ? 22 : 16, gap = env.hard ? 160 : 190;
