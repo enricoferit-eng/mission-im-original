@@ -849,16 +849,18 @@ function stageArt(c, id, x, y, w, h, t) {
 }
 
 // Weltkarte wie bei Super Mario: ein Weg, die Figur läuft hüpfend von Bereich zu Bereich
+// Reihenfolge der Bereiche auf der Übersicht (Events hängen hier ihre eigene Map an)
+function mapOrder() { return STAGE_ORDER; }
 class StageMap {
   constructor(diff) { MAP_DIFF = diff;
-    this.diff = diff; this.t = 0; this.camX = null; this.drag = null;
-    this.cur = Math.max(0, STAGE_ORDER.indexOf(startArea(diff))); this.sel = this.cur; this.walk = null; this.card = 0;
+    this.diff = diff; this.t = 0; this.camX = null; this.drag = null; this.order = mapOrder();
+    this.cur = Math.max(0, this.order.indexOf(startArea(diff))); this.sel = this.cur; this.walk = null; this.card = 0;
   }
   enter() { FX.clear(); }
   geo() {
     const top = 78, bot = H - 150, mid = (top + bot) / 2, amp = Math.max(30, (bot - top) * 0.3), gap = clamp(W * 0.32, 220, 300);
-    const N = STAGE_ORDER.length, mapW = Math.max(W, 140 + gap * (N - 1) + 140);
-    const nodes = STAGE_ORDER.map((id, i) => ({ id, x: 140 + i * gap, y: mid + (i % 2 ? amp : -amp) * (i % 4 < 2 ? 1 : 0.6) }));
+    const N = this.order.length, mapW = Math.max(W, 140 + gap * (N - 1) + 140);
+    const nodes = this.order.map((id, i) => ({ id, x: 140 + i * gap, y: mid + (i % 2 ? amp : -amp) * (i % 4 < 2 ? 1 : 0.6) }));
     if (!this.pts || this.pts.mapW !== mapW || this.pts.H !== H) {
       const pts = [], at = [];
       for (let i = 0; i < N - 1; i++) {
@@ -894,8 +896,8 @@ class StageMap {
     this.walk = { to: this.pts.at[i], node: i }; Sfx.play('jump');
   }
   play() {
-    const id = STAGE_ORDER[this.cur];
-    if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_INFO[STAGE_ORDER[STAGE_ORDER.indexOf(id) - 1]].name, 'lock'); return; }
+    const id = this.order[this.cur];
+    if (!OPEN_STAGES.includes(id)) { Sfx.play('bad'); toast('Noch gesperrt', 'Schaffe zuerst ' + STAGE_INFO[this.order[this.order.indexOf(id) - 1]].name, 'lock'); return; }
     Sfx.play('win'); setScene(new Play(this.diff, { stage: id }));   // in jeden freigeschalteten Bereich, genau dort
   }
   draw(c) {
@@ -916,7 +918,7 @@ class StageMap {
     // Weg: breiter Kiesweg + Punkte; schon gelaufener Teil leuchtet
     c.lineCap = 'round'; c.lineJoin = 'round';
     c.beginPath(); P.list.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.lineWidth = 30; c.strokeStyle = '#6b4f2a'; c.stroke(); c.lineWidth = 24; c.strokeStyle = '#e9dfcc'; c.stroke();
-    if (false) for (let i = 0; i < P.list.length; i += 6) { const p = P.list[i], open = i <= P.at[OPEN_STAGES.map(o => STAGE_ORDER.indexOf(o)).reduce((a, b) => Math.max(a, b), 0)]; ell(c, p.x, p.y, 4, 4); c.fillStyle = open ? '#c9a46b' : 'rgba(150,130,100,.45)'; c.fill(); }
+    if (false) for (let i = 0; i < P.list.length; i += 6) { const p = P.list[i], open = i <= P.at[OPEN_STAGES.map(o => this.order.indexOf(o)).reduce((a, b) => Math.max(a, b), 0)]; ell(c, p.x, p.y, 4, 4); c.fillStyle = open ? '#c9a46b' : 'rgba(150,130,100,.45)'; c.fill(); }
     // Knoten
     G.nodes.forEach((n, i) => {
       const open = OPEN_STAGES.includes(n.id), sp = SP(this.diff, n.id), here = i === this.cur, R = 40;
@@ -946,7 +948,7 @@ class StageMap {
     topBar(c, () => setScene(new Menu()));
     { c.font = `900 18px ${FONT}`; const tw = c.measureText(d.name).width + 28; rrPath(c, W / 2 - tw / 2, 14, tw, 32, 16); c.fillStyle = 'rgba(32,44,30,.75)'; c.fill(); txt(c, d.name, W / 2, 31, 18, '#fff', 'center', null); }
     // Info-Karte zum gewählten Bereich
-    const id = STAGE_ORDER[this.cur], open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
+    const id = this.order[this.cur], open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
     const cw = Math.min(W - 120, 560), ch = 104, cx = 16 + (W - 120 - cw) / 2, k = ease.back(this.card), cy = H - ch - 12 + (1 - k) * 140;
     if (!this.walk) {
       panel(c, cx, cy, cw, ch, open ? '#fbf8f2' : '#e9e4d8', 20);
@@ -955,12 +957,12 @@ class StageMap {
       txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null);
       txt(c, info.sub, tx, cy + 52, 13, '#6b5a48', 'left', null);
       if (open) {
-        const done = ALL_IDS.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
-        for (let q = 0; q < 6; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); } txt(c, done + ' von ' + ALL_IDS.length + ' geschafft', tx + 100, cy + 79, 12, '#6b5a48', 'left', null);
+        const ids = STAGE_DEFS[id] ? STAGE_DEFS[id].npcs.map(n => n.id).concat(['gate']) : ALL_IDS, done = ids.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
+        for (let q = 0; q < ids.length; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); } txt(c, done + ' von ' + ids.length + ' geschafft', tx + 10 + ids.length * 15, cy + 79, 12, '#6b5a48', 'left', null);
         const pu = 1 + Math.sin(t * 6) * 0.07;
         c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 28, '#06d6a0', 'play', null); c.restore();
         UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
-      } else { const prev = STAGE_ORDER[STAGE_ORDER.indexOf(id) - 1], lab = prev ? 'Schaffe zuerst: ' + STAGE_INFO[prev].name : 'gesperrt'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 44; rrPath(c, tx, cy + 64, lw, 28, 14); fs(c, '#fff', 2); icon(c, 'lock', tx + 16, cy + 78, 18); txt(c, lab, tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
+      } else { const prev = this.order[this.order.indexOf(id) - 1], lab = prev ? 'Schaffe zuerst: ' + STAGE_INFO[prev].name : 'gesperrt'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 44; rrPath(c, tx, cy + 64, lw, 28, 14); fs(c, '#fff', 2); icon(c, 'lock', tx + 16, cy + 78, 18); txt(c, lab, tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
     }
     roundBtn(c, W - 46, H - 52, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
   }

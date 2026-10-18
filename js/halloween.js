@@ -123,14 +123,53 @@ if (HALLOWEEN) {
     upd1.call(this, dt);
     if (!window.HW_HINTED && !this.mp && this.stage !== 'geisterwald' && this.t > 2.5 && !overlay && scene === this) { window.HW_HINTED = true; this.banner = { text: HW_SAY.hint, t: 0 }; Voice.say(HW_SAY.hint, true); }
   };
-  // Bereichs-Übersicht: Knopf zum Geisterwald unten links
+  // Bereichs-Übersicht: der Geisterwald ist ein eigener Punkt am Ende des Wegs (immer offen)
+  mapOrder = () => STAGE_ORDER.concat(['geisterwald']);   // eslint-disable-line no-func-assign
+  STAGE_INFO.geisterwald = { name: 'Geisterwald', sub: 'Halloween-Event: Kürbismünzen & Kostüme' };
+  const icon0 = stageIcon;
+  stageIcon = function (c, id, x, y, s) { if (id === 'geisterwald') jackO(c, x, y + s * 0.05, s / 30, 0); else icon0(c, id, x, y, s); };   // eslint-disable-line no-func-assign
+  const art0 = stageArt;
+  stageArt = function (c, id, x, y, w, h, t) {   // eslint-disable-line no-func-assign
+    if (id !== 'geisterwald') { art0(c, id, x, y, w, h, t); return; }
+    c.save(); rrPath(c, x, y, w, h, 14); c.clip();
+    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#2b1a4a'); g.addColorStop(0.7, '#7b3f72'); g.addColorStop(0.71, '#2f4526'); g.addColorStop(1, '#22341b'); c.fillStyle = g; c.fillRect(x, y, w, h);
+    ell(c, x + w * 0.8, y + h * 0.25, h * 0.14, h * 0.14); c.fillStyle = '#fff3bf'; c.fill();
+    for (const [fx, fh] of [[0.12, 0.62], [0.3, 0.5], [0.9, 0.58]]) { c.fillStyle = '#1b1028'; polyPath(c, [[x + w * fx - 9, y + h * 0.72], [x + w * fx, y + h * (0.72 - fh)], [x + w * fx + 9, y + h * 0.72]]); c.fill(); }
+    jackO(c, x + w * 0.55, y + h * 0.7, h / 60, 1); jackO(c, x + w * 0.72, y + h * 0.8, h / 110, 0.7);
+    c.restore();
+  };
   const smap0 = StageMap.prototype.draw;
   StageMap.prototype.draw = function (c) {
     smap0.call(this, c);
-    if (overlay) return;
-    const x = W - 42, y = H - 128, b = Math.sin(this.t * 2.2) * 1.5;   // über dem Garderoben-Knopf, verdeckt nichts
-    roundBtn(c, x, y + b, 22, '#3c096c', null, () => { Sfx.play('win'); setScene(new Play(this.diff, { stage: 'geisterwald' })); }, '#f77f00');
-    jackO(c, x, y + b, 1.3, 0.6); txt(c, 'Geisterwald', x - 4, y + 36, 11, '#ffd166', 'center', '#3c096c');
+    const ei = this.order.indexOf('geisterwald'), n = this.geo().nodes[ei]; if (!n) return;
+    // Event-Punkt hervorheben: Leuchten + EVENT-Schild (in Kartenkoordinaten)
+    const x = n.x - this.camX, sy = n.y - 78 + Math.sin(this.t * 3 + ei) * 3, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+    if (x > -80 && x < W + 80) {
+      ell(c, x, n.y + 2, 52 + gl * 6, 30 + gl * 4); c.lineWidth = 5; c.strokeStyle = `rgba(255,140,20,${0.45 + gl * 0.4})`; c.stroke();
+      rrPath(c, x - 100, sy - 9, 56, 18, 9); fs(c, '#ef476f', 2, '#fff'); txt(c, 'EVENT', x - 72, sy + 1, 11, '#fff', 'center', null);   // links neben dem Schild (oben Bildrand, rechts Ton-Knopf)
+    }
+    if (overlay || this.cur === ei || this.walk) return;
+    // Abkürzung unten rechts: läuft zum Event-Punkt
+    const bx = W - 42, by = H - 128, b = Math.sin(this.t * 2.2) * 1.5;   // über dem Garderoben-Knopf, verdeckt nichts
+    roundBtn(c, bx, by + b, 22, '#3c096c', null, () => this.goTo(ei), '#f77f00');
+    jackO(c, bx, by + b, 1.3, 0.6); txt(c, 'Geisterwald', bx - 4, by + 36, 11, '#ffd166', 'center', '#3c096c');
+  };
+  // Weltkarte im Spiel: Geisterwald als eigene Insel rechts neben dem Gelände
+  const wm0 = WorldMap.prototype.draw;
+  WorldMap.prototype.draw = function (c) {
+    wm0.call(this, c);
+    if (overlay !== this) return;
+    const T = terrainImage(), B = T.B, pad = 14, top = 62, aw = W - pad * 2 - 80, ah = H - top - pad, sc = Math.min(aw / (B.x1 - B.x0), ah / (B.y1 - B.y0));
+    const mw = (B.x1 - B.x0) * sc, mx = (W - mw) / 2, free = W - (mx + mw + 6) - 12;
+    const w = Math.min(170, Math.max(96, free - 12)), h = Math.min(150, ah - 20);
+    const x = free >= 96 ? mx + mw + 6 + (free - w) / 2 + 6 : W - w - 12, y = top + (ah - h) / 2, here = this.play.stage === 'geisterwald', t = this.t;
+    c.save(); ell(c, x + w / 2, y + h / 2, w * 0.62, h * 0.62); c.fillStyle = `rgba(255,140,20,${0.18 + 0.12 * Math.sin(t * 3)})`; c.fill(); c.restore();
+    stageArt(c, 'geisterwald', x, y, w, h, t);
+    rrPath(c, x, y, w, h, 14); c.lineWidth = here ? 4 : 3; c.strokeStyle = here ? '#ffd166' : '#f77f00'; c.stroke();
+    rrPath(c, x + w / 2 - 30, y - 9, 60, 18, 9); fs(c, '#ef476f', 2, '#fff'); txt(c, 'EVENT', x + w / 2, y + 1, 11, '#fff', 'center', null);
+    rrPath(c, x + 8, y + h - 28, w - 16, 22, 10); fs(c, here ? '#ffd166' : 'rgba(255,255,255,.95)', 1.5); txt(c, 'Geisterwald', x + w / 2, y + h - 16, 13, '#3c096c', 'center', null);
+    kmCoin(c, x + 16, y + 18, 0.9); txt(c, String(hwKM()), x + 30, y + 19, 13, '#fff', 'left', '#3c096c');
+    if (!here) UI.btn(x, y - 10, w, h + 10, () => { Sfx.play('tap'); const pl = this.play; overlay = new ConfirmDialog({ text: 'In den Geisterwald reisen? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(pl.diff, { stage: 'geisterwald' })); } }); });
   };
   // Menü: Nachthimmel mit Mond, Fledermäuse, Schild zum Geisterwald
   skyBg = function (c) {   // eslint-disable-line no-func-assign
