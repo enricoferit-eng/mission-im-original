@@ -1703,11 +1703,11 @@ const GAME_SEC = {
   hanoi: 28, maze: 24, pipes: 26, lights: 24, diff: 22, dials: 20, balance: 20, mirror: 20, pairs: 20, dots: 20,
 };
 const GAME_SEC_DEF = { easy: 11, puzzle: 17, challenge: 19 };
-function gameSec(g, diff) {
-  const G = GAMES[g] || {};
-  if (diff === 'easy') return GAME_SEC[g] ? Math.max(GAME_SEC_DEF.easy, GAME_SEC[g] * 0.6) : GAME_SEC_DEF.easy;
-  const base = GAME_SEC[g] || (G.challenge ? GAME_SEC_DEF.challenge : GAME_SEC_DEF.puzzle);
-  return base;   // Schwer: schwerere Aufgaben, aber ältere Kinder – etwa gleich lang
+function gameSec(g, diff) {   // GAME_SEC[g] ist eine Zahl (für Mittel und Schwer) oder [Leicht, Mittel, Schwer]
+  const G = GAMES[g] || {}, v = GAME_SEC[g];
+  if (Array.isArray(v)) return v[diff === 'easy' ? 0 : diff === 'medium' ? 1 : 2];
+  if (diff === 'easy') return v ? Math.max(GAME_SEC_DEF.easy, v * 0.6) : GAME_SEC_DEF.easy;
+  return v || (G.challenge ? GAME_SEC_DEF.challenge : GAME_SEC_DEF.puzzle);   // Schwer: schwerere Aufgaben, aber ältere Kinder – etwa gleich lang
 }
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
 const SECRET_JUMP = 4;   // Meter beim Schaukel-Weitsprung (ca. 6 gute Schwünge, dann abspringen)
