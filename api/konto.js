@@ -212,7 +212,7 @@ async function admin(b) {
   }
   const files = (await listJSON('accounts/')).map(pathname => ({ pathname }));
   const now = Date.now(), DAY = 86400000;
-  const st = { accounts: 0, new7: 0, active7: 0, active30: 0, skins: 0, perDiff: {}, generated: now };
+  const st = { accounts: 0, new7: 0, active7: 0, active30: 0, skins: 0, perDiff: {}, gameTimes: {}, bonus: { easy: [0, 0, 0], medium: [0, 0, 0], hard: [0, 0, 0] }, generated: now };
   for (const d of ['easy', 'medium', 'hard']) st.perDiff[d] = { players: 0, stageClears: 0, playersCleared: 0, questsDone: 0, skins: 0 };
   const accs = await Promise.all(files.map(f => readJSON(f.pathname).catch(() => null)));
   for (const acc of accs) {
@@ -222,6 +222,8 @@ async function admin(b) {
     if (now - (acc.updated || acc.created) < 7 * DAY) st.active7++;
     if (now - (acc.updated || acc.created) < 30 * DAY) st.active30++;
     const diff = (acc.data && acc.data.diff) || {};
+    if (acc.data && acc.data.gt && typeof acc.data.gt === 'object') for (const k in acc.data.gt) { const e = acc.data.gt[k]; if (!Array.isArray(e) || !(e[0] > 0)) continue; const T = st.gameTimes[k] || (st.gameTimes[k] = [0, 0, 0]); T[0] += e[0]; T[1] += Number(e[1]) || 0; T[2]++; }   // Anzahl, Sekunden, Kinder
+    if (acc.data && acc.data.bt && typeof acc.data.bt === 'object') for (const d in acc.data.bt) { const e = acc.data.bt[d], B = st.bonus[d]; if (!B || !Array.isArray(e)) continue; B[0] += Number(e[0]) || 0; B[1] += Number(e[1]) || 0; B[2] += Number(e[2]) || 0; }   // Aufträge, Summe Zeitanteil, mit Joker
     for (const d of ['easy', 'medium', 'hard']) {
       const stages = (diff[d] && diff[d].stages) || {}, P2 = st.perDiff[d];
       let played = false, cleared = false;

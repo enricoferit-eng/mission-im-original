@@ -72,6 +72,22 @@
         <tbody id="tbody"></tbody>
       </table>
     </div>
+    <h2>Bonus-Joker (Zeit pro Auftrag)</h2>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Stufe</th><th>Aufträge</th><th>Extra-Joker geschafft</th><th>Ø gebrauchte Zeit (von der Vorgabe)</th></tr></thead>
+        <tbody id="bonus"></tbody>
+      </table>
+    </div>
+    <p class="note">Unter 100 % = schneller als die Vorgabe. Schaffen fast alle den Joker, ist die Zeit zu großzügig (BONUS_PUFFER in js/stage.js kleiner machen) – schafft ihn kaum jemand, größer.</p>
+    <h2>Wie lange Aufgaben wirklich dauern</h2>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Aufgabe</th><th>Stufe</th><th>gespielt</th><th>Kinder</th><th>Ø Sekunden</th></tr></thead>
+        <tbody id="gtimes"></tbody>
+      </table>
+    </div>
+    <p class="note">Nur Runden ohne Joker. Damit lassen sich die Schätzwerte (GAME_SEC in js/stage.js) nachstellen.</p>
     <p class="note">Multiplayer und Limo/Eis-Einlösungen kommen in die Statistik, sobald diese Teile gebaut sind.</p>
   </section>
 </div>
@@ -94,6 +110,10 @@ async function load() {
     $('login').hidden = true; $('stats').hidden = false;
     $('s-acc').textContent = d.accounts; $('s-new').textContent = d.new7; $('s-a7').textContent = d.active7; $('s-a30').textContent = d.active30; $('s-skins').textContent = d.skins;
     $('tbody').innerHTML = ['easy', 'medium', 'hard'].map(k => { const p = d.perDiff[k]; return `<tr><td>${LABEL[k]}</td><td>${p.players}</td><td>${p.playersCleared}</td><td>${p.stageClears}</td><td>${p.questsDone}</td><td>${p.skins}</td></tr>`; }).join('');
+    const SH = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }, B = d.bonus || {};
+    $('bonus').innerHTML = ['easy', 'medium', 'hard'].map(k => { const e = B[k] || [0, 0, 0]; return `<tr><td>${LABEL[k]}</td><td>${Math.round(e[0])}</td><td>${e[0] ? Math.round(e[2] / e[0] * 100) + ' %' : '–'}</td><td>${e[0] ? Math.round(e[1] / e[0] * 100) + ' %' : '–'}</td></tr>`; }).join('');
+    const G = Object.entries(d.gameTimes || {}).sort((a, b) => b[1][0] - a[1][0]);
+    $('gtimes').innerHTML = G.length ? G.map(([k, e]) => { const [id, df] = k.split('|'); return `<tr><td>${id.replace(/[<>&]/g, '')}</td><td>${SH[df] || ''}</td><td>${e[0]}</td><td>${e[2]}</td><td>${(e[1] / e[0]).toFixed(1)}</td></tr>`; }).join('') : '<tr><td colspan="5">Noch keine Daten – kommt mit dem nächsten Spielen.</td></tr>';
     $('when').textContent = 'Stand: ' + new Date(d.generated).toLocaleString('de-DE');
   } catch (e) { $('err').textContent = 'Keine Verbindung zum Server.'; }
   finally { $('go').disabled = false; }

@@ -7,6 +7,7 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
   const { b, p, errs } = await open({ dpr: 1 }); const log = [], bad = [];
   const ev = (f, a) => p.evaluate(f, a);
   await ev(([a, d]) => { META().km = 0; overlay = null; setScene(new Play(d, { stage: a })); }, [AREA, DIFF]); await sleep(900);
+  await ev(() => { const o = scene.checkBonus.bind(scene); window.BT = []; scene.checkBonus = (q, npc) => { if (q) BT.push({ npc, tt: Math.round(q.tt || 0), lim: scene.bonusLimit(npc, q), g: Math.round((q.games || q.steps).reduce((a, g) => a + gameSec(g, scene.diff), 0)) }); return o(q, npc); }; });
   // Hilfen
   const solve = async () => {   // offene Fenster abarbeiten wie ein Kind (Ja, Los, Spiel gewinnen, Weiter)
     for (let k = 0; k < 60; k++) {
@@ -78,6 +79,7 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
     const after = await ev(() => [META().km, META().skins.filter(s => /^hwskin/.test(s)).join(',')]);
     log.push('Laden: ' + before + ' → ' + after[0] + ' Münzen, Kostüme: ' + after[1]); if (after[0] >= before) bad.push('Kauf im Kürbis-Laden ging nicht');
   }
+  log.push('Bonus-Zeit (gebraucht ohne Spiele | geschätzt Wege+Suchen | Auftrag-Zeit): ' + (await ev(() => BT.map(x => x.npc + ' ' + x.tt + 's | ' + Math.round(x.lim / BONUS_PUFFER - x.g) + 's | ' + x.lim + 's').join(', '))));
   console.log(log.join('\n')); console.log(bad.length ? 'PROBLEME:\n' + bad.join('\n') : 'ALLES OK'); console.log('ERR', [...new Set(errs)].join(' / ') || 'none');
   await b.close();
 })();

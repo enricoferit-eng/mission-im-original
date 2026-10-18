@@ -594,7 +594,26 @@ class Play {
     if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
     return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
   }
-  bonusLimit(npc) { return BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0) + ABIL_VAL.bonuszeit[ability('bonuszeit')]; }
+  bonusLimit(npc, q) {   // jeder Auftrag hat seine eigene Zeit (q.lim, beim Ausdenken berechnet); alte Spielstände: feste Zeit
+    if (!q) { const bq = this.bonusQuest(); q = bq && bq.npc === npc ? bq.q : null; }
+    return (q && q.lim ? q.lim : BONUS_TIME[this.diff] + (npc === 'gate' ? 30 : 0)) + ABIL_VAL.bonuszeit[ability('bonuszeit')];
+  }
+  // Geschätzte Zeit für einen Auftrag: Wege (NPC → Verstecke → zurück), Suchen und die Aufgaben selbst – plus Puffer
+  questTime(npc, hidden, games, diff) {
+    let sec = games.reduce((a, g) => a + gameSec(g, diff), 0);
+    if (diff !== 'easy' && hidden.length) {
+      const A = this.anchorPos(npc); let cur = A, len = 0; const left = hidden.slice();
+      const way = (a, b) => { const P = findPath(a.x, a.y, a.l, b.x, b.y, b.l, false); if (!P || !P.length) return dist(a.x, a.y, b.x, b.y) * 1.3; let d = 0, x = a.x, y = a.y; for (const q of P) { d += dist(x, y, q.x, q.y); x = q.x; y = q.y; } return d; };
+      while (left.length) { let bi = 0, bd = 1e9; left.forEach((h, i) => { const d = way(cur, h); if (d < bd) { bd = d; bi = i; } }); len += bd; cur = left.splice(bi, 1)[0]; }   // wie ein Kind: immer zum nächsten Versteck
+      len += way(cur, A);
+      sec += len / BONUS_WALK + hidden.length * BONUS_SEARCH[diff];
+    }
+    return Math.ceil(sec * BONUS_PUFFER / 5) * 5;
+  }
+  anchorPos(npc) {
+    if (npc === 'gate') return { x: GATE.ix, y: GATE.iy, l: 0 };
+    const n = this.npcs.find(x => x.id === npc), P = n ? this.npcPos(n) : { x: START.x, y: START.y, l: 0 }; return { x: P.x, y: P.y, l: P.l || 0 };
+  }
   bonusLeft() { const bq = this.bonusQuest(); return bq ? { left: this.bonusLimit(bq.npc) - (bq.q.tt || 0), limit: this.bonusLimit(bq.npc) } : null; }
   // Große Ankündigung, sobald ein Auftrag startet: jetzt zählt jede Sekunde
   bonusStart(npc) {
@@ -604,7 +623,11 @@ class Play {
     Voice.say(bonusSay(lim), true);
   }
   checkBonus(q, npc) {
-    if (!q || (q.tt || 0) > this.bonusLimit(npc)) return;
+    if (q && q.lim && !this.mp) {   // Statistik: wie viel der Auftrags-Zeit gebraucht wurde (zum Nachstellen von BONUS_PUFFER)
+      const a = ACC(), bt = a && !a.admin ? (a.bt || (a.bt = {})) : null;
+      if (bt) { const e = bt[this.diff] || (bt[this.diff] = [0, 0, 0]); if (e[0] >= 100) { e[1] *= 0.99; e[2] *= 0.99; e[0] = 99; } e[0]++; e[1] = Math.round((e[1] + (q.tt || 0) / q.lim) * 100) / 100; if ((q.tt || 0) <= this.bonusLimit(npc, q)) e[2]++; }
+    }
+    if (!q || (q.tt || 0) > this.bonusLimit(npc, q)) return;
     this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
     this.bonusPop = { t: 0 }; Sfx.note(880, 0.3, 'triangle', 0.08, 1.5); buzz([30, 40, 30]); if (!this.mp) stat('bonusJ');
   }
@@ -1053,7 +1076,7 @@ class Play {
       decoys.push({ x: Math.round(x), y: Math.round(y), kind: pick(SG.junk, r), done: false });
     }
     runUsed.push(...games);
-    return { npc: id, boss, items, got: items.map(() => false), hidden, decoys, dug: [], games, seed };
+    return { npc: id, boss, items, got: items.map(() => false), hidden, decoys, dug: [], games, seed, lim: this.questTime(id, hidden, games, this.diff) };
   }
   earn(q, k) {
     const gid = q.games[k], ch = !!GAMES[gid].challenge;
@@ -1094,7 +1117,7 @@ class Play {
       // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
       if (!st.easyPlan || st.easyPlan.length < 24) { { const E = POOL('easy'), rr = mulberry32(this.seedFor('plan')); let pl = shuffle(E, rr); while (pl.length < 24) pl = pl.concat(shuffle(E, rr)); st.easyPlan = pl.slice(0, 24); } if (this.mp && this.mp.me === 'guest') st.easyPlan = st.easyPlan.slice(4).concat(st.easyPlan.slice(0, 4)); }
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
-      e = st.easy[id] = { steps, idx: 0, seed }; Save.write(); this.bonusStart(id);
+      e = st.easy[id] = { steps, idx: 0, seed, lim: this.questTime(id, [], steps, 'easy') }; Save.write(); this.bonusStart(id);
     }
     this.runEasyStep(id);
   }
@@ -1670,7 +1693,24 @@ function drawCollect(c, stage, x, y, s, rot) {
 const MP_EMO = ['👍', '😂', '😮', '❤️'];
 function emoBubble(c, x, y, e) { const k = ease.back(clamp(e.t * 4, 0, 1)), a = clamp(3 - e.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(x, y - e.t * 6); c.scale(k, k); ell(c, 0, 0, 24, 24); fs(c, '#fff', 2.5); c.font = `28px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(MP_EMO[e.k] || '👍', 0, 2); c.restore(); }
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
-const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // einem Kind so schnell geholfen = +1 Joker (Tor: +30 s)
+const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // nur noch für alte Spielstände ohne eigene Auftrags-Zeit (Tor: +30 s)
+// Bonus-Joker-Zeit pro Auftrag (siehe questTime): so ist jeder Auftrag gleich knapp, egal wie weit die Wege oder wie lang die Aufgaben sind
+const BONUS_PUFFER = 1.15;   // so viel mehr Zeit als geschätzt (wer sich beeilt, schafft es)
+const BONUS_WALK = 180;      // Laufen ohne Turbo-Schuhe (Pixel pro Sekunde)
+const BONUS_SEARCH = { easy: 0, medium: 6, hard: 9 };   // Sekunden je Sache fürs Entdecken und Suchen
+// Wie lange eine Aufgabe ungefähr dauert (Sekunden bei Mittel); fehlt eine, gilt der Standard ihrer Art
+const GAME_SEC = {
+  run: 15, balance_walk: 16, jump: 22, collect: 19, slide: 20, swing: 14, platform: 36, heimfahrt: 30,
+  auffangen: 28, teelichter: 30, schmetterlinge: 30,
+  hanoi: 28, maze: 24, pipes: 26, lights: 24, diff: 22, dials: 20, balance: 20, mirror: 20, pairs: 20, dots: 20,
+};
+const GAME_SEC_DEF = { easy: 11, puzzle: 17, challenge: 19 };
+function gameSec(g, diff) {   // GAME_SEC[g] ist eine Zahl (für Mittel und Schwer) oder [Leicht, Mittel, Schwer]
+  const G = GAMES[g] || {}, v = GAME_SEC[g];
+  if (Array.isArray(v)) return v[diff === 'easy' ? 0 : diff === 'medium' ? 1 : 2];
+  if (diff === 'easy') return v ? Math.max(GAME_SEC_DEF.easy, v * 0.6) : GAME_SEC_DEF.easy;
+  return v || (G.challenge ? GAME_SEC_DEF.challenge : GAME_SEC_DEF.puzzle);   // Schwer: schwerere Aufgaben, aber ältere Kinder – etwa gleich lang
+}
 // Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
 const SECRET_JUMP = 4;   // Meter beim Schaukel-Weitsprung (ca. 6 gute Schwünge, dann abspringen)
 const LEO_SAY = {

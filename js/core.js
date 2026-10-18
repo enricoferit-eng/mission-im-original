@@ -63,7 +63,7 @@ const Net = {
       return { status: r.status, data };
     } catch (e) { return null; }
   },
-  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0, vol: a.vol || null, limitMin: a.limitMin || 0 }; },
+  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0, vol: a.vol || null, limitMin: a.limitMin || 0, gt: a.gt || null, bt: a.bt || null }; },
   soon() { clearTimeout(this.tm); this.tm = setTimeout(() => this.syncNow(), 4000); },
   async syncNow(keep) {
     const a = ACC(); if (!a || !a.token) return;
@@ -91,7 +91,7 @@ setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.s
 function accFromServer(p) {
   const d = p.data || {}, diff = d.diff || {};
   ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
-  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}) };
+  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}), ...(d.gt ? { gt: d.gt } : {}), ...(d.bt ? { bt: d.bt } : {}) };
 }
 function adoptAccount(p) {
   Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });

@@ -342,3 +342,6 @@ Object.assign(HELP_TEXT, {
   hw_zaehlen: 'Zähle die Kürbisse und tippe unten die richtige Zahl an.',
 });
 // Diese Aufgaben gibt es nur im Geisterwald (siehe STAGE_DEFS.geisterwald.pools)
+
+// Wie lange die Halloween-Aufgaben ungefähr dauern (für die Bonus-Joker-Zeit, siehe GAME_SEC in stage.js): [Leicht, Mittel, Schwer]
+Object.assign(GAME_SEC, { hw_geister: [16, 24, 28], hw_flug: [17, 24, 30], hw_besen: [19, 25, 29], hw_suesses: [14, 19, 19], hw_zaehlen: [11, 16, 16] });
