@@ -40,9 +40,9 @@ class GameOverlay {
         return false;
       },
       addTime(s) { self.timeLeft = Math.min(self.timeMax, self.timeLeft + s); self.timeBonus = 0.8; Sfx.play('coin'); FX.sparkle(W - 80, 112, 14); },
-      coinOn: !!GAMES[self.id].challenge && !(typeof scene !== 'undefined' && scene && scene.mp) && mulberry32(((o.seed || 7) * 31 + 17) >>> 0)() < GAME_COIN_CHANCE,
-      coin(x, y) { if ((self.coinsGot || 0) >= GAME_COIN_MAX) return; self.coinsGot = (self.coinsGot || 0) + 1; GAME_COIN.add(1); Sfx.play('coin'); buzz(15); self.pops.push({ x, y: y - 10, t: -0.1, text: '+1', col: '#ffd166' }); },
-      drawCoin(c, x, y, s = 40) { if ((self.coinsGot || 0) >= GAME_COIN_MAX) return; ell(c, x, y, s * 0.62, s * 0.62); c.fillStyle = 'rgba(255,214,10,.28)'; c.fill(); GAME_COIN.draw(c, x, y, s * 0.45); if (Math.sin(self.t * 5 + x) > 0.7) { starPath(c, x + s * 0.3, y - s * 0.3, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); } },
+      coinOn: !!GAMES[self.id].challenge && !(typeof scene !== 'undefined' && scene && scene.mp) && mulberry32(((o.seed || 7) * 31 + 17) >>> 0)() < GAME_COIN_CHANCE + 0.12 * ABIL_VAL.muenzfund[ability('muenzfund')],
+      coin(x, y) { if ((self.coinsGot || 0) >= coinMax()) return; self.coinsGot = (self.coinsGot || 0) + 1; GAME_COIN.add(1); Sfx.play('coin'); buzz(15); self.pops.push({ x, y: y - 10, t: -0.1, text: '+1', col: '#ffd166' }); },
+      drawCoin(c, x, y, s = 40) { if ((self.coinsGot || 0) >= coinMax()) return; ell(c, x, y, s * 0.62, s * 0.62); c.fillStyle = 'rgba(255,214,10,.28)'; c.fill(); GAME_COIN.draw(c, x, y, s * 0.45); if (Math.sin(self.t * 5 + x) > 0.7) { starPath(c, x + s * 0.3, y - s * 0.3, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); } },
       burst(x, y, n = 14) { const p = self.toScreen(x, y); FX.sparkle(p.x, p.y, n); },
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
@@ -1400,7 +1400,8 @@ GAMES.count = { make(env) {
 // ---------- Bonus-Münzen in Aufgaben (welche Währung: GAME_COIN – der Halloween-Wald tauscht sie gegen Kürbismünzen) ----------
 let GAME_COIN = { add(n) { const m = META(); if (m) { m.coins += n; Save.write(); } }, toast(n) { toast('Münzen gesammelt', '+' + n + ' Taler', 'coin'); }, draw(c, x, y, r) { icon(c, 'coin', x, y, r * 2.1); } };
 // Münzen liegen in manchen Geschick-Aufgaben direkt auf dem Weg – wie die Extra-Zeit-Uhren: im Vorbeilaufen, Springen, Fangen einsammeln
-const GAME_COIN_CHANCE = 0.5, GAME_COIN_MAX = 5;   // in so vielen Aufgaben gibt es welche; höchstens so viele pro Aufgabe (auch über Neustarts)
+const GAME_COIN_CHANCE = 0.4;   // in so vielen Geschick-Aufgaben gibt es Münzen; höchstens GAME_COIN_MAX0 (3) pro Aufgabe – Skin-Fähigkeit „Münz-Riecher“: öfter und mehr
+const coinMax = () => GAME_COIN_MAX0 + ABIL_VAL.muenzfund[ability('muenzfund')];
 // Wie lange Kinder wirklich für eine Aufgabe brauchen (je Stufe): Anzahl + Summe, wird mit dem Konto gespeichert – Grundlage, um GAME_SEC nachzustellen
 function gameTimeStat(id, diff, sec) {
   const a = typeof ACC === 'function' && ACC(); if (!a || !diff || !(sec > 0.5) || sec > 900 || a.admin) return;

@@ -1,21 +1,34 @@
 // Halloween-Special: eigene Map "Geisterwald" mit eigener Währung (Kürbismünzen, gibt es nur dort), eigenen Fundsachen,
 // Sammel-Bonbons und Aufgaben; dafür ein Kürbis-Laden mit Kostümen. Die normalen Bereiche bekommen nur Herbst-Deko,
 // etwas Abendlicht und gruselige Musik.
-// Probeversion: immer an. Vor dem Veröffentlichen auf den Zeitraum stellen (HW_FROM/HW_TO).
-const HW_FORCE = true, HW_FROM = '10-24', HW_TO = '11-02';
+// Läuft vom 19. Oktober bis einschließlich 2. November (zwei Tage nach Halloween), danach automatisch aus. Test: ?halloween=1 / ?halloween=0
+const HW_FORCE = false, HW_FROM = '10-19', HW_TO = '11-02';
 const HALLOWEEN = (() => {
   const q = /[?&]halloween=([01])/.exec(location.search); if (q) return q[1] === '1';
-  const md = new Date().toISOString().slice(5, 10); return HW_FORCE || (md >= HW_FROM && md <= HW_TO);
+  const d = new Date(), md = String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); return HW_FORCE || (md >= HW_FROM && md <= HW_TO);   // Ortszeit des Geräts
 })();
 // Kostüme im Kürbis-Laden (Preis in Kürbismünzen)
 const HW_SKINS = [
-  ['hwskin_vampir', 'Kleiner Vampir', 'rare', 20, { uniform: 'weste', uCol: '#212529', uCol2: '#c1121f', cap: '#212529', scarf: '#c1121f', sparkle: '#ff8fa3' }],
-  ['hwskin_hexe', 'Hexen-Lehrling', 'rare', 20, { uniform: 'pulli', uCol: '#5a189a', uCol2: '#80ed99', cap: '#3c096c', scarf: '#80ed99', pat: 'stars', sparkle: '#c77dff' }],
-  ['hwskin_kuerbis', 'Kürbis-Kopf', 'rare', 20, { uniform: 'latz', uCol: '#f77f00', uCol2: '#2b9348', cap: '#f77f00', scarf: '#2b9348', pat: 'stripes' }],
-  ['hwskin_mumie', 'Mini-Mumie', 'rare', 25, { uniform: 'pulli', uCol: '#f1e3c8', uCol2: '#d4c4a8', cap: '#f1e3c8', scarf: '#d4c4a8', pat: 'stripes' }],
-  ['hwskin_gespenst', 'Gespenst-Kostüm', 'legend', 45, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#c8b6ff', cap: '#f8f9fa', scarf: '#c8b6ff', sparkle: '#e7f5ff', pat: 'stars', cape: '#e9ecef', aura: '#e7f5ff' }],   // Fähigkeiten gibt es jetzt als Upgrades
+  ['hwskin_vampir', 'Kleiner Vampir', 'rare', 20, { suit: 'vampir', head: 'vampirkragen', cape: '#9d0208', noScarf: true, sparkle: '#ff8fa3' }],
+  ['hwskin_hexe', 'Hexen-Lehrling', 'rare', 20, { suit: 'robe', sCol: '#5a189a', sCol2: '#80ed99', head: 'hexenhut', back: 'besen', noScarf: true, sparkle: '#c77dff' }],
+  ['hwskin_kuerbis', 'Kürbis-Kopf', 'rare', 20, { suit: 'dino', sCol: '#2b9348', sCol2: '#80b918', head: 'kuerbiskopf', noScarf: true, sparkle: '#ffba08' }],
+  ['hwskin_mumie', 'Mini-Mumie', 'rare', 25, { suit: 'mumie', head: 'mumienkopf', noScarf: true, sparkle: '#f1e3c8' }],
+  ['hwskin_gespenst', 'Gespenst', 'legend', 45, { head: 'laken', noScarf: true, noCap: true, aura: '#e7f5ff', sparkle: '#c8b6ff' }],
 ];
+// Halloween-Kostümteile (zusätzlich zu js/costumes.js)
+Object.assign(SUITS, {
+  vampir(c) { c.fillStyle = '#212529'; c.fillRect(-14, -28, 28, 28); polyPath(c, [[-2, -28], [10, -28], [4, -8]]); c.fillStyle = '#c1121f'; c.fill(); for (const y of [-20, -14]) { ell(c, 4, y, 1.2, 1.2); c.fillStyle = '#ffd60a'; c.fill(); } },
+  mumie(c) { c.fillStyle = '#f1e3c8'; c.fillRect(-14, -28, 28, 28); c.strokeStyle = '#c9b48f'; c.lineWidth = 1.6; for (let y = -26; y < 0; y += 4) { c.beginPath(); c.moveTo(-14, y); c.lineTo(14, y + 2.5); c.stroke(); } },
+});
+Object.assign(HEADS, {
+  vampirkragen(c) { for (const s of [-1, 1]) { polyPath(c, [[1 + s * 4, -26], [1 + s * 15, -40], [1 + s * 13, -24]]); fs(c, '#9d0208', 2); } ell(c, 1, -46, 12, 4); c.fillStyle = '#212529'; c.fill(); polyPath(c, [[0, -49], [3, -44], [6, -49]]); c.fillStyle = '#212529'; c.fill(); },
+  kuerbiskopf(c, L, t) { const g = 0.6 + 0.4 * Math.sin(t * 5); c.save(); c.translate(1, -38); for (const [dx, rw] of [[-8, 10], [8, 10], [0, 12]]) { ell(c, dx, 0, rw, 14); fs(c, '#f77f00', 2.5); } rrPath(c, -2, -18, 5, 7, 2); fs(c, '#2b9348', 1.5); c.fillStyle = `rgba(255,214,10,${g})`; polyPath(c, [[-8, -4], [-2, -4], [-5, -10]]); c.fill(); polyPath(c, [[4, -4], [10, -4], [7, -10]]); c.fill(); polyPath(c, [[-9, 4], [-5, 8], [-1, 4], [3, 8], [7, 4], [10, 4], [6, 10], [-6, 10], [-10, 4]]); c.fill(); c.restore(); },
+  mumienkopf(c) { c.save(); ell(c, 1, -37, 13.5, 12); c.clip(); c.strokeStyle = '#f1e3c8'; c.lineWidth = 3.5; for (const y of [-47, -43, -33, -29]) { c.beginPath(); c.moveTo(-14, y); c.lineTo(16, y - 3); c.stroke(); } c.restore(); line(c, -12, -45, -18, -50, 2.5, '#f1e3c8'); },
+  laken(c, L, t) { const f = Math.sin(t * 3) * 2; c.beginPath(); c.moveTo(-15, -2); c.quadraticCurveTo(-18, -40, 1, -54); c.quadraticCurveTo(20, -40, 17, -2); for (let k = 0; k < 4; k++) c.quadraticCurveTo(13 - k * 8, 4 + (k % 2 ? f : -f), 9 - k * 8, -2); c.closePath(); c.fillStyle = 'rgba(248,249,250,.96)'; c.fill(); c.lineWidth = 2.5; c.strokeStyle = OL; c.stroke(); ell(c, 0, -38, 3, 4); c.fillStyle = OL; c.fill(); ell(c, 9, -38, 3, 4); c.fill(); ell(c, 5, -29, 3, 2.4); c.fill(); },
+});
+Object.assign(BACKS, { besen(c) { c.save(); c.rotate(-0.5); rrPath(c, -22, -34, 4, 40, 2); fs(c, '#8d5a3b', 1.5); polyPath(c, [[-25, 4], [-17, 4], [-14, 16], [-28, 16]]); fs(c, '#e9c46a', 1.5); c.restore(); } });
 HW_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, halloween: true, lvl: rarity === 'legend' ? 3 : 2 }, ab ? { ability: ab } : {}, look); });
+if (typeof SKIN_SIDE !== 'undefined') Object.assign(SKIN_SIDE, { hwskin_vampir: 'adlerauge', hwskin_hexe: 'glueck', hwskin_kuerbis: 'blattglueck', hwskin_mumie: 'jokerplus', hwskin_gespenst: 'muenzfund' });   // auch Kostüme haben eine eigene kleine Fähigkeit
 function hwKM() { const m = META(); return m ? (m.km || 0) : 0; }
 function hwAddKM(n, why) { const m = META(); if (!m || !n) return; m.km = (m.km || 0) + n; Save.write(); toast(why, '+' + n + ' Kürbismünzen', 'star'); }
 // Kürbismünze: kleiner orangefarbener Taler mit Kürbisgesicht
@@ -206,18 +219,22 @@ if (HALLOWEEN) {
 
 // Kürbis-Laden (Reiter im Laden): Kostüme nur für Kürbismünzen
 function hwShopDraw(shop, c, top, bottom) {
-  const m = META(), n = HW_SKINS.length, gap = 12, cw = Math.min(150, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 40, 200), x0 = (W - (cw * n + gap * (n - 1))) / 2, y = top + 30;
+  const m = META(), n = HW_SKINS.length, gap = 12, cw = Math.min(150, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 40, 200), x0 = (W - (cw * n + gap * (n - 1))) / 2, y = top + 30, kind = ACC().char || 'cat';
   rrPath(c, W / 2 - 150, top - 2, 300, 26, 13); c.fillStyle = 'rgba(60,20,90,.85)'; c.fill(); kmCoin(c, W / 2 - 128, top + 11, 0.8);
   txt(c, 'Du hast ' + hwKM() + ' Kürbismünzen', W / 2 + 8, top + 12, 13, '#ffd166', 'center', null);
   HW_SKINS.forEach(([id, name, rarity, price], i) => {
-    const x = x0 + i * (cw + gap), own = m.skins.includes(id), sk = SKINS[id], bob = Math.sin(shop.t * 2 + i) * 2;
-    rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : '#2b1a4a', 3.5, rarity === 'legend' ? '#c9a227' : OL);
-    drawAnimal(c, ACC().char || 'cat', x + cw / 2, y + bob + ch - 66, Math.min(1.3, (ch - 80) / 80), { look: sk, cap: true, t: shop.t + i });
-    txt(c, name, x + cw / 2, y + bob + ch - 50, 13, own ? '#3d2c1f' : '#fff', 'center', null);
-    if (sk.ability) txt(c, ABILITIES[sk.ability].name, x + cw / 2, y + bob + ch - 33, 11, own ? '#6b5a48' : '#e0c3fc', 'center', null);
-    if (own) txt(c, 'gekauft', x + cw / 2, y + bob + ch - 14, 13, '#2b9348', 'center', null);
-    else { kmCoin(c, x + cw / 2 - 14, y + bob + ch - 14, 0.75); txt(c, String(price), x + cw / 2 + 8, y + bob + ch - 13, 15, '#ffd166', 'center', null); }
-    UI.btn(x, y + bob, cw, ch, () => {
+    const x = x0 + i * (cw + gap), own = m.skins.includes(id), worn = own && DP(CUR_DIFF || 'medium').equip === id, sk = SKINS[id], bob = Math.sin(shop.t * 2 + i) * 2, yy = y + bob, legend = rarity === 'legend';
+    c.save(); c.shadowColor = '#f77f00'; c.shadowBlur = legend ? 16 + 8 * Math.sin(shop.t * 3) : 8; rrPath(c, x, yy, cw, ch, 18); const g = c.createLinearGradient(0, yy, 0, yy + ch); g.addColorStop(0, '#3c096c'); g.addColorStop(1, '#7b2cbf'); c.fillStyle = g; c.fill(); c.restore();
+    rrPath(c, x, yy, cw, ch, 18); c.lineWidth = legend ? 4 : 3; c.strokeStyle = legend ? '#ffd60a' : '#f77f00'; c.stroke();
+    ell(c, x + cw / 2, yy + ch * 0.62, cw * 0.3, cw * 0.09); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
+    drawAnimal(c, kind, x + cw / 2, yy + ch * 0.64, Math.min(1.65, (ch - 50) / 78), { look: sk, cap: true, t: shop.t + i, noShadow: true });
+    jackO(c, x + 16, yy + 16, 0.55, 0.5);
+    { const sd = typeof SKIN_SIDE !== 'undefined' && SKIN_SIDE[id]; if (sd) { ell(c, x + 36, yy + 16, 9, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, x + 36, yy + 16, 12); } }
+    txt(c, name, x + cw / 2, yy + ch - 32, cw < 130 ? 11 : 13, '#fff', 'center', '#3c096c');
+    if (worn) { rrPath(c, x + cw / 2 - 30, yy + ch - 22, 60, 18, 9); fs(c, '#06d6a0', 2); txt(c, 'trägst du', x + cw / 2, yy + ch - 13, 10, '#fff', 'center', null); }
+    else if (own) txt(c, 'anziehen', x + cw / 2, yy + ch - 13, 11, '#80ed99', 'center', null);
+    else { rrPath(c, x + cw / 2 - 34, yy + ch - 23, 68, 19, 9.5); fs(c, '#2b1a4a', 2, '#f77f00'); kmCoin(c, x + cw / 2 - 16, yy + ch - 13, 0.6); txt(c, String(price), x + cw / 2 + 8, yy + ch - 12, 13, '#ffd166', 'center', null); }
+    UI.btn(x, yy, cw, ch, () => {
       if (own) { wearSkin(id); shop.say(name + ' hast du jetzt an!'); return; }
       if (hwKM() < price) { Sfx.play('bad'); overlay = new MsgDialog({ icon: 'star', text: HW_SAY.shopEmpty }); return; }
       m.km -= price; m.skins.push(id); wearSkin(id); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.3, 40); shop.say(name + ' gekauft und gleich angezogen!');

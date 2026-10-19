@@ -1231,9 +1231,57 @@
  },
  {
   "who": "erzaehler",
-  "text": "Skins sind nur zum Aussehen. Upgrades gelten immer, egal welchen Skin du trägst.",
-  "key": "b2947302",
-  "clean": "Skins sind nur zum Aussehen. Upgrades gelten immer, egal welchen Skin du trägst."
+  "text": "Sternen-Schild. Tempo-Sterne gehen 25 % langsamer verloren.",
+  "key": "edfb6937",
+  "clean": "Sternen-Schild. Tempo-Sterne gehen 25 % langsamer verloren."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sammel-Glück. Jede Sammel-Sache bringt 2 Taler.",
+  "key": "04e3d591",
+  "clean": "Sammel-Glück. Jede Sammel-Sache bringt 2 Taler."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden.",
+  "key": "aed21118",
+  "clean": "Adlerauge. Verstecke im Umkreis von 9 Schritten leuchten golden."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Taler-Bonus. +10 % Taler, wenn du jemandem hilfst.",
+  "key": "3f9049da",
+  "clean": "Taler-Bonus. +10 % Taler, wenn du jemandem hilfst."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Joker-Tasche. +1 Joker in jedem Bereich.",
+  "key": "aa6c2bfe",
+  "clean": "Joker-Tasche. +1 Joker in jedem Bereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Spürnase. Du findest Sachen aus 40 % größerer Entfernung.",
+  "key": "b7abfda8",
+  "clean": "Spürnase. Du findest Sachen aus 40 % größerer Entfernung."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Glücksklee. Der Hilfe-Stern lädt in 80 statt 150 Sekunden.",
+  "key": "0d52dcbc",
+  "clean": "Glücksklee. Der Hilfe-Stern lädt in 80 statt 150 Sekunden."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Münz-Riecher. In mehr Aufgaben liegen Münzen, bis zu 4 Stück.",
+  "key": "c6d7d53c",
+  "clean": "Münz-Riecher. In mehr Aufgaben liegen Münzen, bis zu 4 Stück."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dieser Skin hat keine eigene Fähigkeit.",
+  "key": "79ebee32",
+  "clean": "Dieser Skin hat keine eigene Fähigkeit."
  },
  {
   "who": "erzaehler",

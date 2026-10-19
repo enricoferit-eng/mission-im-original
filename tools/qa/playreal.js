@@ -24,7 +24,7 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
     for (let k = 0; k < max; k++) {
       if (await ev(done, arg)) return true;
       const s = await ev(getT, arg); if (!s) return false;
-      const hud = (s.x < 260 && s.y < 70) || (s.x > W0 - 110 && s.y < 150) || (Math.abs(s.x - W0 / 2) < 90 && s.y > H0 - 50) || (s.x > W0 - 200 && s.y > H0 - 160);   // nur echte Anzeigen/Knöpfe meiden
+      const hud = (s.x < 260 && s.y < 70) || (s.x > W0 - 110 && s.y < 200) || (Math.abs(s.x - W0 / 2) < 90 && s.y > H0 - 50) || (s.x > W0 - 200 && s.y > H0 - 160);   // nur echte Anzeigen/Knöpfe meiden
       const on = s.x > 14 && s.x < W0 - 14 && s.y > 40 && s.y < H0 - 10 && !hud;
       if (on) await p.mouse.click(s.x, s.y); else await ev(s => { if (scene.tap && !overlay) scene.tap(s.x, s.y); }, s);   /* außerhalb des Bildes: gleiche Tipp-Logik des Spiels, nur mit der Zielposition */
       await sleep(on ? 1300 : 1100);

@@ -14,11 +14,11 @@ function META(a = ACC()) {
 const REMOVED_SKINS = { sk_erdbeer: 40, sk_meer: 40, sk_garten: 40, sk_zitrone: 40, sk_minze: 40, sk_kakao: 40, sk_himmel: 40, sk_kirsch: 40, sk_lavendel: 40, sk_huette: 40, sk_ranger: 100, sk_schnee: 100, sk_zirkus: 100, sk_goldkoch: 250 };
 // ---------- Upgrades: dauerhafte Verbesserungen mit 4 Stufen, jede teurer (Laden + Glücksrad) ----------
 const UPGRADES = [
-  { k: 'bonuszeit', name: 'Bonus-Uhr', icon: 'hourglass', col: '#ffd166', price: [80, 160, 300, 500], f: l => '+' + ABIL_VAL.bonuszeit[l] + ' Sekunden bei der Bonus-Jagd' },
-  { k: 'turbo', name: 'Turbo-Schuhe', icon: 'shoe', col: '#80ed99', price: [80, 160, 300, 500], f: l => Math.round((ABIL_VAL.turbo[l] / 180 - 1) * 100) + ' % schneller laufen' },
-  { k: 'extraherz', name: 'Extra-Herzen', icon: 'heart', col: '#ffafcc', price: [100, 200, 350, 550], f: l => ABIL_VAL.extraherz[l] + ' statt 4 Herzen in Geschick-Aufgaben' },
-  { k: 'zeitplus', name: 'Zeit-Plus', icon: 'clock', col: '#a5d8ff', price: [100, 200, 350, 550], f: l => '+' + ABIL_VAL.zeitplus[l] + ' Sekunden in Geschick-Aufgaben' },
-  { k: 'magnet', name: 'Sammel-Magnet', icon: 'bag', col: '#cdb4db', price: [60, 120, 220, 380], f: l => 'Sammel-Sachen fliegen dir zu – ' + ['', 'etwas', 'weiter', 'weit', 'sehr weit'][l] },
+  { k: 'bonuszeit', name: 'Bonus-Uhr', icon: 'hourglass', col: '#ffd166', price: [50, 100, 170, 280], f: l => '+' + ABIL_VAL.bonuszeit[l] + ' Sekunden bei der Bonus-Jagd' },
+  { k: 'turbo', name: 'Turbo-Schuhe', icon: 'shoe', col: '#80ed99', price: [50, 100, 170, 280], f: l => Math.round((ABIL_VAL.turbo[l] / 180 - 1) * 100) + ' % schneller laufen' },
+  { k: 'extraherz', name: 'Extra-Herzen', icon: 'heart', col: '#ffafcc', price: [60, 120, 200, 320], f: l => ABIL_VAL.extraherz[l] + ' statt 4 Herzen in Geschick-Aufgaben' },
+  { k: 'zeitplus', name: 'Zeit-Plus', icon: 'clock', col: '#a5d8ff', price: [60, 120, 200, 320], f: l => '+' + ABIL_VAL.zeitplus[l] + ' Sekunden in Geschick-Aufgaben' },
+  { k: 'magnet', name: 'Sammel-Magnet', icon: 'bag', col: '#cdb4db', price: [40, 80, 140, 230], f: l => 'Sammel-Sachen fliegen dir zu – ' + ['', 'etwas', 'weiter', 'weit', 'sehr weit'][l] },
 ];
 const UP_MAX = 4;
 function upLevel(k) { const m = META(); return m ? m.up[k] || 0 : 0; }
@@ -138,7 +138,7 @@ class Shop {
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     roundBtn(c, W - 212, 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
-    const tabs = [['up', 'Upgrades'], ['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']].concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis-Laden']] : []), tw = Math.min(130, (W - 40) / tabs.length - 8);
+    const tabs = [['up', 'Upgrades'], ['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']].concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis']] : []), tw = Math.min(130, (W - 40) / tabs.length - 8);
     tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; if (id === 'up') { c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 10 + 8 * Math.sin(this.t * 4); rrPath(c, x, 80, tw, 40, 16); c.fillStyle = '#ffd60a'; c.fill(); c.restore(); } rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'up' ? '#ffe066' : id === 'garderobe' ? '#d8f5e3' : id === 'hw' ? '#ffb38a' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'hw' && typeof hwShopDraw === 'function') hwShopDraw(this, c, top, bottom);   // Halloween: Kürbis-Laden
@@ -198,14 +198,15 @@ class Shop {
         const ups = shuffle(UPGRADES.filter(u => (m.up[u.k] || 0) < UP_MAX)).slice(0, 3).map(u => { const l = m.up[u.k] || 0; return { kind: 'up', k: u.k, w: 0.7 / Math.pow(l + 1, 1.3), col: u.col }; });
         this.radPool = shuffle(free.concat(ups, [{ kind: 'coins', n: 40, w: 1.2, col: '#fff3bf' }, { kind: 'coins', n: 120, w: 0.35, col: '#ffd166' }])); this.radA = this.radA || 0;
       }
-      const pool = this.radPool, n = pool.length, seg = TAU / Math.max(1, n);
+      const pool = this.radPool, n = pool.length, wsum = pool.reduce((a, o) => a + o.w, 0), segs = []; { let acc = 0; pool.forEach(o => { const w = TAU * o.w / wsum; segs.push([acc, w]); acc += w; }); }   // Feldgröße = Gewinnchance
       const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 2.2), 3)) : (this.radA || 0);
       pool.forEach((o, i) => {
-        const a0 = ang + i * seg, a1 = a0 + seg, mx = cx + Math.cos(a0 + seg / 2) * R * 0.64, my = cy + Math.sin(a0 + seg / 2) * R * 0.64;
+        const seg = segs[i][1], a0 = ang + segs[i][0], a1 = a0 + seg, mx = cx + Math.cos(a0 + seg / 2) * R * 0.64, my = cy + Math.sin(a0 + seg / 2) * R * 0.64, small = seg < 0.5;
         c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, o.col, 3);
-        if (o.kind === 'skin') { c.save(); c.translate(mx, my); drawAnimal(c, ACC().char || 'cat', 0, 18, R / (n > 6 ? 118 : 100), { look: SKINS[o.id], cap: true, noShadow: true }); c.restore(); }
-        else if (o.kind === 'up') { const u = UPGRADES.find(q => q.k === o.k); ell(c, mx, my, 17, 17); fs(c, '#fff', 2.5); icon(c, u.icon, mx, my, 24); txt(c, '↑', mx + 14, my - 14, 14, '#2b9348', 'center', '#fff'); }
-        else { icon(c, 'coin', mx, my - 6, 24); txt(c, String(o.n), mx, my + 14, 12, '#3d2c1f', 'center', '#fff'); }
+        const sc = small ? 0.7 : 1;
+        if (o.kind === 'skin') { c.save(); c.translate(mx, my); drawAnimal(c, ACC().char || 'cat', 0, 18 * sc, R / 110 * sc, { look: SKINS[o.id], cap: true, noShadow: true }); c.restore(); }
+        else if (o.kind === 'up') { const u = UPGRADES.find(q => q.k === o.k); ell(c, mx, my, 16 * sc, 16 * sc); fs(c, '#fff', 2.5); icon(c, u.icon, mx, my, 22 * sc); txt(c, '↑', mx + 13 * sc, my - 13 * sc, 13, '#2b9348', 'center', '#fff'); }
+        else { icon(c, 'coin', mx, my - 6 * sc, 24 * sc); txt(c, String(o.n), mx, my + 13 * sc, 12, '#3d2c1f', 'center', '#fff'); }
       });
       ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
       if (sp && this.t - sp.t0 > 2.3 && !sp.done) {
@@ -217,7 +218,7 @@ class Shop {
       }
       if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
       const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
-      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * seg + seg / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
+      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(segs[k][0] + segs[k][1] / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
       wrapLines(c, 'Dreh das Rad: Skins, Upgrades oder Taler!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
     } else if (this.tab === 'up') {
       // Upgrades: groß und leuchtend – das Wichtigste im Laden
@@ -294,6 +295,7 @@ function skinCard(c, x, y, cw, ch, id, o) {
   ell(c, x + cw / 2, y + ch * 0.62, cw * 0.3, cw * 0.09); c.fillStyle = 'rgba(0,0,0,.08)'; c.fill();
   drawAnimal(c, o.kind, x + cw / 2, y + ch * 0.64, Math.min(1.65, (ch - 50) / 78), { look: sk, cap: true, t, noShadow: true });
   gemIcon(c, x + 16, y + 16, 7, sk.rarity);
+  { const sd = SKIN_SIDE[id]; if (sd) { ell(c, x + 36, y + 16, 9, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, x + 36, y + 16, 12); } }   // eigene Neben-Fähigkeit
   txt(c, sk.name, x + cw / 2, y + ch - 32, cw < 130 ? 11 : 13, '#3d2c1f', 'center', null);
   if (o.worn) { rrPath(c, x + cw / 2 - 30, y + ch - 22, 60, 18, 9); fs(c, '#06d6a0', 2); txt(c, 'trägst du', x + cw / 2, y + ch - 13, 10, '#fff', 'center', null); }
   else if (o.own) { txt(c, 'anziehen', x + cw / 2, y + ch - 13, 11, '#2b9348', 'center', null); ell(c, x + cw - 16, y + 16, 9, 9); fs(c, '#06d6a0', 2); icon(c, 'check', x + cw - 16, y + 16, 12, '#fff'); }
@@ -308,7 +310,7 @@ function skinCard(c, x, y, cw, ch, id, o) {
 // ---------- Info zu einem Skin: Seltenheit + was die Fähigkeit kann ----------
 function skinInfoBtn(c, x, y, sid, r = 12) { icon(c, 'info', x, y, r * 2); UI.btn(x - r - 6, y - r - 6, (r + 6) * 2, (r + 6) * 2, () => { overlay = new SkinInfo(sid, overlay); Sfx.play('tap'); }); }
 class SkinInfo {
-  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; Voice.say('Skins sind nur zum Aussehen. Upgrades gelten immer, egal welchen Skin du trägst.', true); }
+  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; const sd = SKIN_SIDE[sid]; Voice.say(sd ? SIDE[sd].name + '. ' + SIDE[sd].f(1) : 'Dieser Skin hat keine eigene Fähigkeit.', true); }
   update(dt) { this.t += dt; }
   close() { Voice.stop(); overlay = this.back || null; }
   draw(c) {
@@ -326,7 +328,7 @@ class SkinInfo {
       icon(c, ABIL_ICON[sk.ability], x + 162, y + 112, 22); txt(c, 'Fähigkeit: ' + A.name, x + 180, y + 112, 16, '#c9762f', 'left', null);
       wrapLines(c, abilityText(sk), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
       wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei Mittel und Schwer.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
-    } else wrapLines(c, 'Skins sind nur zum Aussehen. Upgrades fürs Spiel (Bonus-Uhr, Turbo, Herzen …) gibt es im Laden unter „Upgrades“ – die gelten immer, egal welchen Skin du trägst.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
+    } else wrapLines(c, (SKIN_SIDE[this.sid] ? 'Eigene Fähigkeit: ' + SIDE[SKIN_SIDE[this.sid]].name + ' – ' + SIDE[SKIN_SIDE[this.sid]].f(1) + ' Wirkt, solange du den Skin trägst, und lässt sich in der Garderobe bis Stufe 3 aufrüsten. Die Upgrades im Laden gelten dagegen immer.' : 'Dieser Skin hat keine eigene Fähigkeit.'), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
     c.restore();
   }
   down() {} move() {} up() {}
@@ -378,8 +380,12 @@ class Achievements {
 }
 
 // ---------- Freunde + Mehrspieler ----------
-const CLEAR_BONUS = 200;   // extra Taler, wenn ein Bereich geschafft ist (statt Skin)
-const HELP_COINS = { easy: 10, medium: 15, hard: 25 };   // je Person, der man hilft
+// ---------- Wirtschaft: alles kaufen (23 Skins, 5 Upgrades × 4, Skin-Stufen) kostet ≈ 7.600 Taler – das reicht nach ca. 2–3 Durchläufen (alle 6 Bereiche) ----------
+// Rechnung: tools/qa/economy.js. Pro Bereich: 6 × Helfen + Bereichs-Bonus (+10 je späterem Bereich); nochmal schaffen = 90 % vom Bonus.
+const CLEAR_BONUS = { easy: 250, medium: 300, hard: 350 }, CLEAR_STEP = 10, CLEAR_AGAIN = 0.9;
+const HELP_COINS = { easy: 12, medium: 15, hard: 20 };   // je Person, der man hilft (Skin-Fähigkeit „Taler-Bonus“: mehr)
+function clearBonus(diff, stage, again) { const b = CLEAR_BONUS[diff] + Math.max(0, STAGE_ORDER.indexOf(stage)) * CLEAR_STEP; return again ? Math.round(b * CLEAR_AGAIN / 5) * 5 : b; }
+function helpCoins(diff) { return Math.round((HELP_COINS[diff] || 12) * (1 + ABIL_VAL.taler[ability('taler')] / 100)); }
 const MP_COINS = { win: 40, lose: 25, team: 50, perKid: 10, place: [60, 35, 20, 10] };   // Mehrspieler: pro geschafftem Auftrag + nach Platzierung
 function needOnline(c, back) {
   const a = ACC();
@@ -485,10 +491,18 @@ class MultiScene {
     const lh = land ? H - top - 12 : (H - top) * 0.45, rh = land ? H - top - 12 : H - top - lh - 24, ry = land ? top : top + lh + 12;
     panel(c, lx, top, lw, lh, '#fff7e6', 22);
     txt(c, 'Freunde', lx + 18, top + 24, 17, BRAND.olive, 'left', null);
-    rrPath(c, lx + lw - 136, top + 8, 124, 32, 14); fs(c, '#caffbf', 2.5); txt(c, '+ hinzufügen', lx + lw - 74, top + 25, 13, '#2b9348', 'center', null);
+    rrPath(c, lx + lw - 136, top + 8, 124, 32, 14); fs(c, '#caffbf', 2.5); txt(c, '+ Code eingeben', lx + lw - 74, top + 25, 13, '#2b9348', 'center', null);
     UI.btn(lx + lw - 136, top + 8, 124, 32, () => { this.mode = 'add'; this.err = ''; nameInput.value = ''; });
     const d = this.data;
     let yy = top + 52;
+    if (d && d.myCode) {   // eigener Freundes-Code: weitergeben – wer ihn eingibt, schickt dir eine Anfrage
+      rrPath(c, lx + 10, yy, lw - 20, 38, 14); fs(c, '#e7f5ff', 2.5, '#118ab2');
+      txt(c, 'Dein Freundes-Code:', lx + 22, yy + 19, 12, '#1d4e89', 'left', null);
+      txt(c, d.myCode, lx + 150, yy + 20, 19, '#118ab2', 'left', null);
+      const sx = lx + lw - 40; roundBtn(c, sx, yy + 19, 14, '#caffbf', 'friends', null); txt(c, 'teilen', sx - 22, yy + 20, 11, '#2b9348', 'right', null);
+      UI.btn(lx + 10, yy, lw - 20, 38, async () => { const t = 'Werde mein Freund bei „Mission: Im Original“! Mein Freundes-Code: ' + d.myCode; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t }); else { await navigator.clipboard.writeText(t); toast('Kopiert!', 'Schick den Code deinem Freund', 'friends'); } } catch (e) { /* abgebrochen */ } });
+      yy += 46;
+    }
     { const L = ACC().mpLast; if (L && Date.now() - L.at < 30 * 60000) { rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#caffbf', 2.5); txt(c, 'Spiel ' + L.code + ' läuft noch', lx + 22, yy + 22, 14, '#3d2c1f', 'left', null);
       rrPath(c, lx + lw - 120, yy + 6, 100, 32, 12); fs(c, '#06d6a0', 2); txt(c, 'Zurück ins Spiel', lx + lw - 70, yy + 22, 11, '#fff', 'center', null); UI.btn(lx + lw - 120, yy + 6, 100, 32, () => { ACC().mpLast = null; this.join(L.code); }); yy += 52; } }   /* nach Verbindungsabbruch wieder beitreten */
     if (d && d.invites && d.invites.length) d.invites.slice(-2).forEach(inv => {
@@ -502,7 +516,7 @@ class MultiScene {
       roundBtn(c, lx + lw - 38, yy + 22, 15, '#ced4da', 'cross', () => this.answer(rq, false)); yy += 52;
     });
     if (!d) txt(c, this.err || 'Lade …', lx + lw / 2, yy + 20, 14, '#6b5a48', 'center', null);
-    else if (!d.friends.length) wrapLines(c, 'Noch keine Freunde. Tipp auf „+ hinzufügen“ und gib den Freundes-Code deines Freundes ein!', lw - 40, 13).forEach((l, i) => txt(c, l, lx + lw / 2, yy + 16 + i * 18, 13, '#6b5a48', 'center', null));
+    else if (!d.friends.length) wrapLines(c, 'Noch keine Freunde. Gib deinen Code weiter oder tipp auf „+ Code eingeben“!', lw - 40, 13).forEach((l, i) => txt(c, l, lx + lw / 2, yy + 16 + i * 18, 13, '#6b5a48', 'center', null));
     else { txt(c, 'Bestenliste – du: ★ ' + myScore(), lx + 18, yy + 8, 12, '#6b5a48', 'left', null); yy += 20; }
     if (d && d.friends.length) d.friends.slice().sort((p1, p2) => (p2.score || 0) - (p1.score || 0)).slice(0, Math.floor((top + lh - yy) / 46)).forEach(f => {
       rrPath(c, lx + 10, yy, lw - 20, 40, 14); fs(c, '#fff', 2);
