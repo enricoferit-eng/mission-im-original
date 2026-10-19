@@ -135,7 +135,7 @@ class Menu {
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => startUebung(a.lastDiff || 'medium', 'menu'));   // Anleitung = Helfer-Schule zum Mitspielen
     txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
-    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
+    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); privacyPill(c, land ? ex - 84 : W - 62, land ? ey : ey + 26); }   // quer: links neben „Eltern“ (darunter liegt die Anleitung)
     rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
     if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
@@ -243,6 +243,9 @@ document.body.appendChild(nameInput);
 const passInput = document.createElement('input');
 passInput.style.cssText = nameInput.style.cssText; passInput.type = 'password'; passInput.placeholder = 'Passwort'; passInput.autocomplete = 'off'; passInput.maxLength = 64;
 document.body.appendChild(passInput);
+// Datenschutzerklärung als eigene Seite (öffnet sich neben dem Spiel; als App vom Home-Bildschirm im Browser-Fenster)
+function openPrivacy() { Sfx.play('tap'); let w = null; try { w = window.open('datenschutz.html', '_blank', 'noopener'); } catch (e) { /* blockiert */ } if (!w) location.href = 'datenschutz.html'; }
+function privacyPill(c, x, y) { rrPath(c, x - 50, y - 11, 100, 22, 11); fs(c, 'rgba(255,255,255,.75)', 2); icon(c, 'lock', x - 37, y, 12); txt(c, 'Datenschutz', x + 7, y + 1, 11, '#3d2c1f', 'center', null); UI.btn(x - 52, y - 15, 104, 30, openPrivacy); }
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
 // Enricos Admin-Konto: funktioniert auch ohne Server (im Spiel steht nur ein Prüfwert, nicht der Code)
 const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }];
@@ -358,6 +361,7 @@ class Accounts {
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
     logo(c, W / 2, 100 * ls, ls);
     claimBand(c, 'Willkommen im Original!', W / 2, 172 * ls, 14);
+    privacyPill(c, W - 58, H - 22);
     const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
     const all = list.concat([['new', null], ['login', null]]);
@@ -520,7 +524,8 @@ class ParentPanel {
       [[0, 'ohne'], [20, '20 Min'], [30, '30 Min'], [45, '45 Min'], [60, '60 Min']].forEach(([m, n], i) => { const bw = (w - 48) / 5 - 6, bx = x + 24 + i * (bw + 6), on = (a.limitMin || 0) === m; rrPath(c, bx, y + 90, bw, 40, 14); fs(c, on ? '#ffd166' : '#fff', 2.5); txt(c, n, bx + bw / 2, y + 110, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 90, bw, 40, () => { a.limitMin = m; Save.write(); Sfx.play('tap'); }); });
       const used = Math.round((a.playDay === new Date().toISOString().slice(0, 10) ? a.playSec || 0 : 0) / 60); txt(c, 'Heute gespielt: ' + used + ' Min', x + 24, y + 148, 13, '#6b5a48', 'left', null);
       txt(c, 'Datenschutz', x + 24, y + 186, 15, '#3d2c1f', 'left', null);
-      wrapLines(c, 'Das Spiel fragt keine echten Namen, E-Mails oder Fotos ab und zeigt keine Werbung. Gespeichert werden nur Fantasiename, Bilder-Code und Spielstand – auf dem Gerät und, wenn man ihn sichert, auf unserem Server. Konten lassen sich jederzeit im Konto-Fenster löschen.', w - 48, 13).forEach((l, i) => txt(c, l, x + 24, y + 210 + i * 18, 13, '#3d2c1f', 'left', null));
+      rrPath(c, x + w - 196, y + 172, 172, 28, 12); fs(c, '#bde0fe', 2); txt(c, 'Alles lesen →', x + w - 110, y + 187, 13, '#1d4e89', 'center', null); UI.btn(x + w - 196, y + 168, 172, 36, openPrivacy);
+      wrapLines(c, 'Das Spiel fragt keine echten Namen, E-Mails oder Fotos ab und zeigt keine Werbung. Gespeichert werden nur Fantasiename, Passwort (verschlüsselt) und Spielstand – auf dem Gerät und, wenn man ihn sichert, auf unserem Server. Konten lassen sich jederzeit im Konto-Fenster löschen.', w - 48, 13).forEach((l, i) => txt(c, l, x + 24, y + 210 + i * 18, 13, '#3d2c1f', 'left', null));
     }
     c.restore();
   }
