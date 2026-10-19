@@ -59,6 +59,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   const bob = mv ? Math.abs(Math.sin(t * 12)) * 3 : Math.sin(t * 2.2) * 0.8;
   c.save(); c.translate(x, y); c.scale(s, s);
   if (!o.noShadow) { c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, 0, (o.shadowY || 0), 16, 6); c.fill(); }
+  if (L.aura) { const g = c.createRadialGradient(0, -26, 4, 0, -26, 34); g.addColorStop(0, L.aura); g.addColorStop(1, 'rgba(255,255,255,0)'); c.globalAlpha = 0.55 + 0.15 * Math.sin(t * 3); c.fillStyle = g; ell(c, 0, -26, 34, 34); c.fill(); c.globalAlpha = 1; }   // Leuchten (legendär)
   if (L.sparkle) { for (let i = 0; i < 3; i++) { const a = t * 1.5 + i * 2.1, tw = 0.5 + 0.5 * Math.sin(t * 5 + i); c.globalAlpha = tw; starPath(c, Math.cos(a) * 22, -26 + Math.sin(a) * 26, 3.5, 1.4, 4); c.fillStyle = L.sparkle; c.fill(); c.globalAlpha = 1; } }
   c.scale(o.dir || 1, 1);
   c.lineJoin = 'round'; c.lineCap = 'round';
@@ -67,6 +68,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   ell(c, 7 - st * 0.6, -3, 6, 4.5); fs(c, A.dark, 2.5);
   c.translate(0, -bob);
   if (o.tilt) c.rotate(o.tilt);
+  if (L.cape) { const w = Math.sin(t * 3) * 1.5; polyPath(c, [[-9, -27], [9, -27], [15 + w, -1], [-17 + w, -1]]); fs(c, paint(c, L.cape, -17, 15), 2.5); }   // Umhang hinter dem Körper
   // Schwanz
   c.beginPath();
   if (kind === 'cat') { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -16 + Math.sin(t * 3) * 3, -21, -34); }
@@ -93,6 +95,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   ell(c, 3, -13, 7, 7.5); fs(c, A.light, 0);
   if (kind === 'cow') { ell(c, -6, -18, 4.5, 3.5, 0.4); c.fillStyle = A.dark; c.fill(); ell(c, 6, -9, 3, 2.5); c.fill(); }
   if (L.uniform) drawUniform(c, L, A);
+  if (L.trim) { ell(c, 0, -15, 11, 10); c.lineWidth = 1.6; c.strokeStyle = L.trim; c.stroke(); }   // Zierkante
   // Uniform-Teil aus der Küche: Schürze (sobald die Küche geschafft ist)
   if (!L.uniform && !o.noOutfit && typeof SP === 'function' && ACC() && SP(CUR_DIFF, 'kueche').outfit) { rrPath(c, -5, -24, 15, 19, 4); fs(c, '#fbf8f2', 2); line(c, -4, -24, -9, -30, 1.5, '#fbf8f2', false); leaf(c, 2.5, -14, 0.5, BRAND.lime); }
   ell(c, 9, -5, 5, 4); fs(c, A.light, 2.5);

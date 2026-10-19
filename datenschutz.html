@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Datenschutz – Mission: Im Original</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --ink: #2b1d14; --olive: #35452f; --muted: #6b5a48; --paper: #fff7e6; --line: #ead9bd; --accent: #2d6a4f; --warn: #fff3bf; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9f5db; color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 0 16px 48px; }
+  main { max-width: 760px; margin: 0 auto; }
+  header { padding: 28px 0 8px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; color: var(--olive); }
+  .sub { color: var(--muted); margin: 0; }
+  .back { display: inline-block; margin: 16px 0 4px; padding: 10px 16px; border-radius: 14px; background: #fff; border: 3px solid var(--ink); color: var(--ink); text-decoration: none; font-weight: 800; }
+  section { background: var(--paper); border: 3px solid var(--line); border-radius: 18px; padding: 18px 20px; margin: 16px 0; }
+  h2 { font-size: 1.15rem; margin: 0 0 8px; color: var(--olive); }
+  h3 { font-size: 1rem; margin: 14px 0 4px; }
+  p, ul { margin: 6px 0; }
+  ul { padding-left: 22px; }
+  li { margin: 3px 0; }
+  .kurz { background: #d8f3dc; border-color: #95d5b2; }
+  .kurz li { list-style: "✓  "; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  .tbl { overflow-x: auto; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 2px solid var(--line); }
+  th { color: var(--olive); }
+  .todo { background: var(--warn); border: 2px dashed #e0a800; border-radius: 10px; padding: 2px 6px; }
+  footer { color: var(--muted); font-size: .9rem; text-align: center; margin-top: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./" onclick="if (history.length > 1) { history.back(); return false; }">← Zurück zum Spiel</a>
+  <header>
+    <h1>Datenschutzerklärung</h1>
+    <p class="sub">für das Kinderspiel „Mission: Im Original“</p>
+  </header>
+
+  <section class="kurz">
+    <h2>Das Wichtigste in Kürze</h2>
+    <ul>
+      <li>Keine Werbung, kein Tracking, keine Analyse-Dienste, keine Cookies.</li>
+      <li>Wir fragen keine echten Namen, keine E-Mail-Adressen, keine Telefonnummern und keine Fotos ab. Kinder spielen mit einem Fantasienamen.</li>
+      <li>Ohne gesichertes Konto bleibt alles nur auf deinem Gerät.</li>
+      <li>Mit gesichertem Konto speichern wir Fantasiename, Passwort (nur verschlüsselt als Hash), Spielstand und Einstellungen auf unserem Server, damit man auf anderen Geräten weiterspielen kann.</li>
+      <li>Ein Konto lässt sich jederzeit im Spiel löschen: Im Menü oben links auf den Namen tippen, dann „Konto löschen“. Dann ist alles auch auf dem Server weg.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>1. Wer ist verantwortlich?</h2>
+    <p>Verantwortlich für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
+    <p class="todo">[Name / Firma des Betreibers]<br>[Straße und Hausnummer]<br>[PLZ Ort]<br>E-Mail: [Kontakt-E-Mail]</p>
+    <p>Bei Fragen zum Datenschutz oder um eure Rechte geltend zu machen, schreibt uns einfach an die oben genannte Adresse.</p>
+  </section>
+
+  <section>
+    <h2>2. Was wird auf deinem Gerät gespeichert?</h2>
+    <p>Damit das Spiel funktioniert, speichert es Daten im Speicher des Browsers auf deinem Gerät („Local Storage“). Diese Daten werden nicht an uns übertragen, solange du kein Konto sicherst:</p>
+    <ul>
+      <li>Fantasiename, gewähltes Tierbild und die gestaltete Spielfigur</li>
+      <li>Spielstand je Schwierigkeitsstufe (geschaffte Bereiche, Aufträge, gesammelte Kleidung, Taler, Erfolge, Joker)</li>
+      <li>Einstellungen (Lautstärke, Ton an/aus, Spielzeit-Begrenzung der Eltern, heute gespielte Minuten)</li>
+      <li>bei Gast-Konten: ein Bilder-Code aus vier Symbolen (nur zum Löschen auf diesem Gerät)</li>
+      <li>bei gesicherten Konten: Login-Code und ein Anmelde-Schlüssel (Token), damit man nicht jedes Mal das Passwort eingeben muss – nie das Passwort selbst</li>
+    </ul>
+    <p>Außerdem legt das Spiel Bilder, Sprachaufnahmen und Programmdateien im Zwischenspeicher des Browsers ab („Service Worker“), damit es schneller lädt und auch mit schwachem Internet läuft.</p>
+    <p>Diese Speicherung ist technisch notwendig, um das Spiel bereitzustellen, das ihr aufruft (§ 25 Abs. 2 Nr. 2 TDDDG). Ihr könnt sie jederzeit löschen, indem ihr die Website-Daten im Browser löscht – dann ist aber auch ein nicht gesicherter Spielstand weg.</p>
+  </section>
+
+  <section>
+    <h2>3. Was wird auf unserem Server gespeichert?</h2>
+    <p>Nur wenn ihr ein Konto anlegt bzw. „Spielstand sichern“ wählt, speichern wir:</p>
+    <div class="tbl"><table>
+      <tr><th>Daten</th><th>Wozu</th></tr>
+      <tr><td>Fantasiename, Tierbild</td><td>Anmelden, Anzeige bei Freunden und im Mehrspieler</td></tr>
+      <tr><td>Passwort – nur als verschlüsselter Hash (scrypt mit eigenem Zufallswert), nie im Klartext</td><td>Anmelden mit Name + Passwort</td></tr>
+      <tr><td>bei älteren Konten bis zur Umstellung: Bilder-Code aus vier Symbolen</td><td>Anmelden, bis ein Passwort gewählt wurde</td></tr>
+      <tr><td>Login-Code (8 Zeichen)</td><td>Anmelden auf einem anderen Gerät, falls man den Namen vergisst</td></tr>
+      <tr><td>Spielstand, Einstellungen, Spielzeit-Begrenzung</td><td>Weiterspielen auf anderen Geräten</td></tr>
+      <tr><td>Wie lange Aufgaben gedauert haben und wie oft der Bonus-Joker geschafft wurde (nur Zahlen, keine Uhrzeiten)</td><td>Die Zeiten im Spiel fair einstellen. Wir werten das nur zusammengefasst über alle Konten aus.</td></tr>
+      <tr><td>Freundes-Code, Freundesliste, offene Freundschaftsanfragen</td><td>Freunde-Funktion. Freundschaften entstehen nur, wenn beide zustimmen.</td></tr>
+      <tr><td>Zeitpunkt der letzten Aktivität und Punktestand (nur für Freunde sichtbar)</td><td>Anzeige „online“ und Freundes-Bestenliste</td></tr>
+      <tr><td>Mehrspieler-Spiele: Spiel-Code, Teilnehmer (Fantasienamen), Spielfortschritt</td><td>Gemeinsames Spielen; Spiele sind nur kurz aktiv</td></tr>
+    </table></div>
+    <p><strong>Rechtsgrundlage</strong> ist die Bereitstellung des Spiels und seiner Funktionen, die ihr mit dem Konto nutzen möchtet (Art. 6 Abs. 1 lit. b DSGVO). Bei Kindern unter 16 Jahren soll ein Elternteil zustimmen, bevor ein Konto gesichert wird (Art. 8 DSGVO).</p>
+    <p><strong>Wie lange?</strong> Bis das Konto gelöscht wird. Beim Löschen im Spiel entfernen wir Konto, Spielstand, Freundes-Code und offene Anfragen sofort.</p>
+  </section>
+
+  <section>
+    <h2>4. Technische Daten beim Aufruf (Server-Protokolle)</h2>
+    <p>Bei jedem Aufruf der Website verarbeiten unsere Hosting-Anbieter technisch notwendige Daten: IP-Adresse, Datum und Uhrzeit, aufgerufene Datei, Browser-Typ und Betriebssystem. Das ist nötig, um die Seite auszuliefern und gegen Missbrauch und Angriffe zu schützen (Art. 6 Abs. 1 lit. f DSGVO). Wir selbst werten diese Protokolle nicht aus und führen sie nicht mit Konto-Daten zusammen.</p>
+  </section>
+
+  <section>
+    <h2>5. Dienstleister, die für uns arbeiten</h2>
+    <h3>Vercel Inc. (Hosting und Konten-Server)</h3>
+    <p>440 N Barranca Ave #4133, Covina, CA 91723, USA. Vercel stellt die Website bereit und betreibt die Server-Funktion für Konten, Freunde und Mehrspieler. Die Server-Funktion läuft derzeit in einem Rechenzentrum in den USA (Washington, D.C.). <span class="todo">[Auftragsverarbeitungsvertrag (DPA) mit Vercel bestätigen]</span>. Die Übermittlung in die USA stützt sich auf <span class="todo">[EU-US Data Privacy Framework / EU-Standardvertragsklauseln – bitte prüfen]</span>.</p>
+    <h3>Supabase Inc. (Datenbank)</h3>
+    <p>970 Toa Payoh North #07-04, Singapur 318992. In der Datenbank liegen die Konto-Daten aus Abschnitt 3. Standort der Datenbank: <span class="todo">[Region eintragen, z. B. Frankfurt (EU)]</span>. <span class="todo">[Auftragsverarbeitungsvertrag (DPA) mit Supabase abschließen/bestätigen]</span></p>
+    <h3>GitHub Inc. (zweite Adresse des Spiels)</h3>
+    <p>88 Colin P Kelly Jr St, San Francisco, CA 94107, USA. Das Spiel ist auch über GitHub Pages erreichbar. Dort werden nur die Spieldateien ausgeliefert; GitHub verarbeitet dabei die technischen Daten aus Abschnitt 4.</p>
+    <h3>Cloudflare / cdnjs (nur im Mehrspieler)</h3>
+    <p>Nur wenn im Mehrspieler ein QR-Code zum Beitreten angezeigt wird, lädt das Spiel ein kleines Programm von cdnjs.cloudflare.com. Dabei wird eure IP-Adresse an Cloudflare Inc. (USA) übertragen.</p>
+  </section>
+
+  <section>
+    <h2>6. Was es nicht gibt</h2>
+    <ul>
+      <li>keine Werbung und keine In-App-Käufe mit echtem Geld – Taler gibt es nur im Spiel</li>
+      <li>keine Analyse- oder Tracking-Dienste (z. B. kein Google Analytics) und keine Cookies</li>
+      <li>keine Chats oder freien Textnachrichten zwischen Kindern</li>
+      <li>kein Standort, keine Kamera, kein Mikrofon, keine Kontakte</li>
+      <li>Die Vorlese-Stimmen sind fertige Aufnahmen im Spiel oder die Sprachausgabe eures Geräts – es wird nichts an einen Sprachdienst geschickt.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>7. Eure Rechte</h2>
+    <p>Ihr habt das Recht auf Auskunft über eure gespeicherten Daten (Art. 15 DSGVO), auf Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21). Löschen könnt ihr das Konto jederzeit selbst im Spiel. Für alles andere genügt eine Nachricht an die Adresse in Abschnitt 1 – bitte mit dem Fantasienamen oder Login-Code des Kontos.</p>
+    <p>Ihr könnt euch außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel beim Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg, Lautenschlagerstraße 20, 70173 Stuttgart, www.baden-wuerttemberg.datenschutz.de.</p>
+  </section>
+
+  <section>
+    <h2>8. Für Eltern</h2>
+    <p>Im Spiel gibt es einen Eltern-Bereich (Knopf „Eltern“ im Menü, geschützt mit einer kleinen Rechenaufgabe). Dort könnt ihr eine tägliche Spielzeit festlegen. Bitte helft eurem Kind beim Sichern des Kontos und beim Merken des Passworts. Wir empfehlen, keinen echten Namen als Fantasienamen zu verwenden.</p>
+  </section>
+
+  <footer>Stand: 19. Oktober 2026</footer>
+</main>
+</body>
+</html>

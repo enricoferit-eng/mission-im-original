@@ -13,7 +13,7 @@ const HW_SKINS = [
   ['hwskin_hexe', 'Hexen-Lehrling', 'rare', 20, { uniform: 'pulli', uCol: '#5a189a', uCol2: '#80ed99', cap: '#3c096c', scarf: '#80ed99', pat: 'stars', sparkle: '#c77dff' }],
   ['hwskin_kuerbis', 'Kürbis-Kopf', 'rare', 20, { uniform: 'latz', uCol: '#f77f00', uCol2: '#2b9348', cap: '#f77f00', scarf: '#2b9348', pat: 'stripes' }],
   ['hwskin_mumie', 'Mini-Mumie', 'rare', 25, { uniform: 'pulli', uCol: '#f1e3c8', uCol2: '#d4c4a8', cap: '#f1e3c8', scarf: '#d4c4a8', pat: 'stripes' }],
-  ['hwskin_gespenst', 'Gespenst-Kostüm', 'legend', 45, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#c8b6ff', cap: '#f8f9fa', scarf: '#c8b6ff', sparkle: '#e7f5ff', pat: 'stars' }, 'magnet'],
+  ['hwskin_gespenst', 'Gespenst-Kostüm', 'legend', 45, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#c8b6ff', cap: '#f8f9fa', scarf: '#c8b6ff', sparkle: '#e7f5ff', pat: 'stars', cape: '#e9ecef', aura: '#e7f5ff' }],   // Fähigkeiten gibt es jetzt als Upgrades
 ];
 HW_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, halloween: true, lvl: rarity === 'legend' ? 3 : 2 }, ab ? { ability: ab } : {}, look); });
 function hwKM() { const m = META(); return m ? (m.km || 0) : 0; }

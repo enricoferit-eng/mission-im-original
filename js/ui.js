@@ -135,7 +135,7 @@ class Menu {
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => startUebung(a.lastDiff || 'medium', 'menu'));   // Anleitung = Helfer-Schule zum Mitspielen
     txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
-    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
+    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); privacyPill(c, land ? ex - 84 : W - 62, land ? ey : ey + 26); }   // quer: links neben „Eltern“ (darunter liegt die Anleitung)
     rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
     if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
@@ -243,6 +243,9 @@ document.body.appendChild(nameInput);
 const passInput = document.createElement('input');
 passInput.style.cssText = nameInput.style.cssText; passInput.type = 'password'; passInput.placeholder = 'Passwort'; passInput.autocomplete = 'off'; passInput.maxLength = 64;
 document.body.appendChild(passInput);
+// Datenschutzerklärung als eigene Seite (öffnet sich neben dem Spiel; als App vom Home-Bildschirm im Browser-Fenster)
+function openPrivacy() { Sfx.play('tap'); let w = null; try { w = window.open('datenschutz.html', '_blank', 'noopener'); } catch (e) { /* blockiert */ } if (!w) location.href = 'datenschutz.html'; }
+function privacyPill(c, x, y) { rrPath(c, x - 50, y - 11, 100, 22, 11); fs(c, 'rgba(255,255,255,.75)', 2); icon(c, 'lock', x - 37, y, 12); txt(c, 'Datenschutz', x + 7, y + 1, 11, '#3d2c1f', 'center', null); UI.btn(x - 52, y - 15, 104, 30, openPrivacy); }
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
 // Enricos Admin-Konto: funktioniert auch ohne Server (im Spiel steht nur ein Prüfwert, nicht der Code)
 const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }];
@@ -358,6 +361,7 @@ class Accounts {
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
     logo(c, W / 2, 100 * ls, ls);
     claimBand(c, 'Willkommen im Original!', W / 2, 172 * ls, 14);
+    privacyPill(c, W - 58, H - 22);
     const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
     const all = list.concat([['new', null], ['login', null]]);
@@ -502,30 +506,54 @@ function volSample(key) {
 }
 // Eltern-Bereich: Spielzeit pro Tag + Datenschutz (mit kleiner Rechenaufgabe, damit Kinder nicht einfach umstellen)
 class ParentPanel {
-  constructor() { this.t = 0; const a = 13 + Math.floor(Math.random() * 15), b = 6 + Math.floor(Math.random() * 4); this.q = { a, b, ok: a * b, ch: shuffle([a * b, a * b + 10, a * b - b, a * b + 4]).slice(0, 3) }; if (!this.q.ch.includes(this.q.ok)) this.q.ch[0] = this.q.ok; this.q.ch = shuffle(this.q.ch); this.open = false; }
+  constructor() { this.t = 0; const a = ACC(); this.mode = a && a.parentPin ? 'enter' : 'set1'; this.pin = ''; this.first = ''; this.err = ''; this.open = false; }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
     const a = ACC(); if (!a) { this.close(); return; }
     c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
-    const w = Math.min(W - 30, 460), h = this.open ? 360 : 220, x = (W - w) / 2, y = (H - h) / 2;
+    const w = Math.min(W - 30, 460), h = this.open ? 360 : 350, x = (W - w) / 2, y = (H - h) / 2;
     fitBegin(c, w, h + 20); panel(c, x, y, w, h, '#fff7e6', 24);
     roundBtn(c, x + w - 30, y + 30, 20, '#ced4da', 'cross', () => this.close());
     txt(c, 'Für Eltern', x + 24, y + 32, 20, BRAND.olive, 'left', null);
-    if (!this.open) {
-      txt(c, 'Bitte rechnen: ' + this.q.a + ' × ' + this.q.b + ' = ?', W / 2, y + 90, 18, '#3d2c1f', 'center', null);
-      this.q.ch.forEach((v, i) => { const bx = W / 2 + (i - 1) * 100; rrPath(c, bx - 40, y + 120, 80, 50, 16); fs(c, '#fff', 3); txt(c, String(v), bx, y + 146, 20, '#3d2c1f', 'center', null); UI.btn(bx - 40, y + 120, 80, 50, () => { if (v === this.q.ok) { this.open = true; Sfx.play('good'); } else { Sfx.play('bad'); this.close(); } }); });
+    if (!this.open) {   // Eltern-Code (4 Ziffern): beim ersten Mal festlegen, danach eingeben
+      const title = { set1: 'Lege einen Eltern-Code fest (4 Ziffern)', set2: 'Code zur Sicherheit wiederholen', enter: 'Eltern-Code eingeben' }[this.mode];
+      txt(c, title, W / 2, y + 66, 16, '#3d2c1f', 'center', null);
+      for (let i = 0; i < 4; i++) { const bx = W / 2 + (i - 1.5) * 40; rrPath(c, bx - 16, y + 82, 32, 36, 10); fs(c, '#fff', 2.5); if (i < this.pin.length) { ell(c, bx, y + 100, 7, 7); c.fillStyle = '#3d2c1f'; c.fill(); } }
+      if (this.err) txt(c, this.err, W / 2, y + 134, 13, '#c1121f', 'center', null);
+      const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '<'], kw = 66, kh = 40;
+      keys.forEach((k, i) => { if (!k) return; const kx = W / 2 + ((i % 3) - 1) * (kw + 8) - kw / 2, ky = y + 146 + Math.floor(i / 3) * (kh + 6);
+        rrPath(c, kx, ky, kw, kh, 12); fs(c, k === '<' ? '#ffd6a5' : '#fff', 2.5); if (k === '<') icon(c, 'back', kx + kw / 2, ky + kh / 2, 22); else txt(c, k, kx + kw / 2, ky + kh / 2 + 1, 20, '#3d2c1f', 'center', null);
+        UI.btn(kx, ky, kw, kh, () => this.key(k)); });
+      if (this.mode === 'enter') { txt(c, 'Code vergessen?', x + 24, y + h - 18, 12, '#118ab2', 'left', null); UI.btn(x + 14, y + h - 34, 130, 30, () => this.forgot()); }
     } else {
       txt(c, 'Spielzeit pro Tag', x + 24, y + 74, 15, '#3d2c1f', 'left', null);
       [[0, 'ohne'], [20, '20 Min'], [30, '30 Min'], [45, '45 Min'], [60, '60 Min']].forEach(([m, n], i) => { const bw = (w - 48) / 5 - 6, bx = x + 24 + i * (bw + 6), on = (a.limitMin || 0) === m; rrPath(c, bx, y + 90, bw, 40, 14); fs(c, on ? '#ffd166' : '#fff', 2.5); txt(c, n, bx + bw / 2, y + 110, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 90, bw, 40, () => { a.limitMin = m; Save.write(); Sfx.play('tap'); }); });
       const used = Math.round((a.playDay === new Date().toISOString().slice(0, 10) ? a.playSec || 0 : 0) / 60); txt(c, 'Heute gespielt: ' + used + ' Min', x + 24, y + 148, 13, '#6b5a48', 'left', null);
       txt(c, 'Datenschutz', x + 24, y + 186, 15, '#3d2c1f', 'left', null);
-      wrapLines(c, 'Das Spiel fragt keine echten Namen, E-Mails oder Fotos ab und zeigt keine Werbung. Gespeichert werden nur Fantasiename, Bilder-Code und Spielstand – auf dem Gerät und, wenn man ihn sichert, auf unserem Server. Konten lassen sich jederzeit im Konto-Fenster löschen.', w - 48, 13).forEach((l, i) => txt(c, l, x + 24, y + 210 + i * 18, 13, '#3d2c1f', 'left', null));
+      rrPath(c, x + w - 196, y + 172, 172, 28, 12); fs(c, '#bde0fe', 2); txt(c, 'Alles lesen →', x + w - 110, y + 187, 13, '#1d4e89', 'center', null); UI.btn(x + w - 196, y + 168, 172, 36, openPrivacy);
+      wrapLines(c, 'Das Spiel fragt keine echten Namen, E-Mails oder Fotos ab und zeigt keine Werbung. Gespeichert werden nur Fantasiename, Passwort (verschlüsselt) und Spielstand – auf dem Gerät und, wenn man ihn sichert, auf unserem Server. Konten lassen sich jederzeit im Konto-Fenster löschen.', w - 48, 13).forEach((l, i) => txt(c, l, x + 24, y + 210 + i * 18, 13, '#3d2c1f', 'left', null));
     }
     c.restore();
   }
+  key(k) {
+    if (k === '<') { this.pin = this.pin.slice(0, -1); Sfx.play('tap'); return; }
+    if (this.pin.length >= 4) return; this.pin += k; this.err = ''; Sfx.play('tap');
+    if (this.pin.length < 4) return;
+    const a = ACC(), p = this.pin; this.pin = '';
+    if (this.mode === 'set1') { this.first = p; this.mode = 'set2'; return; }
+    if (this.mode === 'set2') { if (p !== this.first) { this.err = 'Die Codes waren verschieden – nochmal.'; this.mode = 'set1'; Sfx.play('bad'); return; } a.parentPin = pinHash(p); Save.write(); this.open = true; Sfx.play('good'); toast('Eltern-Code gespeichert', 'Gut merken!', 'lock'); return; }
+    if (pinHash(p) === a.parentPin) { this.open = true; Sfx.play('good'); } else { this.err = 'Falscher Code.'; Sfx.play('bad'); buzz(80); }
+  }
+  forgot() {   // gesicherte Konten: mit dem Konto-Passwort zurücksetzen; Gast-Konten: mit dem Bilder-Code
+    const a = ACC(), reset = () => { a.parentPin = null; Save.write(); this.mode = 'set1'; this.pin = ''; this.err = ''; overlay = this; };
+    if (a.token && a.hasPass) overlay = new PassDialog({ title: 'Eltern-Code zurücksetzen', sub: 'Gib das Passwort des Kontos „' + a.name + '“ ein.', ok: async pass => { const r = await Net.call({ action: 'login', name: a.name, pass }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error); setTimeout(reset, 0); return null; }, onClose: () => { if (!overlay) overlay = this; } });
+    else if (Array.isArray(a.code) && a.code.length === 4) overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: reset });
+    else reset();
+  }
   down() {} move() {} up() {}
 }
+function pinHash(p) { let h = 2166136261; for (const ch of 'mio-eltern:' + p) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); }
 class MsgDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
@@ -1199,7 +1227,7 @@ class Wardrobe {
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
     if (w > 560) txt(c, 'Antippen zum Anziehen', x + w / 2 + 60, y + 33, 14, '#6b5a48', 'center', null);
-    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0]), Object.keys(SKINS).filter(id => /^hwskin_/.test(id))).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
+    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(OLD_SHOP_SKINS.map(x => x[0]), OLD_EXCLUSIVE_SKINS.map(x => x[0]), Object.keys(SKINS).filter(id => /^hwskin_/.test(id))).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
     { const on = !!this.abilOnly, fw = 150, fx = x + 66, fy = y + 18; rrPath(c, fx, fy, fw, 28, 14); fs(c, on ? '#ffd60a' : '#fff', 2.5); icon(c, on ? 'check' : 'star', fx + 16, fy + 14, 16); txt(c, 'Nur mit Fähigkeit', fx + 30, fy + 15, 12, '#3d2c1f', 'left', null); UI.btn(fx, fy, fw, 28, () => { this.abilOnly = !on; this.sc = 0; Sfx.play('tap'); }); }   /* Filter */

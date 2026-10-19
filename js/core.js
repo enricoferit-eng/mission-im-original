@@ -63,7 +63,7 @@ const Net = {
       return { status: r.status, data };
     } catch (e) { return null; }
   },
-  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0, vol: a.vol || null, limitMin: a.limitMin || 0, gt: a.gt || null, bt: a.bt || null }; },
+  dataOf(a) { return { tut: a.tut, recent: a.recent, recentEasy: a.recentEasy, diff: a.diff, sound: a.sound, soundV2: true, char: a.char || null, meta: a.meta || null, swingBest: a.swingBest || 0, vol: a.vol || null, limitMin: a.limitMin || 0, gt: a.gt || null, bt: a.bt || null, parentPin: a.parentPin || null }; },
   soon() { clearTimeout(this.tm); this.tm = setTimeout(() => this.syncNow(), 4000); },
   async syncNow(keep) {
     const a = ACC(); if (!a || !a.token) return;
@@ -91,7 +91,7 @@ setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.s
 function accFromServer(p) {
   const d = p.data || {}, diff = d.diff || {};
   ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
-  return { name: p.name, ...(p.code ? { code: p.code } : {}), hasPass: !!p.hasPass, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}), ...(d.gt ? { gt: d.gt } : {}), ...(d.bt ? { bt: d.bt } : {}) };
+  return { name: p.name, ...(p.code ? { code: p.code } : {}), hasPass: !!p.hasPass, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}), ...(d.gt ? { gt: d.gt } : {}), ...(d.bt ? { bt: d.bt } : {}), ...(d.parentPin ? { parentPin: d.parentPin } : {}) };
 }
 function adoptAccount(p) {
   Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });
@@ -355,7 +355,12 @@ function applyVolume(now) {
   applyVolume.last = T.join();
   [Sfx.master, Sfx.musicBus, Sfx.voiceBus, Sfx.sfxBus].forEach((bus, i) => { if (!bus) return; if (now) bus.gain.value = cv(T[i]); else bus.gain.setTargetAtTime(cv(T[i]), t, 0.03); });
 }
-function syncVolume() { if (Sfx.master && volTargets().join() !== applyVolume.last) applyVolume(); }   // jedes Bild: Kontowechsel, Laden vom Server …
+function syncVolume() {   // jedes Bild: Kontowechsel, Laden vom Server, Regler … – und wer stumm schaltet, hört sofort nichts mehr (auch nicht die Browser-Stimme)
+  const T = volTargets(), k = T.join(); if (k === syncVolume.k) return; syncVolume.k = k;
+  if (T[0] <= 0 || T[2] <= 0) Voice.stop();
+  if (T[0] <= 0 || T[1] <= 0) { Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); }
+  if (Sfx.master) applyVolume();
+}   // jedes Bild: Kontowechsel, Laden vom Server …
 // ---------- Icons (alles ohne Text) ----------
 function icon(c, name, x, y, s, col) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k);

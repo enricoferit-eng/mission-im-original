@@ -209,6 +209,16 @@ function drawHat(c, L, cp) {
     rrPath(c, -7, -53, 16, 5, 2); c.fillStyle = '#fff'; c.fill(); leaf(c, 1, -48, 0.7);
     return true;
   }
+  if (L.hat === 'crown') {   // Krone (legendär)
+    polyPath(c, [[-9, -46], [-9, -56], [-4, -51], [1, -59], [6, -51], [11, -56], [11, -46]]); fs(c, '#ffd60a', 2.5);
+    for (const [x, y, col] of [[-4, -49, '#ef476f'], [1, -50, '#4dabf7'], [6, -49, '#06d6a0']]) { ell(c, x, y, 1.8, 1.8); c.fillStyle = col; c.fill(); }
+    return true;
+  }
+  if (L.hat === 'wizard') {   // Zauberhut
+    polyPath(c, [[-11, -45], [13, -45], [5, -70], [0, -64]]); fs(c, cp, 2.5); ell(c, 1, -45, 14, 3.5); fs(c, cp, 2.5);
+    starPath(c, 3, -54, 3.4, 1.4); c.fillStyle = L.uCol2 || '#ffd60a'; c.fill();
+    return true;
+  }
   if (L.hat === 'beret') { ell(c, 2, -48, 13, 5, -0.15); fs(c, cp, 2.5); ell(c, 2, -53, 2, 2); fs(c, cp, 1.5); return true; }
   if (L.hat === 'muetze') { c.beginPath(); c.arc(1, -45, 11, Math.PI, 0); c.closePath(); fs(c, cp, 2.5); rrPath(c, -10, -47, 22, 5, 2); fs(c, L.uCol2 || '#fff', 2); ell(c, 1, -57, 3.5, 3.5); fs(c, L.uCol2 || '#fff', 2); return true; }
   return false;
@@ -267,7 +277,7 @@ SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach((diff, di)
   SKINS[id] = sk;
 })));
 // Laden-Skins: mit Talern kaufbar (je seltener, desto teurer; legendäre haben eine Fähigkeit)
-const SHOP_SKINS = [
+const OLD_SHOP_SKINS = [   // ältere Laden-Skins: nicht mehr zu kaufen, gekaufte bleiben tragbar
   ['shop_sport', 'Sport-Trikot', 'common', 30, { uniform: 'pulli', uCol: '#4dabf7', uCol2: '#ffffff', cap: '#4dabf7', scarf: '#ffffff', pat: 'stripes' }],
   ['shop_garten', 'Gärtner-Latzhose', 'common', 30, { uniform: 'latz', uCol: '#2d6a4f', uCol2: '#ffd166', cap: '#ffd166', scarf: '#2d6a4f', leaf: true }],
   ['shop_matrose', 'Matrosen-Look', 'common', 30, { uniform: 'weste', uCol: '#1d3557', uCol2: '#ffffff', cap: '#ffffff', scarf: '#e63946', pat: 'stripes' }],
@@ -349,7 +359,7 @@ const SHOP_SKINS = [
   ['shop_ninja', 'Nacht-Ninja', 'legend', 200, { uniform: 'pulli', uCol: '#212529', uCol2: '#7209b7', cap: '#212529', scarf: '#7209b7', pat: 'stars', sparkle: '#ffd60a', ability: 'adlerauge' }],
 ];
 // Exklusive Skins: gibt es nur im Tages-Shop, an manchen Tagen
-const EXCLUSIVE_SKINS = [
+const OLD_EXCLUSIVE_SKINS = [
   ['ex_drache', 'Drachen-Ritter', 'legend', 175, { uniform: 'weste', uCol: '#2b9348', uCol2: '#ffd60a', cap: '#2b9348', scarf: 'gold', pat: 'stars', sparkle: '#80ed99' }, 'turbo'],
   ['ex_einhorn', 'Einhorn-Traum', 'legend', 175, { uniform: 'pulli', uCol: '#ffc8dd', uCol2: '#cdb4db', cap: 'rainbow', scarf: 'rainbow', sparkle: '#ffafcc' }, 'glueck'],
   ['ex_pirat', 'Kapitän Goldbart', 'legend', 175, { uniform: 'weste', uCol: '#3d2c1f', uCol2: '#c9a227', cap: '#212529', scarf: 'gold', sparkle: '#ffd60a' }, 'detektor'],
@@ -367,14 +377,45 @@ const EXCLUSIVE_SKINS = [
   ['ex_clown', 'Zirkus-Clown', 'rare', 60, { uniform: 'pulli', uCol: '#ef476f', uCol2: '#ffd60a' === 'gold' ? '#c9a227' : '#ffd60a', cap: '#ffd60a', scarf: '#ffd60a', pat: 'stars' }, 'glueck'],
   ['ex_ninja2', 'Schatten-Ninja', 'rare', 60, { uniform: 'pulli', uCol: '#212529', uCol2: '#ef476f' === 'gold' ? '#c9a227' : '#ef476f', cap: '#ef476f', scarf: '#ef476f', pat: 'stars' }, 'detektor'],
 ];
-EXCLUSIVE_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, exclusive: true, ability: ab, lvl: rarity === 'legend' ? 3 : 2 }, look); });
-SHOP_SKINS.forEach(([id, name, rarity, price, look, ab], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (ab) SKINS[id].ability = ab; SKINS[id].lvl = rarity === 'legend' ? 2 : 1; if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
+OLD_EXCLUSIVE_SKINS.forEach(([id, name, rarity, price, look, ab]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true, exclusive: true, ability: ab, lvl: rarity === 'legend' ? 3 : 2 }, look); });
+OLD_SHOP_SKINS.forEach(([id, name, rarity, price, look, ab], i) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); if (ab) SKINS[id].ability = ab; SKINS[id].lvl = rarity === 'legend' ? 2 : 1; if (rarity === 'rare' && !SKINS[id].ability) SKINS[id].ability = ['turbo', 'zeitplus', 'adlerauge'][i % 3]; });
+// ---------- Skin-Katalog: 10 normal, 8 selten, 5 legendär – reines Aussehen (Fähigkeiten gibt es jetzt als Upgrades) ----------
+const SHOP_SKINS = [
+  ['sk_erdbeer', 'Erdbeer', 'common', 40, { uniform: 'pulli', uCol: '#ef476f', uCol2: '#ffffff', cap: '#ef476f', scarf: '#ffffff', dots: '#ffffff' }],
+  ['sk_meer', 'Matrose', 'common', 40, { uniform: 'weste', uCol: '#1d3557', uCol2: '#ffffff', cap: '#ffffff', scarf: '#e63946', pat: 'stripes' }],
+  ['sk_garten', 'Gärtner', 'common', 40, { uniform: 'latz', uCol: '#2d6a4f', uCol2: '#ffd166', cap: '#ffd166', scarf: '#2d6a4f', leaf: true }],
+  ['sk_zitrone', 'Zitronen-Limo', 'common', 40, { uniform: 'schuerze', uCol: '#fff3bf', uCol2: '#ffd60a', cap: '#ffd60a', scarf: '#fff3bf', pat: 'stripes' }],
+  ['sk_minze', 'Minz-Eis', 'common', 40, { uniform: 'eis', uCol: '#ffffff', uCol2: '#80ed99', cap: '#80ed99', scarf: '#ffffff', hat: 'beret' }],
+  ['sk_kakao', 'Barista', 'common', 40, { uniform: 'schuerze', uCol: '#6f4e37', uCol2: '#e9c46a', cap: '#6f4e37', scarf: '#e9c46a' }],
+  ['sk_himmel', 'Himmelblau', 'common', 40, { uniform: 'pulli', uCol: '#74c0fc', uCol2: '#ffffff', cap: '#74c0fc', scarf: '#ffffff', pat: 'stripes' }],
+  ['sk_kirsch', 'Kirsch-Koch', 'common', 40, { uniform: 'koch', uCol: '#ffffff', uCol2: '#9d0208', cap: '#ffffff', scarf: '#9d0208', hat: 'toque' }],
+  ['sk_lavendel', 'Lavendel', 'common', 40, { uniform: 'latz', uCol: '#cdb4db', uCol2: '#7209b7', cap: '#cdb4db', scarf: '#7209b7', dots: '#ffffff' }],
+  ['sk_huette', 'Hütten-Pulli', 'common', 40, { uniform: 'pulli', uCol: '#9d0208', uCol2: '#ffffff', cap: '#9d0208', scarf: '#ffffff', hat: 'muetze' }],
+  ['sk_pirat', 'Pirat', 'rare', 100, { uniform: 'weste', uCol: '#212529', uCol2: '#e63946', cap: '#212529', scarf: '#e63946', dots: '#ffffff', trim: '#ffd166', sparkle: '#bde0fe' }],
+  ['sk_astro', 'Astronaut', 'rare', 100, { uniform: 'pulli', uCol: '#f8f9fa', uCol2: '#118ab2', cap: '#f8f9fa', scarf: '#118ab2', pat: 'stars', trim: '#118ab2', sparkle: '#bde0fe' }],
+  ['sk_feuer', 'Feuerwehr', 'rare', 100, { uniform: 'weste', uCol: '#d00000', uCol2: '#ffd166', cap: '#d00000', scarf: '#ffd166', pat: 'stripes', trim: '#ffd166', sparkle: '#ffd6a5' }],
+  ['sk_surfer', 'Surfer', 'rare', 100, { uniform: 'weste', uCol: '#00b4d8', uCol2: '#ffd166', cap: '#00b4d8', scarf: '#ffd166', pat: 'stripes', trim: '#ffffff', sparkle: '#bde0fe' }],
+  ['sk_ninja', 'Ninja', 'rare', 100, { uniform: 'pulli', uCol: '#212529', uCol2: '#ef476f', cap: '#212529', scarf: '#ef476f', cape: '#343a40', sparkle: '#ffafcc' }],
+  ['sk_ranger', 'Wald-Ranger', 'rare', 100, { uniform: 'latz', uCol: '#386641', uCol2: '#a7c957', cap: '#6a994e', scarf: '#a7c957', leaf: true, cape: '#6a994e', sparkle: '#c7f464' }],
+  ['sk_schnee', 'Schnee-Prinz', 'rare', 100, { uniform: 'pulli', uCol: '#d0ebff', uCol2: '#ffffff', cap: '#ffffff', scarf: '#74c0fc', pat: 'stars', cape: '#a5d8ff', sparkle: '#e7f5ff' }],
+  ['sk_zirkus', 'Zirkus-Star', 'rare', 100, { uniform: 'pulli', uCol: '#d00000', uCol2: '#ffd60a', cap: '#ffd60a', scarf: '#d00000', pat: 'stars', trim: '#ffd60a', sparkle: '#fff3bf' }],
+  ['sk_goldkoch', 'Goldener Chefkoch', 'legend', 250, { uniform: 'koch', uCol: '#ffffff', uCol2: '#c9a227', cap: 'gold', scarf: 'gold', hat: 'toque', trim: '#c9a227', cape: 'gold', aura: '#ffd60a', sparkle: '#ffd60a' }],
+  ['sk_zauberer', 'Zauberer', 'legend', 250, { uniform: 'pulli', uCol: '#3a0ca3', uCol2: '#ffd60a', cap: '#3a0ca3', scarf: '#ffd60a', pat: 'stars', hat: 'wizard', cape: '#7209b7', aura: '#b388ff', sparkle: '#ffd60a' }],
+  ['sk_drache', 'Drachen-Ritter', 'legend', 250, { uniform: 'weste', uCol: '#2b9348', uCol2: '#ffd60a', cap: '#2b9348', scarf: 'gold', pat: 'stars', trim: '#ffd60a', cape: '#d00000', aura: '#80ed99', sparkle: '#80ed99' }],
+  ['sk_einhorn', 'Einhorn-Traum', 'legend', 250, { uniform: 'pulli', uCol: '#ffc8dd', uCol2: '#cdb4db', cap: 'rainbow', scarf: 'rainbow', trim: '#ffffff', cape: 'rainbow', aura: '#ffafcc', sparkle: '#ffafcc' }],
+  ['sk_koenig', 'Original-König', 'legend', 250, { uniform: 'weste', uCol: BRAND.olive, uCol2: BRAND.lime, cap: BRAND.lime, scarf: 'gold', hat: 'crown', trim: '#ffd60a', cape: '#9d0208', aura: '#ffd60a', sparkle: '#ffd60a' }],
+];
+const EXCLUSIVE_SKINS = SHOP_SKINS.filter(o => o[2] === 'legend');   // Tages-Shop: ein Legendärer zum vollen Preis
+SHOP_SKINS.forEach(([id, name, rarity, price, look]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); });
+// Fähigkeiten hingen früher an Skins – jetzt sind es Upgrades. Wer so einen Skin hat, bekommt die Stufe gutgeschrieben (siehe upgradeMigrate).
+const LEGACY_ABIL = {}; for (const id in SKINS) { const sk = SKINS[id]; if (sk.ability) { LEGACY_ABIL[id] = [sk.ability, skinLevel0(sk)]; delete sk.ability; } }
+function skinLevel0(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 // Text der Fähigkeit passend zur Stufe des Skins
 function skinLevel(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 function abilityText(sk) { const A = ABILITIES[sk.ability], l = skinLevel(sk); return A.f(l) + ' (Stufe ' + l + ' von 4)' + (sk.exclusiveStage ? ' – gibt es nur im Bereich ' + ({ kueche: 'Küche', gastraum: 'Innenbereich', aussen: 'Außenbereich', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' })[sk.exclusiveStage] + '.' : ''); }
 // Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)
 // 0 = nicht aktiv, 1 = selten (schwächer), 2 = legendär (stark)
-function ability(name) { const a = ACC(); if (!a || CUR_DIFF === 'easy') return 0; const sk = SKINS[DP(CUR_DIFF).equip]; if (!sk || sk.ability !== name) return 0; return clamp(skinLevel(sk), 1, 4); }
+function ability(name) { const m = typeof META === 'function' && META(); return m && m.up ? clamp(m.up[name] || 0, 0, 4) : 0; }   // Upgrade-Stufe (0 = nicht gekauft)
 // Standard-Look: grünes Helfer-Halstuch mit Blatt
 DEFAULT_LOOK.cap = BRAND.lime; DEFAULT_LOOK.scarf = BRAND.lime; DEFAULT_LOOK.leaf = true;
 

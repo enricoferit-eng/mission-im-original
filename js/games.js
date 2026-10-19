@@ -14,7 +14,7 @@ try { document.addEventListener('visibilitychange', () => { if (document.hidden)
 class GameOverlay {
   // opts: { diff, kind:'easy'|'puzzle'|'challenge', item, steps:{i,n}, slow, seed, onStop }
   constructor(id, opts, done) {
-    this.id = id; this.opts = opts; this.done = done; this.retries = 0; this.playT = 0; this.bonusCoins = gameCoinsFor(id, opts);   // playT: reine Spielzeit (auch über Neustarts) für die Zeit-Statistik
+    this.id = id; this.opts = opts; this.done = done; this.retries = 0; this.playT = 0;   // playT: reine Spielzeit (auch über Neustarts) für die Zeit-Statistik
     this.start();
   }
   start() {
@@ -40,6 +40,9 @@ class GameOverlay {
         return false;
       },
       addTime(s) { self.timeLeft = Math.min(self.timeMax, self.timeLeft + s); self.timeBonus = 0.8; Sfx.play('coin'); FX.sparkle(W - 80, 112, 14); },
+      coinOn: !!GAMES[self.id].challenge && !(typeof scene !== 'undefined' && scene && scene.mp) && mulberry32(((o.seed || 7) * 31 + 17) >>> 0)() < GAME_COIN_CHANCE,
+      coin(x, y) { if ((self.coinsGot || 0) >= GAME_COIN_MAX) return; self.coinsGot = (self.coinsGot || 0) + 1; GAME_COIN.add(1); Sfx.play('coin'); buzz(15); self.pops.push({ x, y: y - 10, t: -0.1, text: '+1', col: '#ffd166' }); },
+      drawCoin(c, x, y, s = 40) { if ((self.coinsGot || 0) >= GAME_COIN_MAX) return; ell(c, x, y, s * 0.62, s * 0.62); c.fillStyle = 'rgba(255,214,10,.28)'; c.fill(); GAME_COIN.draw(c, x, y, s * 0.45); if (Math.sin(self.t * 5 + x) > 0.7) { starPath(c, x + s * 0.3, y - s * 0.3, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); } },
       burst(x, y, n = 14) { const p = self.toScreen(x, y); FX.sparkle(p.x, p.y, n); },
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
@@ -148,6 +151,11 @@ class GameOverlay {
     if (this.side) return { x: W - 46, y: 102 + i * 40, s: 36 };
     return { x: W / 2 + (i - 1) * 44 - 70, y: 100, s: 36 };
   }
+  drawCoinCount(c) {   // in Aufgaben mit Münzen: wie viele schon eingesammelt
+    if (!this.env || !this.env.coinOn) return;
+    const n = this.coinsGot || 0, x = this.ox + 46, y = this.oy + GAME_H * this.s - 36;   // unten links im Feld (oben liegen Einblendungen) c.font = `900 14px ${FONT}`;
+    rrPath(c, x - 34, y, 68, 26, 13); c.fillStyle = 'rgba(30,20,10,.6)'; c.fill(); GAME_COIN.draw(c, x - 16, y + 13, 9); txt(c, '+' + n, x + 8, y + 14, 14, '#ffd166', 'center', null);
+  }
   drawStars(c) {
     if (!this.starsOn()) return;
     const side = this.side, dz = this.danger();
@@ -237,7 +245,7 @@ class GameOverlay {
     if (this.state === 'play' && !this.tickPressure(dt)) return;        // Countdown läuft
     if (this.state !== 'play') Music.stop();
     if (this.state === 'play') {
-      this.playT += dt; this.g.update(dt); if (this.bonusCoins) gameCoinsTick(this, dt);
+      this.playT += dt; this.g.update(dt);
       if (this.timed && this.state === 'play') {
         this.timeLeft -= dt;
         const sec = Math.ceil(this.timeLeft);
@@ -252,7 +260,7 @@ class GameOverlay {
     }
     else this.endT += dt;
   }
-  finish(ok) { if (this.bonusCoins) gameCoinsEnd(this); Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.done) this.done(ok); }
+  finish(ok) { if (this.coinsGot && !this.coinsTold) { this.coinsTold = true; GAME_COIN.toast(this.coinsGot); } Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.done) this.done(ok); }
   drawStatus(c) {
     // Große, eindeutige Leiste: Leben links, Zeit rechts
     const low = this.timeLeft / this.timeMax < 0.25, pulse = low ? 0.5 + 0.5 * Math.sin(this.t * 12) : 0;
@@ -311,7 +319,6 @@ class GameOverlay {
     c.translate(this.ox + sk, this.oy + (this.shk > 0 ? Math.cos(this.shk * 55) * this.shk * 10 : 0)); c.scale(this.s, this.s);
     rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.save(); c.clip();
     this.g.draw(c);
-    if (this.bonusCoins) gameCoinsDraw(this, c);
     const av = c.createRadialGradient(200, 230, 150, 200, 260, 380); av.addColorStop(0, 'rgba(0,0,0,0)'); av.addColorStop(1, 'rgba(40,25,10,.18)');
     c.fillStyle = av; c.fillRect(0, 0, GAME_W, GAME_H);
     if (this.flash > 0) {
@@ -362,7 +369,7 @@ class GameOverlay {
       }
     }
     this.drawJoker(c);
-    this.drawBonus(c);
+    this.drawBonus(c); this.drawCoinCount(c);
     this.drawPops(c);
     this.drawCountdown(c);
     if (this.tip && this.state === 'play' && !this.help) {
@@ -384,9 +391,9 @@ class GameOverlay {
   }
   down(x, y, id) { if (this.opts.diff === 'easy' && Voice.busy && Voice.busy()) Voice.stop(); if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
     if (this.state === 'play' && !this.help && !this.ready && this.cd > 0 && this.cdWait <= 0) { this.ready = true; this.cd = 0.001; Sfx.note(990, 0.3, 'square', 0.06, 1.2); buzz(30); return; }
-    if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.bonusCoins && gameCoinsTap(this, p)) { this.coinTap = id; return; } if (this.g.down) this.g.down(p.x, p.y, id); }
-  move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0 || (this.coinTap !== undefined && this.coinTap === id)) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
-  up(x, y, id) { if (this.coinTap !== undefined && this.coinTap === id) { this.coinTap = undefined; return; } if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.up) this.g.up(p.x, p.y, id); }
+    if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
+  move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
+  up(x, y, id) { if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.up) this.g.up(p.x, p.y, id); }
 }
 
 // ---------- Erklärungen (Text erlaubt, für alle, die eine Aufgabe nicht verstehen) ----------
@@ -1390,42 +1397,10 @@ GAMES.count = { make(env) {
   };
 } };
 
-// ---------- Bonus-Münzen in manchen Aufgaben: freiwillig antippen, nie nötig ----------
-// Nur in Aufgaben, in denen man tippt/zieht (nicht in Geschicklichkeits-Aufgaben, da würde ein Münz-Tipp einen Sprung kosten).
-// Welche Währung: GAME_COIN (der Halloween-Wald tauscht sie gegen Kürbismünzen).
+// ---------- Bonus-Münzen in Aufgaben (welche Währung: GAME_COIN – der Halloween-Wald tauscht sie gegen Kürbismünzen) ----------
 let GAME_COIN = { add(n) { const m = META(); if (m) { m.coins += n; Save.write(); } }, toast(n) { toast('Münzen gesammelt', '+' + n + ' Taler', 'coin'); }, draw(c, x, y, r) { icon(c, 'coin', x, y, r * 2.1); } };
-const GAME_COIN_CHANCE = 0.4;
-function gameCoinsFor(id, o) {
-  const G = GAMES[id]; if (!G || G.challenge || o.kind === 'challenge' || !o.seed || (typeof scene !== 'undefined' && scene && scene.mp)) return null;
-  const r = mulberry32((o.seed * 31 + 17) >>> 0); if (r() > GAME_COIN_CHANCE) return null;
-  const n = 2 + Math.floor(r() * 2), L = [];
-  for (let i = 0; i < n; i++) {   // am Rand des Spielfelds, damit sie nichts Wichtiges verdecken
-    const side = Math.floor(r() * 4), u = 0.15 + r() * 0.7;
-    const x = side === 0 ? 30 : side === 1 ? GAME_W - 30 : 40 + u * (GAME_W - 80), y = side === 2 ? 34 : side === 3 ? GAME_H - 34 : 70 + u * (GAME_H - 140);
-    L.push({ x, y, t0: 1.5 + i * (2.5 + r() * 3), life: 6, got: false, gone: false, k: 0 });
-  }
-  return { list: L, got: 0, paid: 0 };
-}
-function gameCoinsTick(g, dt) { for (const q of g.bonusCoins.list) { if (q.got) q.k += dt; else if (g.playT > q.t0 + q.life) q.gone = true; } }
-function gameCoinsTap(g, p) {
-  const B = g.bonusCoins; for (const q of B.list) {
-    if (q.got || q.gone || g.playT < q.t0) continue;
-    if (dist(p.x, p.y, q.x, q.y) < 36) { q.got = true; B.got++; GAME_COIN.add(1); B.paid++; Sfx.play('coin'); buzz(15); g.pops.push({ x: q.x, y: q.y - 6, t: -0.1, text: '+1', col: '#ffd166' }); return true; }
-  }
-  return false;
-}
-function gameCoinsDraw(g, c) {
-  for (const q of g.bonusCoins.list) {
-    if (q.gone || g.playT < q.t0) continue;
-    if (q.got) { if (q.k > 0.5) continue; c.save(); c.globalAlpha = 1 - q.k * 2; GAME_COIN.draw(c, q.x, q.y - q.k * 60, 16 * (1 + q.k)); c.restore(); continue; }
-    const a = g.playT - q.t0, rest = q.life - a, pop = ease.back(clamp(a * 3, 0, 1)), blink = rest < 1.5 ? 0.5 + 0.5 * Math.sin(g.t * 18) : 1, bob = Math.sin(g.t * 4 + q.x) * 3;
-    c.save(); c.globalAlpha = blink; c.translate(q.x, q.y + bob); c.scale(pop, pop);
-    ell(c, 0, 0, 28, 28); c.fillStyle = 'rgba(255,214,10,.3)'; c.fill(); GAME_COIN.draw(c, 0, 0, 19);
-    if (Math.sin(g.t * 5 + q.x) > 0.7) { starPath(c, 12, -12, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); }
-    c.restore();
-  }
-}
-function gameCoinsEnd(g) { const B = g.bonusCoins; if (B.paid && !B.told) { B.told = true; GAME_COIN.toast(B.paid); } }
+// Münzen liegen in manchen Geschick-Aufgaben direkt auf dem Weg – wie die Extra-Zeit-Uhren: im Vorbeilaufen, Springen, Fangen einsammeln
+const GAME_COIN_CHANCE = 0.5, GAME_COIN_MAX = 5;   // in so vielen Aufgaben gibt es welche; höchstens so viele pro Aufgabe (auch über Neustarts)
 // Wie lange Kinder wirklich für eine Aufgabe brauchen (je Stufe): Anzahl + Summe, wird mit dem Konto gespeichert – Grundlage, um GAME_SEC nachzustellen
 function gameTimeStat(id, diff, sec) {
   const a = typeof ACC === 'function' && ACC(); if (!a || !diff || !(sec > 0.5) || sec > 900 || a.admin) return;
@@ -1441,10 +1416,12 @@ GAMES.run = { challenge: true, make(env) {
     const D = 420 + i * gap, lanes = shuffle([0, 1, 2], r), nb = r() < (env.hard ? 0.7 : 0.35) ? 2 : 1;
     for (let k = 0; k < nb; k++) obs.push({ D, lane: lanes[k], id: pick(areaPick(['ball', 'eimerchen', 'bauklotz', 'roller', 'pluesch']), r) });
     if (env.hard && r() < 0.3) obs.push({ D, lane: lanes[2], clock: true });
+    else if (env.coinOn && r() < 0.3) obs.push({ D, lane: lanes[2], coin: true });
   }
   const end = 420 + rows * gap + 120;
   let d = 0, lane = 1, px = 200, stun = 0, inv = 0, t = 0;
   return {
+    dbg: () => ({ obs, d, lane }),
     timeLimit: end / sp + 3,
     hint: { type: 'tap', x: 300, y: 430 },
     update(dt) {
@@ -1456,6 +1433,7 @@ GAMES.run = { challenge: true, make(env) {
         const y = 440 - (o.D - d);
         if (Math.abs(y - 440) < 30 && Math.abs(px - (100 + o.lane * 100)) < 48) {
           if (o.clock) { o.done = true; env.addTime(3); }
+          else if (o.coin) { o.done = true; env.coin(px, 440); }
           else if (inv <= 0) { o.done = true; env.hit(); stun = env.hard ? 0.3 : 0.8; inv = 1; }
         }
       }
@@ -1474,6 +1452,7 @@ GAMES.run = { challenge: true, make(env) {
         if (o.done) continue; const y = 440 - (o.D - d); if (y < -60 || y > 580) continue;
         const x = 100 + o.lane * 100;
         if (o.clock) { icon(c, 'clock', x, y - 10, 46); continue; }
+        if (o.coin) { env.drawCoin(c, x, y - 10, 46); continue; }
         ell(c, x, y + 22, 30, 8); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); drawAny(c, o.id, x, y, 66);
       }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 470, 1.7, { t, moving: true, cap: hasCap(env.kind) });
@@ -1484,7 +1463,7 @@ GAMES.run = { challenge: true, make(env) {
 
 GAMES.balance_walk = { challenge: true, make(env) {
   const r = env.r, N = env.hard ? 11 : 8, zone = ((env.hard ? 9 : 14) * Math.PI) / 180;
-  let step = 0, ph = r() * 6, needle = 0, wob = 0, ax = 40, clock = null, clockT = 2.5, t = 0; const fin = finisher(env);
+  let step = 0, ph = r() * 6, needle = 0, wob = 0, ax = 40, clock = null, clockT = 2.5, coin = null, coinT = 3.5, t = 0; const fin = finisher(env);
   return {
     timeLimit: N * 1.6 + 4,
     hint: { type: 'tap', x: 200, y: 300 },
@@ -1498,6 +1477,11 @@ GAMES.balance_walk = { challenge: true, make(env) {
         clockT -= dt;
         if (clockT <= 0 && !clock) { clock = { x: 60 + r() * 280, y: 440 + r() * 40, t: 2 }; clockT = 3 + r() * 2; }
         if (clock) { clock.t -= dt; if (clock.t <= 0) clock = null; }
+      }
+      if (env.coinOn) {   // ab und zu blinkt eine Münze auf – antippen wie die Uhr
+        coinT -= dt;
+        if (coinT <= 0 && !coin) { coin = { x: 60 + r() * 280, y: 430 + r() * 50, t: 2.2 }; coinT = 4 + r() * 3; }
+        if (coin) { coin.t -= dt; if (coin.t <= 0) coin = null; }
       }
       fin.tick(dt);
     },
@@ -1519,10 +1503,12 @@ GAMES.balance_walk = { challenge: true, make(env) {
       const tilt = wob > 0 ? Math.sin(t * 40) * 0.35 * wob * 2 : needle * 0.22;
       drawAnimal(c, env.kind, ax, 330, 1.25, { t, moving: false, tilt, noShadow: true, cap: hasCap(env.kind) });
       if (clock) icon(c, 'clock', clock.x, clock.y, 44 + Math.sin(t * 10) * 3);
+      if (coin) env.drawCoin(c, coin.x, coin.y, 44 + Math.sin(t * 10) * 3);
     },
     down(x, y) {
       if (fin.on()) return;
       if (clock && dist(x, y, clock.x, clock.y) < 44) { env.addTime(3); clock = null; return; }
+      if (coin && dist(x, y, coin.x, coin.y) < 44) { env.coin(coin.x, coin.y); coin = null; return; }
       if (Math.abs(needle) < zone) { step++; Sfx.play('good'); env.burst(ax + 320 / N, 310, 8); buzz(15); if (step >= N) fin.set(); }
       else { wob = 0.5; env.hit(); if (!env.hard && step > 0) step--; }
     },
@@ -1531,13 +1517,14 @@ GAMES.balance_walk = { challenge: true, make(env) {
 
 GAMES.jump = { challenge: true, make(env) {
   const r = env.r, v = (env.hard ? 280 : env.diff === 'easy' ? 210 : 235) * env.slow, T = env.hard ? 0.85 : env.diff === 'easy' ? 1.05 : 0.95, JV = 520 / T, G = 2 * JV / T, n = env.hard ? 14 : 10;   // gnädiger: langsamer; Sprung immer gleich hoch (130), bei Leicht länger in der Luft
-  const obs = [], clocks = []; let x = 520;
+  const obs = [], clocks = [], coins = []; let x = 520;
   for (let i = 0; i < n; i++) {
     const kind = r();
     if (kind < 0.38) { const w = env.hard ? 88 + r() * 32 : 72 + r() * 26; obs.push({ t: 'gap', x, w }); x += w; }
     else {
       const h = 34 + r() * 12; obs.push({ t: 'hurdle', x, w: 44, h, id: pick(areaPick(['bauklotz', 'ball', 'eimerchen']), r) });
       if (env.hard && r() < 0.35) clocks.push({ x: x + 22, y: 315 });
+      else if (env.coinOn && r() < 0.4) coins.push({ x: x + 22, y: 315 });   // über der Hürde: beim Drüberspringen einsammeln
       if (kind > 0.8) { x += 44 + (env.hard ? 200 : 230); obs.push({ t: 'hurdle', x, w: 44, h: 36, id: heroId('bauklotz') }); }
       x += 44;
     }
@@ -1562,6 +1549,7 @@ GAMES.jump = { challenge: true, make(env) {
       }
       if (inv <= 0) for (const o of obs) if (o.t === 'hurdle' && wx + PX > o.x - 2 && wx + PX < o.x + o.w + 2 && py < o.h - 12) { env.hit(); inv = 1; stun = 0.5; break; }
       for (const k of clocks) if (!k.done && Math.abs(wx + PX - k.x) < 36 && Math.abs(400 - py - 30 - k.y) < 55) { k.done = true; env.addTime(3); }
+      for (const k of coins) if (!k.done && Math.abs(wx + PX - k.x) < 36 && Math.abs(400 - py - 30 - k.y) < 55) { k.done = true; env.coin(PX, k.y); }
       if (wx + PX >= end) env.win();
     },
     draw(c) {
@@ -1574,6 +1562,7 @@ GAMES.jump = { challenge: true, make(env) {
         else drawAny(c, o.id, sx + 22, 400 - o.h / 2 + (o.id === 'bauklotz' ? 4 : 0), o.h + 12);
       }
       for (const k of clocks) if (!k.done) { const sx = k.x - wx; if (sx > -40 && sx < 440) icon(c, 'clock', sx, k.y, 40); }
+      for (const k of coins) if (!k.done) { const sx = k.x - wx; if (sx > -40 && sx < 440) env.drawCoin(c, sx, k.y, 40); }
       const fx = end - wx; if (fx < 440) { line(c, fx, 400, fx, 300, 5, '#495057'); polyPath(c, [[fx, 300], [fx + 46, 315], [fx, 330]]); fs(c, '#ef476f', 3); }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, PX, 400 - py, 1.5, { t, moving: py === 0, cap: hasCap(env.kind), noShadow: py !== 0 || falling });
     },
@@ -1594,6 +1583,7 @@ GAMES.collect = { challenge: true, make(env) {
         spT = (env.hard ? 0.42 : 0.58) / env.slow;
         const good = r() < (env.hard ? 0.45 : 0.5); its.push({ x: 50 + r() * 300, y: -40, id: good ? target : pick(others, r), good, ph: r() * 6, sw: env.hard ? 40 : 0 });
         if (env.hard && r() < 0.12) its.push({ x: 50 + r() * 300, y: -130, clock: true, ph: 0, sw: 0 });
+        else if (env.coinOn && r() < 0.12) its.push({ x: 50 + r() * 300, y: -130, coin: true, ph: 0, sw: 0 });
       }
       px = lerp(px, tx, Math.min(1, dt * 16));
       for (const o of its) {
@@ -1601,6 +1591,7 @@ GAMES.collect = { challenge: true, make(env) {
         if (!o.done && dist(ox, o.y, px, 430) < 44) {
           o.done = true;
           if (o.clock) env.addTime(3);
+          else if (o.coin) env.coin(px, 420);
           else if (o.good) { got++; Sfx.play('good'); env.burst(px, 420, 10); if (got >= need) fin.set(0.4); }
           else if (inv <= 0) { env.hit(); inv = 0.8; if (!env.hard) got = Math.max(0, got - 1); }
         }
@@ -1613,7 +1604,7 @@ GAMES.collect = { challenge: true, make(env) {
       rrPath(c, 100, 12, 200, 70, 20); fs(c, '#fff7e6', 4);
       drawAny(c, target, 140, 47, 52);
       for (let i = 0; i < need; i++) { ell(c, 186 + (i % 6) * 18, 34 + Math.floor(i / 6) * 24, 7, 7); fs(c, i < got ? '#06d6a0' : '#dee2e6', 2); }
-      for (const o of its) { const ox = o.x + Math.sin(o.ph) * o.sw; if (o.clock) icon(c, 'clock', ox, o.y, 44); else drawAny(c, o.id, ox, o.y, 58); }
+      for (const o of its) { const ox = o.x + Math.sin(o.ph) * o.sw; if (o.clock) icon(c, 'clock', ox, o.y, 44); else if (o.coin) env.drawCoin(c, ox, o.y, 44); else drawAny(c, o.id, ox, o.y, 58); }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 470, 1.6, { t, moving: Math.abs(px - tx) > 4, dir: tx < px ? -1 : 1, cap: hasCap(env.kind) });
     },
     down(x) { tx = clamp(x, 40, 360); }, move(x) { tx = clamp(x, 40, 360); },
@@ -1638,16 +1629,18 @@ GAMES.slide = { challenge: true, make(env) {
           obs.push({ x: lanes[ls[k]] + (r() - 0.5) * 20, y: 580, kid, vx: roll ? (r() < 0.5 ? -60 : 60) : 0, id: kid ? pick(['hase', 'igel'], r) : pick(areaPick(['ball', 'pluesch', 'eimerchen', 'frisbee', 'bauklotz']), r) });
         }
         if (env.hard && r() < 0.25) obs.push({ x: lanes[ls[2]], y: 580, clock: true, vx: 0 });
+        else if (env.coinOn && r() < 0.3) obs.push({ x: lanes[ls[2]], y: 580, coin: true, vx: 0 });
       }
       px = lerp(px, tx, Math.min(1, dt * 14));
       for (const o of obs) {
         o.y -= v * dt; o.x += o.vx * dt; if (o.x < 100 || o.x > 300) o.vx *= -1;
         if (!o.done && dist(o.x, o.y, px, 130) < 44) {
           if (o.clock) { o.done = true; env.addTime(3); }
+          else if (o.coin) { o.done = true; env.coin(px, 130); }
           else if (inv <= 0) { o.done = true; env.hit(); inv = 1; }
         }
       }
-      for (let i = obs.length - 1; i >= 0; i--) if (obs[i].y < -60 || (obs[i].done && obs[i].clock)) obs.splice(i, 1);
+      for (let i = obs.length - 1; i >= 0; i--) if (obs[i].y < -60 || (obs[i].done && (obs[i].clock || obs[i].coin))) obs.splice(i, 1);
       if (t > dur / env.slow + 1.6) env.win();
     },
     draw(c) {
@@ -1662,6 +1655,7 @@ GAMES.slide = { challenge: true, make(env) {
       for (const o of obs) {
         if (o.done) continue;
         if (o.clock) icon(c, 'clock', o.x, o.y, 44);
+        else if (o.coin) env.drawCoin(c, o.x, o.y, 44);
         else if (o.kid) drawCritter(c, o.id, o.x, o.y + 20, 1.1, t);
         else { c.save(); c.translate(o.x, o.y); if (o.vx) c.rotate(o.y * 0.03); drawAny(c, o.id, 0, 0, 60); c.restore(); }
       }
@@ -1678,6 +1672,7 @@ GAMES.swing = { challenge: true, make(env) {
   const st = []; for (let k = 0; k < n; k++) st.push({ x: 300 + k * 280, w: (env.hard ? 2.5 : 2.0) * (0.85 + r() * 0.3) * env.slow, ph: r() * 6 });
   const spot = i => 160 + i * 280;
   const clocks = {}; if (env.hard) for (let i = 1; i < n; i++) if (r() < 0.5) clocks[i] = true;
+  const coins = {}; if (env.coinOn) for (let i = 1; i < n; i++) if (!clocks[i] && r() < 0.45) coins[i] = true;   // auf manchen Landeplätzen liegt eine Münze
   let si = 0, px = spot(0), mode = 'idle', mt = 0, from = 0, to = 0, inv = 0, t = 0, cam = 0; const fin = finisher(env);
   const dashT = env.hard ? 0.42 : 0.55;
   const seat = s => { const th = A * Math.sin(s.w * t + s.ph); return { x: s.x + L * Math.sin(th), y: PY + L * Math.cos(th), th }; };
@@ -1694,7 +1689,7 @@ GAMES.swing = { challenge: true, make(env) {
           if (s.y > 338 && Math.abs(s.x - px) < 36) { env.hit(); inv = 0.9; mode = 'back'; mt = 0; from = px; to = spot(si); }
         }
         if (k >= 1) {
-          if (mode === 'dash') { si++; Sfx.play('good'); if (clocks[si]) { clocks[si] = false; env.addTime(3); } if (si >= n) fin.set(0.4); }
+          if (mode === 'dash') { si++; Sfx.play('good'); if (clocks[si]) { clocks[si] = false; env.addTime(3); } if (coins[si]) { coins[si] = false; env.coin(200, 300); } if (si >= n) fin.set(0.4); }
           mode = 'idle';
         }
       }
@@ -1710,7 +1705,7 @@ GAMES.swing = { challenge: true, make(env) {
       c.save(); c.translate(-cam, 0);
       c.fillStyle = CHIP_BASE; c.fillRect(cam - 10, GY, 420, 100);
       c.save(); c.translate(cam, 0); chipsBand(c, GY, 520, -cam); c.restore();
-      for (let i = 0; i <= n; i++) { const x = spot(i); ell(c, x, GY + 12, 34, 9); c.fillStyle = 'rgba(255,255,255,.3)'; c.fill(); if (clocks[i]) icon(c, 'clock', x, GY - 120, 40); }
+      for (let i = 0; i <= n; i++) { const x = spot(i); ell(c, x, GY + 12, 34, 9); c.fillStyle = 'rgba(255,255,255,.3)'; c.fill(); if (clocks[i]) icon(c, 'clock', x, GY - 120, 40); if (coins[i]) env.drawCoin(c, x, GY - 120, 40); }
       const fx = spot(n); line(c, fx + 40, GY, fx + 40, GY - 110, 5, '#495057'); polyPath(c, [[fx + 40, GY - 110], [fx + 86, GY - 95], [fx + 40, GY - 80]]); fs(c, '#ef476f', 3);
       for (const s of st) {
         line(c, s.x - 70, GY, s.x - 8, PY - 6, 12, '#8d5a3b'); line(c, s.x + 70, GY, s.x + 8, PY - 6, 12, '#8d5a3b');
@@ -2051,7 +2046,7 @@ window.addEventListener('keydown', e => { if (e.target && e.target.tagName === '
 window.addEventListener('keyup', e => { KEYS[e.key] = false; });
 GAMES.platform = { challenge: true, make(env) {
   const r = env.r, T = 40, GY = 360;               // Kachelgröße, Boden-Grundlinie (über den Knöpfen)
-  const plats = [], movers = [], hazards = [], enemies = [], clocks = [], checks = [];
+  const plats = [], movers = [], hazards = [], enemies = [], clocks = [], coins = [], checks = [];
   let x = 0, gh = 0;                                // gh = Bodenhöhe in Kacheln über GY
   const ground = (w) => { plats.push({ x, y: GY - gh * T, w: w * T, h: 400, k: 'g' }); x += w * T; };
   ground(6);
@@ -2068,6 +2063,7 @@ GAMES.platform = { challenge: true, make(env) {
     else if (sg === 'ballrun') { const bx = x; ground(7); enemies.push({ t: 'ball', x: bx + 5 * T, xmin: bx + 20, xmax: bx + 7 * T - 20, v: -70 - r() * 30, y: GY - gh * T, alive: true }); }
     else if (sg === 'tower') { const g0 = gh; for (let k = 1; k <= 3; k++) { gh = Math.min(g0 + k, 4); ground(1); } x += 2 * T; gh = Math.max(0, g0 - 1); ground(3); }
     if (env.hard && r() < 0.35) clocks.push({ x: x - T * 1.5, y: GY - gh * T - 75 });
+    else if (env.coinOn && r() < 0.4) coins.push({ x: x - T * 1.5, y: GY - gh * T - 75 });
     if (i % 4 === 3) checks.push({ x: x - T * 1.5, y: GY - gh * T, on: false });
   });
   ground(5); const goalX = x - 3 * T, goalY = GY - gh * T;
@@ -2119,6 +2115,7 @@ GAMES.platform = { challenge: true, make(env) {
         }
       }
       for (const k of clocks) if (!k.done && Math.abs(P.x - k.x) < 36 && Math.abs(P.y - P.h / 2 - k.y) < 48) { k.done = true; env.addTime(4); }
+      for (const k of coins) if (!k.done && Math.abs(P.x - k.x) < 36 && Math.abs(P.y - P.h / 2 - k.y) < 48) { k.done = true; env.coin(200, 200); }
       for (const ck of checks) if (!ck.on && P.x > ck.x) { ck.on = true; spawn = { x: ck.x, y: ck.y - 1 }; Sfx.play('good'); env.burst(ck.x, ck.y - 60, 10); }
       if (!won && P.x > goalX) { won = true; env.win(); }
       cam = lerp(cam, clamp(P.x - 150, 0, x - 400), Math.min(1, dt * 8));
@@ -2139,6 +2136,7 @@ GAMES.platform = { challenge: true, make(env) {
       for (const h of hazards) drawYucca(c, h.x + h.w / 2, h.y + 2, 0.5, t);
       for (const ck of checks) { line(c, ck.x, ck.y, ck.x, ck.y - 70, 4, '#495057'); polyPath(c, [[ck.x, ck.y - 70], [ck.x + 34, ck.y - 60], [ck.x, ck.y - 50]]); fs(c, ck.on ? '#06d6a0' : '#ced4da', 2.5); }
       for (const k of clocks) if (!k.done) icon(c, 'clock', k.x, k.y + Math.sin(t * 4) * 4, 36);
+      for (const k of coins) if (!k.done) env.drawCoin(c, k.x, k.y + Math.sin(t * 4) * 4, 36);
       for (const e of enemies) {
         if (!e.alive) continue;
         if (e.t === 'bee') { c.save(); c.translate(e.cx, e.y); ell(c, 0, 0, 14, 10); fs(c, '#ffd60a', 2.5); line(c, -3, -9, -3, 9, 3, OL, false); line(c, 4, -8, 4, 8, 3, OL, false); ell(c, -4, -12, 7, 5 + Math.sin(t * 40) * 2); fs(c, 'rgba(255,255,255,.8)', 1.5); c.restore(); }

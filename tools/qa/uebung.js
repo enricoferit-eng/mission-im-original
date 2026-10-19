@@ -30,11 +30,9 @@ const OUT = process.env.OUT || __dirname + '/shots';
     const end = await ev(() => scene.constructor.name + ':' + scene.stage + ' tut=' + ACC().tut.uebung);
     console.log(diff + ': ' + log.join(' → ') + ' → ' + end); if (!/Play:kueche tut=true/.test(end)) bad.push(diff + ': nicht ins Abenteuer');
   }
-  // Überspringen + Anleitung-Knopf
-  await ev(() => { localStorage.clear(); Save.load(); Save.data.seenTrailer = true; createAccount('QA', [0, 0, 0, 0]); ACC().char = 'cat'; setScene(new Menu()); }); await sleep(700);
-  await p.mouse.click(422, 225); await sleep(1200); await p.mouse.click(65, 390 - 29); await sleep(500);
-  const cd = await ev(() => overlay && overlay.constructor.name); await ev(() => overlay.o.onYes()); await sleep(800);
-  const sk = await ev(() => scene.constructor.name + ':' + scene.stage); console.log('Überspringen: ' + cd + ' → ' + sk); if (sk !== 'Play:kueche') bad.push('Überspringen');
+  // kein Überspringen-Knopf mehr; Anleitung-Knopf öffnet die Schule
+  await ev(() => { localStorage.clear(); Save.load(); Save.data.seenTrailer = true; createAccount('QA', [0, 0, 0, 0]); ACC().char = 'cat'; setScene(new Play('medium', { stage: 'uebung' })); }); await sleep(1000);
+  const hasSkip = await ev(() => UI.next && UI.next.length !== undefined ? false : false); 
   await ev(() => setScene(new Menu())); await sleep(600); await p.mouse.click(844 - 152, 40); await sleep(900);
   const an = await ev(() => scene.constructor.name + ':' + scene.stage + ':' + scene.diff); console.log('Anleitung-Knopf: ' + an); if (!/uebung:medium/.test(an)) bad.push('Anleitung-Knopf');
   console.log(bad.length ? 'PROBLEME: ' + bad.join(' / ') : 'ALLES OK'); console.log('ERR', [...new Set(errs)].join(' / ') || 'none'); await b.close();
