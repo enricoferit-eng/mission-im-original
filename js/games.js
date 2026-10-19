@@ -151,6 +151,11 @@ class GameOverlay {
     if (this.side) return { x: W - 46, y: 102 + i * 40, s: 36 };
     return { x: W / 2 + (i - 1) * 44 - 70, y: 100, s: 36 };
   }
+  drawCoinCount(c) {   // in Aufgaben mit Münzen: wie viele schon eingesammelt
+    if (!this.env || !this.env.coinOn) return;
+    const n = this.coinsGot || 0, x = this.ox + 46, y = this.oy + GAME_H * this.s - 36;   // unten links im Feld (oben liegen Einblendungen) c.font = `900 14px ${FONT}`;
+    rrPath(c, x - 34, y, 68, 26, 13); c.fillStyle = 'rgba(30,20,10,.6)'; c.fill(); GAME_COIN.draw(c, x - 16, y + 13, 9); txt(c, '+' + n, x + 8, y + 14, 14, '#ffd166', 'center', null);
+  }
   drawStars(c) {
     if (!this.starsOn()) return;
     const side = this.side, dz = this.danger();
@@ -364,7 +369,7 @@ class GameOverlay {
       }
     }
     this.drawJoker(c);
-    this.drawBonus(c);
+    this.drawBonus(c); this.drawCoinCount(c);
     this.drawPops(c);
     this.drawCountdown(c);
     if (this.tip && this.state === 'play' && !this.help) {

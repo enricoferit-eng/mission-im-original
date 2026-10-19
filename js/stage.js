@@ -1508,6 +1508,13 @@ class Play {
       rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       c.save(); c.translate(174, 46); c.scale(k, k); drawCollect(c, this.stage, 0, 0, 2.2, -0.5); c.restore();
       txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
+    if (!this.mp) {   // eigene Taler immer sichtbar (springt kurz, wenn neue dazukommen)
+      const m = META(), v = m ? m.coins : 0; if (this.coinShown === undefined) this.coinShown = v;
+      if (v !== this.coinShown) { this.coinPop = 1; this.coinShown = v; } this.coinPop = Math.max(0, (this.coinPop || 0) - 0.04);
+      const k = 1 + this.coinPop * 0.3; c.font = `900 15px ${FONT}`; const tw = Math.max(56, c.measureText(String(v)).width + 44);
+      rrPath(c, 150, 70, tw, 30, 15); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
+      c.save(); c.translate(168, 85); c.scale(k, k); GAME_COIN.draw(c, 0, 0, 10); c.restore(); txt(c, String(v), 184, 86, 15, '#ffd166', 'left', null);
+    }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
     const narrow = W < 640, rowY = narrow ? 92 : 46;
     if (!(this.mp && this.mp.mode === 'team')) { const ids = this.activeIds ? this.activeIds.concat(this.mp.opts.boss ? ['gate'] : []) : ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
