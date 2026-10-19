@@ -309,7 +309,7 @@ function needOnline(c, back) {
   panel(c, x, y, w, h, '#fff7e6', 24);
   icon(c, 'friends', W / 2, y + 40, 44);
   wrapLines(c, 'Für Freunde und Mehrspieler brauchst du ein gesichertes Konto. Tippe auf „Spielstand sichern“.', w - 40, 15).forEach((l, i) => txt(c, l, W / 2, y + 84 + i * 20, 15, '#3d2c1f', 'center', null));
-  const qa = a && Array.isArray(a.code) && a.code.length === 4 && a.name, bw = qa ? Math.min(190, (w - 40) / 2) : 220;
+  const qa = false,   /* Sofort-Sichern mit dem Bilder-Code gibt es nicht mehr: gesichert wird mit Passwort */ bw = qa ? Math.min(190, (w - 40) / 2) : 220;
   rrPath(c, W / 2 - (qa ? bw + 6 : 110), y + h - 56, bw, 44, 18); fs(c, qa ? '#bde0fe' : '#06d6a0', 3); txt(c, qa ? 'Selbst einrichten' : 'Spielstand sichern', W / 2 - (qa ? bw / 2 + 6 : 0), y + h - 33, 15, qa ? '#3d2c1f' : '#fff', 'center', qa ? null : BRAND.ink);
   UI.btn(W / 2 - (qa ? bw + 6 : 110), y + h - 56, bw, 44, () => setScene(new NewAccount({ migrate: Save.data.current })));
   if (qa) {   // Gast-Modus: mit einem Tipp sichern – mit dem Namen und Code, die man schon hat

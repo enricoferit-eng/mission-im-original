@@ -16,6 +16,11 @@ const sameStr = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(St
 const cleanLogin = l => String(l || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const fmtLogin = l => l.slice(0, 4) + '-' + l.slice(4, 8);
 const validCode = c => Array.isArray(c) && c.length === 4 && c.every(v => Number.isInteger(v) && v >= 0 && v <= 5);
+// Passwörter: nur als scrypt-Hash mit eigenem Salz gespeichert, nie im Klartext und nie zurückgegeben
+const PASS_MIN = 6;
+const validPass = p => typeof p === 'string' && p.length >= PASS_MIN && p.length <= 64;
+const hashPass = p => { const s = crypto.randomBytes(16).toString('hex'); return { s, h: crypto.scryptSync(p, s, 32).toString('hex') }; };
+const passOk = (acc, p) => !!(acc.pw && typeof p === 'string' && p.length <= 64 && sameStr(crypto.scryptSync(p, acc.pw.s, 32).toString('hex'), acc.pw.h));
 
 // Speicher: Supabase (Tabelle "kv"), wenn eingerichtet – sonst Vercel Blob
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
@@ -49,20 +54,20 @@ async function listJSON(prefix) {   // alle Pfade mit diesem Anfang
   return files.map(f => f.pathname);
 }
 function publicAcc(login, acc) {
-  return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, code: acc.code, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };
+  return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, hasPass: !!acc.pw, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };   // Bilder-Code/Passwort gehen nie zurück
 }
 
 async function register(b) {
   const name = String(b.name || '').trim().slice(0, 14), nk = nameKey(name);
   if (nk.length < 2) return [400, { error: 'name_short' }];
-  if (!validCode(b.code)) return [400, { error: 'code' }];
+  if (b.pass !== undefined ? !validPass(b.pass) : !validCode(b.code)) return [400, { error: b.pass !== undefined ? 'pass' : 'code' }];   // Bilder-Code nur noch für alte, zwischengespeicherte Spiel-Versionen
   if (await readJSON(nameFile(nk))) return [409, { error: 'name_taken' }];
   let login = '';
   for (let i = 0; i < 10; i++) {
     login = Array.from(crypto.randomBytes(8), x => CODE_CHARS[x % CODE_CHARS.length]).join('');
     if (!(await readJSON(accFile(login)))) break;
   }
-  const acc = { name, nk, code: b.code, avatar: Number(b.avatar) % 6 || 0, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 };
+  const acc = { name, nk, ...(b.pass !== undefined ? { pw: hashPass(b.pass) } : { code: b.code }), avatar: Number(b.avatar) % 6 || 0, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 };
   await writeJSON(accFile(login), acc);
   await writeJSON(nameFile(nk), { login });
   return [200, publicAcc(login, acc)];
@@ -80,11 +85,13 @@ async function login(b) {
   if (!acc) return [404, { error: 'not_found' }];
   const now = Date.now();
   if (acc.lockUntil > now) return [429, { error: 'locked', wait: Math.ceil((acc.lockUntil - now) / 60000) }];
-  if (!validCode(b.code) || b.code.join() !== acc.code.join()) {
+  if (!acc.pw && b.pass !== undefined && b.code === undefined) return [401, { error: 'need_code' }];   // altes Konto: einmal noch mit dem Bilder-Code, dann Passwort festlegen
+  const ok = acc.pw ? passOk(acc, b.pass) : validCode(b.code) && Array.isArray(acc.code) && b.code.join() === acc.code.join();
+  if (!ok) {
     acc.fails = (acc.fails || 0) + 1;
     if (acc.fails >= MAX_FAILS) { acc.fails = 0; acc.lockUntil = now + LOCK_MS; }
     await writeJSON(accFile(idx.login), acc);
-    return [401, { error: 'wrong_code' }];
+    return [401, { error: acc.pw ? 'wrong_pass' : 'wrong_code' }];
   }
   if (acc.fails) { acc.fails = 0; await writeJSON(accFile(idx.login), acc); }
   return [200, publicAcc(idx.login, acc)];
@@ -105,6 +112,14 @@ async function save(b) {
   if (Number.isInteger(b.avatar)) a.acc.avatar = b.avatar % 6;
   await writeJSON(accFile(a.l), a.acc);
   return [200, { ok: true, updated: a.acc.updated }];
+}
+
+async function set_pass(b) {   // Passwort festlegen oder ändern (angemeldet); ersetzt den Bilder-Code
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  if (!validPass(b.pass)) return [400, { error: 'pass' }];
+  a.acc.pw = hashPass(b.pass); delete a.acc.code; a.acc.fails = 0; a.acc.lockUntil = 0;
+  await writeJSON(accFile(a.l), a.acc);
+  return [200, { ok: true }];
 }
 
 async function remove(b) {
@@ -254,7 +269,7 @@ module.exports = async (req, res) => {
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
-  const fn = { register, login, save, delete: remove, admin, friend_add, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
+  const fn = { register, login, save, set_pass, delete: remove, admin, friend_add, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return res.status(400).json({ error: 'action' });
   try { const [status, out] = await fn(b); res.status(status).json(out); }
   catch (e) { console.error(e); res.status(500).json({ error: 'server' }); }
