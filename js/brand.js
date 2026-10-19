@@ -408,6 +408,27 @@ const SHOP_SKINS = [
   ['sk_einhorn', 'Einhorn', 'legend', 250, { suit: 'pyjama', head: 'einhorn', back: 'feenfluegel', scarf: 'rainbow', aura: '#ffafcc', sparkle: '#ffafcc' }],
   ['sk_koenig', 'Original-König', 'legend', 250, { suit: 'koenig', head: 'krone', cape: '#9d0208', noScarf: true, aura: '#ffd60a', sparkle: '#ffd60a' }],
 ];
+// Jeder Skin hat eine kleine Neben-Fähigkeit (nur solange man ihn trägt), aufrüstbar in der Garderobe (Stufe 1–3).
+// Bewusst andere Fähigkeiten als die Upgrades im Laden (Bonus-Uhr, Turbo, Herzen, Zeit-Plus, Magnet).
+const SIDE = {
+  detektor: { name: 'Spürnase', icon: 'search', f: l => 'Du findest Sachen aus ' + Math.round((ABIL_VAL.detektor[l] - 1) * 100) + ' % größerer Entfernung' + (l >= 2 ? ', ein Pfeil zeigt zum nächsten Versteck' : '') + '.' },
+  adlerauge: { name: 'Adlerauge', icon: 'star', f: l => 'Verstecke im Umkreis von ' + Math.round(ABIL_VAL.adlerauge[l] / 25) + ' Schritten leuchten golden.' },
+  glueck: { name: 'Glücksklee', icon: 'starE', f: l => 'Der Hilfe-Stern lädt in ' + ABIL_VAL.glueck[l] + ' statt 150 Sekunden.' },
+  jokerplus: { name: 'Joker-Tasche', icon: 'joker', f: l => '+' + ABIL_VAL.jokerplus[l] + ' Joker in jedem Bereich.' },
+  sternschutz: { name: 'Sternen-Schild', icon: 'crown', f: l => 'Tempo-Sterne gehen ' + Math.round((1 - ABIL_VAL.sternschutz[l]) * 100) + ' % langsamer verloren.' },
+  taler: { name: 'Taler-Bonus', icon: 'coin', f: l => '+' + ABIL_VAL.taler[l] + ' % Taler, wenn du jemandem hilfst.' },
+  muenzfund: { name: 'Münz-Riecher', icon: 'coin', f: l => 'In mehr Aufgaben liegen Münzen, bis zu ' + (GAME_COIN_MAX0 + ABIL_VAL.muenzfund[l]) + ' Stück.' },
+  blattglueck: { name: 'Sammel-Glück', icon: 'bag', f: l => 'Jede Sammel-Sache bringt ' + ABIL_VAL.blattglueck[l] + ' Taler.' },
+};
+Object.assign(ABIL_VAL, { jokerplus: [0, 1, 1, 2, 2], taler: [0, 10, 20, 30, 40], muenzfund: [0, 1, 2, 3, 4], blattglueck: [0, 2, 4, 6, 8] });
+const GAME_COIN_MAX0 = 3;
+const SKIN_SIDE = {
+  sk_surfer: 'sternschutz', sk_biene: 'blattglueck', sk_matrose: 'adlerauge', sk_koch: 'taler', sk_bau: 'jokerplus', sk_sport: 'sternschutz', sk_detektiv: 'detektor', sk_gaertner: 'blattglueck', sk_schlaf: 'glueck', sk_cowboy: 'muenzfund',
+  sk_pirat: 'muenzfund', sk_ninja: 'adlerauge', sk_astro: 'detektor', sk_feuer: 'glueck', sk_wikinger: 'jokerplus', sk_held: 'sternschutz', sk_hexe: 'glueck', sk_dino: 'blattglueck',
+  sk_ritter: 'jokerplus', sk_zauberer: 'adlerauge', sk_drache: 'muenzfund', sk_einhorn: 'glueck', sk_koenig: 'taler',
+};
+const SIDE_MAX = 3, SIDE_PRICE = { common: [20, 40], rare: [30, 60], legend: [50, 100] };   // Preis für Stufe 2 und 3
+function sideLevel(id) { const m = typeof META === 'function' && META(); return m && m.skins.includes(id) ? clamp((m.sideLv && m.sideLv[id]) || 1, 1, SIDE_MAX) : 0; }
 const EXCLUSIVE_SKINS = SHOP_SKINS.filter(o => o[2] === 'legend');   // Tages-Shop: ein Legendärer zum vollen Preis
 SHOP_SKINS.forEach(([id, name, rarity, price, look]) => { SKINS[id] = Object.assign({ name, rarity, price, shop: true }, look); });
 // Fähigkeiten hingen früher an Skins – jetzt sind es Upgrades. Wer so einen Skin hat, bekommt die Stufe gutgeschrieben (siehe upgradeMigrate).
@@ -417,7 +438,12 @@ function skinLevel0(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 function skinLevel(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 function abilityText(sk) { const A = ABILITIES[sk.ability], l = skinLevel(sk); return A.f(l) + ' (Stufe ' + l + ' von 4)' + (sk.exclusiveStage ? ' – gibt es nur im Bereich ' + ({ kueche: 'Küche', gastraum: 'Innenbereich', aussen: 'Außenbereich', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' })[sk.exclusiveStage] + '.' : ''); }
 // Stufe eines Upgrades (gilt fürs ganze Spiel, unabhängig vom Skin)
-function ability(name) { const m = typeof META === 'function' && META(); return m && m.up ? clamp(m.up[name] || 0, 0, 4) : 0; }   // Upgrade-Stufe (0 = nicht gekauft)
+const UP_KEYS = ['bonuszeit', 'turbo', 'extraherz', 'zeitplus', 'magnet'];
+function ability(name) {   // Upgrade-Stufe (gilt immer) oder – bei Neben-Fähigkeiten – die Stufe des angezogenen Skins
+  const m = typeof META === 'function' && META(); if (!m) return 0;
+  if (UP_KEYS.includes(name)) return m.up ? clamp(m.up[name] || 0, 0, 4) : 0;
+  const a = ACC(), id = a && DP(CUR_DIFF || 'medium').equip; return id && SKIN_SIDE[id] === name ? sideLevel(id) : 0;
+}
 // Standard-Look: grünes Helfer-Halstuch mit Blatt
 DEFAULT_LOOK.cap = BRAND.lime; DEFAULT_LOOK.scarf = BRAND.lime; DEFAULT_LOOK.leaf = true;
 

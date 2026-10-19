@@ -582,6 +582,7 @@ class Play {
       if (lf.got || dist(lf.x, lf.y, p.x, p.y) > ABIL_VAL.magnet[ability('magnet')]) continue;
       lf.got = true; const n = this.st.leaves.filter(o => o.got).length, s = this.w2s(lf.x, lf.y, 20);
       FX.sparkle(s.x, s.y, 18, '#c7f464'); Sfx.note(587 * Math.pow(2, n / 12), 0.18, 'triangle', 0.08, 1.6); buzz(25); this.leafPop = 1;
+      { const bonus = ABIL_VAL.blattglueck[ability('blattglueck')]; if (bonus && !this.mp) { const m = META(); m.coins += bonus; } }   // Skin-Fähigkeit „Sammel-Glück“
       if (n === this.st.leaves.length) {
         this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
         FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); this.banner = { text: 'Alle ' + (COLLECT_NAME[this.stage] || 'Blätter') + ' gefunden: +1 Joker!', t: 0 }; if (!this.mp) achieve('blaetter');
@@ -1098,7 +1099,7 @@ class Play {
   deliver(id) {
     const st = this.st, q = st.active; this.checkBonus(q, id);
     if (q && q.team) { st.done[id] = true; st.active = null; this.mpEnd('team'); return; }
-    st.done[id] = true; st.active = null; if (!this.mp) { stat('kids'); addCoins(HELP_COINS[this.diff] || 10, 'Geholfen!'); }
+    st.done[id] = true; st.active = null; if (!this.mp) { stat('kids'); addCoins(helpCoins(this.diff), 'Geholfen!'); }
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
@@ -1136,7 +1137,7 @@ class Play {
     });
   }
   finishEasy(id) {
-    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id]; if (!this.mp) { stat('kids'); addCoins(HELP_COINS[this.diff] || 10, 'Geholfen!'); }
+    const st = this.st; this.checkBonus(st.easy[id], id); st.done[id] = true; delete st.easy[id]; if (!this.mp) { stat('kids'); addCoins(helpCoins(this.diff), 'Geholfen!'); }
     Save.write();
     const P = this.anchor(id), s = this.w2s(P.x, P.y, P.z + 40);
     FX.confetti(s.x, s.y, 60); Sfx.play('win'); buzz([40, 50, 80]); this.coinBurst(s.x, s.y);
@@ -1173,7 +1174,7 @@ class Play {
     const kind = this.kind, sp = this.sp;
     const newPiece = !sp.outfit; sp.outfit = true;
     // Belohnung: statt eines Skins gibt es 300 Taler extra (Skins kauft man im Laden)
-    const skin = DP(this.diff).equip, newSkin = false, bonus = sp.clears ? 50 : CLEAR_BONUS; addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!'); if (this.stage === 'parkplatz' && !sp.clears) setTimeout(() => toast('Bonus-Bereich offen!', 'Das Chalet wartet hinter dem Parkplatz', 'star'), 3500); if (!this.mp && ACC() && !ACC().token) setTimeout(() => toast('Spielstand sichern?', 'Tippe im Menü oben links auf deinen Namen', 'lock'), 2500);
+    const skin = DP(this.diff).equip, newSkin = false, bonus = clearBonus(this.diff, this.stage, sp.clears > 0); addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!'); if (this.stage === 'parkplatz' && !sp.clears) setTimeout(() => toast('Bonus-Bereich offen!', 'Das Chalet wartet hinter dem Parkplatz', 'star'), 3500); if (!this.mp && ACC() && !ACC().token) setTimeout(() => toast('Spielstand sichern?', 'Tippe im Menü oben links auf deinen Namen', 'lock'), 2500);
     const usedJoker = (this.st.jokersUsed || 0) > 0;
     sp.clears++; sp.run = null;
     Save.write();

@@ -135,7 +135,7 @@ class Menu {
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
     roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => startUebung(a.lastDiff || 'medium', 'menu'));   // Anleitung = Helfer-Schule zum Mitspielen
     txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
-    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); privacyPill(c, land ? ex - 84 : W - 62, land ? ey : ey + 26); }   // quer: links neben „Eltern“ (darunter liegt die Anleitung)
+    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }   /* Datenschutz-Link vorerst ausgeblendet (Seite liegt im Zweig „datenschutz“) */
     rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
     if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
     const wide = W > H * 0.95;
@@ -361,7 +361,6 @@ class Accounts {
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
     logo(c, W / 2, 100 * ls, ls);
     claimBand(c, 'Willkommen im Original!', W / 2, 172 * ls, 14);
-    privacyPill(c, W - 58, H - 22);
     const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
     const all = list.concat([['new', null], ['login', null]]);
@@ -531,7 +530,6 @@ class ParentPanel {
       [[0, 'ohne'], [20, '20 Min'], [30, '30 Min'], [45, '45 Min'], [60, '60 Min']].forEach(([m, n], i) => { const bw = (w - 48) / 5 - 6, bx = x + 24 + i * (bw + 6), on = (a.limitMin || 0) === m; rrPath(c, bx, y + 90, bw, 40, 14); fs(c, on ? '#ffd166' : '#fff', 2.5); txt(c, n, bx + bw / 2, y + 110, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 90, bw, 40, () => { a.limitMin = m; Save.write(); Sfx.play('tap'); }); });
       const used = Math.round((a.playDay === new Date().toISOString().slice(0, 10) ? a.playSec || 0 : 0) / 60); txt(c, 'Heute gespielt: ' + used + ' Min', x + 24, y + 148, 13, '#6b5a48', 'left', null);
       txt(c, 'Datenschutz', x + 24, y + 186, 15, '#3d2c1f', 'left', null);
-      rrPath(c, x + w - 196, y + 172, 172, 28, 12); fs(c, '#bde0fe', 2); txt(c, 'Alles lesen →', x + w - 110, y + 187, 13, '#1d4e89', 'center', null); UI.btn(x + w - 196, y + 168, 172, 36, openPrivacy);
       wrapLines(c, 'Das Spiel fragt keine echten Namen, E-Mails oder Fotos ab und zeigt keine Werbung. Gespeichert werden nur Fantasiename, Passwort (verschlüsselt) und Spielstand – auf dem Gerät und, wenn man ihn sichert, auf unserem Server. Konten lassen sich jederzeit im Konto-Fenster löschen.', w - 48, 13).forEach((l, i) => txt(c, l, x + 24, y + 210 + i * 18, 13, '#3d2c1f', 'left', null));
     }
     c.restore();
@@ -1244,7 +1242,7 @@ class Wardrobe {
         const sk = SKINS[sid] || {};
         drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.6, Math.min(1.5, ch / 120), { look: sk, cap: true, t: this.t + i });
         txt(c, sk.name || '', cx + cw / 2, cy + ch - 34, cw < 110 ? 10 : 12, '#3d2c1f', 'center', null);
-        if (sk.ability) { const A = ABILITIES[sk.ability], lv = skinLevel(sk); rrPath(c, cx + 5, cy + ch - 24, cw - 10, 19, 9); fs(c, '#ffd60a', 1.5); icon(c, ABIL_ICON[sk.ability], cx + 16, cy + ch - 14, 14); txt(c, (cw < 120 ? '' : A.name + ' ') + '★'.repeat(lv), cx + cw / 2 + 8, cy + ch - 14, cw < 110 ? 10 : 11, BRAND.ink, 'center', null); }
+        { const sd = SKIN_SIDE[sid]; if (sd) { const lv = sideLevel(sid); rrPath(c, cx + 6, cy + ch - 24, cw - 12, 19, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, cx + 17, cy + ch - 14.5, 13); txt(c, '★'.repeat(lv) + '☆'.repeat(SIDE_MAX - lv), cx + cw / 2 + 8, cy + ch - 14, 11, '#c9762f', 'center', null); } }   // eigene Neben-Fähigkeit + Stufe
       } else if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
       if (rar) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
@@ -1254,13 +1252,29 @@ class Wardrobe {
       if (own && (!shop || cy + 6 > top)) skinInfoBtn(c, cx + 18, cy + 18, sid);
     });
     if (shop) { c.restore(); if (maxS > 0) { const bh = (bot - top) * (bot - top) / (bot - top + maxS), byy = top + (bot - top - bh) * (this.sc / maxS); rrPath(c, x + w - 10, byy, 5, bh, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); } }
-    // Standard-Look
-    const by = y + h - 50;
-    rrPath(c, W / 2 - 70, by - 26, 140, 52, 18); fs(c, d.equip === null ? '#d8f5e3' : '#fff', 3);
-    txt(c, 'Ohne Skin', W / 2 + 22, by + 18, 11, '#6b5a48', 'center', null);
-    drawAnimal(c, this.kind, W / 2 - 30, by + 20, 0.75, { look: DEFAULT_LOOK, cap: hasCap(this.kind), noShadow: true });
-    if (d.equip === null) icon(c, 'check', W / 2 + 30, by, 24, '#06d6a0');
-    UI.btn(W / 2 - 70, by - 26, 140, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
+    // Standard-Look (links) und die Fähigkeit des angezogenen Skins mit Aufrüsten (rechts)
+    const by = y + h - 50, ox = x + 18;
+    rrPath(c, ox, by - 26, 130, 52, 18); fs(c, d.equip === null ? '#d8f5e3' : '#fff', 3);
+    txt(c, 'Ohne Skin', ox + 88, by + 18, 11, '#6b5a48', 'center', null);
+    drawAnimal(c, this.kind, ox + 34, by + 20, 0.75, { look: DEFAULT_LOOK, cap: hasCap(this.kind), noShadow: true });
+    if (d.equip === null) icon(c, 'check', ox + 108, by - 4, 22, '#06d6a0');
+    UI.btn(ox, by - 26, 130, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
+    { const id = d.equip, sd = id && SKIN_SIDE[id], fx = ox + 142, fw = x + w - 18 - fx, M = META();
+      rrPath(c, fx, by - 30, fw, 60, 18); fs(c, '#fffbe6', 3, '#c9a227');
+      if (!sd) wrapLines(c, id ? 'Dieser ältere Skin hat keine eigene Fähigkeit.' : 'Zieh einen Skin an: Jeder hat eine eigene kleine Fähigkeit, die du hier aufrüsten kannst.', fw - 30, 13).slice(0, 2).forEach((l, i) => txt(c, l, fx + 16, by - 8 + i * 18, 13, '#6b5a48', 'left', null));
+      else {
+        const A = SIDE[sd], lv = sideLevel(id), max = lv >= SIDE_MAX, price = max ? 0 : SIDE_PRICE[SKINS[id].rarity][lv - 1], bw = 134, tw = fw - bw - 70;
+        ell(c, fx + 30, by, 21, 21); fs(c, '#fff', 2.5, '#c9a227'); icon(c, A.icon, fx + 30, by, 26);
+        txt(c, A.name + ' · ' + '★'.repeat(lv) + '☆'.repeat(SIDE_MAX - lv), fx + 60, by - 14, 14, '#3d2c1f', 'left', null);
+        wrapLines(c, A.f(lv) + (max ? '' : '  → Stufe ' + (lv + 1) + ': ' + A.f(lv + 1)), tw, 11).slice(0, 2).forEach((l, i) => txt(c, l, fx + 60, by + 4 + i * 14, 11, '#6b5a48', 'left', null));
+        const bx = fx + fw - bw - 12; rrPath(c, bx, by - 18, bw, 36, 16); fs(c, max ? '#d8f5e3' : '#06d6a0', 3);
+        if (max) txt(c, 'Ganz oben!', bx + bw / 2, by + 1, 14, '#2b9348', 'center', null);
+        else { icon(c, 'coin', bx + 20, by, 17); txt(c, 'Stufe ' + (lv + 1) + ' · ' + price, bx + bw / 2 + 10, by + 1, 13, '#fff', 'center', BRAND.ink); }
+        UI.btn(bx, by - 18, bw, 36, () => {
+          if (max) return; if (M.coins < price) { Sfx.play('bad'); toast('Zu wenig Taler', 'Du brauchst ' + price + ' Taler', 'coin'); return; }
+          M.coins -= price; M.sideLv = M.sideLv || {}; M.sideLv[id] = lv + 1; Save.write(); Sfx.play('win'); FX.confetti(fx + 30, by, 30); toast(A.name + ': Stufe ' + (lv + 1), SKINS[id].name, 'star');
+        });
+      } }
     if (!shop && !OPEN_STAGES.includes(this.stage)) { icon(c, 'hourglass', W / 2, y + 128 + ch, 44); }
   }
   enter() {}
