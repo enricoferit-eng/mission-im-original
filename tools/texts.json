@@ -1231,6 +1231,12 @@
  },
  {
   "who": "erzaehler",
+  "text": "Skins sind nur zum Aussehen. Upgrades gelten immer, egal welchen Skin du trägst.",
+  "key": "b2947302",
+  "clean": "Skins sind nur zum Aussehen. Upgrades gelten immer, egal welchen Skin du trägst."
+ },
+ {
+  "who": "erzaehler",
   "text": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.",
   "key": "921f0e59",
   "clean": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin."

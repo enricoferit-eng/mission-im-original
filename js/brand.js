@@ -413,8 +413,7 @@ function skinLevel0(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 // Text der Fähigkeit passend zur Stufe des Skins
 function skinLevel(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 function abilityText(sk) { const A = ABILITIES[sk.ability], l = skinLevel(sk); return A.f(l) + ' (Stufe ' + l + ' von 4)' + (sk.exclusiveStage ? ' – gibt es nur im Bereich ' + ({ kueche: 'Küche', gastraum: 'Innenbereich', aussen: 'Außenbereich', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' })[sk.exclusiveStage] + '.' : ''); }
-// Ist eine Fähigkeit gerade aktiv? (angezogener legendärer Skin, nur Mittel/Schwer)
-// 0 = nicht aktiv, 1 = selten (schwächer), 2 = legendär (stark)
+// Stufe eines Upgrades (gilt fürs ganze Spiel, unabhängig vom Skin)
 function ability(name) { const m = typeof META === 'function' && META(); return m && m.up ? clamp(m.up[name] || 0, 0, 4) : 0; }   // Upgrade-Stufe (0 = nicht gekauft)
 // Standard-Look: grünes Helfer-Halstuch mit Blatt
 DEFAULT_LOOK.cap = BRAND.lime; DEFAULT_LOOK.scarf = BRAND.lime; DEFAULT_LOOK.leaf = true;
