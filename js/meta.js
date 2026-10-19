@@ -6,8 +6,27 @@ function META(a = ACC()) {
   if (!a) return null;
   if (!a.meta) a.meta = {};
   const m = a.meta;
-  m.coins = m.coins || 0; m.ach = m.ach || {}; m.st = m.st || {}; m.skins = m.skins || []; m.animals = m.animals || []; m.bank = m.bank || 0;
+  m.coins = m.coins || 0; m.ach = m.ach || {}; m.st = m.st || {}; m.skins = m.skins || []; m.animals = m.animals || []; m.bank = m.bank || 0; m.up = m.up || {};
+  if (!m.upMig) upgradeMigrate(a, m);
   return m;
+}
+// ---------- Upgrades: dauerhafte Verbesserungen mit 4 Stufen, jede teurer (Laden + Glücksrad) ----------
+const UPGRADES = [
+  { k: 'bonuszeit', name: 'Bonus-Uhr', icon: 'hourglass', col: '#ffd166', price: [80, 160, 300, 500], f: l => '+' + ABIL_VAL.bonuszeit[l] + ' Sekunden bei der Bonus-Jagd' },
+  { k: 'turbo', name: 'Turbo-Schuhe', icon: 'shoe', col: '#80ed99', price: [80, 160, 300, 500], f: l => Math.round((ABIL_VAL.turbo[l] / 180 - 1) * 100) + ' % schneller laufen' },
+  { k: 'extraherz', name: 'Extra-Herzen', icon: 'heart', col: '#ffafcc', price: [100, 200, 350, 550], f: l => ABIL_VAL.extraherz[l] + ' statt 4 Herzen in Geschick-Aufgaben' },
+  { k: 'zeitplus', name: 'Zeit-Plus', icon: 'clock', col: '#a5d8ff', price: [100, 200, 350, 550], f: l => '+' + ABIL_VAL.zeitplus[l] + ' Sekunden in Geschick-Aufgaben' },
+  { k: 'magnet', name: 'Sammel-Magnet', icon: 'bag', col: '#cdb4db', price: [60, 120, 220, 380], f: l => 'Sammel-Sachen fliegen dir zu – ' + ['', 'etwas', 'weiter', 'weit', 'sehr weit'][l] },
+];
+const UP_MAX = 4;
+function upLevel(k) { const m = META(); return m ? m.up[k] || 0 : 0; }
+// Einmalig: Fähigkeiten alter Skins werden zu Upgrade-Stufen; die übrigen (gibt es nicht mehr) zu Talern
+function upgradeMigrate(a, m) {
+  m.upMig = 1; let coins = 0; const ids = new Set(m.skins);
+  ['easy', 'medium', 'hard'].forEach(d => { const st = a.diff && a.diff[d] && a.diff[d].stages; if (st) for (const k in st) (st[k].skins || []).forEach(id => ids.add(id)); });
+  for (const id of ids) { const L = typeof LEGACY_ABIL !== 'undefined' && LEGACY_ABIL[id]; if (!L) continue; const [ab, lvl] = L;
+    if (UPGRADES.some(u => u.k === ab)) m.up[ab] = Math.max(m.up[ab] || 0, Math.min(UP_MAX, lvl)); else coins += 40 * lvl; }
+  if (coins) { m.coins += coins; m.upGift = coins; }
 }
 const BASE_ANIMALS = ['cat', 'dog', 'lion'];
 const SHOP_ANIMALS = [['bunny', 120], ['mouse', 120], ['bear', 150], ['panda', 150], ['fox', 150], ['raccoon', 180], ['koala', 180], ['wolf', 200], ['tiger', 250], ['frog', 120], ['pig', 140], ['cow', 160], ['monkey', 180], ['polar', 220], ['elefant', 260]];
@@ -91,11 +110,13 @@ function jokerBank() { const m = META(); return m ? m.bank : 0; }
 // Tagesangebote: für alle gleich (aus dem Datum gewürfelt)
 function dailyOffers() {
   const day = new Date().toISOString().slice(0, 10); let h = 2166136261; for (const ch of day) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
-  const r = mulberry32(h), ex = pick(EXCLUSIVE_SKINS, r), offs = shuffle(SHOP_SKINS, r).slice(0, 3);
-  return [{ id: ex[0], price: ex[3], ex: true, off: 0 }].concat(offs.map(o => { const off = pick([20, 30, 40, 50], r); return { id: o[0], off, price: Math.round(o[3] * (100 - off) / 100 / 5) * 5 }; }));
+  const r = mulberry32(h), ex = pick(EXCLUSIVE_SKINS, r), offs = shuffle(SHOP_SKINS.filter(o => o[2] !== 'legend'), r).slice(0, 2);
+  const m = META(), ups = UPGRADES.filter(u => !m || (m.up[u.k] || 0) < UP_MAX), u = ups.length ? ups[Math.floor(r() * ups.length)] : null;   // Upgrade des Tages: 25 % günstiger
+  const upOff = u ? [{ up: u.k, off: 25, price: Math.round(u.price[m ? m.up[u.k] || 0 : 0] * 0.75 / 5) * 5 }] : [];
+  return upOff.concat([{ id: ex[0], price: ex[3], ex: true, off: 0 }]).concat(offs.map(o => { const off = pick([20, 30, 40, 50], r); return { id: o[0], off, price: Math.round(o[3] * (100 - off) / 100 / 5) * 5 }; }));
 }
 class Shop {
-  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'joker'; this.msg = ''; this.msgT = 0; }
+  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'up'; this.msg = ''; this.msgT = 0; }
   enter() { FX.clear(); }
   update(dt) { this.t += dt; this.msgT = Math.max(0, this.msgT - dt); if (!this.drag && Math.abs(this.vel || 0) > 5) { this.sc = (this.sc || 0) + this.vel * dt; this.vel *= Math.pow(0.04, dt); } }   // Schwung beim Wischen
   say(m) { this.msg = m; this.msgT = 2.5; }
@@ -115,8 +136,8 @@ class Shop {
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     roundBtn(c, W - 212, 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
-    const tabs = [['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']], tw = Math.min(140, (W - 40) / 5 - 8);
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - 2) * (tw + 8) - tw / 2; rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'garderobe' ? '#d8f5e3' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
+    const tabs = [['up', 'Upgrades'], ['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']], tw = Math.min(130, (W - 40) / tabs.length - 8);
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; if (id === 'up') { c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 10 + 8 * Math.sin(this.t * 4); rrPath(c, x, 80, tw, 40, 16); c.fillStyle = '#ffd60a'; c.fill(); c.restore(); } rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'up' ? '#ffe066' : id === 'garderobe' ? '#d8f5e3' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
@@ -124,6 +145,19 @@ class Shop {
       const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;
       txt(c, 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min', W / 2, top + 4, 13, '#fff', 'center', BRAND.olive);
       D.forEach((o, i) => {
+        if (o.up) {   // Upgrade des Tages: leuchtend, auffälliger als die Skins
+          const u = UPGRADES.find(q => q.k === o.up), l = m.up[u.k] || 0, x = x0 + i * (cw + gap), y = top + 30, bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+          c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 16 + gl * 14; rrPath(c, x, y + bob, cw, ch, 18); fs(c, '#fff3bf', 4, '#c9a227'); c.restore();
+          const iy = y + bob + 34, ir = Math.min(24, (ch - 110) / 2 + 18);
+          ell(c, x + cw / 2, iy, ir + 5 + gl * 3, ir + 5 + gl * 3); c.fillStyle = u.col; c.globalAlpha = 0.5; c.fill(); c.globalAlpha = 1; ell(c, x + cw / 2, iy, ir, ir); fs(c, '#fff', 3); icon(c, u.icon, x + cw / 2, iy, ir * 1.35);
+          txt(c, u.name, x + cw / 2, iy + ir + 16, 14, '#3d2c1f', 'center', null); if (ch > 150) txt(c, 'Stufe ' + (l + 1) + ' von ' + UP_MAX, x + cw / 2, iy + ir + 32, 11, '#6b5a48', 'center', null);
+          { const lab = 'UPGRADE · -' + o.off + ' %', lw = Math.min(cw - 16, 150); rrPath(c, x + cw / 2 - lw / 2, y + bob - 10, lw, 22, 11); fs(c, '#ef476f', 2, '#fff'); txt(c, lab, x + cw / 2, y + bob + 1, 11, '#fff', 'center', null); }
+          const today = new Date().toISOString().slice(0, 10), done = m.upDeal === today;   // nur einmal am Tag
+          rrPath(c, x + 14, y + bob + ch - 36, cw - 28, 28, 14); fs(c, done ? '#d8f5e3' : '#06d6a0', 2.5);
+          if (done) txt(c, 'gekauft – morgen neu', x + cw / 2, y + bob + ch - 21, 12, '#2b9348', 'center', null); else { icon(c, 'coin', x + 32, y + bob + ch - 22, 15); txt(c, String(o.price), x + cw / 2 + 8, y + bob + ch - 21, 14, '#fff', 'center', BRAND.ink); }
+          UI.btn(x, y + bob, cw, ch, () => { if (done) { this.say('Morgen gibt es ein neues Upgrade-Angebot.'); return; } this.buy(o.price, mm => { mm.up[u.k] = Math.min(UP_MAX, (mm.up[u.k] || 0) + 1); mm.upDeal = today; this.say(u.name + ': Stufe ' + mm.up[u.k] + '!'); FX.confetti(x + cw / 2, y + 60, 30); }); });
+          return;
+        }
         const x = x0 + i * (cw + gap), y = top + 30, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
         rrPath(c, x, y + bob, cw, ch, 18); fs(c, own ? '#d8f5e3' : o.ex ? '#fff3bf' : '#fff', 3.5, o.ex ? '#c9a227' : OL);
         drawAnimal(c, kind, x + cw / 2, y + bob + ch - 60, Math.min(1.4, (ch - 66) / 80), { look: sk, cap: true, t: this.t + i });
@@ -161,22 +195,54 @@ class Shop {
         UI.btn(bx - 90, by - 22, 180, 44, () => { if (!ok) { this.say('Morgen gibt es wieder welche.'); Sfx.play('bad'); return; } this.buy(price, give); });
       });
     } else if (this.tab === 'rad') {
-      // Glücksrad: zufälliger Skin aus dem Laden (selten/legendär seltener). Schon gehabt = halber Preis zurück.
+      // Glücksrad: Skins, die man noch nicht hat, Upgrades (je höher die Stufe, desto seltener) und Taler
       const SPIN = 80, cx = W / 2, cy = top + (bottom - top) / 2 - 10, R = Math.min((bottom - top) / 2 - 22, 130);
-      // jedes Mal neu gemischt: nur Skins, die man noch nicht hat (bis zu 8 Felder)
-      if (!this.radPool) { const free = SHOP_SKINS.concat(EXCLUSIVE_SKINS).filter(o => !m.skins.includes(o[0])); this.radPool = shuffle(free).slice(0, 8); this.radA = 0; }
-      const pool = this.radPool, n = pool.length, seg = TAU / Math.max(1, n);
-      if (!n) { panel(c, W / 2 - 170, cy - 50, 340, 100, '#fff7e6', 22); txt(c, 'Du hast schon alle Skins!', W / 2, cy - 10, 18, BRAND.olive, 'center', null); txt(c, 'Bald gibt es neue im Tages-Shop.', W / 2, cy + 18, 13, '#6b5a48', 'center', null); }
-      else {
-        const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 2.2), 3)) : (this.radA || 0);
-        pool.forEach((o, i) => { const a0 = ang + i * seg, a1 = a0 + seg; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, RARITY[o[2]].col, 3); c.save(); c.translate(cx + Math.cos(a0 + seg / 2) * R * 0.64, cy + Math.sin(a0 + seg / 2) * R * 0.64); drawAnimal(c, ACC().char || 'cat', 0, 18, R / (n > 6 ? 118 : 100), { look: SKINS[o[0]], cap: true, noShadow: true }); c.restore(); });
-        ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
-        if (sp && this.t - sp.t0 > 2.3 && !sp.done) { sp.done = true; const id = pool[sp.k][0], mm = META(); mm.skins.push(id); this.say('Gewonnen: ' + SKINS[id].name + '!'); FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6; }
-        if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
-        const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
-        UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => RARITY[o[2]].w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * seg + seg / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
-        wrapLines(c, 'Dreh das Rad und gewinne einen Skin, den du noch nicht hast – legendäre sind seltener!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
+      if (!this.radPool) {
+        const free = shuffle(SHOP_SKINS.filter(o => !m.skins.includes(o[0]))).slice(0, 4).map(o => ({ kind: 'skin', id: o[0], w: RARITY[o[2]].w, col: RARITY[o[2]].col }));
+        const ups = shuffle(UPGRADES.filter(u => (m.up[u.k] || 0) < UP_MAX)).slice(0, 3).map(u => { const l = m.up[u.k] || 0; return { kind: 'up', k: u.k, w: 0.7 / Math.pow(l + 1, 1.3), col: u.col }; });
+        this.radPool = shuffle(free.concat(ups, [{ kind: 'coins', n: 40, w: 1.2, col: '#fff3bf' }, { kind: 'coins', n: 120, w: 0.35, col: '#ffd166' }])); this.radA = this.radA || 0;
       }
+      const pool = this.radPool, n = pool.length, seg = TAU / Math.max(1, n);
+      const sp = this.spin; const ang = sp ? sp.a0 + (sp.a1 - sp.a0) * (1 - Math.pow(1 - Math.min(1, (this.t - sp.t0) / 2.2), 3)) : (this.radA || 0);
+      pool.forEach((o, i) => {
+        const a0 = ang + i * seg, a1 = a0 + seg, mx = cx + Math.cos(a0 + seg / 2) * R * 0.64, my = cy + Math.sin(a0 + seg / 2) * R * 0.64;
+        c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a0, a1); c.closePath(); fs(c, o.col, 3);
+        if (o.kind === 'skin') { c.save(); c.translate(mx, my); drawAnimal(c, ACC().char || 'cat', 0, 18, R / (n > 6 ? 118 : 100), { look: SKINS[o.id], cap: true, noShadow: true }); c.restore(); }
+        else if (o.kind === 'up') { const u = UPGRADES.find(q => q.k === o.k); ell(c, mx, my, 17, 17); fs(c, '#fff', 2.5); icon(c, u.icon, mx, my, 24); txt(c, '↑', mx + 14, my - 14, 14, '#2b9348', 'center', '#fff'); }
+        else { icon(c, 'coin', mx, my - 6, 24); txt(c, String(o.n), mx, my + 14, 12, '#3d2c1f', 'center', '#fff'); }
+      });
+      ell(c, cx, cy, 22, 22); fs(c, '#fff', 3); polyPath(c, [[cx + R - 6, cy], [cx + R + 22, cy - 14], [cx + R + 22, cy + 14]]); fs(c, '#ef476f', 3);
+      if (sp && this.t - sp.t0 > 2.3 && !sp.done) {
+        sp.done = true; const o = pool[sp.k], mm = META();
+        if (o.kind === 'skin') { mm.skins.push(o.id); this.say('Gewonnen: ' + SKINS[o.id].name + '!'); }
+        else if (o.kind === 'up') { const u = UPGRADES.find(q => q.k === o.k); mm.up[o.k] = Math.min(UP_MAX, (mm.up[o.k] || 0) + 1); this.say('Upgrade: ' + u.name + ' Stufe ' + mm.up[o.k] + '!'); }
+        else { mm.coins += o.n; this.say('Gewonnen: ' + o.n + ' Taler!'); }
+        FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6;
+      }
+      if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
+      const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
+      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(k * seg + seg / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
+      wrapLines(c, 'Dreh das Rad: Skins, Upgrades oder Taler!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
+    } else if (this.tab === 'up') {
+      // Upgrades: groß und leuchtend – das Wichtigste im Laden
+      const n = UPGRADES.length, gap = 10, land = W > H, cw = land ? Math.min(176, (W - 40 - gap * (n - 1)) / n) : Math.min(W - 40, 420), ch = land ? Math.min(bottom - top - 6, 236) : Math.min(120, (bottom - top - gap * (n - 1)) / n), x0 = land ? (W - (cw * n + gap * (n - 1))) / 2 : (W - cw) / 2;
+      UPGRADES.forEach((u, i) => {
+        const l = m.up[u.k] || 0, max = l >= UP_MAX, price = max ? 0 : u.price[l], x = land ? x0 + i * (cw + gap) : x0, y = land ? top + 2 : top + i * (ch + gap), bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3 + i);
+        c.save(); c.shadowColor = u.col; c.shadowBlur = 14 + gl * 12; rrPath(c, x, y + bob, cw, ch, 20); fs(c, '#fffdf5', 4, '#c9a227'); c.restore();
+        rrPath(c, x, y + bob, cw, ch, 20); c.lineWidth = 4; c.strokeStyle = '#c9a227'; c.stroke();
+        const ix = land ? x + cw / 2 : x + 48, iy = land ? y + bob + 46 : y + bob + ch / 2;
+        ell(c, ix, iy, 32 + gl * 3, 32 + gl * 3); c.fillStyle = u.col; c.globalAlpha = 0.45; c.fill(); c.globalAlpha = 1; ell(c, ix, iy, 27, 27); fs(c, '#fff', 3); icon(c, u.icon, ix, iy, 36);
+        const tx = land ? x + cw / 2 : x + 92, al = land ? 'center' : 'left';
+        txt(c, u.name, tx, land ? y + bob + 96 : y + bob + 22, 15, '#3d2c1f', al, null);
+        for (let k = 0; k < UP_MAX; k++) { const px = land ? x + cw / 2 + (k - 1.5) * 20 : tx + 7 + k * 20, py = land ? y + bob + 116 : y + bob + 44; rrPath(c, px - 8, py - 5, 16, 10, 5); fs(c, k < l ? '#06d6a0' : '#e9ecef', 2); }
+        const desc = max ? u.f(l) : (l ? 'Jetzt: ' + u.f(l) + ' · Nächste: ' + u.f(l + 1) : u.f(1));
+        wrapLines(c, desc, land ? cw - 18 : cw - 210, 11).slice(0, land ? 4 : 2).forEach((t2, k) => txt(c, t2, tx, (land ? y + bob + 138 : y + bob + 64) + k * 14, 11, '#6b5a48', al, null));
+        const bw = land ? cw - 24 : 150, bx = land ? x + 12 : x + cw - bw - 12, by = land ? y + bob + ch - 44 : y + bob + ch / 2 - 18;
+        rrPath(c, bx, by, bw, 36, 16); fs(c, max ? '#d8f5e3' : '#06d6a0', 3);
+        if (max) txt(c, 'MAX', bx + bw / 2, by + 19, 15, '#2b9348', 'center', null);
+        else { icon(c, 'coin', bx + 22, by + 18, 18); txt(c, 'Stufe ' + (l + 1) + ' · ' + price, bx + bw / 2 + 10, by + 19, 13, '#fff', 'center', BRAND.ink); }
+        UI.btn(x, y + bob, cw, ch, () => { if (max) { this.say(u.name + ' ist schon ganz oben!'); return; } this.buy(price, mm => { mm.up[u.k] = l + 1; FX.confetti(ix, iy, 30); this.say(u.name + ': Stufe ' + (l + 1) + '!'); }, price < 150); });
+      });
     } else if (this.tab === 'skins') {
       // alle Skins auf einer Seite untereinander, sortiert: Normal → Selten → Legendär, dann nach Preis
       const RO = { common: 0, rare: 1, legend: 2 }, list = this.skinList || (this.skinList = SHOP_SKINS.slice().sort((a, b) => RO[a[2]] - RO[b[2]] || a[3] - b[3] || a[1].localeCompare(b[1])));

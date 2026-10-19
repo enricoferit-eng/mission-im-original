@@ -355,7 +355,12 @@ function applyVolume(now) {
   applyVolume.last = T.join();
   [Sfx.master, Sfx.musicBus, Sfx.voiceBus, Sfx.sfxBus].forEach((bus, i) => { if (!bus) return; if (now) bus.gain.value = cv(T[i]); else bus.gain.setTargetAtTime(cv(T[i]), t, 0.03); });
 }
-function syncVolume() { if (Sfx.master && volTargets().join() !== applyVolume.last) applyVolume(); }   // jedes Bild: Kontowechsel, Laden vom Server …
+function syncVolume() {   // jedes Bild: Kontowechsel, Laden vom Server, Regler … – und wer stumm schaltet, hört sofort nichts mehr (auch nicht die Browser-Stimme)
+  const T = volTargets(), k = T.join(); if (k === syncVolume.k) return; syncVolume.k = k;
+  if (T[0] <= 0 || T[2] <= 0) Voice.stop();
+  if (T[0] <= 0 || T[1] <= 0) { Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); }
+  if (Sfx.master) applyVolume();
+}   // jedes Bild: Kontowechsel, Laden vom Server …
 // ---------- Icons (alles ohne Text) ----------
 function icon(c, name, x, y, s, col) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k);

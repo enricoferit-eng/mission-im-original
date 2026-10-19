@@ -1225,7 +1225,7 @@ class Wardrobe {
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
     if (w > 560) txt(c, 'Antippen zum Anziehen', x + w / 2 + 60, y + 33, 14, '#6b5a48', 'center', null);
-    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
+    const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(OLD_SHOP_SKINS.map(x => x[0]), OLD_EXCLUSIVE_SKINS.map(x => x[0])).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
     { const on = !!this.abilOnly, fw = 150, fx = x + 66, fy = y + 18; rrPath(c, fx, fy, fw, 28, 14); fs(c, on ? '#ffd60a' : '#fff', 2.5); icon(c, on ? 'check' : 'star', fx + 16, fy + 14, 16); txt(c, 'Nur mit Fähigkeit', fx + 30, fy + 15, 12, '#3d2c1f', 'left', null); UI.btn(fx, fy, fw, 28, () => { this.abilOnly = !on; this.sc = 0; Sfx.play('tap'); }); }   /* Filter */
