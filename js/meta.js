@@ -226,6 +226,7 @@ class Shop {
     } else if (this.tab === 'up') {
       // Upgrades: groß und leuchtend – das Wichtigste im Laden
       const n = UPGRADES.length, gap = 10, land = W > H, cw = land ? Math.min(176, (W - 40 - gap * (n - 1)) / n) : Math.min(W - 40, 420), ch = land ? Math.min(bottom - top - 6, 236) : Math.min(120, (bottom - top - gap * (n - 1)) / n), x0 = land ? (W - (cw * n + gap * (n - 1))) / 2 : (W - cw) / 2;
+      txt(c, 'Upgrades gelten immer – egal welchen Skin du trägst', W / 2, H - 8, 12, '#fff', 'center', BRAND.olive);
       UPGRADES.forEach((u, i) => {
         const l = m.up[u.k] || 0, max = l >= UP_MAX, price = max ? 0 : u.price[l], x = land ? x0 + i * (cw + gap) : x0, y = land ? top + 2 : top + i * (ch + gap), bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3 + i);
         c.save(); c.shadowColor = u.col; c.shadowBlur = 14 + gl * 12; rrPath(c, x, y + bob, cw, ch, 20); fs(c, '#fffdf5', 4, '#c9a227'); c.restore();
@@ -295,7 +296,7 @@ class Shop {
 // ---------- Info zu einem Skin: Seltenheit + was die Fähigkeit kann ----------
 function skinInfoBtn(c, x, y, sid, r = 12) { icon(c, 'info', x, y, r * 2); UI.btn(x - r - 6, y - r - 6, (r + 6) * 2, (r + 6) * 2, () => { overlay = new SkinInfo(sid, overlay); Sfx.play('tap'); }); }
 class SkinInfo {
-  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; Voice.say(sk.ability ? ABILITIES[sk.ability].name + '. ' + abilityText(sk) : 'Dieser Skin hat keine besondere Fähigkeit.', true); }
+  constructor(sid, back) { this.sid = sid; this.back = back; this.t = 0; const sk = SKINS[sid] || {}; Voice.say('Skins sind nur zum Aussehen. Upgrades gelten immer, egal welchen Skin du trägst.', true); }
   update(dt) { this.t += dt; }
   close() { Voice.stop(); overlay = this.back || null; }
   draw(c) {
@@ -313,7 +314,7 @@ class SkinInfo {
       icon(c, ABIL_ICON[sk.ability], x + 162, y + 112, 22); txt(c, 'Fähigkeit: ' + A.name, x + 180, y + 112, 16, '#c9762f', 'left', null);
       wrapLines(c, abilityText(sk), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
       wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei Mittel und Schwer.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
-    } else wrapLines(c, 'Dieser Skin hat keine besondere Fähigkeit – er sieht einfach gut aus! Fähigkeiten haben nur legendäre Skins.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
+    } else wrapLines(c, 'Skins sind nur zum Aussehen. Upgrades fürs Spiel (Bonus-Uhr, Turbo, Herzen …) gibt es im Laden unter „Upgrades“ – die gelten immer, egal welchen Skin du trägst.', w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
     c.restore();
   }
   down() {} move() {} up() {}
