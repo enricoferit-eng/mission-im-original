@@ -61,7 +61,7 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
       log.push('  beim Zurückbringen: ' + await ev(() => overlay ? overlay.constructor.name + ':' + (overlay.o && overlay.o.mode) + ':' + (overlay.o && overlay.o.text || '').slice(0, 60) : 'kein Fenster; aktiv=' + !!scene.st.active + ' got=' + (scene.st.active ? scene.st.active.got.join(',') : '')));
       const r = await solve(); if (r === 'clear') { log.push('Ziel erreicht'); break; }
     }
-    const st = await ev(id => !!scene.st.done[id], id); log.push(id + (st ? ' erledigt' : ' NICHT erledigt')); if (!st) bad.push(id + ': nicht erledigt');
+    const st = await ev(id => !!scene.st.done[id], id); log.push(id + (st ? ' erledigt' : ' NICHT erledigt')); if (!st) bad.push(id + ': nicht erledigt – ' + await ev(id => { const q = scene.st.active, T = scene.interactables().find(x => x.id === id); return 'Szene ' + scene.constructor.name + ', Fenster ' + (overlay && overlay.constructor.name) + ', aktiv ' + (q && q.npc) + ' got ' + (q && q.got.join(',')) + ', Figur ' + Math.round(scene.p.x) + ',' + Math.round(scene.p.y) + ' Ziel ' + (T && Math.round(T.x) + ',' + Math.round(T.y)) + ' inRange ' + (T && scene.inRange(T)) + ' Weg ' + (scene.p.path ? scene.p.path.length : 0); }, id));
     if (id === 'gate') { for (let k = 0; k < 25; k++) { const r = await solve(); if (r === 'clear') { log.push('Ziel erreicht'); break; } await sleep(300); } }
   }
   // 4) Bonbons (Sammel-Sachen) einsammeln

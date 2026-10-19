@@ -91,7 +91,7 @@ setInterval(() => { const a = ACC(); if (a && a.token && (a.changed || 0) > (a.s
 function accFromServer(p) {
   const d = p.data || {}, diff = d.diff || {};
   ['easy', 'medium', 'hard'].forEach(k => { if (!diff[k]) diff[k] = {}; });
-  return { name: p.name, code: p.code, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}), ...(d.gt ? { gt: d.gt } : {}), ...(d.bt ? { bt: d.bt } : {}) };
+  return { name: p.name, ...(p.code ? { code: p.code } : {}), hasPass: !!p.hasPass, login: p.login, token: p.token, avatar: p.avatar || 0, created: p.created || Date.now(), sound: d.soundV2 ? d.sound !== false : true, soundV2: true, char: d.char || null, tut: d.tut || {}, recent: d.recent || [], recentEasy: d.recentEasy || [], diff, meta: d.meta || undefined, swingBest: d.swingBest || 0, admin: !!p.admin, gameAdmin: !!p.admin, ...(d.vol ? { vol: d.vol } : {}), ...(d.limitMin ? { limitMin: d.limitMin } : {}), ...(d.gt ? { gt: d.gt } : {}), ...(d.bt ? { bt: d.bt } : {}) };
 }
 function adoptAccount(p) {
   Save.data.accounts[p.login] = Object.assign(accFromServer(p), { synced: Date.now(), changed: 0 });
@@ -348,10 +348,14 @@ function VOL() {
   if (!a.vol) { a.vol = { all: a.volAll != null ? a.volAll : 1, music: a.music === false ? 0 : a.volMusic != null ? a.volMusic : 0.8, voice: 1, sfx: 1 }; delete a.volAll; delete a.volMusic; delete a.music; }
   return a.vol;
 }
+// "Ton aus" (a.sound === false) dreht den Hauptregler selbst auf 0 – so kann kein Geräusch mehr durchrutschen (auch schon geplante Töne nicht)
+function volTargets() { const a = ACC(), V = VOL(); return [a && a.sound === false ? 0 : V.all, V.music, V.voice, V.sfx]; }
 function applyVolume(now) {
-  if (!Sfx.master) return; const V = VOL(), c = Sfx.ac, t = c.currentTime, cv = v => v * v;   // quadratisch: fühlt sich gleichmäßiger an
-  for (const [bus, v] of [[Sfx.master, V.all], [Sfx.musicBus, V.music], [Sfx.voiceBus, V.voice], [Sfx.sfxBus, V.sfx]]) { if (!bus) continue; if (now) bus.gain.value = cv(v); else bus.gain.setTargetAtTime(cv(v), t, 0.03); }
+  if (!Sfx.master) return; const T = volTargets(), c = Sfx.ac, t = c.currentTime, cv = v => v * v;   // quadratisch: fühlt sich gleichmäßiger an
+  applyVolume.last = T.join();
+  [Sfx.master, Sfx.musicBus, Sfx.voiceBus, Sfx.sfxBus].forEach((bus, i) => { if (!bus) return; if (now) bus.gain.value = cv(T[i]); else bus.gain.setTargetAtTime(cv(T[i]), t, 0.03); });
 }
+function syncVolume() { if (Sfx.master && volTargets().join() !== applyVolume.last) applyVolume(); }   // jedes Bild: Kontowechsel, Laden vom Server …
 // ---------- Icons (alles ohne Text) ----------
 function icon(c, name, x, y, s, col) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k);

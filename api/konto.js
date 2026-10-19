@@ -16,6 +16,11 @@ const sameStr = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(St
 const cleanLogin = l => String(l || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const fmtLogin = l => l.slice(0, 4) + '-' + l.slice(4, 8);
 const validCode = c => Array.isArray(c) && c.length === 4 && c.every(v => Number.isInteger(v) && v >= 0 && v <= 5);
+// Passwörter: nur als scrypt-Hash mit eigenem Salz gespeichert, nie im Klartext und nie zurückgegeben
+const PASS_MIN = 6;
+const validPass = p => typeof p === 'string' && p.length >= PASS_MIN && p.length <= 64;
+const hashPass = p => { const s = crypto.randomBytes(16).toString('hex'); return { s, h: crypto.scryptSync(p, s, 32).toString('hex') }; };
+const passOk = (acc, p) => !!(acc.pw && typeof p === 'string' && p.length <= 64 && sameStr(crypto.scryptSync(p, acc.pw.s, 32).toString('hex'), acc.pw.h));
 
 // Speicher: Supabase (Tabelle "kv"), wenn eingerichtet – sonst Vercel Blob
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
@@ -49,20 +54,20 @@ async function listJSON(prefix) {   // alle Pfade mit diesem Anfang
   return files.map(f => f.pathname);
 }
 function publicAcc(login, acc) {
-  return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, code: acc.code, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };
+  return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, hasPass: !!acc.pw, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };   // Bilder-Code/Passwort gehen nie zurück
 }
 
 async function register(b) {
   const name = String(b.name || '').trim().slice(0, 14), nk = nameKey(name);
   if (nk.length < 2) return [400, { error: 'name_short' }];
-  if (!validCode(b.code)) return [400, { error: 'code' }];
+  if (b.pass !== undefined ? !validPass(b.pass) : !validCode(b.code)) return [400, { error: b.pass !== undefined ? 'pass' : 'code' }];   // Bilder-Code nur noch für alte, zwischengespeicherte Spiel-Versionen
   if (await readJSON(nameFile(nk))) return [409, { error: 'name_taken' }];
   let login = '';
   for (let i = 0; i < 10; i++) {
     login = Array.from(crypto.randomBytes(8), x => CODE_CHARS[x % CODE_CHARS.length]).join('');
     if (!(await readJSON(accFile(login)))) break;
   }
-  const acc = { name, nk, code: b.code, avatar: Number(b.avatar) % 6 || 0, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 };
+  const acc = { name, nk, ...(b.pass !== undefined ? { pw: hashPass(b.pass) } : { code: b.code }), avatar: Number(b.avatar) % 6 || 0, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 };
   await writeJSON(accFile(login), acc);
   await writeJSON(nameFile(nk), { login });
   return [200, publicAcc(login, acc)];
@@ -80,11 +85,13 @@ async function login(b) {
   if (!acc) return [404, { error: 'not_found' }];
   const now = Date.now();
   if (acc.lockUntil > now) return [429, { error: 'locked', wait: Math.ceil((acc.lockUntil - now) / 60000) }];
-  if (!validCode(b.code) || b.code.join() !== acc.code.join()) {
+  if (!acc.pw && b.pass !== undefined && b.code === undefined) return [401, { error: 'need_code' }];   // altes Konto: einmal noch mit dem Bilder-Code, dann Passwort festlegen
+  const ok = acc.pw ? passOk(acc, b.pass) : validCode(b.code) && Array.isArray(acc.code) && b.code.join() === acc.code.join();
+  if (!ok) {
     acc.fails = (acc.fails || 0) + 1;
     if (acc.fails >= MAX_FAILS) { acc.fails = 0; acc.lockUntil = now + LOCK_MS; }
     await writeJSON(accFile(idx.login), acc);
-    return [401, { error: 'wrong_code' }];
+    return [401, { error: acc.pw ? 'wrong_pass' : 'wrong_code' }];
   }
   if (acc.fails) { acc.fails = 0; await writeJSON(accFile(idx.login), acc); }
   return [200, publicAcc(idx.login, acc)];
@@ -107,9 +114,17 @@ async function save(b) {
   return [200, { ok: true, updated: a.acc.updated }];
 }
 
+async function set_pass(b) {   // Passwort festlegen oder ändern (angemeldet); ersetzt den Bilder-Code
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  if (!validPass(b.pass)) return [400, { error: 'pass' }];
+  a.acc.pw = hashPass(b.pass); delete a.acc.code; a.acc.fails = 0; a.acc.lockUntil = 0;
+  await writeJSON(accFile(a.l), a.acc);
+  return [200, { ok: true }];
+}
+
 async function remove(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  await delJSON([accFile(a.l), nameFile(a.acc.nk)]);
+  await delJSON([accFile(a.l), nameFile(a.acc.nk), fcodeFile(fcodeOf(a.l)), reqFile(a.l)]);
   return [200, { ok: true }];
 }
 
@@ -119,23 +134,47 @@ async function remove(b) {
 const friendsFile = l => 'friends/' + l + '.json', invFile = l => 'invites/' + l + '.json', seenFile = l => 'seen/' + l + '.json';
 const lobbyFile = c => 'lobbies/' + c + '.json', progFile = (c, l) => 'lobbies/' + c + '/' + l + '.json';
 const LOBBY_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+// Freundes-Code: 6 Zeichen, nur zum Finden (gibt keinen Zugang zum Konto – anders als der Login-Code); Freundschaft erst, wenn der andere die Anfrage annimmt
+const fcodeFile = c => 'fcodes/' + c + '.json', reqFile = l => 'freq/' + l + '.json';
+const fcodeOf = l => Array.from(crypto.createHmac('sha256', SECRET).update('freund:' + l).digest().subarray(0, 6), x => CODE_CHARS[x % CODE_CHARS.length]).join('');
+async function myFcode(l) { const c = fcodeOf(l), idx = await readJSON(fcodeFile(c)); if (!idx || idx.login !== l) await writeJSON(fcodeFile(c), { login: l }); return c; }
+async function addFriendPair(l1, acc1, l2, acc2) {
+  const add = async (l, who) => { const f = (await readJSON(friendsFile(l))) || { list: [] }; if (!f.list.some(x => cleanLogin(x.login) === cleanLogin(who.login)) && f.list.length < 50) f.list.push(who); await writeJSON(friendsFile(l), f); };
+  await add(l1, pub(l2, acc2)); await add(l2, pub(l1, acc1));
+}
+async function dropRequest(l, from) { const R = await readJSON(reqFile(l)); if (R && R.list.some(x => cleanLogin(x.login) === from)) { R.list = R.list.filter(x => cleanLogin(x.login) !== from); await writeJSON(reqFile(l), R); } }
 const pub = (l, acc) => ({ login: fmtLogin(l), name: acc.name, avatar: acc.avatar || 0 });
 async function touch(l, score) { const o = { t: Date.now() }; if (Number.isInteger(score) && score >= 0 && score < 10000) o.score = score; else { const old = await readJSON(seenFile(l)).catch(() => null); if (old && old.score != null) o.score = old.score; } await writeJSON(seenFile(l), o); }
 async function friendList(l) {
   const f = (await readJSON(friendsFile(l))) || { list: [] };
   const out = await Promise.all(f.list.map(async x => { const s = await readJSON(seenFile(cleanLogin(x.login))).catch(() => null); return { ...x, online: !!(s && Date.now() - s.t < 90000), score: (s && s.score) || 0 }; }));   // score: für die Freundes-Bestenliste
   const inv = ((await readJSON(invFile(l))) || { list: [] }).list.filter(i => Date.now() - i.at < 15 * 60000);
-  return { friends: out, invites: inv };
+  const requests = ((await readJSON(reqFile(l))) || { list: [] }).list;
+  return { friends: out, invites: inv, requests, myCode: await myFcode(l) };
 }
-async function friend_add(b) {
+async function friend_add() { return [410, { error: 'gone' }]; }   // früher: sofort befreundet über den Namen – jetzt nur noch Anfragen per Freundes-Code
+async function friend_request(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  const nk = nameKey(b.name), idx = nk && (await readJSON(nameFile(nk)));
-  if (!idx) return [404, { error: 'not_found' }];
+  const code = String(b.fcode || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); if (code.length !== 6) return [400, { error: 'code' }];
+  const idx = await readJSON(fcodeFile(code)); if (!idx) return [404, { error: 'not_found' }];
   if (idx.login === a.l) return [400, { error: 'self' }];
   const other = await readJSON(accFile(idx.login)); if (!other) return [404, { error: 'not_found' }];
-  const add = async (l, who) => { const f = (await readJSON(friendsFile(l))) || { list: [] }; if (!f.list.some(x => cleanLogin(x.login) === cleanLogin(who.login)) && f.list.length < 50) f.list.push(who); await writeJSON(friendsFile(l), f); };
-  await add(a.l, pub(idx.login, other)); await add(idx.login, pub(a.l, a.acc));   // Freundschaft gilt für beide
+  const mine = (await readJSON(friendsFile(a.l))) || { list: [] };
+  if (mine.list.some(x => cleanLogin(x.login) === idx.login)) return [200, { ...(await friendList(a.l)), result: 'already' }];
+  const myReq = (await readJSON(reqFile(a.l))) || { list: [] };
+  if (myReq.list.some(x => cleanLogin(x.login) === idx.login)) {   // der andere hat mich schon angefragt: dann sind wir jetzt Freunde
+    await dropRequest(a.l, idx.login); await addFriendPair(a.l, a.acc, idx.login, other);
+    return [200, { ...(await friendList(a.l)), result: 'friends', name: other.name }];
+  }
+  const R = (await readJSON(reqFile(idx.login))) || { list: [] };
+  if (!R.list.some(x => cleanLogin(x.login) === a.l)) { R.list.push({ ...pub(a.l, a.acc), at: Date.now() }); R.list = R.list.slice(-30); await writeJSON(reqFile(idx.login), R); }
   await touch(a.l);
+  return [200, { ...(await friendList(a.l)), result: 'sent', name: other.name }];
+}
+async function friend_answer(b) {
+  const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  const from = cleanLogin(b.from); await dropRequest(a.l, from);
+  if (b.yes) { const other = await readJSON(accFile(from)); if (other) await addFriendPair(a.l, a.acc, from, other); }
   return [200, await friendList(a.l)];
 }
 async function friends(b) {
@@ -254,7 +293,7 @@ module.exports = async (req, res) => {
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
-  const fn = { register, login, save, delete: remove, admin, friend_add, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
+  const fn = { register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return res.status(400).json({ error: 'action' });
   try { const [status, out] = await fn(b); res.status(status).json(out); }
   catch (e) { console.error(e); res.status(500).json({ error: 'server' }); }

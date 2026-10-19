@@ -354,7 +354,7 @@ class Play {
     this.diff = diff; CUR_DIFF = diff; this.kind = ANIMAL_OF[diff];
     this.mp = opt.mp || null;   // Mehrspieler: eigener Durchgang (nicht gespeichert), gleiche Zufallswerte für beide
     this.stage = opt.stage || (opt.mp && opt.mp.stage) || 'spielplatz';
-    const solo = STAGE_DEFS[this.stage] && STAGE_DEFS[this.stage].solo;   // eigener Bereich ohne Weltkarte (z. B. Halloween-Map)
+    const solo = STAGE_DEFS[this.stage] && STAGE_DEFS[this.stage].solo;   // eigener Bereich ohne Weltkarte (z. B. Helfer-Schule)
     if (!this.mp && !solo && typeof worldPrepare === 'function') worldPrepare(this.stage, diff);   // Nachbar-Böden vorbereiten
     useStage(this.stage);
     if (!this.mp && !solo && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); solidDecor(); carveLinks(this.stage, diff); }
@@ -393,7 +393,7 @@ class Play {
     this.leafPop = 0; this.justDone = null;
     if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
       const r = mulberry32(this.seedFor('leaves')), L = []; let g = 0;
-      while (L.length < LEAVES_PER_RUN && g++ < 4000) { const x = SG.solo ? 80 + r() * (WORLD_W - 160) : 60 + r() * 880, y = SG.solo ? 120 + r() * (WORLD_H - 220) : 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
+      while (L.length < (SG.leaves || LEAVES_PER_RUN) && g++ < 4000) { const x = SG.solo ? 80 + r() * (WORLD_W - 160) : 60 + r() * 880, y = SG.solo ? 120 + r() * (WORLD_H - 220) : 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
       this.st.leaves = L; Save.write();
     }
     this.shake = {};
@@ -652,7 +652,8 @@ class Play {
     if (!first && this.idleT < ((a && a.stats && a.stats.clears) || (META() && META().st && META().st.clears) ? 18 : 9)) return;   /* wer schon Bereiche geschafft hat, braucht die Hand selten */
     const P = T.npc === 'gate' ? { x: GATE.x, y: GATE.y, l: 0 } : this.npcs.find(n => n.id === T.npc); if (!P) return;
     const z = P.l ? HOUSE.fz : 0, sp = this.w2s(P.x, P.y - 40, z);
-    if (sp.x > 30 && sp.x < W - 30 && sp.y > 100 && sp.y < H - 70) {
+    if (this.hintOn) { /* der Schau-her-Hinweis zeigt schon mit dem Finger */ }
+    else if (sp.x > 30 && sp.x < W - 30 && sp.y > 100 && sp.y < H - 70) {
       const b = Math.abs(Math.sin(this.t * 4)) * 14; drawHand(c, sp.x + 6, sp.y + 30 + b, 1.6);
     } else {
       const ax = clamp(sp.x, 60, W - 60), ay = clamp(sp.y, 130, H - 100), ang = Math.atan2(sp.y - H / 2, sp.x - W / 2), pu = 1 + Math.sin(this.t * 6) * 0.12;
@@ -777,6 +778,7 @@ class Play {
   }
   onStairs() { const i = cellIdx(this.p.x, this.p.y); return i >= 0 && !!ST[i]; }
   // ---- Ablauf ----
+  pause() { if (this.mp) { this.stop(); return; } Sfx.play('tap'); overlay = new PauseDialog({ onQuit: () => this.stop() }); }   // Mehrspieler: wie bisher (dort läuft die Zeit für alle weiter)
   stop() { if (this.mp && !this.mpOver && !(overlay instanceof ConfirmDialog)) { overlay = new ConfirmDialog({ text: 'Mehrspieler-Spiel wirklich verlassen? Die anderen spielen dann ohne dich weiter.', icon: 'stop', onYes: () => { this.mpOver = 'left'; this.stop(); } }); return; }
     overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
@@ -795,8 +797,8 @@ class Play {
     const hase = this.npcs.find(n => n.swing !== undefined);
     if (hase) { const off = this.seatOff(hase.swing); hase.y = SWING.y + off; hase.z = 24 + Math.abs(off) * 0.35; }
     { const bq = this.bonusQuest();
-      // pausiert, solange man nicht spielen kann (Kind erzählt, Aufgaben-Erklärung, 3-2-1, Feier)
-      const paused = overlay && (overlay instanceof QuestDialog || (overlay instanceof GameOverlay && overlay.bonusPaused()));
+      // pausiert, solange man nicht spielen kann (Kind erzählt, Aufgaben-Erklärung, 3-2-1, Feier, Pause)
+      const paused = overlay && !(overlay instanceof GameOverlay && !overlay.bonusPaused());   // jedes Fenster (Pause, Karte, Ton …) hält die Uhr an – nur in einer laufenden Aufgabe tickt sie weiter
       if (bq && !this.exiting && scene === this && !this.bonusIntro && !paused) {
         const lim = this.bonusLimit(bq.npc), before = lim - (bq.q.tt || 0); bq.q.tt = (bq.q.tt || 0) + dt; const after = lim - bq.q.tt;
         if (before > 0) {
@@ -1164,7 +1166,7 @@ class Play {
       if (E.t > 8) { E.phase = 'out'; E.t = 0; }
     } else {
       if (GATE.side === 'right') { p.x += spd * 0.7 * dt; p.y = lerp(p.y, GATE.iy, Math.min(1, dt * 5)); p.dir = 1; } else if (GATE.side === 'top') { p.y -= spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); } else { p.y += spd * 0.7 * dt; p.x = lerp(p.x, GATE.x, Math.min(1, dt * 5)); } p.moving = true;
-      if (E.t > 1.6 && !E.done) { E.done = true; this.exiting = null; this.stageClear(); }
+      if (E.t > 1.6 && !E.done) { E.done = true; this.exiting = null; if (SG.onExit) SG.onExit(this); else this.stageClear(); }   // onExit: z. B. Helfer-Schule – danach geht das echte Abenteuer los
     }
   }
   stageClear() {
@@ -1196,6 +1198,7 @@ class Play {
     c.setTransform(DPR * z, 0, 0, DPR * z, DPR * (W / 2 - this.camX * z), DPR * (H / 2 - this.camY * z)); LINE_K = z < 0.8 ? 1 + (0.8 - z) * 1.2 : 1;
     if (!GROUND) buildGround();
     if (this.drawNbGrounds && !SG.solo) this.drawNbGrounds(c);   // eigene Bereiche: kein Gelände drumherum
+    if (typeof hwWorldFx === 'function') { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); hwWorldFx(this, c, t); c.restore(); }   // Halloween-Stimmung (nur im Special), unter den Ausrufezeichen
     c.drawImage(GROUND, 0, 0, WORLD_W, WORLD_H);
     const q = this.st.active;
     // Gegrabene Stellen + vergrabene Hinweise
@@ -1308,7 +1311,6 @@ class Play {
     if (SG.overlay) SG.overlay(c, this, t);   // z. B. Deckenlampen über allem
     if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
       if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
-    if (typeof hwWorldFx === 'function') { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); hwWorldFx(this, c, t); c.restore(); }   // Halloween-Stimmung (nur im Special), unter den Ausrufezeichen
     this.drawMarkers(c);
     c.setTransform(DPR, 0, 0, DPR, 0, 0); LINE_K = 1;
     const vg = c.createRadialGradient(W * 0.35, H * 0.3, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
@@ -1321,7 +1323,6 @@ class Play {
     const a = this.npcAnim[n.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 12 : 0;
     const zz = n.l ? HOUSE.fz : 0;
     drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { staff: true, ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
-    if (this.st.done[n.id]) { const hy = n.y - zz - 104; ell(c, n.x, hy, 13, 13); fs(c, '#06d6a0', 2.5); icon(c, 'check', n.x, hy, 17, '#fff'); }   // schon geholfen
   }
   drawSwingFrame(c) { drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
   drawSwingFrameRaw(c) {
@@ -1474,6 +1475,7 @@ class Play {
     if (!ACC().tut.symbol && !this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') {
       let bd = 1e9; for (const m of marks) { const s = this.npcState(m.id); if (s !== 'open' && s !== 'busy') continue; const d = dist(m.x, m.y, p.x, p.y); if (d < bd) { bd = d; hintT = { x: m.x, y: m.y }; } }
     }
+    this.hintOn = !!hintT;   // dann zeigt die Trainer-Hand nicht noch einmal (sonst zwei Finger)
     if (hintT) {
       const b = Math.abs(Math.sin(t * 4)) * 14;
       ell(c, hintT.x, hintT.y, 34 + b * 0.5, 34 + b * 0.5); c.lineWidth = 4; c.strokeStyle = 'rgba(255,255,255,.7)'; c.stroke();
@@ -1500,7 +1502,7 @@ class Play {
   }
   drawHud(c) {
     if (this.fadeIn > 0) { c.fillStyle = `rgba(20,30,20,${this.fadeIn / 0.35 * 0.8})`; c.fillRect(0, 0, W, H); this.fadeIn -= 1 / 60; }   // Bereichswechsel weich einblenden
-    roundBtn(c, 46, 46, 25, '#fff', 'stop', () => this.stop());
+    roundBtn(c, 46, 46, 25, '#fff', 'stop', () => this.pause());
     roundBtn(c, 106, 46, 20, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
     if (this.mp) soundBtn(c, W - 40, 46);   /* sonst steckt der Ton-Knopf im Hilfe-Fenster (weniger Knöpfe oben) */
     { const n = this.st.leaves.filter(o => o.got).length, k = 1 + this.leafPop * 0.35;
@@ -1566,7 +1568,7 @@ class Play {
         rrPath(c, -78, -18, 156, 36, 18); c.fillStyle = 'rgba(30,20,10,.75)'; c.fill(); c.lineWidth = 3; c.strokeStyle = col; c.stroke();
         icon(c, 'clock', -58, 0, 20); txt(c, txtT, -24, -3, 18, low ? '#ff8fa3' : '#fff', 'center', null);
         rrPath(c, -42, 9, 40, 5, 2.5); c.fillStyle = 'rgba(255,255,255,.2)'; c.fill(); rrPath(c, -42, 9, 40 * f, 5, 2.5); c.fillStyle = col; c.fill();
-        txt(c, '→', 14, 1, 16, '#fff', 'center', null); icon(c, 'joker', 46, 0, 26); txt(c, 'BONUS', 46, -14, 8, col, 'center', null);
+        txt(c, '→', 14, 1, 16, '#fff', 'center', null); icon(c, 'joker', 46, -4, 20); txt(c, 'BONUS', 46, 11, 8, col, 'center', null);   // Schild innen (oben überdeckte es den Rand)
         c.restore();
       }
       if (this.bonusIntro) {

@@ -14,7 +14,7 @@ try { document.addEventListener('visibilitychange', () => { if (document.hidden)
 class GameOverlay {
   // opts: { diff, kind:'easy'|'puzzle'|'challenge', item, steps:{i,n}, slow, seed, onStop }
   constructor(id, opts, done) {
-    this.id = id; this.opts = opts; this.done = done; this.retries = 0; this.playT = 0;   // playT: reine Spielzeit (auch über Neustarts) für die Zeit-Statistik
+    this.id = id; this.opts = opts; this.done = done; this.retries = 0; this.playT = 0; this.bonusCoins = gameCoinsFor(id, opts);   // playT: reine Spielzeit (auch über Neustarts) für die Zeit-Statistik
     this.start();
   }
   start() {
@@ -237,7 +237,7 @@ class GameOverlay {
     if (this.state === 'play' && !this.tickPressure(dt)) return;        // Countdown läuft
     if (this.state !== 'play') Music.stop();
     if (this.state === 'play') {
-      this.playT += dt; this.g.update(dt);
+      this.playT += dt; this.g.update(dt); if (this.bonusCoins) gameCoinsTick(this, dt);
       if (this.timed && this.state === 'play') {
         this.timeLeft -= dt;
         const sec = Math.ceil(this.timeLeft);
@@ -252,7 +252,7 @@ class GameOverlay {
     }
     else this.endT += dt;
   }
-  finish(ok) { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.done) this.done(ok); }
+  finish(ok) { if (this.bonusCoins) gameCoinsEnd(this); Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.done) this.done(ok); }
   drawStatus(c) {
     // Große, eindeutige Leiste: Leben links, Zeit rechts
     const low = this.timeLeft / this.timeMax < 0.25, pulse = low ? 0.5 + 0.5 * Math.sin(this.t * 12) : 0;
@@ -290,7 +290,7 @@ class GameOverlay {
     this.drawRays(c);
     const dz = this.danger();
     if (dz > 0) { const a = dz * (0.25 + 0.25 * Math.sin(this.t * 14)); const gr = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.7); gr.addColorStop(0, 'rgba(239,71,111,0)'); gr.addColorStop(1, `rgba(239,71,111,${a})`); c.fillStyle = gr; c.fillRect(0, 0, W, H); }
-    roundBtn(c, 44, 42, 24, '#fff', 'stop', () => { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
+    roundBtn(c, 44, 42, 24, '#fff', 'stop', () => { const g = this, quit = () => { Music.stop(); Sfx.hook = null; if (g.opts.onStop) g.opts.onStop(); }; if (this.opts.onStop && typeof PauseDialog !== 'undefined' && !(scene && scene.mp)) { Sfx.play('tap'); overlay = new PauseDialog({ onQuit: quit, onResume: () => { overlay = g; } }); } else { if (overlay === this) overlay = null; quit(); } });   // Pause: Aufgabe und Bonus-Uhr stehen, Weiter macht genau dort weiter
     const o = this.opts;
     if (o.kind === 'easy' && o.steps) {
       const n = o.steps.n, w = Math.min(28, this.side ? (H - 140) / n : (W - 200) / n);
@@ -311,6 +311,7 @@ class GameOverlay {
     c.translate(this.ox + sk, this.oy + (this.shk > 0 ? Math.cos(this.shk * 55) * this.shk * 10 : 0)); c.scale(this.s, this.s);
     rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.save(); c.clip();
     this.g.draw(c);
+    if (this.bonusCoins) gameCoinsDraw(this, c);
     const av = c.createRadialGradient(200, 230, 150, 200, 260, 380); av.addColorStop(0, 'rgba(0,0,0,0)'); av.addColorStop(1, 'rgba(40,25,10,.18)');
     c.fillStyle = av; c.fillRect(0, 0, GAME_W, GAME_H);
     if (this.flash > 0) {
@@ -383,9 +384,9 @@ class GameOverlay {
   }
   down(x, y, id) { if (this.opts.diff === 'easy' && Voice.busy && Voice.busy()) Voice.stop(); if (this.state === 'won' && this.endT > 0.6) { this.finish(true); return; }
     if (this.state === 'play' && !this.help && !this.ready && this.cd > 0 && this.cdWait <= 0) { this.ready = true; this.cd = 0.001; Sfx.note(990, 0.3, 'square', 0.06, 1.2); buzz(30); return; }
-    if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.g.down) this.g.down(p.x, p.y, id); }
-  move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
-  up(x, y, id) { if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.up) this.g.up(p.x, p.y, id); }
+    if (this.state !== 'play' || this.help || this.cd > 0) return; this.touched = true; this.lastTouch = this.t; const p = this.toGame(x, y); if (this.bonusCoins && gameCoinsTap(this, p)) { this.coinTap = id; return; } if (this.g.down) this.g.down(p.x, p.y, id); }
+  move(x, y, id) { if (this.state !== 'play' || this.help || this.cd > 0 || (this.coinTap !== undefined && this.coinTap === id)) return; const p = this.toGame(x, y); if (this.g.move) this.g.move(p.x, p.y, id); }
+  up(x, y, id) { if (this.coinTap !== undefined && this.coinTap === id) { this.coinTap = undefined; return; } if (this.state !== 'play' || this.help) return; const p = this.toGame(x, y); if (this.g.up) this.g.up(p.x, p.y, id); }
 }
 
 // ---------- Erklärungen (Text erlaubt, für alle, die eine Aufgabe nicht verstehen) ----------
@@ -1389,6 +1390,42 @@ GAMES.count = { make(env) {
   };
 } };
 
+// ---------- Bonus-Münzen in manchen Aufgaben: freiwillig antippen, nie nötig ----------
+// Nur in Aufgaben, in denen man tippt/zieht (nicht in Geschicklichkeits-Aufgaben, da würde ein Münz-Tipp einen Sprung kosten).
+// Welche Währung: GAME_COIN (der Halloween-Wald tauscht sie gegen Kürbismünzen).
+let GAME_COIN = { add(n) { const m = META(); if (m) { m.coins += n; Save.write(); } }, toast(n) { toast('Münzen gesammelt', '+' + n + ' Taler', 'coin'); }, draw(c, x, y, r) { icon(c, 'coin', x, y, r * 2.1); } };
+const GAME_COIN_CHANCE = 0.4;
+function gameCoinsFor(id, o) {
+  const G = GAMES[id]; if (!G || G.challenge || o.kind === 'challenge' || !o.seed || (typeof scene !== 'undefined' && scene && scene.mp)) return null;
+  const r = mulberry32((o.seed * 31 + 17) >>> 0); if (r() > GAME_COIN_CHANCE) return null;
+  const n = 2 + Math.floor(r() * 2), L = [];
+  for (let i = 0; i < n; i++) {   // am Rand des Spielfelds, damit sie nichts Wichtiges verdecken
+    const side = Math.floor(r() * 4), u = 0.15 + r() * 0.7;
+    const x = side === 0 ? 30 : side === 1 ? GAME_W - 30 : 40 + u * (GAME_W - 80), y = side === 2 ? 34 : side === 3 ? GAME_H - 34 : 70 + u * (GAME_H - 140);
+    L.push({ x, y, t0: 1.5 + i * (2.5 + r() * 3), life: 6, got: false, gone: false, k: 0 });
+  }
+  return { list: L, got: 0, paid: 0 };
+}
+function gameCoinsTick(g, dt) { for (const q of g.bonusCoins.list) { if (q.got) q.k += dt; else if (g.playT > q.t0 + q.life) q.gone = true; } }
+function gameCoinsTap(g, p) {
+  const B = g.bonusCoins; for (const q of B.list) {
+    if (q.got || q.gone || g.playT < q.t0) continue;
+    if (dist(p.x, p.y, q.x, q.y) < 36) { q.got = true; B.got++; GAME_COIN.add(1); B.paid++; Sfx.play('coin'); buzz(15); g.pops.push({ x: q.x, y: q.y - 6, t: -0.1, text: '+1', col: '#ffd166' }); return true; }
+  }
+  return false;
+}
+function gameCoinsDraw(g, c) {
+  for (const q of g.bonusCoins.list) {
+    if (q.gone || g.playT < q.t0) continue;
+    if (q.got) { if (q.k > 0.5) continue; c.save(); c.globalAlpha = 1 - q.k * 2; GAME_COIN.draw(c, q.x, q.y - q.k * 60, 16 * (1 + q.k)); c.restore(); continue; }
+    const a = g.playT - q.t0, rest = q.life - a, pop = ease.back(clamp(a * 3, 0, 1)), blink = rest < 1.5 ? 0.5 + 0.5 * Math.sin(g.t * 18) : 1, bob = Math.sin(g.t * 4 + q.x) * 3;
+    c.save(); c.globalAlpha = blink; c.translate(q.x, q.y + bob); c.scale(pop, pop);
+    ell(c, 0, 0, 28, 28); c.fillStyle = 'rgba(255,214,10,.3)'; c.fill(); GAME_COIN.draw(c, 0, 0, 19);
+    if (Math.sin(g.t * 5 + q.x) > 0.7) { starPath(c, 12, -12, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); }
+    c.restore();
+  }
+}
+function gameCoinsEnd(g) { const B = g.bonusCoins; if (B.paid && !B.told) { B.told = true; GAME_COIN.toast(B.paid); } }
 // Wie lange Kinder wirklich für eine Aufgabe brauchen (je Stufe): Anzahl + Summe, wird mit dem Konto gespeichert – Grundlage, um GAME_SEC nachzustellen
 function gameTimeStat(id, diff, sec) {
   const a = typeof ACC === 'function' && ACC(); if (!a || !diff || !(sec > 0.5) || sec > 900 || a.admin) return;

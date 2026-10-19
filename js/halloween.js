@@ -75,6 +75,11 @@ const HW_SAY = {
 };
 
 if (HALLOWEEN) {
+  // Bonus-Münzen in den Aufgaben: im Geisterwald sind es Kürbismünzen
+  { const C0 = GAME_COIN, inWald = () => typeof scene !== 'undefined' && scene && scene.stage === 'geisterwald';
+    GAME_COIN = { add(n) { if (inWald()) { const m = META(); if (m) { m.km = (m.km || 0) + n; Save.write(); } } else C0.add(n); },
+      toast(n) { if (inWald()) toast('Kürbismünzen gesammelt', '+' + n + ' Kürbismünzen', 'star'); else C0.toast(n); },
+      draw(c, x, y, r) { if (inWald()) kmCoin(c, x, y, r / 11); else C0.draw(c, x, y, r); } }; }
   // Sammel-Sachen im Geisterwald: leuchtende Bonbons
   COLLECT_NAME.geisterwald = 'Bonbons';
   const dc0 = drawCollect;
@@ -99,6 +104,7 @@ if (HALLOWEEN) {
   Play.prototype.drawHud = function (c) {
     hud0.call(this, c);
     if (this.mp || this.helpOpen) return;
+    if (this.stage === 'uebung') return;   // in der Helfer-Schule nicht ablenken
     if (this.stage !== 'geisterwald') {   // aus jedem Bereich erreichbar: Knopf unter der Karte
       const x = W - 50, y = 146, pu = 1 + Math.sin(this.t * 4) * 0.07, gl = 0.5 + 0.5 * Math.sin(this.t * 3);   // groß, leuchtend, nicht zu übersehen
       const go = () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'In den Geisterwald reisen? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(this.diff, { stage: 'geisterwald' })); } }); };
@@ -121,7 +127,7 @@ if (HALLOWEEN) {
   const upd1 = Play.prototype.update;
   Play.prototype.update = function (dt) {
     upd1.call(this, dt);
-    if (!window.HW_HINTED && !this.mp && this.stage !== 'geisterwald' && this.t > 2.5 && !overlay && scene === this) { window.HW_HINTED = true; this.banner = { text: HW_SAY.hint, t: 0 }; Voice.say(HW_SAY.hint, true); }
+    if (!window.HW_HINTED && !this.mp && this.stage !== 'geisterwald' && this.stage !== 'uebung' && this.t > 2.5 && !overlay && scene === this) { window.HW_HINTED = true; this.banner = { text: HW_SAY.hint, t: 0 }; Voice.say(HW_SAY.hint, true); }
   };
   // Bereichs-Übersicht: der Geisterwald ist ein eigener Punkt am Ende des Wegs (immer offen)
   mapOrder = () => STAGE_ORDER.concat(['geisterwald']);   // eslint-disable-line no-func-assign
