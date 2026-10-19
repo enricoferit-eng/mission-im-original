@@ -1396,6 +1396,7 @@ function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); UI.next = [];
   if (Music.on && !(overlay instanceof GameOverlay)) Music.stop();
+  syncVolume();
   // Leistung messen: dauerhaft unter ~45 Bildern/s -> Auflösung senken
   Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
   if (!(scene instanceof Play) && !overlay) { Perf.acc = 0; Perf.n = 0; }   /* gemessen wird nur im Spiel (Menüs laufen absichtlich langsamer) */
