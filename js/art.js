@@ -69,6 +69,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   c.translate(0, -bob);
   if (o.tilt) c.rotate(o.tilt);
   if (L.cape) { const w = Math.sin(t * 3) * 1.5; polyPath(c, [[-9, -27], [9, -27], [15 + w, -1], [-17 + w, -1]]); fs(c, paint(c, L.cape, -17, 15), 2.5); }   // Umhang hinter dem Körper
+  if (L.back && typeof drawCostume === 'function') drawCostume(c, L, 'back', t, A);   // Flügel, Jetpack, Zacken
   // Schwanz
   c.beginPath();
   if (kind === 'cat') { c.moveTo(-11, -14); c.quadraticCurveTo(-27, -16 + Math.sin(t * 3) * 3, -21, -34); }
@@ -96,6 +97,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   if (kind === 'cow') { ell(c, -6, -18, 4.5, 3.5, 0.4); c.fillStyle = A.dark; c.fill(); ell(c, 6, -9, 3, 2.5); c.fill(); }
   if (L.uniform) drawUniform(c, L, A);
   if (L.trim) { ell(c, 0, -15, 11, 10); c.lineWidth = 1.6; c.strokeStyle = L.trim; c.stroke(); }   // Zierkante
+  if (L.suit && typeof drawCostume === 'function') drawCostume(c, L, 'suit', t, A);   // Kostüm-Anzug
   // Uniform-Teil aus der Küche: Schürze (sobald die Küche geschafft ist)
   if (!L.uniform && !o.noOutfit && typeof SP === 'function' && ACC() && SP(CUR_DIFF, 'kueche').outfit) { rrPath(c, -5, -24, 15, 19, 4); fs(c, '#fbf8f2', 2); line(c, -4, -24, -9, -30, 1.5, '#fbf8f2', false); leaf(c, 2.5, -14, 0.5, BRAND.lime); }
   ell(c, 9, -5, 5, 4); fs(c, A.light, 2.5);
@@ -171,7 +173,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
   // Hundeohren (vorne)
   if (kind === 'dog') { ell(c, -6, -40, 5.5, 10, 0.35); fs(c, A.dark); }
   // Halstuch (das Helfer-Zeichen aus der Geschichte)
-  if (!o.noScarf) {
+  if (!o.noScarf && !L.noScarf) {
     const sc = paint(c, L.scarf, -10, 12);
     polyPath(c, [[-9, -25.5], [11, -25.5], [3, -15]]); fs(c, sc, 2.5);
     ell(c, 1, -25.5, 10.5, 3.6); fs(c, sc, 2.5);
@@ -189,7 +191,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
     if (got('aussen')) { rrPath(c, -3, -42, 8, 6, 2.5); fs(c, '#212529', 1.5); rrPath(c, 6, -42, 7, 6, 2.5); fs(c, '#212529', 1.5); line(c, 5, -40, 6, -40, 1.5, OL, false); line(c, -3, -40, -10, -42, 1.5, OL, false); }
   }
   // Spielplatz-Ausrüstung: Kappe
-  if (o.cap) {
+  if (o.cap && !L.head && !L.noCap) {
     const cp = paint(c, L.cap, -10, 14);
     if (!(L.hat && drawHat(c, L, cp))) {
     c.beginPath(); c.arc(1, -45, 11, Math.PI, 0); c.closePath(); fs(c, cp, 2.5);
@@ -201,6 +203,7 @@ function drawAnimal(c, kind, x, y, s, o = {}) {
     leaf(c, 3, -49, 0.55, '#fff');
     }
   }
+  if ((L.head || L.face) && typeof drawCostume === 'function') drawCostume(c, L, 'head', t, A);   // Helm, Hut, Brille … (auch ohne Spielplatz-Kappe)
   c.restore();
 }
 
