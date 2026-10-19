@@ -506,19 +506,26 @@ function volSample(key) {
 }
 // Eltern-Bereich: Spielzeit pro Tag + Datenschutz (mit kleiner Rechenaufgabe, damit Kinder nicht einfach umstellen)
 class ParentPanel {
-  constructor() { this.t = 0; const a = 13 + Math.floor(Math.random() * 15), b = 6 + Math.floor(Math.random() * 4); this.q = { a, b, ok: a * b, ch: shuffle([a * b, a * b + 10, a * b - b, a * b + 4]).slice(0, 3) }; if (!this.q.ch.includes(this.q.ok)) this.q.ch[0] = this.q.ok; this.q.ch = shuffle(this.q.ch); this.open = false; }
+  constructor() { this.t = 0; const a = ACC(); this.mode = a && a.parentPin ? 'enter' : 'set1'; this.pin = ''; this.first = ''; this.err = ''; this.open = false; }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
     const a = ACC(); if (!a) { this.close(); return; }
     c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
-    const w = Math.min(W - 30, 460), h = this.open ? 360 : 220, x = (W - w) / 2, y = (H - h) / 2;
+    const w = Math.min(W - 30, 460), h = this.open ? 360 : 350, x = (W - w) / 2, y = (H - h) / 2;
     fitBegin(c, w, h + 20); panel(c, x, y, w, h, '#fff7e6', 24);
     roundBtn(c, x + w - 30, y + 30, 20, '#ced4da', 'cross', () => this.close());
     txt(c, 'Für Eltern', x + 24, y + 32, 20, BRAND.olive, 'left', null);
-    if (!this.open) {
-      txt(c, 'Bitte rechnen: ' + this.q.a + ' × ' + this.q.b + ' = ?', W / 2, y + 90, 18, '#3d2c1f', 'center', null);
-      this.q.ch.forEach((v, i) => { const bx = W / 2 + (i - 1) * 100; rrPath(c, bx - 40, y + 120, 80, 50, 16); fs(c, '#fff', 3); txt(c, String(v), bx, y + 146, 20, '#3d2c1f', 'center', null); UI.btn(bx - 40, y + 120, 80, 50, () => { if (v === this.q.ok) { this.open = true; Sfx.play('good'); } else { Sfx.play('bad'); this.close(); } }); });
+    if (!this.open) {   // Eltern-Code (4 Ziffern): beim ersten Mal festlegen, danach eingeben
+      const title = { set1: 'Lege einen Eltern-Code fest (4 Ziffern)', set2: 'Code zur Sicherheit wiederholen', enter: 'Eltern-Code eingeben' }[this.mode];
+      txt(c, title, W / 2, y + 66, 16, '#3d2c1f', 'center', null);
+      for (let i = 0; i < 4; i++) { const bx = W / 2 + (i - 1.5) * 40; rrPath(c, bx - 16, y + 82, 32, 36, 10); fs(c, '#fff', 2.5); if (i < this.pin.length) { ell(c, bx, y + 100, 7, 7); c.fillStyle = '#3d2c1f'; c.fill(); } }
+      if (this.err) txt(c, this.err, W / 2, y + 134, 13, '#c1121f', 'center', null);
+      const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '<'], kw = 66, kh = 40;
+      keys.forEach((k, i) => { if (!k) return; const kx = W / 2 + ((i % 3) - 1) * (kw + 8) - kw / 2, ky = y + 146 + Math.floor(i / 3) * (kh + 6);
+        rrPath(c, kx, ky, kw, kh, 12); fs(c, k === '<' ? '#ffd6a5' : '#fff', 2.5); if (k === '<') icon(c, 'back', kx + kw / 2, ky + kh / 2, 22); else txt(c, k, kx + kw / 2, ky + kh / 2 + 1, 20, '#3d2c1f', 'center', null);
+        UI.btn(kx, ky, kw, kh, () => this.key(k)); });
+      if (this.mode === 'enter') { txt(c, 'Code vergessen?', x + 24, y + h - 18, 12, '#118ab2', 'left', null); UI.btn(x + 14, y + h - 34, 130, 30, () => this.forgot()); }
     } else {
       txt(c, 'Spielzeit pro Tag', x + 24, y + 74, 15, '#3d2c1f', 'left', null);
       [[0, 'ohne'], [20, '20 Min'], [30, '30 Min'], [45, '45 Min'], [60, '60 Min']].forEach(([m, n], i) => { const bw = (w - 48) / 5 - 6, bx = x + 24 + i * (bw + 6), on = (a.limitMin || 0) === m; rrPath(c, bx, y + 90, bw, 40, 14); fs(c, on ? '#ffd166' : '#fff', 2.5); txt(c, n, bx + bw / 2, y + 110, 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 90, bw, 40, () => { a.limitMin = m; Save.write(); Sfx.play('tap'); }); });
@@ -529,8 +536,24 @@ class ParentPanel {
     }
     c.restore();
   }
+  key(k) {
+    if (k === '<') { this.pin = this.pin.slice(0, -1); Sfx.play('tap'); return; }
+    if (this.pin.length >= 4) return; this.pin += k; this.err = ''; Sfx.play('tap');
+    if (this.pin.length < 4) return;
+    const a = ACC(), p = this.pin; this.pin = '';
+    if (this.mode === 'set1') { this.first = p; this.mode = 'set2'; return; }
+    if (this.mode === 'set2') { if (p !== this.first) { this.err = 'Die Codes waren verschieden – nochmal.'; this.mode = 'set1'; Sfx.play('bad'); return; } a.parentPin = pinHash(p); Save.write(); this.open = true; Sfx.play('good'); toast('Eltern-Code gespeichert', 'Gut merken!', 'lock'); return; }
+    if (pinHash(p) === a.parentPin) { this.open = true; Sfx.play('good'); } else { this.err = 'Falscher Code.'; Sfx.play('bad'); buzz(80); }
+  }
+  forgot() {   // gesicherte Konten: mit dem Konto-Passwort zurücksetzen; Gast-Konten: mit dem Bilder-Code
+    const a = ACC(), reset = () => { a.parentPin = null; Save.write(); this.mode = 'set1'; this.pin = ''; this.err = ''; overlay = this; };
+    if (a.token && a.hasPass) overlay = new PassDialog({ title: 'Eltern-Code zurücksetzen', sub: 'Gib das Passwort des Kontos „' + a.name + '“ ein.', ok: async pass => { const r = await Net.call({ action: 'login', name: a.name, pass }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error); setTimeout(reset, 0); return null; }, onClose: () => { if (!overlay) overlay = this; } });
+    else if (Array.isArray(a.code) && a.code.length === 4) overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: reset });
+    else reset();
+  }
   down() {} move() {} up() {}
 }
+function pinHash(p) { let h = 2166136261; for (const ch of 'mio-eltern:' + p) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); }
 class MsgDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
