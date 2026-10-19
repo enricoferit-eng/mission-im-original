@@ -1135,6 +1135,66 @@
  },
  {
   "who": "erzaehler",
+  "text": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.",
+  "key": "921f0e59",
+  "clean": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Super! Über Bruno ist ein Ausrufezeichen. Tippe Bruno an!",
+  "key": "df3cc8e4",
+  "clean": "Super! Über Bruno ist ein Ausrufezeichen. Tippe Bruno an!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bruno gibt dir eine Aufgabe. Löse sie – dann hast du ihm geholfen!",
+  "key": "e2dbee07",
+  "clean": "Bruno gibt dir eine Aufgabe. Löse sie, dann hast du ihm geholfen!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und bleib kurz stehen – dann suchst du von selbst.",
+  "key": "07e5d65f",
+  "clean": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und bleib kurz stehen, dann suchst du von selbst."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe.",
+  "key": "3f5ee280",
+  "clean": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Siehst du die Uhr oben? Bist du schnell genug, bekommst du einen Extra-Joker.",
+  "key": "faea92ac",
+  "clean": "Siehst du die Uhr oben? Bist du schnell genug, bekommst du einen Extra-Joker."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gefunden! Bring den Kochlöffel zurück zu Bruno – tippe ihn an.",
+  "key": "5dbfe6f1",
+  "clean": "Gefunden! Bring den Kochlöffel zurück zu Bruno, tippe ihn an."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Toll gemacht! Das Tor ist offen. Lauf hin und tippe es an – dann geht dein echtes Abenteuer los!",
+  "key": "2f14a59b",
+  "clean": "Toll gemacht! Das Tor ist offen. Lauf hin und tippe es an, dann geht dein echtes Abenteuer los!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Hilf zuerst Bruno!",
+  "key": "4191b9c6",
+  "clean": "Hilf zuerst Bruno!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Helfer-Schule überspringen? Du kannst sie später über „Anleitung“ im Menü wieder besuchen.",
+  "key": "3d6824f4",
+  "clean": "Helfer-Schule überspringen? Du kannst sie später über „Anleitung“ im Menü wieder besuchen."
+ },
+ {
+  "who": "erzaehler",
   "text": "Zum Bereich Küche reisen?",
   "key": "b894e39c",
   "clean": "Zum Bereich Küche reisen?"
@@ -3544,6 +3604,84 @@
   "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zur Person. Hast du allen 5 geholfen, wartet an der Schranke zur Straße die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
   "key": "e927fc68",
   "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zur Person. Hast du allen 5 geholfen, wartet an der Schranke zur Straße die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
+ },
+ {
+  "who": "gate",
+  "text": "Hilf zuerst Bruno!",
+  "key": "229b6adb",
+  "clean": "Hilf zuerst Bruno!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau bei den Kisten nach!",
+  "key": "5d793ca3",
+  "clean": "Schau bei den Kisten nach!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau bei den Kisten nach – dann tippe auf die Lupe!",
+  "key": "5a8d21fc",
+  "clean": "Schau bei den Kisten nach, dann tippe auf die Lupe!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring die Sachen zurück – tippe Bruno an!",
+  "key": "be80a1ff",
+  "clean": "Bring die Sachen zurück, tippe Bruno an!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe Bruno mit ! an.",
+  "key": "58b974b1",
+  "clean": "Tippe Bruno mit ! an."
+ },
+ {
+  "who": "u_bruno",
+  "text": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?",
+  "key": "914272c4",
+  "clean": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "u_bruno",
+  "text": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?",
+  "key": "ee79723e",
+  "clean": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "u_bruno",
+  "text": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!",
+  "key": "54e50d35",
+  "clean": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "u_bruno",
+  "text": "Schau bei den Kisten nach!",
+  "key": "4ddab1bd",
+  "clean": "Schau bei den Kisten nach!"
+ },
+ {
+  "who": "gate",
+  "text": "Schau bei den Kisten nach!",
+  "key": "a380de1e",
+  "clean": "Schau bei den Kisten nach!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Tippe auf die Leute mit dem gelben Ausrufezeichen. Jede Person hat 4 Aufgaben für dich. Wenn du allen 5 Leuten geholfen hast, wartet am Tor die letzte Aufgabe. Lauf über die leuchtenden Sammel-Sachen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr – auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich.",
+  "key": "6742a016",
+  "clean": "Tippe auf die Leute mit dem gelben Ausrufezeichen. Jede Person hat 4 Aufgaben für dich. Wenn du allen 5 Leuten geholfen hast, wartet am Tor die letzte Aufgabe. Lauf über die leuchtenden Sammel-Sachen: Wer alle 8 findet, bekommt einen Extra-Joker. Bonus-Jagd: Ab dem Auftrag läuft die Bonus-Uhr, auch während der Aufgaben. Bist du vorher fertig, gibt es einen Extra-Joker. Laufen: Tippe irgendwo hin oder zieh mit dem Finger. Kommst du bei einer Aufgabe nicht weiter, hilft dir der Joker. Du hast 3 Joker pro Bereich."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "43877383",
+  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "f73f9408",
+  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "gate",

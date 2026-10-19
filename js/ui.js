@@ -133,7 +133,7 @@ class Menu {
     soundBtn(c, W - 40, 40);
     if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 96 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 46, 96 + b], [W - 40, 88 + b], [W - 34, 96 + b]]); c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 110 + b, 12, '#fff', 'center', null); }   /* iPhone: Ton geht erst nach einer Berührung */
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
-    roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => setScene(new Tutorial()));
+    roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => startUebung(a.lastDiff || 'medium', 'menu'));   // Anleitung = Helfer-Schule zum Mitspielen
     txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
     { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }
     rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
@@ -168,7 +168,7 @@ class Menu {
         icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
       }
       if (sp.clears > 0) icon(c, 'crown', x + w - 26, y + bob + 24, 30);
-      UI.btn(x, y + bob, w, h, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); setScene(!sp0.clears && !sp0.run && !g0.clears && !g0.run ? new Play(d.id, { stage: startArea(d.id) }) : new StageMap(d.id)); });
+      UI.btn(x, y + bob, w, h, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); a.lastDiff = d.id; const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); const fresh = !sp0.clears && !sp0.run && !g0.clears && !g0.run; if (fresh && !a.tut.uebung) { startUebung(d.id, 'play'); return; } setScene(fresh ? new Play(d.id, { stage: startArea(d.id) }) : new StageMap(d.id)); });   // ganz neu: erst die Helfer-Schule (überspringbar)
     });
   }
 }
