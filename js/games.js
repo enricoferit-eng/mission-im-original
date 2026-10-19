@@ -290,7 +290,7 @@ class GameOverlay {
     this.drawRays(c);
     const dz = this.danger();
     if (dz > 0) { const a = dz * (0.25 + 0.25 * Math.sin(this.t * 14)); const gr = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.7); gr.addColorStop(0, 'rgba(239,71,111,0)'); gr.addColorStop(1, `rgba(239,71,111,${a})`); c.fillStyle = gr; c.fillRect(0, 0, W, H); }
-    roundBtn(c, 44, 42, 24, '#fff', 'stop', () => { Music.stop(); Sfx.hook = null; if (overlay === this) overlay = null; if (this.opts.onStop) this.opts.onStop(); });
+    roundBtn(c, 44, 42, 24, '#fff', 'stop', () => { const g = this, quit = () => { Music.stop(); Sfx.hook = null; if (g.opts.onStop) g.opts.onStop(); }; if (this.opts.onStop && typeof PauseDialog !== 'undefined' && !(scene && scene.mp)) { Sfx.play('tap'); overlay = new PauseDialog({ onQuit: quit, onResume: () => { overlay = g; } }); } else { if (overlay === this) overlay = null; quit(); } });   // Pause: Aufgabe und Bonus-Uhr stehen, Weiter macht genau dort weiter
     const o = this.opts;
     if (o.kind === 'easy' && o.steps) {
       const n = o.steps.n, w = Math.min(28, this.side ? (H - 140) / n : (W - 200) / n);

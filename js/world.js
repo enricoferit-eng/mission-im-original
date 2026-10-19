@@ -65,7 +65,7 @@ function withStage(id, fn) { const cur = SG && SG.id; useStage(id); try { fn(); 
 let TERRAIN = null;
 function terrainImage() {
   if (TERRAIN) return TERRAIN;
-  const B = worldBox(), Q = 0.25, cv = document.createElement('canvas'); cv.width = Math.ceil((B.x1 - B.x0) * Q); cv.height = Math.ceil((B.y1 - B.y0) * Q);
+  const B = worldBox(), Q = 0.35, cv = document.createElement('canvas'); cv.width = Math.ceil((B.x1 - B.x0) * Q); cv.height = Math.ceil((B.y1 - B.y0) * Q);
   const g = cv.getContext('2d'); g.scale(Q, Q); g.translate(-B.x0, -B.y0); paintTerrain(g, B, mulberry32(77));
   TERRAIN = { cv, B }; return TERRAIN;
 }
@@ -163,7 +163,7 @@ Object.assign(Play.prototype, {
     return true;
   },
   drawNbGrounds(c) {
-    { const T = terrainImage(), [X0, Y0] = WORLD_XY[this.stage]; c.drawImage(T.cv, T.B.x0 - X0, T.B.y0 - Y0, T.B.x1 - T.B.x0, T.B.y1 - T.B.y0);   // Gelände unter allem
+    { const T = terrainImage(), [X0, Y0] = WORLD_XY[this.stage]; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(T.cv, T.B.x0 - X0, T.B.y0 - Y0, T.B.x1 - T.B.x0, T.B.y1 - T.B.y0);   // Gelände unter allem
       // ab und zu fährt ein Auto auf der L114 vorbei
       const P = [[4900, T.B.y0], [4900, 3700], [4500, 4500], [3000, 4700], [T.B.x0, 4700]], len = []; let tot = 0; for (let k = 1; k < P.length; k++) { const l = dist(P[k - 1][0], P[k - 1][1], P[k][0], P[k][1]); len.push(l); tot += l; }
       for (const [off, col, dir] of [[0, '#e63946', 1], [0.45, '#118ab2', -1]]) { const per = tot / 520 + 9, ph = ((this.t / per) + off) % 1, dd = (dir > 0 ? ph : 1 - ph) * (tot + 4000) - 2000; if (dd < 0 || dd > tot) continue; let rem = dd, k = 0; while (k < len.length - 1 && rem > len[k]) { rem -= len[k]; k++; } const a = P[k], b = P[k + 1], f = rem / len[k], gx = a[0] + (b[0] - a[0]) * f, gy = a[1] + (b[1] - a[1]) * f, ang = Math.atan2(b[1] - a[1], b[0] - a[0]) + (dir < 0 ? Math.PI : 0), side = dir > 0 ? 70 : -70; const nx = -Math.sin(Math.atan2(b[1] - a[1], b[0] - a[0])) * side, ny = Math.cos(Math.atan2(b[1] - a[1], b[0] - a[0])) * side;

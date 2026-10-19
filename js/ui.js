@@ -352,6 +352,28 @@ function askDelete(id, a) {
   } });
 }
 
+// Pause (roter Knopf im Spiel): alles steht, auch die Bonus-Uhr; Weiter = zurück ins Spiel, Beenden = ins Menü
+class PauseDialog {
+  constructor(o) { this.o = o; this.t = 0; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; Voice.stop(); if (this.o.onResume) this.o.onResume(); }
+  draw(c) {
+    Voice.once('Pause. Die Bonus-Uhr steht still.');
+    const w = Math.min(W - 30, 380), h = 200, x = (W - w) / 2, y = (H - h) / 2 - 10;
+    c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
+    fitBegin(c, w, h + 50);
+    panel(c, x, y, w, h, '#fff7e6', 24);
+    rrPath(c, W / 2 - 16, y + 20, 11, 36, 4); fs(c, '#ef476f', 0); rrPath(c, W / 2 + 5, y + 20, 11, 36, 4); fs(c, '#ef476f', 0);
+    txt(c, 'Pause', W / 2, y + 80, 28, '#3d2c1f', 'center', null);
+    txt(c, 'Die Bonus-Uhr steht still.', W / 2, y + 112, 16, '#6b5a48', 'center', null);
+    const pu = 1 + Math.sin(this.t * 5) * 0.05;
+    c.save(); c.translate(W / 2 + 64, y + h - 18); c.scale(pu, pu); roundBtn(c, 0, 0, 32, '#06d6a0', 'play', null); c.restore();
+    UI.btn(W / 2 + 28, y + h - 54, 72, 72, () => { Sfx.play('tap'); this.close(); });
+    txt(c, 'Weiter', W / 2 + 64, y + h + 28, 14, '#fff', 'center', BRAND.olive);
+    roundBtn(c, W / 2 - 64, y + h - 18, 26, '#ced4da', 'stop', () => { if (overlay === this) overlay = null; Voice.stop(); this.o.onQuit(); });
+    txt(c, 'Beenden', W / 2 - 64, y + h + 28, 14, '#fff', 'center', BRAND.olive);
+  }
+}
 class ConfirmDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }

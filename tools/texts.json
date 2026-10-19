@@ -1129,6 +1129,12 @@
  },
  {
   "who": "erzaehler",
+  "text": "Pause. Die Bonus-Uhr steht still.",
+  "key": "d2f0af44",
+  "clean": "Pause. Die Bonus-Uhr steht still."
+ },
+ {
+  "who": "erzaehler",
   "text": "Zum Bereich Küche reisen?",
   "key": "b894e39c",
   "clean": "Zum Bereich Küche reisen?"
