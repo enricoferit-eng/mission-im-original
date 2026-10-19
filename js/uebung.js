@@ -1,7 +1,7 @@
 'use strict';
 // ---------- Helfer-Schule: das Spiel spielend lernen (statt einer Anleitung zum Durchklicken) ----------
 // Ein kleiner eigener Bereich mit echter Steuerung. Koch Bruno führt Schritt für Schritt durch alles Wichtige:
-// laufen → ansprechen → suchen → Aufgabe lösen → zurückbringen → durchs Tor. Man kann jederzeit überspringen.
+// laufen → ansprechen → suchen → Aufgabe lösen → zurückbringen → durchs Tor. Kein Überspringen: jeder lernt es einmal.
 Object.assign(STAFF_PEOPLE, { u_bruno: { skin: '#e0ac85', hair: '#6f4e37', beard: '#6f4e37', jacket: '#ffffff', pipe: '#95C11F', pants: '#343a40', shoes: '#212529', hat: 'toque' } });
 Object.assign(NPC_NAMES, { u_bruno: 'Koch Bruno' });
 Object.assign(NPC_SHORT, { u_bruno: 'Bruno' });
@@ -95,7 +95,7 @@ function uebungStep(p) {
   if (!q) return 'talk';
   return q.got.every(Boolean) ? 'back' : p.diff === 'hard' ? 'searchHard' : 'search';
 }
-function uebungDone(diff) {   // geschafft oder übersprungen: weiter ins echte Abenteuer (bzw. zurück ins Menü, wenn man nur üben wollte)
+function uebungDone(diff) {   // geschafft: weiter ins echte Abenteuer (bzw. zurück ins Menü, wenn man nur üben wollte)
   const a = ACC(); if (a) { a.tut.uebung = true; a.tut.coach = true; a.tut.symbol = true; }
   SP(diff, 'uebung').run = null; Save.write();
   const back = window.UEBUNG_BACK; window.UEBUNG_BACK = null;
@@ -160,9 +160,6 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     L.forEach((l, i) => txt(c, l, x + 52, y + 20 + i * 18, 14, '#3d2c1f', 'left', null));
     const order = this.diff === 'easy' ? ['walk', 'talk', 'taskEasy', 'gate'] : ['walk', 'talk', this.diff === 'hard' ? 'searchHard' : 'search', 'back', 'gate'], k = order.indexOf(step);
     order.forEach((_, i) => { ell(c, W / 2 + (i - (order.length - 1) / 2) * 16, y - 10, 5, 5); fs(c, i < k ? '#06d6a0' : i === k ? '#ffd166' : '#e9ecef', 1.5); });
-    // Überspringen
-    const bx = 12, by = H - 46; rrPath(c, bx, by, 106, 34, 17);   // unten links: oben rechts steht die Liste der gesuchten Sachen fs(c, 'rgba(255,255,255,.9)', 2.5); txt(c, 'Überspringen', bx + 53, by + 18, 13, '#3d2c1f', 'center', null);
-    UI.btn(bx - 4, by - 6, 114, 46, () => { overlay = new ConfirmDialog({ text: 'Helfer-Schule überspringen? Du kannst sie später über „Anleitung“ im Menü wieder besuchen.', icon: 'play', onYes: () => uebungDone(this.diff) }); });
   };
   P.drawHud._src = hud0._src || hud0;   // andere Werkzeuge lesen den Original-Code der Anzeige
 }

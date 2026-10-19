@@ -16,7 +16,7 @@ const puppeteer = require('puppeteer-core');
     add('Wähle deine Figur.');
     add('So laut sind die Stimmen.');   // Hörprobe im Ton-Regler
     add('Pause. Die Bonus-Uhr steht still.');   // Pause-Fenster im Spiel
-    Object.values(UEBUNG_SAY).forEach(t => add(t)); add('Helfer-Schule überspringen? Du kannst sie später über „Anleitung“ im Menü wieder besuchen.');   // Helfer-Schule
+    Object.values(UEBUNG_SAY).forEach(t => add(t));   // Helfer-Schule
     STAGE_ORDER.forEach(id => add('Zum Bereich ' + STAGE_NAME[id] + ' reisen?'));
     add('So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.');
     add('Schau hinter Steine und Büsche – dann tippe auf die Lupe!');
