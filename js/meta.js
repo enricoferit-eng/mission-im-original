@@ -342,11 +342,20 @@ class MultiScene {
   async refresh() { const r = await api({ action: 'friends', score: myScore() }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Gerade keine Verbindung. Versuch es gleich nochmal.'; }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 8 && ACC() && ACC().token) { this.pollT = 0; this.refresh(); } }
   leave(s) { nameInput.style.display = 'none'; nameInput.blur(); setScene(s); }
+  // Freunde: per Freundes-Code eine Anfrage schicken – befreundet erst, wenn der andere annimmt
   async addFriend() {
-    const v = nameInput.value.trim(); if (v.length < 2) return; nameInput.blur(); this.busy = true;
-    const r = await api({ action: 'friend_add', name: v }); this.busy = false;
-    if (r && r.status === 200) { this.data = r.data; this.mode = 'menu'; nameInput.value = ''; Sfx.play('win'); achieve('freund'); }
-    else this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : r.data && r.data.error === 'self' ? 'Das bist du selbst!' : 'Ein Konto mit diesem Namen gibt es nicht.';
+    const v = nameInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v.length !== 6) return; nameInput.blur(); this.busy = true;
+    const r = await api({ action: 'friend_request', fcode: v }); this.busy = false;
+    if (r && r.status === 200) {
+      this.data = r.data; this.mode = 'menu'; nameInput.value = ''; Sfx.play('win');
+      if (r.data.result === 'friends') { achieve('freund'); toast('Ihr seid jetzt Freunde!', r.data.name, 'friends'); }
+      else if (r.data.result === 'already') toast('Schon befreundet', r.data.name || '', 'friends');
+      else toast('Anfrage geschickt!', (r.data.name || 'Dein Freund') + ' muss sie noch annehmen', 'friends');
+    }
+    else this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : r.data && r.data.error === 'self' ? 'Das ist dein eigener Code!' : 'Diesen Freundes-Code gibt es nicht.';
+  }
+  async answer(req, yes) {
+    const r = await api({ action: 'friend_answer', from: req.login, yes }); if (r && r.status === 200) { this.data = r.data; Sfx.play(yes ? 'win' : 'tap'); if (yes) { achieve('freund'); toast('Ihr seid jetzt Freunde!', req.name, 'friends'); } }
   }
   async create(invite) {
     this.busy = true; const r = await api({ action: 'lobby_new', opts: this.opts, invite: invite || null }); this.busy = false;
@@ -374,13 +383,20 @@ class MultiScene {
     }
     if (this.mode === 'add' || this.mode === 'code') {
       const w = Math.min(W - 30, 420), x = (W - w) / 2, y = top + 10;
-      panel(c, x, y, w, 220, '#fff7e6', 24);
-      txt(c, this.mode === 'add' ? 'Name deines Freundes' : 'Spiel-Code (4 Buchstaben)', W / 2, y + 36, 17, '#3d2c1f', 'center', null);
+      const add = this.mode === 'add', my = this.data && this.data.myCode;
+      panel(c, x, y, w, add ? 290 : 220, '#fff7e6', 24);
+      txt(c, add ? 'Freundes-Code deines Freundes' : 'Spiel-Code (4 Buchstaben)', W / 2, y + 36, 17, '#3d2c1f', 'center', null);
+      if (add) {   // eigenen Code zeigen + teilen
+        txt(c, 'Dein Freundes-Code:', W / 2 - 40, y + 238, 13, '#6b5a48', 'right', null);
+        rrPath(c, W / 2 - 34, y + 222, 120, 32, 10); fs(c, '#e7f5ff', 2.5); txt(c, my || '…', W / 2 + 26, y + 239, 20, '#118ab2', 'center', null);
+        if (my) roundBtn(c, W / 2 + 112, y + 238, 17, '#caffbf', 'friends', async () => { const t = 'Werde mein Freund bei „Mission: Im Original“! Mein Freundes-Code: ' + my; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t }); else { await navigator.clipboard.writeText(t); toast('Kopiert!', 'Schick den Code deinem Freund', 'friends'); } } catch (e) { /* abgebrochen */ } });
+        wrapLines(c, 'Der andere muss deine Anfrage annehmen.', w - 40, 12).forEach((l, i) => txt(c, l, W / 2, y + 270 + i * 15, 12, '#8d5a3b', 'center', null));
+      }
       Object.assign(nameInput.style, { display: this.busy ? 'none' : 'block', left: (x + 24) + 'px', top: (y + 58) + 'px', width: (w - 48) + 'px', height: '52px' });
-      nameInput.placeholder = this.mode === 'add' ? 'Fantasiename' : 'z. B. KLMP'; nameInput.maxLength = this.mode === 'add' ? 14 : 4;
-      if (this.mode === 'code') nameInput.value = nameInput.value.toUpperCase();
+      nameInput.placeholder = this.mode === 'add' ? 'z. B. K7P2QX' : 'z. B. KLMP'; nameInput.maxLength = this.mode === 'add' ? 6 : 4;
+      nameInput.value = nameInput.value.toUpperCase();
       if (this.err) txt(c, this.err, W / 2, y + 132, 14, '#c1121f', 'center', null);
-      const ok = !this.busy && nameInput.value.trim().length >= (this.mode === 'code' ? 4 : 2);
+      const ok = !this.busy && nameInput.value.trim().length >= (this.mode === 'code' ? 4 : 6);
       c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 176, 30, '#06d6a0', 'check', ok ? () => (this.mode === 'add' ? this.addFriend() : this.join(nameInput.value.trim())) : null); c.restore();
       return;
     }
@@ -400,8 +416,14 @@ class MultiScene {
       rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#ffd166', 2.5); txt(c, inv.from.name + ' lädt dich ein!', lx + 22, yy + 22, 14, '#3d2c1f', 'left', null);
       rrPath(c, lx + lw - 100, yy + 6, 80, 32, 12); fs(c, '#06d6a0', 2); txt(c, 'Mitspielen', lx + lw - 60, yy + 22, 12, '#fff', 'center', null); UI.btn(lx + lw - 100, yy + 6, 80, 32, () => this.join(inv.code)); yy += 52;
     });
+    if (d && d.requests && d.requests.length) d.requests.slice(-2).forEach(rq => {   // Freundschaftsanfragen: annehmen oder nicht
+      rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#bde0fe', 2.5); c.font = `900 13px ${FONT}`;
+      txt(c, rq.name, lx + 22, yy + 15, 14, '#3d2c1f', 'left', null); txt(c, 'möchte dein Freund sein', lx + 22, yy + 32, 11, '#1d4e89', 'left', null);
+      roundBtn(c, lx + lw - 76, yy + 22, 15, '#06d6a0', 'check', () => this.answer(rq, true));
+      roundBtn(c, lx + lw - 38, yy + 22, 15, '#ced4da', 'cross', () => this.answer(rq, false)); yy += 52;
+    });
     if (!d) txt(c, this.err || 'Lade …', lx + lw / 2, yy + 20, 14, '#6b5a48', 'center', null);
-    else if (!d.friends.length) wrapLines(c, 'Noch keine Freunde. Füge Freunde mit ihrem Fantasienamen hinzu!', lw - 40, 13).forEach((l, i) => txt(c, l, lx + lw / 2, yy + 16 + i * 18, 13, '#6b5a48', 'center', null));
+    else if (!d.friends.length) wrapLines(c, 'Noch keine Freunde. Tipp auf „+ hinzufügen“ und gib den Freundes-Code deines Freundes ein!', lw - 40, 13).forEach((l, i) => txt(c, l, lx + lw / 2, yy + 16 + i * 18, 13, '#6b5a48', 'center', null));
     else { txt(c, 'Bestenliste – du: ★ ' + myScore(), lx + 18, yy + 8, 12, '#6b5a48', 'left', null); yy += 20; }
     if (d && d.friends.length) d.friends.slice().sort((p1, p2) => (p2.score || 0) - (p1.score || 0)).slice(0, Math.floor((top + lh - yy) / 46)).forEach(f => {
       rrPath(c, lx + 10, yy, lw - 20, 40, 14); fs(c, '#fff', 2);
