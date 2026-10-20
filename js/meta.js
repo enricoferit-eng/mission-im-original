@@ -482,6 +482,32 @@ class MultiScene {
   async refresh() { const r = await api({ action: 'friends', score: myScore() }); if (r && r.status === 200) { this.data = r.data; this.err = ''; } else if (!r) this.err = 'Gerade keine Verbindung. Versuch es gleich nochmal.'; }
   update(dt) { this.t += dt; this.pollT += dt; if (this.pollT > 8 && ACC() && ACC().token) { this.pollT = 0; this.refresh(); } }
   leave(s) { nameInput.style.display = 'none'; nameInput.blur(); setScene(s); }
+  // Startseite rechts: 1) Spiel starten oder beitreten  2) eine von drei fertigen Spielarten (oder eigene Einstellungen)
+  drawStart(c, rx, ry, rw, rh) {
+    const o = this.opts, area = (STAGE_ORDER.includes(o.stages[0]) ? o.stages[0] : 'spielplatz'), diff = CUR_DIFF || 'medium';
+    const big = (x, y, w, h, col, ic, title, sub, fn) => { rrPath(c, x, y + 4, w, h, 20); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); rrPath(c, x, y, w, h, 20); fs(c, col, 3);
+      const ir = Math.min(26, h * 0.3); ell(c, x + 18 + ir, y + h / 2, ir, ir); fs(c, '#fff', 2.5); icon(c, ic, x + 18 + ir, y + h / 2, ir * 1.2);
+      const tx = x + 30 + ir * 2; txt(c, title, tx, y + h / 2 - (sub ? 10 : 0), 17, '#3d2c1f', 'left', null, w - (tx - x) - 12); if (sub) txt(c, sub, tx, y + h / 2 + 13, 13, '#6b5a48', 'left', null, w - (tx - x) - 12);
+      UI.btn(x, y, w, h, () => { Sfx.play('tap'); fn(); }); };
+    if (this.step !== 'preset') {
+      txt(c, 'Was möchtest du?', rx + rw / 2, ry + 30, 18, BRAND.olive, 'center', null);
+      const h = Math.min(96, (rh - 80) / 2 - 8);
+      big(rx + 16, ry + 54, rw - 32, h, '#b9fbc0', 'play', 'Spiel starten', 'Du lädst Freunde ein', () => { this.step = 'preset'; });
+      big(rx + 16, ry + 66 + h, rw - 32, h, '#bde0fe', 'friends', 'Spiel beitreten', 'Mit dem Code von deinem Freund', () => { this.mode = 'code'; this.err = ''; nameInput.value = ''; });
+      return;
+    }
+    roundBtn(c, rx + 30, ry + 28, 16, '#fff', 'back', () => { this.step = null; Sfx.play('tap'); });
+    txt(c, 'Was wollt ihr spielen?', rx + 56, ry + 29, 17, BRAND.olive, 'left', null, rw - 70);
+    const P = [
+      ['#ffd6a5', 'jump', 'Wettrennen zu zweit', 'Wer hilft schneller? · ' + STAGE_INFO[area].name, { mode: 'duell', size: 2, kids: 3, boss: false, live: true }],
+      ['#caffbf', 'friends', 'Zusammen helfen', 'Ein großer Auftrag für euch zwei', { mode: 'team', size: 2, kids: 1, boss: false, live: true }],
+      ['#e7c6ff', 'trophy', 'Großes Rennen', 'Bis zu 4 Spieler · ' + STAGE_INFO[area].name, { mode: 'duell', size: 4, kids: 3, boss: false, live: true }]];
+    const gap = 8, h = Math.min(78, (rh - 104) / 3 - gap);
+    P.forEach(([col, ic, title, sub, set], i) => big(rx + 16, ry + 52 + i * (h + gap), rw - 32, h, col, ic, title, sub, () => { if (this.busy) return; Object.assign(o, set, { diff, stage: area, stages: [area] }); this.create(); }));
+    { const lab = 'Eigene Einstellungen ›', ly = ry + rh - 26; c.font = `900 14px ${FONT}`; const lw = c.measureText(lab).width + 30; rrPath(c, rx + rw / 2 - lw / 2, ly - 16, lw, 32, 16); fs(c, 'rgba(255,255,255,.7)', 2, 'rgba(61,44,31,.35)'); txt(c, lab, rx + rw / 2, ly, 14, '#6b5a48', 'center', null);
+      UI.btn(rx + rw / 2 - lw / 2, ly - 16, lw, 32, () => { this.step = 'custom'; Sfx.play('tap'); }); }
+    if (this.busy) txt(c, 'Spiel wird erstellt …', rx + rw / 2, ry + rh - 52, 13, '#6b5a48', 'center', null);
+  }
   // Freunde: per Freundes-Code eine Anfrage schicken – befreundet erst, wenn der andere annimmt
   async addFriend() {
     const v = nameInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v.length !== 6) return; nameInput.blur(); this.busy = true;
@@ -508,7 +534,7 @@ class MultiScene {
   draw(c) {
     themeBg(c, 'park');
     topBar(c, () => (this.mode === 'menu' ? this.leave(new Menu()) : (this.mode = 'menu', nameInput.style.display = 'none')));
-    icon(c, 'friends', 104, 44, 40); txt(c, 'Freunde & Mehrspieler', 130, 44, 20, '#fff', 'left', BRAND.olive);
+    icon(c, 'friends', 104, 44, 40); txt(c, W < 600 ? 'Mehrspieler' : 'Freunde & Mehrspieler', 130, 44, 20, '#fff', 'left', BRAND.olive, W - 130 - 80);
     if (needOnline(c)) return;
     const land = W > H, top = 86;
     if (this.mode === 'stages') {   // Bereiche auswählen (Duell: mehrere nacheinander, Zusammen: einer)
@@ -551,12 +577,12 @@ class MultiScene {
     const d = this.data;
     let yy = top + 52;
     if (d && d.myCode) {   // eigener Freundes-Code: weitergeben – wer ihn eingibt, schickt dir eine Anfrage
-      rrPath(c, lx + 10, yy, lw - 20, 38, 14); fs(c, '#e7f5ff', 2.5, '#118ab2');
-      txt(c, 'Dein Freundes-Code:', lx + 22, yy + 19, 12, '#1d4e89', 'left', null);
-      txt(c, d.myCode, lx + 150, yy + 20, 19, '#118ab2', 'left', null);
-      const sx = lx + lw - 40; roundBtn(c, sx, yy + 19, 14, '#caffbf', 'friends', null); txt(c, 'teilen', sx - 22, yy + 20, 11, '#2b9348', 'right', null);
-      UI.btn(lx + 10, yy, lw - 20, 38, async () => { const t = 'Werde mein Freund bei „Mission: Im Original“! Mein Freundes-Code: ' + d.myCode; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t }); else { await navigator.clipboard.writeText(t); toast('Kopiert!', 'Schick den Code deinem Freund', 'friends'); } } catch (e) { /* abgebrochen */ } });
-      yy += 46;
+      rrPath(c, lx + 10, yy, lw - 20, 56, 14); fs(c, '#e7f5ff', 2.5, '#118ab2');   // zwei Zeilen: Wort oben, Code groß darunter – nichts läuft ineinander
+      const sx = lx + lw - 46; txt(c, 'Dein Freundes-Code', lx + 24, yy + 16, 13, '#1d4e89', 'left', null, sx - lx - 70);
+      txt(c, d.myCode, lx + 24, yy + 39, 20, '#118ab2', 'left', null, sx - lx - 70);
+      roundBtn(c, sx, yy + 24, 16, '#caffbf', 'friends', null); txt(c, 'teilen', sx, yy + 49, 11, '#2b9348', 'center', null);
+      UI.btn(lx + 10, yy, lw - 20, 56, async () => { const t = 'Werde mein Freund bei „Mission: Im Original“! Mein Freundes-Code: ' + d.myCode; try { if (navigator.share) await navigator.share({ title: 'Mission: Im Original', text: t }); else { await navigator.clipboard.writeText(t); toast('Kopiert!', 'Schick den Code deinem Freund', 'friends'); } } catch (e) { /* abgebrochen */ } });
+      yy += 64;
     }
     { const L = ACC().mpLast; if (L && Date.now() - L.at < 30 * 60000) { rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#caffbf', 2.5); txt(c, 'Spiel ' + L.code + ' läuft noch', lx + 22, yy + 22, 14, '#3d2c1f', 'left', null);
       rrPath(c, lx + lw - 120, yy + 6, 100, 32, 12); fs(c, '#06d6a0', 2); txt(c, 'Zurück ins Spiel', lx + lw - 70, yy + 22, 11, '#fff', 'center', null); UI.btn(lx + lw - 120, yy + 6, 100, 32, () => { ACC().mpLast = null; this.join(L.code); }); yy += 52; } }   /* nach Verbindungsabbruch wieder beitreten */
@@ -566,7 +592,7 @@ class MultiScene {
     });
     if (d && d.requests && d.requests.length) d.requests.slice(-2).forEach(rq => {   // Freundschaftsanfragen: annehmen oder nicht
       rrPath(c, lx + 10, yy, lw - 20, 44, 14); fs(c, '#bde0fe', 2.5); c.font = `900 13px ${FONT}`;
-      txt(c, rq.name, lx + 22, yy + 15, 14, '#3d2c1f', 'left', null); txt(c, 'möchte dein Freund sein', lx + 22, yy + 32, 11, '#1d4e89', 'left', null);
+      txt(c, rq.name, lx + 22, yy + 15, 14, '#3d2c1f', 'left', null, lw - 130); txt(c, 'möchte dein Freund sein', lx + 22, yy + 32, 11, '#1d4e89', 'left', null, lw - 130);
       roundBtn(c, lx + lw - 76, yy + 22, 15, '#06d6a0', 'check', () => this.answer(rq, true));
       roundBtn(c, lx + lw - 38, yy + 22, 15, '#ced4da', 'cross', () => this.answer(rq, false)); yy += 52;
     });
@@ -577,16 +603,17 @@ class MultiScene {
       rrPath(c, lx + 10, yy, lw - 20, 40, 14); fs(c, '#fff', 2);
       drawCritter(c, AVATARS[(f.avatar || 0) % 6], lx + 30, yy + 36, 0.5, this.t, { noShadow: true });
       ell(c, lx + 46, yy + 12, 5, 5); c.fillStyle = f.online ? '#06d6a0' : '#adb5bd'; c.fill();
-      txt(c, f.name, lx + 56, yy + 21, 14, '#3d2c1f', 'left', null); txt(c, '★ ' + (f.score || 0), lx + lw - 112, yy + 21, 12, '#c9762f', 'right', null);
+      txt(c, f.name, lx + 56, yy + 14, 14, '#3d2c1f', 'left', null, lw - 56 - 120); txt(c, '★ ' + (f.score || 0), lx + 56, yy + 31, 12, '#c9762f', 'left', null);   // Sterne unter dem Namen (sonst stößt ein langer Name daran)
       rrPath(c, lx + lw - 100, yy + 5, 80, 30, 12); fs(c, '#bde0fe', 2); txt(c, 'Einladen', lx + lw - 60, yy + 20, 12, '#3d2c1f', 'center', null);
       UI.btn(lx + lw - 100, yy + 5, 80, 30, () => this.create(f.id)); yy += 46;
     });
-    // Spiel einstellen
+    // Spiel einstellen: erst fragen (starten oder beitreten), dann fertige Spielarten – alle Einstellungen nur unter „Eigene Einstellungen“
     panel(c, rx, ry, rw, rh, '#fff7e6', 22);
+    if (this.step !== 'custom') { this.drawStart(c, rx, ry, rw, rh); if (this.err && this.mode === 'menu') txt(c, this.err, W / 2, H - 10, 13, '#c1121f', 'center', null); return; }
     const o = this.opts, duel = o.mode !== 'team', multi = o.mode === 'duell', more = !!this.more, nRows = more ? (duel ? 6 : 5) + 0.6 : 3.6, rowH = clamp((rh - 72) / nRows, 38, 86), bh = clamp(rowH - 20, 22, 46), small = rowH < 52;
     const seg = (y, label, vals, isSel, set, maxW = 150) => {
       txt(c, label, rx + 16, y, 13, '#6b5a48', 'left', null); const bw = Math.min(maxW, (rw - 32) / vals.length - 6);
-      vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = isSel(v); rrPath(c, bx, y + 10, bw, bh, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 10 + bh / 2, bw < 80 ? 11 : 13, '#3d2c1f', 'center', null); UI.btn(bx, y + 10, bw, bh, () => { set(v); Sfx.play('tap'); }); });
+      vals.forEach(([v, name], i) => { const bx = rx + 16 + i * (bw + 6), sel = isSel(v); rrPath(c, bx, y + 10, bw, bh, 12); fs(c, sel ? '#ffd166' : '#fff', 2.5); txt(c, name, bx + bw / 2, y + 10 + bh / 2, 13, '#3d2c1f', 'center', null, bw - 8); UI.btn(bx, y + 10, bw, bh, () => { set(v); Sfx.play('tap'); }); });
     };
     let y = ry + 20;
     seg(y, 'Modus', [['duell', small || rw < 520 ? 'Jeder gegen jeden' : 'Jeder gegen jeden'], ['team', 'Alle zusammen'], ['2v2', '2 gegen 2']], v => o.mode === v, v => { o.mode = v; if (v !== 'duell') o.stages = [o.stages[0]]; if (v === '2v2') { o.size = 4; o.boss = false; } o.stage = o.stages[0]; }, 180); y += rowH;
@@ -608,7 +635,7 @@ class MultiScene {
     }
     const by = ry + rh - 34, bw2 = (rw - 42) / 2;
     rrPath(c, rx + 14, by - 22, bw2, 44, 16); fs(c, '#06d6a0', 3); txt(c, this.busy ? '…' : 'Spiel erstellen', rx + 14 + bw2 / 2, by, 15, '#fff', 'center', BRAND.ink); UI.btn(rx + 14, by - 22, bw2, 44, () => { if (!this.busy) this.create(); });
-    rrPath(c, rx + 28 + bw2, by - 22, bw2, 44, 16); fs(c, '#bde0fe', 3); txt(c, 'Code eingeben', rx + 28 + bw2 * 1.5, by, 15, '#3d2c1f', 'center', null); UI.btn(rx + 28 + bw2, by - 22, bw2, 44, () => { this.mode = 'code'; this.err = ''; nameInput.value = ''; });
+    rrPath(c, rx + 28 + bw2, by - 22, bw2, 44, 16); fs(c, '#e9ecef', 3); txt(c, '‹ Zurück', rx + 28 + bw2 * 1.5, by, 15, '#3d2c1f', 'center', null); UI.btn(rx + 28 + bw2, by - 22, bw2, 44, () => { this.step = 'preset'; Sfx.play('tap'); });
     if (this.err && this.mode === 'menu') txt(c, this.err, W / 2, H - 10, 13, '#c1121f', 'center', null);
   }
 }
