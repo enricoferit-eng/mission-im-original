@@ -484,7 +484,7 @@ GAMES.heimfahrt = { challenge: true, make(env) {
       drawCar(c, cx + (crash ? Math.sin(t * 50) * 3 : 0), 420, (tx - cx) * 0.004, '#95C11F', 0.85, { mine: true, brake: !gas });
       rrPath(c, 20, 20, 20, 300, 10); fs(c, 'rgba(0,0,0,.3)', 2); rrPath(c, 23, 23 + 294 * (1 - pos / len), 14, 294 * (pos / len), 7); c.fillStyle = '#ffd166'; c.fill(); icon(c, 'home', 30, 12, 20);
       fx.forEach(f => { c.globalAlpha = 1 - f.t; txt(c, f.s, 200, 200 - f.t * 30, 20, f.ok ? '#80ed99' : '#ef476f', 'center', OL); c.globalAlpha = 1; });
-      txt(c, 'Halten = Gas · Loslassen = Bremse', 200, 506, 13, '#fff', 'center', OL);
+      txt(c, 'Halten = Gas · Loslassen = Bremse', 200, 506, 13, '#fff', 'center', OL, 370);
     },
     down(x) { gas = true; tx = clamp(x, 110, 290); },
     move(x) { tx = clamp(x, 110, 290); },
@@ -493,7 +493,7 @@ GAMES.heimfahrt = { challenge: true, make(env) {
 } };
 
 Object.assign(HELP_TEXT, {
-  fondue: 'Die Gabel kreist um den Topf. Halte den Finger gedrückt, dann taucht das Brot ein – aber nur über dem Käse, nicht über dem Feuer! Lass los, wenn der Punkt im grünen Bereich ist.',
+  fondue: 'Die Gabel fährt im Kreis um den Topf. Ist sie über dem Käse, halte den Finger drauf. Lass los, wenn der Punkt im grünen Feld ist.',
   holzhacken: 'Der Holzklotz wackelt hin und her. Wisch nach unten, wenn er gerade steht und der Kreis grün ist.',
   kaminfeuer: 'Wisch von unten nach oben über das Feuer, damit es groß bleibt. Tippe die Funken an, bevor sie auf den Teppich fallen.',
   schneeball: 'Schnipp den Schneeball nach oben. Schnell geschnippt fliegt er weiter nach hinten. Triff die Schneemänner!',

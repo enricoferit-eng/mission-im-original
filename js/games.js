@@ -8,6 +8,8 @@ let GAME_MOTION = 1;                       // wie stark sich Dinge in den Aufgab
 const PAR_LONG = { hanoi: 1.6, pipes: 1.5, rotimg: 1.5, mirror: 1.5, diff: 1.4, lights: 1.4, puzzle: 1.3, balance: 1.3, dials: 1.3, sequence: 1.3, pattern: 1.3, platform: 2 };
 // kurze Fassung des Hilfetexts (erster Satz) – für Leicht ab dem zweiten Mal
 // Erklärung passend zur Stufe: Sätze über andere Stufen („Bei Schwer …“) fallen weg – sonst verwirrt es die Kleinen
+// Zähler oben im Spielfeld („3 / 8“) auf einer hellen Plakette – auf Markise und bunten Hintergründen sonst schlecht lesbar
+function counterTxt(c, s, x, y, size = 22, col = BRAND.olive) { c.font = `900 ${size}px ${FONT}`; const w = c.measureText(s).width + 28; rrPath(c, x - w / 2, y - size * 0.75, w, size * 1.5, size * 0.75); fs(c, 'rgba(255,255,255,.92)', 2.5, '#3d2c1f'); txt(c, s, x, y + 1, size, col === '#fff' ? BRAND.olive : col, 'center', null); }
 function helpFor(id, diff) {
   const t = HELP_TEXT[id] || 'Probier es einfach aus!', name = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[diff];
   if (!name) return t;
@@ -128,7 +130,7 @@ class GameOverlay {
     if (this.combo >= 2) {
       const bonus = Math.min(2.5, 0.5 * this.combo), floor = this.stars < 3 ? this.thr[2 - this.stars] : 0;
       if (this.starsOn()) this.fuse = Math.max(floor, this.fuse - bonus);
-      this.pops.push({ x: p.x, y: p.y - 30, t: 0, text: 'Combo x' + this.combo, col: '#ffd23f', big: true });
+      this.pops.push({ x: p.x, y: p.y - 30, t: 0, text: 'Super x' + this.combo, col: '#ffd23f', big: true });
       if (this.starsOn()) this.pops.push({ x: p.x, y: p.y + 4, t: -0.1, text: '+' + bonus.toFixed(1).replace('.0', '') + ' s', col: '#80ed99' });
     } else this.pops.push({ x: p.x, y: p.y - 26, t: 0, text: '+1', col: '#fff' });
     Sfx.note(523 * Math.pow(2, Math.min(this.combo - 1, 12) / 12 * 2), 0.14, 'triangle', 0.07, 1.5);
@@ -339,7 +341,10 @@ class GameOverlay {
       if (h.type === 'drag') { const e = ease.inout(clamp(k * 1.4, 0, 1)); hx = lerp(h.x, h.x2, e); hy = lerp(h.y, h.y2, e); }
       else if (h.type === 'swipe') { hx = h.x + Math.sin(this.t * 4) * 60; }
       else press = Math.abs(Math.sin(this.t * 6)) * 8;
-      c.globalAlpha = 0.9; drawHand(c, hx + 6, hy + 4 + press, 1.6); c.globalAlpha = 1;
+      c.globalAlpha = 0.9;
+      if (h.y > 360 || h.from === 'top') { c.save(); c.translate(hx - 6, hy - 4 - press); c.rotate(Math.PI); drawHand(c, 0, 0, 1.6); c.restore(); }   // unten stehen meist Beschriftungen: Hand kommt dann von oben und verdeckt sie nicht
+      else drawHand(c, hx + 6, hy + 4 + press, 1.6);
+      c.globalAlpha = 1;
       if (h.type === 'tap' && press > 6) { ell(c, h.x, h.y, 22, 22); c.lineWidth = 4; c.strokeStyle = 'rgba(255,255,255,.8)'; c.stroke(); }
     }
     if (this.state === 'won') {
@@ -390,7 +395,7 @@ class GameOverlay {
     if (this.help) {
       const lines = [helpFor(this.id, this.opts.diff)];
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
-      if (this.starsOn()) lines.push('Sei schnell: Die Zündschnur oben brennt. Erreicht die Flamme einen Stern, fällt er herunter. Mehrere Treffer schnell hintereinander geben eine Combo – dann wird die Zündschnur wieder länger.');
+      if (this.starsOn()) lines.push('Sei schnell: Die Zündschnur oben brennt. Erreicht die Flamme einen Stern, fällt er herunter. Schaffst du mehrere schnell hintereinander, wird die Zündschnur wieder länger.');
       if (this.opts.joker) lines.push('Kommst du nicht weiter, erscheint nach einer Weile unten links der Joker. Damit ist die Aufgabe sofort geschafft. Du hast 3 Joker pro Bereich.');
       Voice.once(lines[0]);   // vorgelesen wird die Erklärung der Aufgabe (als Aufnahme)
       helpPanel(c, lines, () => { this.help = false; this.touched = false; this.t = 0.4; Voice.stop(); }, false);

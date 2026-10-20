@@ -7,7 +7,7 @@ function hwNight(c, top = '#2b1a4a', bot = '#5b2f62') {
   const g = c.createLinearGradient(0, 0, 0, GAME_H); g.addColorStop(0, top); g.addColorStop(1, bot); c.fillStyle = g; c.fillRect(0, 0, GAME_W, GAME_H);
   c.fillStyle = 'rgba(255,255,255,.7)'; for (let i = 0; i < 24; i++) c.fillRect((i * 97) % GAME_W, (i * 59) % 300, 2, 2);
 }
-function hwLabel(c, s, y = 30) { rrPath(c, 60, y - 18, 280, 36, 18); fs(c, 'rgba(255,247,230,.92)', 2.5); txt(c, s, 200, y, 15, '#3d2c1f', 'center', null); }
+function hwLabel(c, s, y = 30) { rrPath(c, 16, y - 18, 368, 36, 18); fs(c, 'rgba(255,247,230,.92)', 2.5); txt(c, s, 200, y, 15, '#3d2c1f', 'center', null, 350); }   // breit genug, Text passt sich an
 function hwGrave(c, x, y, s = 1) { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = 'rgba(0,0,0,.3)'; ell(c, 0, 4, 34, 8); c.fill(); c.beginPath(); c.moveTo(-26, 2); c.lineTo(-26, -34); c.quadraticCurveTo(-26, -58, 0, -58); c.quadraticCurveTo(26, -58, 26, -34); c.lineTo(26, 2); c.closePath(); fs(c, '#8e8a9b', 3); line(c, -10, -36, 10, -36, 3, '#5c586b', false); line(c, -10, -26, 10, -26, 3, '#5c586b', false); c.restore(); }
 function hwGhost(c, x, y, s = 1, a = 1) { c.save(); c.globalAlpha = a; c.translate(x, y); c.scale(s, s); drawItem(c, 'hw_gespenst', 0, 0, 56); c.restore(); }
 
@@ -51,7 +51,7 @@ GAMES.hw_schnitzen = { make(env) {
     update(dt) { t += dt; shake = Math.max(0, shake - dt); fx.forEach(f => (f.t += dt)); fx = fx.filter(f => f.t < 0.7); fin.tick(dt); },
     draw(c) {
       hwNight(c);
-      rrPath(c, 14, 50, 120, 120, 16); fs(c, 'rgba(255,247,230,.95)', 3); txt(c, 'So soll er aussehen', 74, 64, 10, '#6b5a48', 'center', null); hwPumpkin(c, 74, 118, 0.62, goal);
+      rrPath(c, 14, 50, 120, 120, 16); fs(c, 'rgba(255,247,230,.95)', 3); txt(c, 'So soll er aussehen', 74, 66, 10, '#6b5a48', 'center', null, 110); hwPumpkin(c, 74, 118, 0.62, goal);
       c.save(); c.translate(Math.sin(shake * 50) * shake * 14, 0); hwPumpkin(c, 262, 160, 1.05, face, parts.every(p => face[p] === goal[p]) ? 1 : 0.4); c.restore();
       if (rounds > 1) roundDots(c, rounds, round, 30);
       parts.forEach((p, i) => { rrPath(c, 14, rowY(i) - 30, 372, 60, 16); fs(c, 'rgba(255,247,230,.16)', 2, 'rgba(255,255,255,.4)');

@@ -77,7 +77,7 @@ GAMES.belegen = { make(env) {
     draw(c) {
       bgWood(c);
       recipeCard(c, 12, 12, 150, 40 + kinds.length * 30, 'Rezept');
-      kinds.forEach((t, i) => { const y = 62 + i * 30; topping(c, t.k, 36, y, 1.2); if (hideT > 0) txt(c, '× ' + want[i], 80, y + 1, 18, BRAND.olive, 'left', null); else txt(c, '× ?', 80, y + 1, 18, '#adb5bd', 'left', null); });
+      kinds.forEach((t, i) => { const y = 62 + i * 30; topping(c, t.k, 36, y, 1.2); if (hideT > 0) { for (let k = 0; k < want[i]; k++) topping(c, t.k, 74 + k * 16, y, 0.62); } else txt(c, '?', 90, y + 1, 18, '#adb5bd', 'left', null); });   // so viele kleine Bilder wie nötig (statt „× 3“)
       rrPath(c, 180, 40, 205, 300, 18); fs(c, '#c08b55', 4);
       rrPath(c, 196, 58, 173, 264, 34); fs(c, '#f3d39b', 3); rrPath(c, 210, 74, 145, 232, 26); c.fillStyle = '#fffaf0'; c.fill();
       placed.forEach(p => topping(c, p.k, p.x, p.y, 1.1));
@@ -116,7 +116,7 @@ GAMES.eisbecher_r = { make(env) {
       rrPath(c, 252, 380, 16, 30, 3); fs(c, 'rgba(200,235,250,.85)', 3); ell(c, 260, 412, 40, 8); fs(c, 'rgba(200,235,250,.85)', 3);
       for (let i = 0; i < idx; i++) { ell(c, 260 + (i % 2 ? 8 : -8), 290 - i * 26, 30, 22); fs(c, FL[order[i]].col, 3); }
       if (idx >= n) { ell(c, 260, 290 - n * 26 + 4, 7, 7); fs(c, '#e63946', 2.5); }
-      FL.forEach((f, i) => { const x = 52 + i * 74, sx = shake === i && sT > 0 ? shakeX(sT) * 0.5 : 0; rrPath(c, x - 30 + sx, 432, 60, 56, 10); fs(c, '#adb5bd', 3); ell(c, x + sx, 446, 24, 10); fs(c, f.col, 2.5); txt(c, f.n, x + sx, 478, 10, '#fff', 'center', BRAND.ink); });
+      FL.forEach((f, i) => { const x = 52 + i * 74, sx = shake === i && sT > 0 ? shakeX(sT) * 0.5 : 0; rrPath(c, x - 30 + sx, 432, 60, 56, 10); fs(c, '#adb5bd', 3); ell(c, x + sx, 446, 24, 10); fs(c, f.col, 2.5); txt(c, f.n, x + sx, 478, 10, '#fff', 'center', BRAND.ink, 66); });
     },
     down(x, y) {
       if (fin.on() || y < 425) return;
@@ -145,7 +145,7 @@ GAMES.limo_mix = { make(env) {
     draw(c) {
       terraceBg(c);
       recipeCard(c, 12, 12, 140, 40 + ING.length * 32, 'Limo-Rezept');
-      ING.forEach((t, i) => { const y = 60 + i * 32; ing(c, t.k, 34, y, 1.1); txt(c, hideT > 0 ? '× ' + want[i] : '× ?', 70, y + 1, 18, hideT > 0 ? BRAND.olive : '#adb5bd', 'left', null); });
+      ING.forEach((t, i) => { const y = 60 + i * 32; ing(c, t.k, 34, y, 1.1); if (hideT > 0) { for (let k = 0; k < want[i]; k++) ing(c, t.k, 66 + k * 17, y, 0.6); } else txt(c, '?', 74, y + 1, 18, '#adb5bd', 'left', null); });   // Bilder statt „× 2“
       // Krug
       rrPath(c, 200, 70, 140, 270, 26); fs(c, 'rgba(220,240,250,.8)', 4);
       const fill = clamp(bits.length / want.reduce((a, b) => a + b, 0), 0, 1);
@@ -181,7 +181,7 @@ GAMES.spuelen = { make(env) {
     draw(c) {
       c.fillStyle = '#cfe8ef'; c.fillRect(0, 0, GAME_W, GAME_H);
       for (let i = 0; i < 14; i++) { c.fillStyle = 'rgba(255,255,255,.6)'; ell(c, (i * 71) % 400, (i * 53) % 520, 8 + (i % 4) * 4, 8 + (i % 4) * 4); c.fill(); }
-      txt(c, (done) + ' / ' + plates, 200, 34, 20, BRAND.olive, 'center', '#fff');
+      counterTxt(c, done + ' / ' + plates, 200, 34, 20);
       c.save(); c.translate(slide * 300, 0);
       dPlate(c, 200, 250, 140);
       spots.forEach(s => { if (s.a <= 0) return; c.globalAlpha = s.a; ell(c, s.x, s.y, s.s, s.s * 0.8); c.fillStyle = s.col; c.fill(); c.globalAlpha = 1; });
@@ -286,7 +286,7 @@ GAMES.fegen = { make(env) {
     },
     draw(c) {
       terraceBg(c);
-      rrPath(c, 330, 440, 60, 70, 8); fs(c, '#6a994e', 3); txt(c, 'Kompost', 360, 430, 11, BRAND.olive, 'center', '#fff');
+      rrPath(c, 330, 440, 60, 70, 8); fs(c, '#6a994e', 3); txt(c, 'Kompost', 360, 430, 11, BRAND.olive, 'center', '#fff', 70);
       leaves.forEach(l => { if (l.gone) return; c.save(); c.translate(l.x, l.y); c.rotate(l.rot); ell(c, 0, 0, 9, 5); fs(c, l.col, 1.5); c.restore(); });
       c.save(); c.translate(bx, by); rrPath(c, -4, -60, 8, 60, 3); fs(c, '#8d5a3b', 2); rrPath(c, -26, -4, 52, 18, 5); fs(c, '#e9c46a', 2.5); for (let i = -20; i <= 20; i += 6) line(c, i, 14, i, 22, 1.5, '#c9a24a', false); c.restore();
       txt(c, String(leaves.filter(l => !l.gone).length), 30, 24, 18, BRAND.olive, 'left', '#fff');

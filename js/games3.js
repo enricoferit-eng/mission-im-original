@@ -39,7 +39,7 @@ GAMES.schnippeln = { make(env) {
     },
     draw(c) {
       kitchenBg(c, 200);
-      txt(c, got + ' / ' + need, 200, 40, 22, BRAND.olive, 'center', '#fff');
+      counterTxt(c, got + ' / ' + need, 200, 40, 22);
       rrPath(c, 20, 240, 360, 130, 18); fs(c, '#e9c46a', 3); for (let k = 0; k < 6; k++) line(c, 30, 260 + k * 18, 370, 260 + k * 18, 1.5, 'rgba(140,90,40,.18)', false);
       c.save(); c.translate(veg.x + (shake ? Math.sin(t * 60) * 3 : 0), 305); VEG[veg.k](c, veg.w); veg.cuts.forEach(q => { if (!q.done) { c.setLineDash([4, 4]); line(c, q.dx, -18, q.dx, 18, 2, '#fff', false); c.setLineDash([]); } }); c.restore();
       pieces.forEach(p => { c.save(); c.translate(p.x, p.y); c.rotate(p.a); ell(c, 0, 0, 10, 10); fs(c, p.col, 2); c.restore(); });
@@ -120,7 +120,7 @@ GAMES.ueberkochen = { make(env) {
     },
     draw(c) {
       kitchenBg(c, 120);
-      txt(c, got + ' / ' + need, 200, 40, 22, BRAND.olive, 'center', '#fff');
+      counterTxt(c, got + ' / ' + need, 200, 40, 22);
       P.forEach(p => {
         const jig = p.on ? Math.sin(t * 30) * p.foam * 3 : 0;
         ell(c, p.x, p.y + 40, 56, 14); c.fillStyle = p.on ? `rgba(239,71,111,${0.3 + p.foam * 0.5})` : 'rgba(0,0,0,.2)'; c.fill();
@@ -160,7 +160,7 @@ GAMES.pfannkuchen = { make(env) {
     },
     draw(c) {
       kitchenBg(c, 470);
-      txt(c, got + ' / ' + need, 200, 40, 22, BRAND.olive, 'center', '#fff');
+      counterTxt(c, got + ' / ' + need, 200, 40, 22);
       ell(c, panX, 490, 70, 14); c.fillStyle = 'rgba(255,90,40,.35)'; c.fill();
       ell(c, panX, 432, 66, 22); fs(c, '#343a40', 3); rrPath(c, panX + 60, 424, 90, 14, 7); fs(c, '#212529', 2.5);
       c.save(); c.translate(pk.x, pk.y); c.rotate(pk.a); c.scale(1, pk.air ? Math.max(0.15, Math.abs(Math.cos(pk.a * 2))) : 1); ell(c, 0, 0, 46, 16); fs(c, pk.side ? '#e9a03b' : '#f6d38d', 3); for (let k = 0; k < 5; k++) { ell(c, -26 + k * 13, -2 + (k % 2) * 5, 4, 2); c.fillStyle = pk.side ? '#b5651d' : '#e9c46a'; c.fill(); } c.restore();
@@ -180,7 +180,7 @@ GAMES.kneten = { make(env) {
     update(dt) { t += dt; f = Math.max(0, f - dt * (0.08 + L * 0.05)); squish = lerp(squish, 0, dt * 6); wob += dt * (1 + L) * GAME_MOTION; fin.tick(dt); },
     draw(c) {
       kitchenBg(c, 180);
-      txt(c, got + ' / ' + need, 200, 40, 22, BRAND.olive, 'center', '#fff');
+      counterTxt(c, got + ' / ' + need, 200, 40, 22);
       rrPath(c, 30, 210, 340, 250, 20); fs(c, '#e9c46a', 3);
       for (let k = 0; k < 18; k++) { ell(c, 60 + (k * 53) % 300, 230 + (k * 37) % 210, 3, 2); c.fillStyle = 'rgba(255,255,255,.7)'; c.fill(); }
       const cx = 200 + Math.sin(wob) * 40, R = 40 + f * 50;
@@ -206,7 +206,7 @@ GAMES.eier = { make(env) {
     update(dt) { ph += dt * sp * (1 + got / need * 0.6) * GAME_MOTION; crack = Math.max(0, crack - dt * 2); mess = Math.max(0, mess - dt); fin.tick(dt); },
     draw(c) {
       kitchenBg(c, 360);
-      txt(c, got + ' / ' + need, 200, 40, 22, BRAND.olive, 'center', '#fff');
+      counterTxt(c, got + ' / ' + need, 200, 40, 22);
       ell(c, 200, 420, 110, 30); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
       c.beginPath(); c.moveTo(90, 360); c.quadraticCurveTo(200, 500, 310, 360); c.closePath(); fs(c, '#74c0fc', 3); ell(c, 200, 360, 110, 26); fs(c, '#e7f5ff', 3);
       yolks.forEach((y, i) => { ell(c, 200 + y, 362, 12, 7); c.fillStyle = '#ffd166'; c.fill(); });
@@ -296,7 +296,7 @@ GAMES.pizzaofen = { make(env) {
     },
     draw(c) {
       c.fillStyle = '#212529'; c.fillRect(0, 0, GAME_W, GAME_H);
-      txt(c, got + ' / ' + need, 200, 40, 22, '#fff', 'center', BRAND.olive);
+      counterTxt(c, got + ' / ' + need, 200, 40, 22);
       S.forEach(s => {
         rrPath(c, 40, s.y, 320, 96, 14); fs(c, '#495057', 3);
         for (let k = 0; k < 9; k++) { rrPath(c, 44 + k * 35, s.y + 4, 32, 10, 3); c.fillStyle = k % 2 ? '#6c757d' : '#5c636a'; c.fill(); }   // Mauersteine oben

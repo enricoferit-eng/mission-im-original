@@ -142,6 +142,7 @@ class Menu {
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
     { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }], ['gift', 'Geschenk', '#ffd6e0', () => { Sfx.play('tap'); overlay = new DailyGift(); }]];
+      if (!firstAreaDone()) B.length = 0;   // erst nach dem ersten geschafften Bereich
       const nB = B.length, bw = Math.min(160, (W - 70) / nB - 4), by = H - (land ? 38 : 46), ready = typeof giftReady === 'function' && giftReady();
       B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + 8) - bw / 2, yy = by - hop;
         if (gift && ready) { const gl = 0.5 + 0.5 * Math.sin(this.t * 4); rrPath(c, x - 5, yy - 29, bw + 10, 58, 24); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }   // leuchtet, solange das Geschenk noch zu ist
@@ -154,7 +155,7 @@ class Menu {
     }
     { const cw = accountChip.lastW || 0, m = META(), x0 = 12 + (cw || 170) + 10; c.font = `900 17px ${FONT}`; const chipW = c.measureText(String(m ? m.coins : 0)).width + 52;
       if (x0 + chipW <= W - 180) coinChip(c, x0, 40); else coinChip(c, x0 - 4, 40, true); }   // schmaler Bildschirm: kleinere Taler-Anzeige (nicht über „Anleitung“)
-    if (typeof giftReady === 'function' && giftReady()) {   // Tagesgeschenk: geht einmal am Tag von selbst auf (Knopf „Geschenk“ unten)
+    if (typeof giftReady === 'function' && giftReady() && firstAreaDone()) {   // Tagesgeschenk: geht einmal am Tag von selbst auf (Knopf „Geschenk“ unten)
       const fresh = typeof hwNewKid === 'function' && hwNewKid();   // ganz neue Kinder: erst die Helfer-Schule
       if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }
     }
@@ -236,7 +237,9 @@ class InstallGuide {
     c.restore();
   }
 }
-function needsInstallGuide() { return TOUCH && !isStandalone(); }
+function needsInstallGuide() { return TOUCH && !isStandalone() && Save.data.seenTrailer; }   // nicht beim allerersten Start (da soll das Kind gleich loslegen)
+// Hat das Kind schon einen Bereich geschafft? Vorher bleibt das Menü schlicht (kein Laden, Mehrspieler, Halloween …)
+function firstAreaDone() { const a = ACC(); return !!a && (isGameAdmin(a) || ['easy', 'medium', 'hard'].some(d => STAGE_ORDER.some(id => (DP(d).stages[id] || {}).clears > 0))); }
 // Erster Start: sofort spielen – ein Spielstand auf diesem Gerät wird automatisch angelegt.
 // Ein Konto (Name + Geheim-Code, auf dem Server) kann man später über „Spielstand sichern“ machen.
 function ensureProfile() {
@@ -1252,7 +1255,7 @@ class Wardrobe {
     const top = y + 60, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
     this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
     if (shop) { c.save(); c.beginPath(); c.rect(x + 4, top - 2, w - 8, bot - top + 4); c.clip(); }
-    if (shop && !allIds.length) wrapLines(c, 'Noch keine Skins. Kauf welche im Laden, hol sie im Tages-Shop oder am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
+    if (shop && !allIds.length) wrapLines(c, 'Noch keine Kostüme. Kauf welche im Laden oder gewinne sie am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
     ids.forEach((sid, i) => {
       const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 64 + Math.floor(i / cols) * (ch + 10) - this.sc;
       if (shop && (cy > bot || cy + ch < top)) return;
@@ -1282,7 +1285,7 @@ class Wardrobe {
     UI.btn(ox, by - 26, 130, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
     { const id = d.equip, sd = id && SKIN_SIDE[id], fx = ox + 142, fw = x + w - 18 - fx, M = META();
       rrPath(c, fx, by - 30, fw, 60, 18); fs(c, '#fffbe6', 3, '#c9a227');
-      if (!sd) wrapLines(c, id ? 'Dieser ältere Skin hat keine eigene Fähigkeit.' : 'Zieh einen Skin an: Jeder hat eine eigene kleine Fähigkeit, die du hier aufrüsten kannst.', fw - 30, 13).slice(0, 2).forEach((l, i) => txt(c, l, fx + 16, by - 8 + i * 18, 13, '#6b5a48', 'left', null));
+      if (!sd) wrapLines(c, id ? 'Dieses ältere Kostüm hat keine eigene Fähigkeit.' : 'Zieh ein Kostüm an: Jedes hat eine eigene kleine Fähigkeit, die du hier aufrüsten kannst.', fw - 30, 13).slice(0, 2).forEach((l, i) => txt(c, l, fx + 16, by - 8 + i * 18, 13, '#6b5a48', 'left', null));
       else {
         const A = SIDE[sd], lv = sideLevel(id), max = lv >= SIDE_MAX, price = max ? 0 : SIDE_PRICE[SKINS[id].rarity][lv - 1], bw = 134, tw = fw - bw - 70;
         ell(c, fx + 30, by, 21, 21); fs(c, '#fff', 2.5, '#c9a227'); icon(c, A.icon, fx + 30, by, 26);

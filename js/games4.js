@@ -25,7 +25,7 @@ function terraceBg(c, floor = 300, t = 0, wind = 0) {
   c.fillStyle = '#d6cebf'; c.fillRect(0, floor, GAME_W, GAME_H - floor);
   for (let i = 0; i < 260; i++) { const x = (i * 97.3) % GAME_W, y = floor + ((i * 53.7) % (GAME_H - floor)); c.fillStyle = ['#c5bcad', '#e6dfd3', '#b3aa9a'][i % 3]; c.fillRect(x, y, 3, 3); }
 }
-const txtGot = (c, got, need, col = BRAND.olive) => txt(c, got + ' / ' + need, 200, 36, 22, col, 'center', '#fff');
+const txtGot = (c, got, need, col = BRAND.olive) => counterTxt(c, got + ' / ' + need, 200, 36, 22, col);
 const progBar = (c, f, y = 22, col = '#06d6a0') => { rrPath(c, 50, y, 300, 22, 11); fs(c, 'rgba(0,0,0,.25)', 3); rrPath(c, 53, y + 3, 294 * clamp(f, 0, 1), 16, 8); c.fillStyle = col; c.fill(); };
 function drawGlass(c, x, y, s, fill, col = '#ff9f1c', wob = 0) {
   c.save(); c.translate(x, y); c.rotate(wob); c.scale(s, s);
@@ -216,11 +216,11 @@ GAMES.fliegen = { make(env) {
       fin.tick(dt);
     },
     draw(c) {
-      glassBg(c, 180, t); txtGot(c, got, need);
+      glassBg(c, 180, t);
       rrPath(c, 20, 260, 360, 230, 20); fs(c, '#fbf8f2', 3); c.strokeStyle = 'rgba(0,0,0,.08)'; for (let k = 0; k < 6; k++) { c.beginPath(); c.moveTo(20, 280 + k * 36); c.lineTo(380, 280 + k * 36); c.stroke(); }
       plates.forEach(([x, y], i) => { const sx = ruin[i] ? Math.sin(t * 60) * 3 : 0; ell(c, x + sx, y, 62, 30); fs(c, '#fff', 3); ell(c, x + sx, y, 46, 21); fs(c, '#f1f3f5', 1.5); drawFood(c, foods[i], x + sx, y - 6, 62); });
       F.forEach(f => {
-        c.save(); c.translate(f.x, f.y); if (f.dead) c.rotate(f.dead * 8);
+        c.save(); c.translate(f.x, f.y); c.scale(1.5, 1.5); if (f.dead) c.rotate(f.dead * 8);   // größer, damit man sie gut sieht
         const flap = Math.sin(t * 60) * 0.5;
         ell(c, -5, -6, 7, 4, -0.6 + flap); c.fillStyle = 'rgba(220,240,255,.8)'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke();
         ell(c, 5, -6, 7, 4, 0.6 - flap); c.fillStyle = 'rgba(220,240,255,.8)'; c.fill(); c.stroke();
@@ -228,6 +228,7 @@ GAMES.fliegen = { make(env) {
         c.restore();
       });
       if (miss) txt(c, 'Nicht aufs Essen!', 200, 220, 22, '#ef476f', 'center', '#fff');
+      txtGot(c, got, need);   // zuletzt: keine Fliege über dem Zähler
     },
     down(x, y) {
       if (fin.on()) return;
@@ -439,7 +440,7 @@ GAMES.tauben = { make(env) {
       rrPath(c, 40, 270, 140, 70, 10); fs(c, '#6c584c', 3); drawFood(c, 'flammkuchen', 110, 300, 60);
       crumbs.forEach(k => { for (let m = 0; m < k.n; m++) { ell(c, k.x + Math.cos(m * 2.1) * 6, k.y + Math.sin(m * 2.1) * 4, 2.5, 2); c.fillStyle = '#e9c46a'; c.fill(); } });
       P.slice().sort((a, b) => a.y - b.y).forEach(p => drawPigeon(c, p.x, p.y, 2.1, t * 3 + p.t, p.dir, false));   // größer, damit man sie gut sieht
-      txt(c, P.filter(inZone).length + ' / ' + n + ' auf der Wiese', 200, 36, 20, BRAND.olive, 'center', '#fff');
+      counterTxt(c, P.filter(inZone).length + ' / ' + n + ' auf der Wiese', 200, 36, 18);
     },
     down(x, y) { if (fin.on() || y < 260) return; crumbs.push({ x, y, n: 4 }); if (crumbs.length > 3) crumbs.shift(); Sfx.play('tap'); },
   };
@@ -511,7 +512,7 @@ GAMES.kissen = { make(env) {
       // Kissenbox
       rrPath(c, BX - 60, BY - 50, 120, 90, 10); fs(c, '#8d5a3b', 3); rrPath(c, BX - 66, BY - 66, 132, 22, 8); fs(c, '#a0673a', 3); txt(c, 'Kissenbox', BX, BY - 4, 13, '#fff', 'center', null);
       K.forEach(k => { if (k.safe) return; c.save(); c.translate(k.x, k.y); if (k.lost) c.globalAlpha = 0.4; rrPath(c, -26, -18, 52, 36, 12); fs(c, k.col, 3); if (k.wet > 0) { c.fillStyle = `rgba(30,80,140,${k.wet * 0.5})`; rrPath(c, -26, -18, 52, 36, 12); c.fill(); } line(c, -14, 0, 14, 0, 2, 'rgba(255,255,255,.5)', false); c.restore(); });
-      txt(c, K.filter(k => k.safe).length + ' / ' + n + ' gerettet', 200, 36, 20, BRAND.olive, 'center', '#fff');
+      counterTxt(c, K.filter(k => k.safe).length + ' / ' + n + ' gerettet', 200, 36, 18);
     },
     down(x, y) { if (fin.on()) return; const k = K.filter(q => !q.safe && !q.lost).sort((a, b) => dist(x, y, a.x, a.y) - dist(x, y, b.x, b.y))[0]; if (k && dist(x, y, k.x, k.y) < 46) { drag = { k, ox: k.x - x, oy: k.y - y }; Sfx.play('tap'); } },
     move(x, y) { if (drag) { drag.k.x = x + drag.ox; drag.k.y = y + drag.oy; } },

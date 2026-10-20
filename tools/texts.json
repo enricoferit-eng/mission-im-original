@@ -559,9 +559,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Die Gabel kreist um den Topf. Halte den Finger gedrückt, dann taucht das Brot ein – aber nur über dem Käse, nicht über dem Feuer! Lass los, wenn der Punkt im grünen Bereich ist.",
-  "key": "a9252d14",
-  "clean": "Die Gabel kreist um den Topf. Halte den Finger gedrückt, dann taucht das Brot ein, aber nur über dem Käse, nicht über dem Feuer! Lass los, wenn der Punkt im grünen Bereich ist."
+  "text": "Die Gabel fährt im Kreis um den Topf. Ist sie über dem Käse, halte den Finger drauf. Lass los, wenn der Punkt im grünen Feld ist.",
+  "key": "01eac61c",
+  "clean": "Die Gabel fährt im Kreis um den Topf. Ist sie über dem Käse, halte den Finger drauf. Lass los, wenn der Punkt im grünen Feld ist."
  },
  {
   "who": "erzaehler",
@@ -1033,9 +1033,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Die Gabel kreist um den Topf.",
-  "key": "cf04f76e",
-  "clean": "Die Gabel kreist um den Topf."
+  "text": "Die Gabel fährt im Kreis um den Topf.",
+  "key": "2f16a18d",
+  "clean": "Die Gabel fährt im Kreis um den Topf."
  },
  {
   "who": "erzaehler",
@@ -1588,6 +1588,24 @@
   "text": "Ach ja: Aus dem Chalet in den Bergen kam ein Brief. Dort braucht man uns auch!",
   "key": "d57345b0",
   "clean": "Ach ja: Aus dem Chalet in den Bergen kam ein Brief. Dort braucht man uns auch!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Schau, da leuchtet etwas! Lauf hin, hol es und bring es zurück.",
+  "key": "375c8cea",
+  "clean": "Schau, da leuchtet etwas! Lauf hin, hol es und bring es zurück."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Hol zuerst das leuchtende Ding und bring es zurück!",
+  "key": "fc4dcbb4",
+  "clean": "Hol zuerst das leuchtende Ding und bring es zurück!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gefunden! Bring es zurück – tippe die Person an.",
+  "key": "85dcbf38",
+  "clean": "Gefunden! Bring es zurück, tippe die Person an."
  },
  {
   "who": "erzaehler",

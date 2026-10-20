@@ -302,7 +302,7 @@ function line(c, x1, y1, x2, y2, w, col, outline = true) {
 const TXT_DARK = { '#adb5bd': '#7b848c', '#868e96': '#5f676e', '#999': '#666', '#aaa': '#6b6b6b', '#6c757d': '#555c63', '#8a7d70': '#6b5d50', '#a0938a': '#6f6258' };
 function txt(c, s, x, y, size, col = '#fff', align = 'center', ol = OL, maxW = 0) {   // maxW: passt der Text nicht hinein, wird er kleiner
   if (!ol && TXT_DARK[col]) col = TXT_DARK[col];   // graue Schrift auf hellem Grund: dunkler, damit man sie lesen kann
-  if (size < 12 && typeof DPR !== "undefined") { const T = c.getTransform(); if (Math.abs(T.a - DPR) < 0.01) size = 12; }   // Bildschirm-Schrift nie kleiner als 12 px
+  if (typeof DPR !== "undefined" && typeof ctx !== "undefined" && c === ctx) { const T = c.getTransform(), k = Math.hypot(T.a, T.b) / DPR; if (k > 0 && size * k < 13) size = 13 / k; }   // auf dem Bildschirm nie kleiner als 13 px – auch im verkleinerten Spielfeld
   c.font = `900 ${size}px ${FONT}`;
   if (maxW > 0) { const w = c.measureText(s).width; if (w > maxW) { size = Math.max(9, Math.floor(size * maxW / w * 10) / 10); c.font = `900 ${size}px ${FONT}`; } }
   c.textAlign = align; c.textBaseline = 'middle'; c.lineJoin = 'round';

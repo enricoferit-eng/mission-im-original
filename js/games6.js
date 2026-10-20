@@ -330,7 +330,7 @@ GAMES.parkschein = { make(env) {
   let price = 0, paid = 0, round = 0, t = 0, fx = [], ticket = 0, flying = []; const fin = finisher(env);
   const newPrice = () => { const step = L === 0 ? 100 : L === 1 ? 50 : 10; price = step * (1 + Math.floor(r() * (L === 0 ? 4 : L === 1 ? 7 : 30))); if (price < 100) price += 100; paid = 0; };
   newPrice();
-  const eur = v => (v / 100).toFixed(2).replace('.', ',') + ' €';
+  const eur = v => (L === 0 ? String(v / 100) : (v / 100).toFixed(2).replace('.', ',')) + ' €';   // Leicht: ganze Euro ohne Komma
   const cpos = i => ({ x: 200 + (i - (COINS.length - 1) / 2) * 72, y: 440 });
   return {
     dbg: () => ({ price, paid, ticket, coins: COINS.map((v, i) => ({ v, ...cpos(i) })) }),
@@ -340,7 +340,9 @@ GAMES.parkschein = { make(env) {
       asphaltBg(c, t);
       // Automat
       rrPath(c, 110, 50, 180, 300, 16); fs(c, '#1c7ed6', 3.5); rrPath(c, 126, 70, 148, 70, 8); fs(c, '#0b3d2e', 3);
-      txt(c, eur(price), 200, 96, 26, '#80ed99', 'center', null); txt(c, 'bezahlt: ' + eur(paid), 200, 126, 13, '#b7e4c7', 'center', null);
+      txt(c, eur(price), 200, 96, 26, '#80ed99', 'center', null);
+      if (L === 0) { const n = price / 100, gw = Math.min(26, 140 / n); for (let k = 0; k < n; k++) { const x = 200 + (k - (n - 1) / 2) * gw; ell(c, x, 126, gw * 0.38, gw * 0.38); fs(c, k < paid / 100 ? '#ffd166' : 'rgba(255,255,255,.18)', 1.5, '#b7e4c7'); } }   // Leicht: ein Kreis je Euro, füllt sich beim Bezahlen
+      else txt(c, 'bezahlt: ' + eur(paid), 200, 126, 13, '#b7e4c7', 'center', null);
       txt(c, 'P', 150, 180, 40, '#fff', 'center', null); rrPath(c, 230, 160, 40, 8, 4); fs(c, '#212529', 2); rrPath(c, 140, 300, 120, 14, 6); fs(c, '#212529', 2);
       if (ticket > 0) { rrPath(c, 150, 304 + (1 - ticket) * 30, 100, 40, 4); fs(c, '#fff', 2.5); txt(c, 'Parkschein', 200, 320 + (1 - ticket) * 30, 11, BRAND.olive, 'center', null); }
       roundDots(c, rounds, round, 26);

@@ -41,7 +41,9 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
     if (/lock/.test(ov)) { await ev(() => { overlay = null; }); bad.push(id + ': noch gesperrt'); continue; }
     await solve();
     if (await ev(() => scene.diff === 'easy')) {   // Leicht: Aufgaben direkt bei der Person
-      for (let k = 0; k < 16 && !(await ev(id => !!scene.st.done[id], id)); k++) { await solve(); await sleep(300); if (await ev(() => !overlay)) await walkTo(id => { const T = scene.interactables().find(q => q.id === id); return T && scene.w2s(T.sx, T.sy); }, () => !!overlay, 20, id); }
+      for (let k = 0; k < 16 && !(await ev(id => !!scene.st.done[id], id)); k++) { await solve(); await sleep(300);
+        if (await ev(id => { const e = scene.st.easy[id]; return !!(e && e.find && !e.find.got); }, id)) await walkTo(id => { const f = scene.st.easy[id].find; return scene.w2s(f.x, f.y); }, id => { const e = scene.st.easy[id]; return !e || !e.find || e.find.got; }, 30, id);   /* Leicht: erst die leuchtende Sache holen */
+        if (await ev(() => !overlay)) await walkTo(id => { const T = scene.interactables().find(q => q.id === id); return T && scene.w2s(T.sx, T.sy); }, () => !!overlay, 20, id); }
       const st = await ev(id => !!scene.st.done[id], id); log.push(id + (st ? ' erledigt' : ' NICHT erledigt')); if (!st) bad.push(id + ': nicht erledigt');
       if (id === 'gate') for (let k = 0; k < 25; k++) { const r = await solve(); if (r === 'clear') { log.push('Ziel erreicht'); break; } await sleep(300); }
       continue;

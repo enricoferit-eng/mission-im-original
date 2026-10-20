@@ -269,6 +269,11 @@ function drawFog(c, ox, oy, id, t) {
   const g = c.createLinearGradient(ox, oy, ox + TILE_W, oy + TILE_H); g.addColorStop(0, '#b8c2c7'); g.addColorStop(1, '#a3afb5');
   c.fillStyle = g; c.fillRect(ox - 2, oy - 2, TILE_W + 4, TILE_H + 4);
   for (let k = 0; k < 26; k++) { const x = ox + ((k * 173 + t * 12 * (k % 3 + 1)) % (TILE_W + 300)) - 150, y = oy + (k * 211) % TILE_H; ell(c, x, y, 140 + (k % 4) * 30, 70 + (k % 3) * 20); c.fillStyle = 'rgba(255,255,255,.45)'; c.fill(); }
+  // überall im Nebel kleine Schilder „gesperrt“ – egal welcher Teil gerade im Bild ist, sieht man, was los ist (sonst wirkt es wie ein Ladefehler)
+  for (let gy = oy + 160; gy < oy + TILE_H - 60; gy += 300) for (let gx = ox + 140 + ((gy - oy) / 300 % 2) * 160; gx < ox + TILE_W - 60; gx += 320) {
+    if (Math.abs(gx - (ox + TILE_W / 2)) < 160 && Math.abs(gy - (oy + TILE_H / 2)) < 160) continue;
+    rrPath(c, gx - 74, gy - 26, 148, 52, 22); fs(c, 'rgba(255,255,255,.85)', 3, '#868e96'); icon(c, 'lock', gx - 46, gy, 30); txt(c, STAGE_NAME[id] || 'Gesperrt', gx + 14, gy - 6, 17, '#495057', 'center', null, 92); txt(c, 'noch gesperrt', gx + 14, gy + 13, 13, '#868e96', 'center', null, 92);
+  }
   const cx = ox + TILE_W / 2, cy = oy + TILE_H / 2;
   ell(c, cx, cy, 70, 70); fs(c, 'rgba(255,255,255,.9)', 4); icon(c, 'lock', cx, cy - 6, 70);
   txt(c, STAGE_NAME[id] || '', cx, cy + 100, 40, '#495057', 'center', '#fff');
@@ -284,6 +289,8 @@ function pushSigns(c, L, id, diff, t) {
     else if (E.side === 'left') { x = 110; y = r0 - 30; arrow = '←'; }
     else { x = WORLD_W - 110; y = r0 - 30; arrow = '→'; }
     x = clamp(x, 90, WORLD_W - 90);
+    { const P = typeof scene !== 'undefined' && scene && scene.stage === id && scene.npcs;   // steht dort jemand (mit „!“ über dem Kopf)? Dann rückt das Schild zur Seite
+      if (P) for (let k = 0; k < 3; k++) { const hit = P.find(n => Math.abs(n.x - x) < 75 && n.y - y > -40 && n.y - y < 140); if (!hit) break; let nx = x <= hit.x ? hit.x - 110 : hit.x + 110; if (nx < 90 || nx > WORLD_W - 90) nx = x <= hit.x ? hit.x + 110 : hit.x - 110; x = clamp(nx, 90, WORLD_W - 90); } }
     L.push({ y, f: () => {
       c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 2, 16, 5); c.fill(); line(c, x, y, x, y - 70, 5, '#8d5a3b');
       c.font = `900 15px ${FONT}`; const w = Math.max(96, c.measureText(arrow + ' ' + name).width + 26);

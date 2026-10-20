@@ -183,7 +183,7 @@ class Shop {
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
     roundBtn(c, W - 212, 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
-    const tabs = [['up', 'Upgrades'], ['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Skins'], ['tiere', 'Figur'], ['garderobe', 'Garderobe']].concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis']] : []), tw = Math.min(130, (W - 40) / tabs.length - 8);
+    const tabs = [['up', 'Kräfte'], ['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Kostüme'], ['tiere', 'Figur']]   /* einfache Wörter; die Garderobe gibt es im Menü */.concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis']] : []), tw = Math.min(130, (W - 40) / tabs.length - 8);
     tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; if (id === 'up') { c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 10 + 8 * Math.sin(this.t * 4); rrPath(c, x, 80, tw, 40, 16); c.fillStyle = '#ffd60a'; c.fill(); c.restore(); } rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'up' ? '#ffe066' : id === 'garderobe' ? '#d8f5e3' : id === 'hw' ? '#ffb38a' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const top = 134, bottom = H - 16;
     if (this.tab === 'hw' && typeof hwShopDraw === 'function') hwShopDraw(this, c, top, bottom);   // Halloween: Kürbis-Laden
@@ -199,7 +199,7 @@ class Shop {
           const iy = y + bob + 34, ir = Math.min(24, (ch - 110) / 2 + 18);
           ell(c, x + cw / 2, iy, ir + 5 + gl * 3, ir + 5 + gl * 3); c.fillStyle = u.col; c.globalAlpha = 0.5; c.fill(); c.globalAlpha = 1; ell(c, x + cw / 2, iy, ir, ir); fs(c, '#fff', 3); icon(c, u.icon, x + cw / 2, iy, ir * 1.35);
           txt(c, u.name, x + cw / 2, iy + ir + 16, 14, '#3d2c1f', 'center', null); if (ch > 150) txt(c, 'Stufe ' + (l + 1) + ' von ' + UP_MAX, x + cw / 2, iy + ir + 32, 11, '#6b5a48', 'center', null);
-          { c.font = `900 11px ${FONT}`; const lab = 'Upgrade des Tages', lw = c.measureText(lab).width + 22; rrPath(c, x + cw / 2 - lw / 2, y + bob - 10, lw, 20, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, lab, x + cw / 2, y + bob + 1, 11, '#fff', 'center', null);
+          { c.font = `900 11px ${FONT}`; const lab = 'Kraft des Tages', lw = c.measureText(lab).width + 22; rrPath(c, x + cw / 2 - lw / 2, y + bob - 10, lw, 20, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, lab, x + cw / 2, y + bob + 1, 11, '#fff', 'center', null);
             c.save(); c.translate(x + cw - 18, y + bob + 18); c.rotate(0.25); ell(c, 0, 0, 19, 19); fs(c, '#ef476f', 2.5, '#fff'); txt(c, '-' + o.off + '%', 0, 1, 12, '#fff', 'center', null); c.restore(); }
           const today = new Date().toISOString().slice(0, 10), done = m.upDeal === today;   // nur einmal am Tag
           rrPath(c, x + 14, y + bob + ch - 36, cw - 28, 28, 14); fs(c, done ? '#d8f5e3' : '#06d6a0', 2.5);
@@ -265,11 +265,11 @@ class Shop {
       const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); if ((m.freeSpin || 0) > 0) txt(c, 'Gratis drehen', bx, by + 1, 17, '#2b9348', 'center', null); else { txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); } c.restore();
       if ((m.freeSpin || 0) > 0 && !this.spin) { rrPath(c, bx - 60, by + 30, 120, 22, 11); fs(c, '#06d6a0', 2); txt(c, 'Gratis: ' + m.freeSpin + '×', bx, by + 41, 12, '#fff', 'center', null); }
       UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; const free = (m.freeSpin || 0) > 0; (free ? (p, fn) => { m.freeSpin--; Save.write(); fn(m); } : (p, fn) => this.buy(p, fn))(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(segs[k][0] + segs[k][1] / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
-      wrapLines(c, 'Dreh das Rad: Skins, Upgrades oder Taler!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
+      wrapLines(c, 'Dreh das Rad: Kostüme, Kräfte oder Taler!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
     } else if (this.tab === 'up') {
       // Upgrades: groß und leuchtend – das Wichtigste im Laden
       const n = UPGRADES.length, gap = 10, land = W > H, cw = land ? Math.min(176, (W - 40 - gap * (n - 1)) / n) : Math.min(W - 40, 420), ch = land ? Math.min(bottom - top - 6, 236) : Math.min(120, (bottom - top - gap * (n - 1)) / n), x0 = land ? (W - (cw * n + gap * (n - 1))) / 2 : (W - cw) / 2;
-      txt(c, 'Upgrades gelten immer – egal welchen Skin du trägst', W / 2, H - 8, 12, '#fff', 'center', BRAND.olive);
+      txt(c, 'Kräfte gelten immer – egal welches Kostüm du trägst', W / 2, H - 8, 12, '#fff', 'center', BRAND.olive);
       UPGRADES.forEach((u, i) => {
         const l = m.up[u.k] || 0, max = l >= UP_MAX, price = max ? 0 : u.price[l], x = land ? x0 + i * (cw + gap) : x0, y = land ? top + 2 : top + i * (ch + gap), bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3 + i);
         c.save(); c.shadowColor = u.col; c.shadowBlur = 14 + gl * 12; rrPath(c, x, y + bob, cw, ch, 20); fs(c, '#fffdf5', 4, '#c9a227'); c.restore();

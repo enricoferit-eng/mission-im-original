@@ -29,7 +29,7 @@ let DECOR = [
   { id: 'y3', t: 'yucca', x: 765, y: 1128, r: 28 }, { id: 'y4', t: 'yucca', x: 100, y: 650, r: 24 },
   { id: 'y5', t: 'yucca', x: 130, y: 430, r: 30 }, { id: 'y6', t: 'yucca', x: 150, y: 910, r: 30 },
   { id: 'y7', t: 'yucca', x: 835, y: 1035, r: 30 },
-  { id: 'y8', t: 'yucca', x: 560, y: 455, r: 28 }, { id: 'y9', t: 'yucca', x: 250, y: 500, r: 28 },
+  { id: 'y8', t: 'yucca', x: 560, y: 455, r: 28 }, { id: 'y9', t: 'yucca', x: 200, y: 790, r: 28 },   // nicht mehr unter dem Schaukel-Balken (dort sah man das Versteck kaum)
   { id: 'r1', t: 'rock', x: 470, y: 335, r: 24 }, { id: 'r2', t: 'rock', x: 690, y: 300, r: 30 }, { id: 'r3', t: 'rock', x: 240, y: 835, r: 30 },
   { id: 'r4', t: 'rock', x: 560, y: 1060, r: 26 }, { id: 'r5', t: 'rock', x: 330, y: 940, r: 26 },
   { id: 'pl', t: 'planter', x: 390, y: 1110 }, { id: 'bench', t: 'bench', x: 690, y: 1020, w: 86, h: 26 },
