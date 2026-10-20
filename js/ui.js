@@ -142,7 +142,6 @@ class Menu {
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
     { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }], ['gift', 'Geschenk', '#ffd6e0', () => { Sfx.play('tap'); overlay = new DailyGift(); }]];
-      if (!firstAreaDone()) B.length = 0;   // ganz neue Kinder (noch kein Fortschritt): schlichtes Menü
       const nB = B.length, gap = W < 500 ? 4 : 8, bw = Math.min(160, W < 500 ? (W - 12) / nB - gap : (W - 70) / nB - 4), by = H - (land ? 38 : 46), ready = typeof giftReady === 'function' && giftReady();
       B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + gap) - bw / 2, yy = by - hop;
         if (gift && ready) { const gl = 0.5 + 0.5 * Math.sin(this.t * 4); rrPath(c, x - 5, yy - 29, bw + 10, 58, 24); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }   // leuchtet, solange das Geschenk noch zu ist
