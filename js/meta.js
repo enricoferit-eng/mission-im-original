@@ -502,11 +502,10 @@ class MultiScene {
       ['#ffd6a5', 'jump', 'Wettrennen zu zweit', 'Wer hilft schneller? · ' + STAGE_INFO[area].name, { mode: 'duell', size: 2, kids: 3, boss: false, live: true }],
       ['#caffbf', 'friends', 'Zusammen helfen', 'Ein großer Auftrag für euch zwei', { mode: 'team', size: 2, kids: 1, boss: false, live: true }],
       ['#e7c6ff', 'trophy', 'Großes Rennen', 'Bis zu 4 Spieler · ' + STAGE_INFO[area].name, { mode: 'duell', size: 4, kids: 3, boss: false, live: true }]];
-    const gap = 8, h = Math.min(78, (rh - 104) / 3 - gap);
+    const gap = 8, h = Math.min(78, (rh - 64) / 4 - gap);   // vier gleich große Karten: drei fertige Spielarten + eigene Einstellungen
     P.forEach(([col, ic, title, sub, set], i) => big(rx + 16, ry + 52 + i * (h + gap), rw - 32, h, col, ic, title, sub, () => { if (this.busy) return; Object.assign(o, set, { diff, stage: area, stages: [area] }); this.create(); }));
-    { const lab = 'Eigene Einstellungen ›', ly = ry + rh - 26; c.font = `900 14px ${FONT}`; const lw = c.measureText(lab).width + 30; rrPath(c, rx + rw / 2 - lw / 2, ly - 16, lw, 32, 16); fs(c, 'rgba(255,255,255,.7)', 2, 'rgba(61,44,31,.35)'); txt(c, lab, rx + rw / 2, ly, 14, '#6b5a48', 'center', null);
-      UI.btn(rx + rw / 2 - lw / 2, ly - 16, lw, 32, () => { this.step = 'custom'; Sfx.play('tap'); }); }
-    if (this.busy) txt(c, 'Spiel wird erstellt …', rx + rw / 2, ry + rh - 52, 13, '#6b5a48', 'center', null);
+    big(rx + 16, ry + 52 + 3 * (h + gap), rw - 32, h, '#e7f5ff', 'menu', 'Eigene Einstellungen', 'Modus, Spieler, Bereiche selbst wählen', () => { this.step = 'custom'; });
+    if (this.busy) txt(c, 'Spiel wird erstellt …', rx + rw / 2, ry + rh - 10, 13, '#6b5a48', 'center', null);
   }
   // Freunde: per Freundes-Code eine Anfrage schicken – befreundet erst, wenn der andere annimmt
   async addFriend() {
