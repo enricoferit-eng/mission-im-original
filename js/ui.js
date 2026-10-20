@@ -110,7 +110,7 @@ class Menu {
     FX.clear(); ensureProfile(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
     if (a.token && !a.hasPass && !a.admin && !window.PASS_ASKED) { window.PASS_ASKED = true; setTimeout(() => { if (scene === this && !overlay) askSetPass({ later: 'Später', sub: 'Neu: Passwort statt Bilder-Code. Mindestens ' + PASS_MIN + ' Zeichen.' }); }, 900); }
     if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
-    { const m = META(), day = new Date().toISOString().slice(0, 10); if (m && m.giftDay !== day) { const first = !m.giftDay; m.giftDay = day; Save.write(); if (!first) setTimeout(() => addCoins(20, 'Tagesgeschenk!'), 900); } }
+    this.giftAuto = true;   // Tagesgeschenk: geht einmal am Tag von selbst auf (siehe draw)
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
     applyVolume();
   }
@@ -150,6 +150,14 @@ class Menu {
     }
     { const cw = accountChip.lastW || 0, m = META(), x0 = 12 + (cw || 170) + 10; c.font = `900 17px ${FONT}`; const chipW = c.measureText(String(m ? m.coins : 0)).width + 52;
       if (x0 + chipW <= W - 180) coinChip(c, x0, 40); else coinChip(c, x0 - 4, 40, true); }   // schmaler Bildschirm: kleinere Taler-Anzeige (nicht über „Anleitung“)
+    if (typeof giftReady === 'function' && giftReady()) {   // Tagesgeschenk: leuchtender Knopf, solange es noch nicht ausgepackt ist
+      const gx = a.token ? 32 : 176, gy = 98, gl = 0.5 + 0.5 * Math.sin(this.t * 4), wob = Math.sin(this.t * 8) * 0.08;
+      ell(c, gx, gy, 20 + gl * 3, 20 + gl * 3); c.fillStyle = `rgba(255,214,10,${0.3 + gl * 0.3})`; c.fill();
+      c.save(); c.translate(gx, gy); c.rotate(wob); drawGift(c, 0, 4, 30, this.t); c.restore();
+      UI.btn(gx - 24, gy - 24, 48, 48, () => { Sfx.play('tap'); overlay = new DailyGift(); });
+      const fresh = typeof hwNewKid === 'function' && hwNewKid();   // ganz neue Kinder: erst die Helfer-Schule
+      if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }
+    }
     DIFFS.forEach((d, i) => {
       let x, y, w, h;
       if (wide) { w = Math.min(215, (W - 100) / 3); h = Math.min(bottom - top - 10, w * 1.25); x = W / 2 + (i - 1) * (w + 28) - w / 2; y = top + (bottom - top - h) / 2; }

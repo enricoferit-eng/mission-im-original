@@ -17,7 +17,7 @@ const puppeteer = require('puppeteer-core');
     add('Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt.');
     add('Wähle deine Figur.');
     add('So laut sind die Stimmen.');   // Hörprobe im Ton-Regler
-    add('Pause. Die Bonus-Uhr steht still.'); Object.keys(SKIN_SIDE).forEach(id => { const sd = SKIN_SIDE[id]; add(SIDE[sd].name + '. ' + SIDE[sd].f(1)); }); add('Dieser Skin hat keine eigene Fähigkeit.');   // Pause-Fenster im Spiel
+    add('Pause. Die Bonus-Uhr steht still.'); add('Das Geschenk für heute hast du schon. Morgen gibt es das nächste!'); add('Dein Geschenk für heute! Tippe drauf und pack es aus.'); DAILY.forEach(g => add('Du bekommst: ' + giftText(g) + '!')); Object.keys(SKIN_SIDE).forEach(id => { const sd = SKIN_SIDE[id]; add(SIDE[sd].name + '. ' + SIDE[sd].f(1)); }); add('Dieser Skin hat keine eigene Fähigkeit.');   // Pause-Fenster im Spiel
     Object.values(UEBUNG_SAY).forEach(t => add(t));   // Helfer-Schule
     STAGE_ORDER.forEach(id => add('Zum Bereich ' + STAGE_NAME[id] + ' reisen?'));
     add('So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.');

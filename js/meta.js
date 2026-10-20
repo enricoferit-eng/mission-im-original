@@ -12,6 +12,51 @@ function META(a = ACC()) {
   return m;
 }
 const REMOVED_SKINS = { sk_erdbeer: 40, sk_meer: 40, sk_garten: 40, sk_zitrone: 40, sk_minze: 40, sk_kakao: 40, sk_himmel: 40, sk_kirsch: 40, sk_lavendel: 40, sk_huette: 40, sk_ranger: 100, sk_schnee: 100, sk_zirkus: 100, sk_goldkoch: 250 };
+// ---------- Tagesgeschenk: jeden Tag ein Päckchen zum Auspacken, 7 im Wechsel (ein verpasster Tag macht nichts – es geht einfach weiter) ----------
+const DAILY = [{ t: 'coins', n: 20 }, { t: 'coins', n: 30 }, { t: 'hint', n: 1 }, { t: 'coins', n: 40 }, { t: 'joker', n: 1 }, { t: 'coins', n: 50 }, { t: 'spin', n: 1 }];
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+function giftReady() { const m = META(); return !!m && m.giftDay !== todayStr(); }
+function giftText(g) { return g.t === 'coins' ? g.n + ' Taler' : g.t === 'hint' ? 'Such-Joker' : g.t === 'joker' ? 'Aufgaben-Joker' : 'Gratis-Dreh am Glücksrad'; }
+function giftIcon(c, g, x, y, s) { if (g.t === 'coins') { icon(c, 'coin', x, y - s * 0.12, s * 0.8); txt(c, String(g.n), x, y + s * 0.42, Math.max(11, s * 0.32), '#3d2c1f', 'center', '#fff'); } else if (g.t === 'hint') icon(c, 'search', x, y, s * 0.85); else if (g.t === 'joker') icon(c, 'joker', x, y, s * 0.85); else { ell(c, x, y, s * 0.42, s * 0.42); for (let k = 0; k < 6; k++) { c.beginPath(); c.moveTo(x, y); c.arc(x, y, s * 0.42, k * TAU / 6, (k + 1) * TAU / 6); c.closePath(); c.fillStyle = ['#ffd166', '#a5d8ff', '#ffafcc', '#80ed99', '#cdb4db', '#fff3bf'][k]; c.fill(); } ell(c, x, y, s * 0.42, s * 0.42); c.lineWidth = 2; c.strokeStyle = OL; c.stroke(); } }
+function drawGift(c, x, y, s, t = 0, open = 0) {   // Päckchen mit Schleife; open 0…1 hebt den Deckel ab
+  c.save(); c.translate(x, y); c.scale(s / 40, s / 40);
+  rrPath(c, -16, -10, 32, 26, 4); fs(c, '#ef476f', 2.5); c.fillStyle = '#ffd166'; c.fillRect(-3, -10, 6, 26); rrPath(c, -16, -10, 32, 26, 4); c.lineWidth = 2.5; c.strokeStyle = OL; c.stroke();
+  c.save(); c.translate(0, -open * 18); c.rotate(-open * 0.5); rrPath(c, -19, -17, 38, 9, 3); fs(c, '#ef476f', 2.5); c.fillStyle = '#ffd166'; c.fillRect(-3, -17, 6, 9);
+  for (const sx of [-1, 1]) { ell(c, sx * 7, -21, 7, 4.5, sx * 0.5); fs(c, '#ffd166', 2); } ell(c, 0, -19, 3, 3); fs(c, '#ffd166', 2); c.restore();
+  c.restore();
+}
+function giveGift(g) {
+  const m = META();
+  if (g.t === 'coins') m.coins += g.n; else if (g.t === 'hint') m.hint = (m.hint || 0) + g.n; else if (g.t === 'joker') m.bank = (m.bank || 0) + g.n; else m.freeSpin = (m.freeSpin || 0) + g.n;
+  m.giftDay = todayStr(); m.giftIdx = ((m.giftIdx || 0) + 1) % DAILY.length; Save.write();
+}
+class DailyGift {
+  constructor() { this.t = 0; this.open = 0; const m = META(); this.i = (m.giftIdx || 0) % DAILY.length; this.done = !giftReady(); Voice.say(this.done ? 'Das Geschenk für heute hast du schon. Morgen gibt es das nächste!' : 'Dein Geschenk für heute! Tippe drauf und pack es aus.', true); }
+  update(dt) { this.t += dt; if (this.opening) this.open = Math.min(1, this.open + dt * 2.2); }
+  close() { if (overlay === this) overlay = null; Voice.stop(); }
+  draw(c) {
+    c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
+    const w = Math.min(W - 24, 560), h = Math.min(H - 20, 330), x = (W - w) / 2, y = (H - h) / 2; fitBegin(c, w, h + 10);
+    panel(c, x, y, w, h, '#fff7e6', 26); roundBtn(c, x + w - 28, y + 28, 18, '#ced4da', 'cross', () => this.close());
+    txt(c, 'Tagesgeschenk', W / 2, y + 30, 22, BRAND.olive, 'center', null);
+    // die 7 Päckchen: schon ausgepackt (Haken), heute (groß), noch zu (klein)
+    const n = DAILY.length, cw = Math.min(64, (w - 40) / n - 6), y0 = y + h - 54;
+    DAILY.forEach((g, k) => { const cx = W / 2 + (k - (n - 1) / 2) * (cw + 6), cur = k === this.i, past = k < this.i || (cur && (this.done || this.opening));
+      rrPath(c, cx - cw / 2, y0 - 26, cw, 52, 12); fs(c, cur ? '#fff3bf' : past ? '#d8f5e3' : '#fff', cur ? 3 : 2, cur ? '#c9a227' : OL);
+      if (past) { giftIcon(c, g, cx, y0 - 2, cw * 0.55); ell(c, cx + cw / 2 - 8, y0 - 18, 7, 7); fs(c, '#06d6a0', 1.5); icon(c, 'check', cx + cw / 2 - 8, y0 - 18, 10, '#fff'); }
+      else drawGift(c, cx, y0 + 4, cw * 0.62, this.t);
+      txt(c, 'Tag ' + (k + 1), cx, y0 + 34, 10, '#6b5a48', 'center', null); });
+    // heute: großes Päckchen
+    const g = DAILY[this.i], gx = W / 2, gy = y + 118;
+    if (this.done && !this.opening) { giftIcon(c, DAILY[(this.i + n - 1) % n], gx, gy - 6, 54); txt(c, 'Für heute schon ausgepackt – morgen gibt es das nächste!', W / 2, y + 178, 14, '#6b5a48', 'center', null, w - 40); return; }
+    const pu = this.opening ? 1 : 1 + Math.sin(this.t * 5) * 0.05, wob = this.opening ? 0 : Math.sin(this.t * 9) * 0.06;
+    c.save(); c.translate(gx, gy); c.rotate(wob); c.scale(pu, pu); drawGift(c, 0, 10, 84, this.t, this.open); c.restore();
+    if (this.open > 0.5) { const k = ease.back(clamp((this.open - 0.5) * 2, 0, 1)); c.save(); c.translate(gx, gy - 40 * k); c.scale(k, k); ell(c, 0, 0, 34, 34); fs(c, '#fff', 3, '#c9a227'); giftIcon(c, g, 0, 0, 46); c.restore(); txt(c, giftText(g) + '!', W / 2, y + 190, 18, '#2b9348', 'center', null, w - 40); }
+    else txt(c, 'Tippe auf das Geschenk!', W / 2, y + 190, 15, '#6b5a48', 'center', null);
+    if (!this.opening) UI.btn(gx - 60, gy - 60, 120, 120, () => { this.opening = true; giveGift(g); Sfx.play('win'); FX.confetti(W / 2, gy, 50); buzz([30, 40, 30]); Voice.say('Du bekommst: ' + giftText(g) + '!', true); });
+    else if (this.open >= 1) { roundBtn(c, x + w - 60, y + 190, 22, '#06d6a0', 'check', () => this.close()); }
+  }
+}
 // ---------- Upgrades: dauerhafte Verbesserungen mit 4 Stufen, jede teurer (Laden + Glücksrad) ----------
 const UPGRADES = [
   { k: 'bonuszeit', name: 'Bonus-Uhr', icon: 'hourglass', col: '#ffd166', price: [50, 100, 170, 280], f: l => '+' + ABIL_VAL.bonuszeit[l] + ' Sekunden bei der Bonus-Jagd' },
@@ -217,8 +262,9 @@ class Shop {
         FX.confetti(W / 2, H * 0.3, 60); Sfx.play('win'); Save.write(); this.spin = null; this.radNext = this.t + 1.6;
       }
       if (this.radNext && this.t > this.radNext) { this.radNext = 0; this.radPool = null; }   // neue Mischung fürs nächste Mal
-      const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); c.restore();
-      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; this.buy(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(segs[k][0] + segs[k][1] / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
+      const bx = W - Math.min(120, W * 0.16), by = cy; c.save(); if (this.spin || this.radNext) c.globalAlpha = 0.5; rrPath(c, bx - 80, by - 26, 160, 52, 20); fs(c, '#ffd166', 3); if ((m.freeSpin || 0) > 0) txt(c, 'Gratis drehen', bx, by + 1, 17, '#2b9348', 'center', null); else { txt(c, 'Drehen', bx, by - 6, 18, '#3d2c1f', 'center', null); icon(c, 'coin', bx - 22, by + 14, 16); txt(c, String(SPIN), bx + 8, by + 15, 13, '#8d5a3b', 'center', null); } c.restore();
+      if ((m.freeSpin || 0) > 0 && !this.spin) { rrPath(c, bx - 60, by + 30, 120, 22, 11); fs(c, '#06d6a0', 2); txt(c, 'Gratis: ' + m.freeSpin + '×', bx, by + 41, 12, '#fff', 'center', null); }
+      UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; const free = (m.freeSpin || 0) > 0; (free ? (p, fn) => { m.freeSpin--; Save.write(); fn(m); } : (p, fn) => this.buy(p, fn))(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(segs[k][0] + segs[k][1] / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
       wrapLines(c, 'Dreh das Rad: Skins, Upgrades oder Taler!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
     } else if (this.tab === 'up') {
       // Upgrades: groß und leuchtend – das Wichtigste im Laden

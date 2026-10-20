@@ -1231,6 +1231,60 @@
  },
  {
   "who": "erzaehler",
+  "text": "Das Geschenk für heute hast du schon. Morgen gibt es das nächste!",
+  "key": "8033b2d8",
+  "clean": "Das Geschenk für heute hast du schon. Morgen gibt es das nächste!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Dein Geschenk für heute! Tippe drauf und pack es aus.",
+  "key": "1a5bbcad",
+  "clean": "Dein Geschenk für heute! Tippe drauf und pack es aus."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: 20 Taler!",
+  "key": "a7f1a41b",
+  "clean": "Du bekommst: 20 Taler!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: 30 Taler!",
+  "key": "d062cc7c",
+  "clean": "Du bekommst: 30 Taler!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: Such-Joker!",
+  "key": "f73b5500",
+  "clean": "Du bekommst: Such-Joker!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: 40 Taler!",
+  "key": "e182e9e5",
+  "clean": "Du bekommst: 40 Taler!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: Aufgaben-Joker!",
+  "key": "20d8f4d2",
+  "clean": "Du bekommst: Aufgaben-Joker!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: 50 Taler!",
+  "key": "b2e5a4de",
+  "clean": "Du bekommst: 50 Taler!"
+ },
+ {
+  "who": "erzaehler",
+  "text": "Du bekommst: Gratis-Dreh am Glücksrad!",
+  "key": "eeb437e3",
+  "clean": "Du bekommst: Gratis-Dreh am Glücksrad!"
+ },
+ {
+  "who": "erzaehler",
   "text": "Sternen-Schild. Tempo-Sterne gehen 25 % langsamer verloren.",
   "key": "edfb6937",
   "clean": "Sternen-Schild. Tempo-Sterne gehen 25 % langsamer verloren."
