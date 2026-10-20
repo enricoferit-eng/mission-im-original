@@ -188,18 +188,27 @@ class Shop {
     { const P = [['rad', 'Glücksrad', 'star', '#ffd6e0'], ['joker', 'Angebote', 'coin', '#fff3bf']], pw = narrow ? (W - 84) / 2 - 4 : W < 700 ? 44 : 128;   // Hochformat: eigene Zeile unter den Reitern
       P.forEach(([id, name, ic, col], i) => { const x = narrow ? 20 + i * (pw + 8) : W - 240 - (P.length - i) * (pw + 8), y = narrow ? 128 : 26, on = this.tab === id;
         rrPath(c, x, y, pw, 36, 18); fs(c, on ? '#ffd166' : col, 3); icon(c, ic, x + (pw < 60 ? pw / 2 : 22), y + 18, 22); if (pw >= 60) txt(c, name, x + 40, y + 19, 13, '#3d2c1f', 'left', null, pw - 46);
+        if (id === 'joker' && typeof giftReady === 'function' && giftReady()) { ell(c, x + pw - 6, y + 2, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + pw - 6, y + 3, 12, '#fff', 'center', null); }   // Tagesgeschenk wartet
         UI.btn(x, y, pw, 36, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); }); }
-    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; if (id === 'up') { c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 10 + 8 * Math.sin(this.t * 4); rrPath(c, x, 80, tw, 40, 16); c.fillStyle = '#ffd60a'; c.fill(); c.restore(); } rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'up' ? '#ffe066' : id === 'garderobe' ? '#d8f5e3' : id === 'hw' ? '#ffb38a' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
-    const top = narrow ? 178 : 134, bottom = H - 16;
+    const cmp = !narrow && H < 480, tY = cmp ? 66 : 80, tH = cmp ? 34 : 40;   // Handy quer im Browser: Reiter enger, damit unten Platz bleibt
+    tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; if (id === 'up') { c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 10 + 8 * Math.sin(this.t * 4); rrPath(c, x, tY, tw, tH, 16); c.fillStyle = '#ffd60a'; c.fill(); c.restore(); } rrPath(c, x, tY, tw, tH, 16); fs(c, this.tab === id ? '#ffd166' : id === 'up' ? '#ffe066' : id === 'garderobe' ? '#d8f5e3' : id === 'hw' ? '#ffb38a' : '#fff', 3); txt(c, name, x + tw / 2, tY + tH / 2 + 1, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, tY, tw, tH, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
+    const top = narrow ? 178 : cmp ? 112 : 134, bottom = H - 16;
     if (this.tab === 'hw' && typeof hwShopDraw === 'function') hwShopDraw(this, c, top, bottom);   // Halloween: Kürbis-Laden
     else if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
-      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, jh = 64, cw = Math.min(190, (W - 40 - gap * (n - 1)) / n), ch = Math.min(bottom - top - 36 - jh - 14, 230), x0 = (W - (cw * n + gap * (n - 1))) / 2;
+      // Aufbau: oben Geschenk + Uhr, dann die Angebote (Hochformat 2 × 2), unten die Joker (Hochformat untereinander, quer auf niedrigen Bildschirmen schmal)
+      const D = dailyOffers(), kind = ACC().char || 'cat', n = D.length, gap = 12, cols = narrow ? 2 : n, rows = Math.ceil(n / cols), jRows = narrow ? 2 : 1, jh = narrow ? 52 : cmp ? 46 : 64, headH = narrow ? 68 : 34;
+      const cw = Math.min(190, (W - 40 - gap * (cols - 1)) / cols), x0 = (W - (cw * cols + gap * (cols - 1))) / 2, oy = top - 10 + headH + 8;
+      const ch = Math.min(230, (bottom - oy - jRows * (jh + gap) - gap * (rows - 1)) / rows), cx = i => x0 + (i % cols) * (cw + gap), cy = i => oy + Math.floor(i / cols) * (ch + gap), jy = oy + rows * (ch + gap);
       const ms = new Date(); ms.setHours(24, 0, 0, 0); const left = Math.max(0, ms - Date.now()), hh = Math.floor(left / 3600000), mm2 = Math.floor(left / 60000) % 60;
-      { const lab = 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 40; rrPath(c, W / 2 - lw / 2, top - 8, lw, 24, 12); c.fillStyle = 'rgba(32,44,30,.75)'; c.fill(); icon(c, 'clock', W / 2 - lw / 2 + 14, top + 4, 14); txt(c, lab, W / 2 + 8, top + 5, 13, '#fff', 'center', null); }
+      { const ready = typeof giftReady === 'function' && giftReady(), gw = narrow ? W - 40 : 178, gx = narrow ? 20 : x0, gy = top - 10, gl = 0.5 + 0.5 * Math.sin(this.t * 4);   // Tagesgeschenk: gehört zu den Tages-Angeboten
+        if (ready) { rrPath(c, gx - 4, gy - 4, gw + 8, 36, 18); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }
+        rrPath(c, gx, gy, gw, 28, 14); fs(c, ready ? '#ffd6e0' : '#e9ecef', 2.5); drawPresent(c, gx + 18, gy + 16, 22, this.t); txt(c, ready ? 'Tagesgeschenk öffnen' : 'Geschenk: morgen wieder', gx + 36, gy + 14, 12, '#3d2c1f', 'left', null, gw - 44);
+        UI.btn(gx, gy, gw, 28, () => { Sfx.play('tap'); overlay = new DailyGift(); }); }
+      { const lab = 'Neue Angebote in ' + hh + ' Std ' + mm2 + ' Min'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 40, ly0 = narrow ? top + 26 : top - 8; rrPath(c, W / 2 - lw / 2, ly0, lw, 24, 12); c.fillStyle = 'rgba(32,44,30,.75)'; c.fill(); icon(c, 'clock', W / 2 - lw / 2 + 14, ly0 + 12, 14); txt(c, lab, W / 2 + 8, ly0 + 13, 13, '#fff', 'center', null); }
       D.forEach((o, i) => {
         if (o.up) {   // Upgrade des Tages: leuchtend, auffälliger als die Skins
-          const u = UPGRADES.find(q => q.k === o.up), l = m.up[u.k] || 0, x = x0 + i * (cw + gap), y = top + 30, bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+          const u = UPGRADES.find(q => q.k === o.up), l = m.up[u.k] || 0, x = cx(i), y = cy(i), bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
           c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 16 + gl * 14; rrPath(c, x, y + bob, cw, ch, 18); fs(c, '#fff3bf', 4, '#c9a227'); c.restore();
           const iy = y + bob + 34, ir = Math.min(24, (ch - 110) / 2 + 18);
           ell(c, x + cw / 2, iy, ir + 5 + gl * 3, ir + 5 + gl * 3); c.fillStyle = u.col; c.globalAlpha = 0.5; c.fill(); c.globalAlpha = 1; ell(c, x + cw / 2, iy, ir, ir); fs(c, '#fff', 3); icon(c, u.icon, x + cw / 2, iy, ir * 1.35);
@@ -212,18 +221,18 @@ class Shop {
           UI.btn(x, y + bob, cw, ch, () => { if (done) { this.say('Morgen gibt es ein neues Upgrade-Angebot.'); return; } this.buy(o.price, mm => { mm.up[u.k] = Math.min(UP_MAX, (mm.up[u.k] || 0) + 1); mm.upDeal = today; this.say(u.name + ': Stufe ' + mm.up[u.k] + '!'); FX.confetti(x + cw / 2, y + 60, 30); }); });
           return;
         }
-        const x = x0 + i * (cw + gap), y = top + 30, sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
+        const x = cx(i), y = cy(i), sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
         skinCard(c, x, y + bob, cw, ch, o.id, { kind, own, worn: own && DP(CUR_DIFF || 'medium').equip === o.id, price: o.price, oldPrice: o.off ? sk.price : 0, sticker: o.off ? '-' + o.off + '%' : '', ribbon: o.ex ? 'Highlight des Tages' : '', t: this.t + i });
         UI.btn(x, y + bob, cw, ch, () => { if (own) { wearSkin(o.id); this.say(sk.name + ' hast du jetzt an!'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); wearSkin(o.id); this.say(sk.name + ' gekauft und gleich angezogen!'); }); });
       });
       { const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
         [['Aufgaben-Joker', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }, 'Schafft eine Aufgabe sofort.'],
          ['Such-Joker', 'search', 20, 5 - (m.dayS || 0), m.hint || 0, mm => { mm.hint = (mm.hint || 0) + 1; mm.dayS = (mm.dayS || 0) + 1; }, 'Zeigt sofort ein Versteck.']].forEach(([name, ic, price, left, have, give, desc], j) => {
-          const tw2 = cw * n + gap * (n - 1), bw = (tw2 - gap) / 2, x = x0 + j * (bw + gap), y = top + 30 + ch + 14, ok = left > 0, w = bw, h = jh;   /* Joker: eigene Zeile unter den Skins */
+          const tw2 = cw * cols + gap * (cols - 1), bw = narrow ? tw2 : (tw2 - gap) / 2, x = narrow ? x0 : x0 + j * (bw + gap), y = narrow ? jy + j * (jh + gap) : jy, ok = left > 0, w = bw, h = jh;   /* Joker: eigene Zeile unter den Skins */
           rrPath(c, x, y, w, h, 18); fs(c, ok ? '#e7f5ff' : '#e9ecef', 3.5);
-          icon(c, ic, x + 34, y + h / 2, 38);
-          txt(c, name, x + 62, y + 20, 14, '#3d2c1f', 'left', null);
-          txt(c, 'Du hast ' + have + ' · heute noch ' + Math.max(0, left), x + 62, y + 42, 12, '#2b9348', 'left', null);
+          icon(c, ic, x + 30, y + h / 2, Math.min(38, h - 12));
+          txt(c, name, x + 58, y + h * 0.34, 14, '#3d2c1f', 'left', null, w - 150);
+          txt(c, 'Du hast ' + have + ' · heute noch ' + Math.max(0, left), x + 58, y + h * 0.72, 12, '#2b9348', 'left', null, w - 150);
           rrPath(c, x + w - 78, y + h / 2 - 16, 68, 32, 14); fs(c, '#ffd166', 2.5); icon(c, 'coin', x + w - 60, y + h / 2, 16); txt(c, String(price), x + w - 34, y + h / 2 + 1, 14, '#3d2c1f', 'center', null);
           UI.btn(x, y, w, h, () => { if (!ok) { this.say('Morgen gibt es wieder welche.'); Sfx.play('bad'); return; } this.buy(price, give); });
         }); }

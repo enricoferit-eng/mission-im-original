@@ -177,10 +177,10 @@ class Menu {
   update(dt) { this.t += dt; }
   draw(c) {
     menuBg(c, this.t);
-    // schwebende Leckereien im Hintergrund
-    for (let i = 0; i < 5; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
+    // schwebende Leckereien: aus (die Szene im Hintergrund reicht, sonst wird es unruhig)
+    for (let i = 0; i < 0; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
     { const mo = new Date().getMonth(); if (mo === 11 || mo === 0) for (let i = 0; i < 26; i++) { const x = (i * 97 + Math.sin(this.t * 0.7 + i) * 30) % W, y = (this.t * (20 + (i % 5) * 6) + i * 61) % (H + 20) - 10; ell(c, x, y, 2 + (i % 3), 2 + (i % 3)); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill(); }   // Saison-Deko: Winter = Schneeflocken
-      else if (mo === 9 || mo === 10 || (typeof HALLOWEEN !== 'undefined' && HALLOWEEN)) { const k = W > H ? clamp(H / 560, 0.55, 1.2) : 0, py = 70 * k + 30; [[W / 2 - 185 * k, py], [W / 2 + 185 * k, py]].forEach(([px, py], i) => { if (W < 700 || !k) return; c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); if (typeof HALLOWEEN !== 'undefined' && HALLOWEEN) { jackO(c, 0, -6, 1.6, 0.8 + 0.2 * Math.sin(this.t * 3 + i)); c.restore(); return; } c.scale(0.8, 0.8); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); }); }   // Herbst = Kürbisse (neben dem Logo, nie über Knöpfen)
+      else if (mo === 9 || mo === 10 || (typeof HALLOWEEN !== 'undefined' && HALLOWEEN)) { const k = W > H ? clamp(H / 560, 0.55, 1.2) : 0, py = 70 * k + 30; [[W / 2 - 185 * k, py], [W / 2 + 185 * k, py]].forEach(([px, py], i) => { if (true) return;   /* Kürbisse neben dem Logo: weg – zu voll */ c.save(); c.translate(px, py + Math.sin(this.t * 2 + i) * 2); if (typeof HALLOWEEN !== 'undefined' && HALLOWEEN) { jackO(c, 0, -6, 1.6, 0.8 + 0.2 * Math.sin(this.t * 3 + i)); c.restore(); return; } c.scale(0.8, 0.8); for (const [dx, rw] of [[-14, 14], [14, 14], [0, 17]]) { ell(c, dx, 0, rw, 20); fs(c, '#f77f00', 3); } rrPath(c, -3, -28, 6, 10, 2); fs(c, '#6b4423', 2); ell(c, 8, -24, 7, 3.5); c.fillStyle = '#2b9348'; c.fill(); c.restore(); }); }   // Herbst = Kürbisse (neben dem Logo, nie über Knöpfen)
       else if (mo >= 3 && mo <= 4) for (let i = 0; i < 6; i++) { const x = 40 + i * (W - 80) / 5, y = H - 18; for (let k = 0; k < 5; k++) { ell(c, x + Math.cos(k * 1.26) * 6, y - 14 + Math.sin(k * 1.26) * 6, 4, 4); c.fillStyle = ['#ffc8dd', '#fff', '#ffd166'][i % 3]; c.fill(); } }   // Frühling = Blumen
     }
     const a = ACC(); if (!a) return;
@@ -188,29 +188,19 @@ class Menu {
     // Alles andere (Mehrspieler, Erfolge, Anleitung, Film, Eltern, Ton) steckt unter „Mehr“ – nichts fällt weg.
     const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.1) : clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
     const diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium'; CUR_DIFF = diff;
-    accountChip.lastW = accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
-    { const cw = accountChip.lastW || 0, x0 = 12 + (cw || 170) + 10; coinChip(c, x0, 40, x0 + 140 > W - 150); }
-    if (!a.token) { const bx = 12, by = 74; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null, 104); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }
-    // oben rechts: Ton, Geschenk (nur wenn es eins gibt), Platz für das Event
-    soundBtn(c, W - 40, 40);
-    let slotX = W - 98;
-    if (typeof giftReady === 'function' && giftReady()) {
-      const hop = Math.abs(Math.sin(this.t * 5)) * 4, gl = 0.5 + 0.5 * Math.sin(this.t * 4);
-      ell(c, slotX, 40, 30 + gl * 3, 30 + gl * 3); c.fillStyle = `rgba(255,214,10,${0.3 + gl * 0.3})`; c.fill();
-      roundBtn(c, slotX, 40 - hop, 23, '#ffd6e0', null, () => { Sfx.play('tap'); overlay = new DailyGift(); }); drawPresent(c, slotX, 44 - hop, 30, this.t);
-      ell(c, slotX + 17, 22 - hop, 8, 8); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', slotX + 17, 23 - hop, 11, '#fff', 'center', null);
-      slotX -= 58;
-      const fresh = typeof hwNewKid === 'function' && hwNewKid();
-      if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }   // geht einmal am Tag von selbst auf
-    }
-    if (wantFullBtn()) { roundBtn(c, slotX, 40, 22, '#fff', 'full', () => { Sfx.play('tap'); goFull(); }); txt(c, 'Vollbild', slotX, 72, 11, '#fff', 'center', BRAND.olive); slotX -= 58; }   // im Browser: Vollbild per Knopf
-    this.eventSlot = { x: slotX, y: 40 };   // Halloween & Co. hängen hier ihren runden Knopf an
-    if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 70 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 84 + b, 12, '#fff', 'center', null); }
+    const compact = land && H < 480;   // Handy quer im Browser: wenig Höhe – alles enger und kleiner
+    accountChip.lastW = accountChip(c, 12, 12, a, () => { overlay = new AccountPanel(); });
+    if (!a.token) { const lx = 12 + (accountChip.lastW || 120) - 6, ly = 56; ell(c, lx, ly, 12, 12); fs(c, '#ffd166', 2.5); icon(c, 'lock', lx, ly, 14); }   // noch nicht gesichert: kleines Schloss am Namen (Tipp darauf = sichern)
+    { const cw = accountChip.lastW || 0, x0 = 12 + (cw || 170) + 10; if (compact || x0 + 150 > W / 2 - 90) coinChip(c, 12, 88, true); else coinChip(c, x0, 38); }
+    // oben rechts: Vollbild (nur im Browser) und das Event – Ton steckt unter „Mehr“, das Tagesgeschenk im Laden
+    let slotX = W - 40;
+    if (wantFullBtn()) { roundBtn(c, slotX, 38, 22, '#fff', 'full', () => { Sfx.play('tap'); goFull(); }); txt(c, 'Vollbild', slotX, 70, 11, '#fff', 'center', BRAND.olive); slotX -= 58; }
+    this.eventSlot = { x: slotX, y: 38 };
     // Logo
-    const LY = land ? 64 * ls + 30 : Math.max(200, H * 0.19);
-    logo(c, W / 2, LY, land ? ls * 0.8 : ls);
+    const lsc = compact ? clamp(H / 640, 0.42, 0.56) : land ? ls * 0.8 : ls, LY = compact ? 72 * lsc + 4 : land ? 64 * ls + 30 : Math.max(200, H * 0.19);
+    logo(c, W / 2, LY, lsc);
     // Stufen-Schalter
-    const swY = land ? LY + 82 * ls : LY + 92 * ls, swW = Math.min(W - 40, 420), segW = swW / 3, swX = (W - swW) / 2;
+    const swY = compact ? LY + 66 * lsc + 26 : land ? LY + 82 * ls : LY + 92 * ls, swW = Math.min(W - 40, 420), segW = swW / 3, swX = (W - swW) / 2;
     rrPath(c, swX, swY - 22, swW, 44, 22); fs(c, 'rgba(255,255,255,.85)', 3);
     DIFFS.forEach((d, i) => {
       const x = swX + i * segW, on = d.id === diff;
@@ -244,12 +234,13 @@ class Menu {
     UI.btn(bx, by, bw, bh, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); a.lastDiff = diff; Save.write();
       if (area === 'uebung') { startUebung(diff, 'play'); return; } setScene(fresh ? new Play(diff, { stage: startArea(diff) }) : new StageMap(diff)); });   // ganz neu: erst die Helfer-Schule
     // Untere Leiste: nur drei Knöpfe
-    { const B = [['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(diff); w.stage = 'laden'; overlay = w; }], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['menu', 'Mehr', '#e7f5ff', () => { Sfx.play('tap'); overlay = new MoreMenu(); }]];
+    { const B = [['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(diff); w.stage = 'laden'; overlay = w; }], ['shop', 'Laden', '#ffd6a5', () => { const sh = new Shop(); if (typeof giftReady === 'function' && giftReady()) sh.tab = 'joker'; setScene(sh); }], ['menu', 'Mehr', '#e7f5ff', () => { Sfx.play('tap'); overlay = new MoreMenu(); }]];
       const nB = B.length, gap = 10, bw2 = Math.min(190, (W - 24) / nB - gap), by2 = H - (land ? 34 : 44);
       B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - (nB - 1) / 2) * (bw2 + gap) - bw2 / 2;
         rrPath(c, x, by2 - 24, bw2, 48, 22); fs(c, col, 3);
         if (bw2 < 120) { icon(c, ic, x + bw2 / 2, by2 - 7, 24); txt(c, label, x + bw2 / 2, by2 + 14, 13, '#3d2c1f', 'center', null, bw2 - 6); }
         else { icon(c, ic, x + 30, by2, 28); txt(c, label, x + 54, by2 + 1, 17, '#3d2c1f', 'left', null, bw2 - 62); }
+        if (ic === 'shop' && typeof giftReady === 'function' && giftReady()) { const bx2 = x + bw2 - 10, by3 = by2 - 22 - Math.abs(Math.sin(this.t * 5)) * 3; ell(c, bx2, by3, 11, 11); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', bx2, by3 + 1, 13, '#fff', 'center', null); }   // Geschenk wartet im Laden
         this.hit[ic] = { x: x + bw2 / 2, y: by2 }; UI.btn(x, by2 - 24, bw2, 48, fn); });
     }
   }
