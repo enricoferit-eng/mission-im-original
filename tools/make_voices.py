@@ -16,7 +16,7 @@ CAST = {
   'waschbaer': ('thorsten_emotional-medium', 4, 0.95, 0.4, 0.8, 6, True),      # Willi: tieferer Junge
   'gate':      ('thorsten-high', None, 1.0, 0.6, 0.8, -3, True),               # das Tor: tief, brummig
   'k_marco':   ('thorsten-high', None, 0.95, 0.6, 0.8, -1, False),            # Chefkoch Marco: ruhig, tief
-  'u_bruno':   ('thorsten-high', None, 1.0, 0.6, 0.8, -2, False),            # Koch Bruno (Helfer-Schule): gemütlich, tief
+  'olli':      ('kerstin-low', None, 0.95, 0.5, 0.8, 4, True),                 # Olli, das Blatt: hell und fröhlich
   'k_luca':    ('thorsten_emotional-medium', 0, 0.92, 0.6, 0.8, 1, False),   # Luca: fröhlich
   'k_tom':     ('thorsten_emotional-medium', 4, 1.0, 0.6, 0.8, -2, True),    # Tom: gemütlich
   'k_nina':    ('kerstin-low', None, 0.98, 0.333, 0.8, 1, False),            # Nina

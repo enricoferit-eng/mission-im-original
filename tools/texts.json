@@ -7,9 +7,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Chefkoch Bruno macht dich zum neuen Helfer.",
-  "key": "20bf920c",
-  "clean": "Chefkoch Bruno macht dich zum neuen Helfer."
+  "text": "Ich bin Olli! Heute Nacht hat ein Sturm alles durcheinandergewirbelt.",
+  "key": "37564878",
+  "clean": "Ich bin Olli! Heute Nacht hat ein Sturm alles durcheinandergewirbelt."
  },
  {
   "who": "erzaehler",
@@ -19,9 +19,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Die Kinder haben Sachen verloren. Finde sie!",
-  "key": "101432af",
-  "clean": "Die Kinder haben Sachen verloren. Finde sie!"
+  "text": "Der Sturm hat überall Sachen verweht. Finde sie!",
+  "key": "e26d07a2",
+  "clean": "Der Sturm hat überall Sachen verweht. Finde sie!"
  },
  {
   "who": "erzaehler",
@@ -1338,58 +1338,256 @@
   "clean": "Dieser Skin hat keine eigene Fähigkeit."
  },
  {
-  "who": "erzaehler",
+  "who": "olli",
   "text": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.",
-  "key": "921f0e59",
+  "key": "e62e5551",
   "clean": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin."
  },
  {
-  "who": "erzaehler",
-  "text": "Super! Über Bruno ist ein Ausrufezeichen. Tippe Bruno an!",
-  "key": "df3cc8e4",
-  "clean": "Super! Über Bruno ist ein Ausrufezeichen. Tippe Bruno an!"
+  "who": "olli",
+  "text": "Super! Über Olli ist ein Ausrufezeichen. Tippe Olli an!",
+  "key": "208e4b8e",
+  "clean": "Super! Über Olli ist ein Ausrufezeichen. Tippe Olli an!"
  },
  {
-  "who": "erzaehler",
-  "text": "Bruno gibt dir eine Aufgabe. Löse sie – dann hast du ihm geholfen!",
-  "key": "e2dbee07",
-  "clean": "Bruno gibt dir eine Aufgabe. Löse sie, dann hast du ihm geholfen!"
+  "who": "olli",
+  "text": "Olli gibt dir eine Aufgabe. Löse sie – dann hast du ihm geholfen!",
+  "key": "eb41efd5",
+  "clean": "Olli gibt dir eine Aufgabe. Löse sie, dann hast du ihm geholfen!"
  },
  {
-  "who": "erzaehler",
-  "text": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und bleib kurz stehen – dann suchst du von selbst.",
-  "key": "07e5d65f",
-  "clean": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und bleib kurz stehen, dann suchst du von selbst."
+  "who": "olli",
+  "text": "Der Sturm hat den Kochlöffel weggeweht. Lauf zum gelben Pfeil und bleib kurz stehen – dann suchst du von selbst.",
+  "key": "7d4719a4",
+  "clean": "Der Sturm hat den Kochlöffel weggeweht. Lauf zum gelben Pfeil und bleib kurz stehen, dann suchst du von selbst."
  },
  {
-  "who": "erzaehler",
-  "text": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe.",
-  "key": "3f5ee280",
-  "clean": "Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe."
+  "who": "olli",
+  "text": "Der Sturm hat den Kochlöffel weggeweht. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe.",
+  "key": "4d4ed8d7",
+  "clean": "Der Sturm hat den Kochlöffel weggeweht. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe."
  },
  {
-  "who": "erzaehler",
+  "who": "olli",
   "text": "Siehst du die Uhr oben? Bist du schnell genug, bekommst du einen Extra-Joker.",
-  "key": "faea92ac",
+  "key": "7352a4e4",
   "clean": "Siehst du die Uhr oben? Bist du schnell genug, bekommst du einen Extra-Joker."
  },
  {
-  "who": "erzaehler",
-  "text": "Gefunden! Bring den Kochlöffel zurück zu Bruno – tippe ihn an.",
-  "key": "5dbfe6f1",
-  "clean": "Gefunden! Bring den Kochlöffel zurück zu Bruno, tippe ihn an."
+  "who": "olli",
+  "text": "Gefunden! Bring den Kochlöffel zurück zu Olli – tippe ihn an.",
+  "key": "f9c2f1b7",
+  "clean": "Gefunden! Bring den Kochlöffel zurück zu Olli, tippe ihn an."
  },
  {
-  "who": "erzaehler",
+  "who": "olli",
   "text": "Toll gemacht! Das Tor ist offen. Lauf hin und tippe es an – dann geht dein echtes Abenteuer los!",
-  "key": "2f14a59b",
+  "key": "e6da55d3",
   "clean": "Toll gemacht! Das Tor ist offen. Lauf hin und tippe es an, dann geht dein echtes Abenteuer los!"
  },
  {
+  "who": "olli",
+  "text": "Hilf zuerst Olli!",
+  "key": "c983cc18",
+  "clean": "Hilf zuerst Olli!"
+ },
+ {
+  "who": "olli",
+  "text": "Hui, was für ein Sturm heute Nacht! Er hat mich glatt vom Original-Schild geweht.",
+  "key": "f6992902",
+  "clean": "Hui, was für ein Sturm heute Nacht! Er hat mich glatt vom Original-Schild geweht."
+ },
+ {
+  "who": "olli",
+  "text": "Und schau: Heute Abend ist das große Original-Fest – aber überall ist Chaos!",
+  "key": "67e51a28",
+  "clean": "Und schau: Heute Abend ist das große Original-Fest, aber überall ist Chaos!"
+ },
+ {
+  "who": "k_marco",
+  "text": "In der Küche liegt alles durcheinander. Ohne unsere Sachen gibt es kein Festessen!",
+  "key": "85ce2b75",
+  "clean": "In der Küche liegt alles durcheinander. Ohne unsere Sachen gibt es kein Festessen!"
+ },
+ {
+  "who": "olli",
+  "text": "Komm, wir helfen zusammen! Fang hier in der Küche an.",
+  "key": "0dd4910d",
+  "clean": "Komm, wir helfen zusammen! Fang hier in der Küche an."
+ },
+ {
+  "who": "k_marco",
+  "text": "Danke! Jetzt können wir das Festessen kochen.",
+  "key": "581ca67b",
+  "clean": "Danke! Jetzt können wir das Festessen kochen."
+ },
+ {
+  "who": "olli",
+  "text": "Super! Weiter ins Glashaus – dort hat der Sturm die Tische durcheinandergebracht.",
+  "key": "f857af69",
+  "clean": "Super! Weiter ins Glashaus, dort hat der Sturm die Tische durcheinandergebracht."
+ },
+ {
+  "who": "g_rosi",
+  "text": "Oh je, der Wind hat durchs offene Fenster geweht! Die Tische fürs Fest sind ganz durcheinander.",
+  "key": "ddf2a59c",
+  "clean": "Oh je, der Wind hat durchs offene Fenster geweht! Die Tische fürs Fest sind ganz durcheinander."
+ },
+ {
+  "who": "olli",
+  "text": "Keine Sorge, Oma Rosi – wir finden alles wieder!",
+  "key": "ffb479a1",
+  "clean": "Keine Sorge, Oma Rosi, wir finden alles wieder!"
+ },
+ {
+  "who": "g_rosi",
+  "text": "Wie schön die Tische jetzt aussehen!",
+  "key": "8ee34e9e",
+  "clean": "Wie schön die Tische jetzt aussehen!"
+ },
+ {
+  "who": "olli",
+  "text": "Prima! Draußen auf der Terrasse sieht es bestimmt auch wild aus.",
+  "key": "3280f0b4",
+  "clean": "Prima! Draußen auf der Terrasse sieht es bestimmt auch wild aus."
+ },
+ {
+  "who": "a_weber",
+  "text": "Der Sturm hat die ganze Fest-Deko von der Terrasse geweht!",
+  "key": "d634df12",
+  "clean": "Der Sturm hat die ganze Fest-Deko von der Terrasse geweht!"
+ },
+ {
+  "who": "olli",
+  "text": "Wir helfen allen hier draußen – dann leuchtet die Terrasse heute Abend.",
+  "key": "80fcec4f",
+  "clean": "Wir helfen allen hier draußen, dann leuchtet die Terrasse heute Abend."
+ },
+ {
+  "who": "a_weber",
+  "text": "Die Terrasse ist wieder wunderschön!",
+  "key": "cbd4b73a",
+  "clean": "Die Terrasse ist wieder wunderschön!"
+ },
+ {
+  "who": "olli",
+  "text": "Jetzt der Spielplatz! Ich höre die Kinder schon rufen.",
+  "key": "9a61ff48",
+  "clean": "Jetzt der Spielplatz! Ich höre die Kinder schon rufen."
+ },
+ {
+  "who": "hase",
+  "text": "Hallo! Der Wind hat unsere Spielsachen über den ganzen Spielplatz verteilt!",
+  "key": "a3069954",
+  "clean": "Hallo! Der Wind hat unsere Spielsachen über den ganzen Spielplatz verteilt!"
+ },
+ {
+  "who": "olli",
+  "text": "Ich sehe da schon was glitzern. Los, wir suchen!",
+  "key": "b8b18031",
+  "clean": "Ich sehe da schon was glitzern. Los, wir suchen!"
+ },
+ {
+  "who": "hase",
+  "text": "Juhu, alles wieder da! Danke!",
+  "key": "ea487155",
+  "clean": "Juhu, alles wieder da! Danke!"
+ },
+ {
+  "who": "olli",
+  "text": "Gleich kommen die Gäste fürs Fest – schnell zum Parkplatz!",
+  "key": "2ad26683",
+  "clean": "Gleich kommen die Gäste fürs Fest, schnell zum Parkplatz!"
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Die ersten Gäste sind da, aber der Sturm hat Schilder und Kegel umgeweht!",
+  "key": "3cf08cf3",
+  "clean": "Die ersten Gäste sind da, aber der Sturm hat Schilder und Kegel umgeweht!"
+ },
+ {
+  "who": "olli",
+  "text": "Wenn hier alles klappt, kann das Fest beginnen. Wir schaffen das!",
+  "key": "ea94a21d",
+  "clean": "Wenn hier alles klappt, kann das Fest beginnen. Wir schaffen das!"
+ },
+ {
+  "who": "p_schmidt",
+  "text": "Alle Gäste sind gut angekommen.",
+  "key": "5538d5f2",
+  "clean": "Alle Gäste sind gut angekommen."
+ },
+ {
+  "who": "olli",
+  "text": "Wir haben es geschafft! Das Fest kann beginnen!",
+  "key": "45bf699a",
+  "clean": "Wir haben es geschafft! Das Fest kann beginnen!"
+ },
+ {
+  "who": "c_gerda",
+  "text": "Gut, dass ihr da seid! Der Sturm hat bei uns im Chalet Schnee in alle Ecken geweht.",
+  "key": "e0d15bd4",
+  "clean": "Gut, dass ihr da seid! Der Sturm hat bei uns im Chalet Schnee in alle Ecken geweht."
+ },
+ {
+  "who": "olli",
+  "text": "Ein Abenteuer in den Bergen? Da sind wir dabei!",
+  "key": "262e3ae9",
+  "clean": "Ein Abenteuer in den Bergen? Da sind wir dabei!"
+ },
+ {
+  "who": "c_gerda",
+  "text": "Danke, ihr zwei! Jetzt ist es überall gemütlich.",
+  "key": "f914fb5c",
+  "clean": "Danke, ihr zwei! Jetzt ist es überall gemütlich."
+ },
+ {
+  "who": "olli",
+  "text": "Du bist der beste Helfer, den das Original je hatte!",
+  "key": "117cc8b6",
+  "clean": "Du bist der beste Helfer, den das Original je hatte!"
+ },
+ {
+  "who": "h_hexe",
+  "text": "Hihihi! Willkommen im Geisterwald – in der Halloween-Nacht spukt es hier!",
+  "key": "24f4c9c2",
+  "clean": "Hihihi! Willkommen im Geisterwald, in der Halloween-Nacht spukt es hier!"
+ },
+ {
+  "who": "olli",
+  "text": "Huch, ist das gruselig! Sammeln wir Bonbons und Kürbismünzen und helfen allen im Wald.",
+  "key": "07bf7da5",
+  "clean": "Huch, ist das gruselig! Sammeln wir Bonbons und Kürbismünzen und helfen allen im Wald."
+ },
+ {
+  "who": "h_hexe",
+  "text": "Ihr habt den Geisterwald gerettet! Im Kürbis-Laden warten Kostüme auf euch.",
+  "key": "2a7880fe",
+  "clean": "Ihr habt den Geisterwald gerettet! Im Kürbis-Laden warten Kostüme auf euch."
+ },
+ {
+  "who": "olli",
+  "text": "Schau nur! Überall ist alles wieder in Ordnung – und das Fest beginnt!",
+  "key": "3ab118a6",
+  "clean": "Schau nur! Überall ist alles wieder in Ordnung, und das Fest beginnt!"
+ },
+ {
   "who": "erzaehler",
-  "text": "Hilf zuerst Bruno!",
-  "key": "4191b9c6",
-  "clean": "Hilf zuerst Bruno!"
+  "text": "Alle feiern zusammen: mit Musik, Eis und einem großen Feuerwerk.",
+  "key": "875c8d04",
+  "clean": "Alle feiern zusammen: mit Musik, Eis und einem großen Feuerwerk."
+ },
+ {
+  "who": "olli",
+  "text": "Danke, dass du mir geholfen hast! Ich fliege jetzt zurück aufs Schild – aber ich bin immer bei dir.",
+  "key": "0313a766",
+  "clean": "Danke, dass du mir geholfen hast! Ich fliege jetzt zurück aufs Schild, aber ich bin immer bei dir."
+ },
+ {
+  "who": "olli",
+  "text": "Ach ja: Aus dem Chalet in den Bergen kam ein Brief. Dort braucht man uns auch!",
+  "key": "d57345b0",
+  "clean": "Ach ja: Aus dem Chalet in den Bergen kam ein Brief. Dort braucht man uns auch!"
  },
  {
   "who": "erzaehler",
@@ -4099,9 +4297,9 @@
  },
  {
   "who": "gate",
-  "text": "Hilf zuerst Bruno!",
-  "key": "229b6adb",
-  "clean": "Hilf zuerst Bruno!"
+  "text": "Hilf zuerst Olli!",
+  "key": "21fe1b6f",
+  "clean": "Hilf zuerst Olli!"
  },
  {
   "who": "erzaehler",
@@ -4117,38 +4315,38 @@
  },
  {
   "who": "erzaehler",
-  "text": "Bring die Sachen zurück – tippe Bruno an!",
-  "key": "be80a1ff",
-  "clean": "Bring die Sachen zurück, tippe Bruno an!"
+  "text": "Bring die Sachen zurück – tippe Olli an!",
+  "key": "92b717c9",
+  "clean": "Bring die Sachen zurück, tippe Olli an!"
  },
  {
   "who": "erzaehler",
-  "text": "Tippe Bruno mit ! an.",
-  "key": "58b974b1",
-  "clean": "Tippe Bruno mit ! an."
+  "text": "Tippe Olli mit ! an.",
+  "key": "e7ecf077",
+  "clean": "Tippe Olli mit ! an."
  },
  {
-  "who": "u_bruno",
-  "text": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?",
-  "key": "914272c4",
-  "clean": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?"
+  "who": "olli",
+  "text": "Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?",
+  "key": "42aa8646",
+  "clean": "Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen? Kannst du diese Sachen für mich finden?"
  },
  {
-  "who": "u_bruno",
-  "text": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?",
-  "key": "ee79723e",
-  "clean": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?"
+  "who": "olli",
+  "text": "Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?",
+  "key": "d8ecda58",
+  "clean": "Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?"
  },
  {
-  "who": "u_bruno",
-  "text": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!",
-  "key": "54e50d35",
-  "clean": "Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!"
+  "who": "olli",
+  "text": "Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!",
+  "key": "508b5fbb",
+  "clean": "Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!"
  },
  {
-  "who": "u_bruno",
+  "who": "olli",
   "text": "Schau bei den Kisten nach!",
-  "key": "4ddab1bd",
+  "key": "fe8f761b",
   "clean": "Schau bei den Kisten nach!"
  },
  {
@@ -4165,15 +4363,15 @@
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "43877383",
-  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe – oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Olli. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "152ff06f",
+  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe, oder bleib einfach kurz stehen, dann suchst du von selbst. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Olli. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "erzaehler",
-  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
-  "key": "f73f9408",
-  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Bruno. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
+  "text": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Olli. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch.",
+  "key": "e6fb702a",
+  "clean": "Sprich mit den Leuten mit dem gelben Ausrufezeichen. Oben siehst du dann, welche Dinge sie suchen. Sie liegen bei den Kisten, am Fass und am Küchenwagen. Geh hin und tippe auf die Lupe zum Suchen. Dann musst du dir das Ding mit einem Rätsel oder einer Geschicklichkeits-Aufgabe verdienen. Hast du alles, bring es zurück zu Olli. Hast du allen 5 geholfen, wartet am Tor die letzte große Aufgabe. Kommst du nicht weiter, hilft dir der Joker. Extra-Joker gibt es für alle 8 Sammel-Sachen und für schnelles Helfen. Oben rechts ist die Karte. Die ganze Anleitung findest du im Menü unter dem Buch."
  },
  {
   "who": "gate",

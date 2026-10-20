@@ -141,20 +141,20 @@ class Menu {
     const wide = W > H * 0.95;
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
-    { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }]];
-      const bw = Math.min(170, (W - 70) / 4), by = H - (land ? 38 : 46);
-      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - 1.5) * (bw + 10) - bw / 2; rrPath(c, x, by - 24, bw, 48, 20); fs(c, col, 3);
-        if (bw < 130) { icon(c, ic, x + bw / 2, by - 7, 24); txt(c, label, x + bw / 2, by + 14, 12, '#3d2c1f', 'center', null); }   // schmal (Hochformat): Symbol über dem Wort
-        else { icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); }
-        UI.btn(x, by - 24, bw, 48, fn); });
+    { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }], ['gift', 'Geschenk', '#ffd6e0', () => { Sfx.play('tap'); overlay = new DailyGift(); }]];
+      const nB = B.length, bw = Math.min(160, (W - 70) / nB - 4), by = H - (land ? 38 : 46), ready = typeof giftReady === 'function' && giftReady();
+      B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + 8) - bw / 2, yy = by - hop;
+        if (gift && ready) { const gl = 0.5 + 0.5 * Math.sin(this.t * 4); rrPath(c, x - 5, yy - 29, bw + 10, 58, 24); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }   // leuchtet, solange das Geschenk noch zu ist
+        rrPath(c, x, yy - 24, bw, 48, 20); fs(c, col, 3);
+        const drawIc = (ix, iy, sz) => { if (gift) drawGift(c, ix, iy + sz * 0.15, sz * 1.15, this.t); else icon(c, ic, ix, iy, sz); };
+        if (bw < 130) { drawIc(x + bw / 2, yy - 7, 24); txt(c, label, x + bw / 2, yy + 14, 12, '#3d2c1f', 'center', null, bw - 8); }   // schmal (Hochformat): Symbol über dem Wort
+        else { drawIc(x + 28, yy, 30); txt(c, label, x + 52, yy + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null, bw - 58); }
+        if (gift && ready) { ell(c, x + bw - 8, yy - 20, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + bw - 8, yy - 19, 13, '#fff', 'center', null); }
+        UI.btn(x, yy - 24, bw, 48, fn); });
     }
     { const cw = accountChip.lastW || 0, m = META(), x0 = 12 + (cw || 170) + 10; c.font = `900 17px ${FONT}`; const chipW = c.measureText(String(m ? m.coins : 0)).width + 52;
       if (x0 + chipW <= W - 180) coinChip(c, x0, 40); else coinChip(c, x0 - 4, 40, true); }   // schmaler Bildschirm: kleinere Taler-Anzeige (nicht über „Anleitung“)
-    if (typeof giftReady === 'function' && giftReady()) {   // Tagesgeschenk: leuchtender Knopf, solange es noch nicht ausgepackt ist
-      const gx = a.token ? 32 : 176, gy = 98, gl = 0.5 + 0.5 * Math.sin(this.t * 4), wob = Math.sin(this.t * 8) * 0.08;
-      ell(c, gx, gy, 20 + gl * 3, 20 + gl * 3); c.fillStyle = `rgba(255,214,10,${0.3 + gl * 0.3})`; c.fill();
-      c.save(); c.translate(gx, gy); c.rotate(wob); drawGift(c, 0, 4, 30, this.t); c.restore();
-      UI.btn(gx - 24, gy - 24, 48, 48, () => { Sfx.play('tap'); overlay = new DailyGift(); });
+    if (typeof giftReady === 'function' && giftReady()) {   // Tagesgeschenk: geht einmal am Tag von selbst auf (Knopf „Geschenk“ unten)
       const fresh = typeof hwNewKid === 'function' && hwNewKid();   // ganz neue Kinder: erst die Helfer-Schule
       if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }
     }
@@ -1115,7 +1115,8 @@ class StageMap {
       stageArt(c, id, cx + 8, cy + 8, ch * 1.3, ch - 16, t);
       const tx = cx + ch * 1.3 + 20;
       txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null);
-      txt(c, info.sub, tx, cy + 52, 13, '#6b5a48', 'left', null);
+      { const sc = typeof STORY !== 'undefined' && STORY[id]; txt(c, sc ? sc.title + ' · ' + sc.name : info.sub, tx, cy + 52, 13, sc ? '#c9762f' : '#6b5a48', 'left', null, cw - ch * 1.3 - 120);   // Kapitel der Geschichte
+        if (sc && storySeen('in_' + id)) { roundBtn(c, cx + ch * 1.3 - 4, cy + 16, 15, '#fff3bf', 'book', () => storyReplay(id), '#c9a227'); } }
       if (open) {
         const ids = STAGE_DEFS[id] ? STAGE_DEFS[id].npcs.map(n => n.id).concat(['gate']) : ALL_IDS, done = ids.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
         for (let q = 0; q < ids.length; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); } txt(c, done + ' von ' + ids.length + ' geschafft', tx + 10 + ids.length * 15, cy + 79, 12, '#6b5a48', 'left', null);
@@ -1134,9 +1135,9 @@ class StageMap {
 // ---------- Trailer: die Geschichte "Der neue Helfer" ohne Worte ----------
 const STORY_SAY = [
   'Willkommen im Original in Teningen!',
-  'Chefkoch Bruno macht dich zum neuen Helfer.',
+  'Ich bin Olli! Heute Nacht hat ein Sturm alles durcheinandergewirbelt.',
   'Sechs Bereiche, sechs Uniform-Teile – sammle sie alle!',
-  'Die Kinder haben Sachen verloren. Finde sie!',
+  'Der Sturm hat überall Sachen verweht. Finde sie!',
   'Hilf allen, dann geht das Tor auf. Los geht’s!',
 ];
 class Trailer {
@@ -1165,7 +1166,7 @@ class Trailer {
       ['cat', 'dog', 'lion'].forEach((a, i) => { const pk = ease.back(clamp(lt - 1.8 - i * 0.3, 0, 1)); if (pk > 0) drawAnimal(c, a, cx + (i - 1) * 90 * k, gy + 60 * k, 1.6 * k * pk, { t, noScarf: true }); });
     } else if (s === 1) {
       skyBg(c);
-      drawCritter(c, 'baer', cx + 110 * k, gy + 40 * k, 2.2 * k, t, { chef: true, wave: lt > 1 && lt < 3.5 });
+      drawOlli(c, cx + 110 * k, gy + 10 * k, 2.2 * k, t, lt > 1 && lt < 3.5);   // Olli, das Blatt aus dem Logo
       const scarfOn = lt > 3.5;
       ['cat', 'dog', 'lion'].forEach((a, i) => {
         const tx = cx - (150 - i * 60) * k, x = lerp(-80 - i * 60, tx, ease.out(clamp(lt / 2.5, 0, 1)));

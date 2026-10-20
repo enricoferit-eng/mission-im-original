@@ -1,14 +1,13 @@
 'use strict';
 // ---------- Helfer-Schule: das Spiel spielend lernen (statt einer Anleitung zum Durchklicken) ----------
-// Ein kleiner eigener Bereich mit echter Steuerung. Koch Bruno führt Schritt für Schritt durch alles Wichtige:
+// Ein kleiner eigener Bereich mit echter Steuerung. Olli, das kleine Blatt aus dem Original-Logo, führt Schritt für Schritt durch alles Wichtige:
 // laufen → ansprechen → suchen → Aufgabe lösen → zurückbringen → durchs Tor. Kein Überspringen: jeder lernt es einmal.
-Object.assign(STAFF_PEOPLE, { u_bruno: { skin: '#e0ac85', hair: '#6f4e37', beard: '#6f4e37', jacket: '#ffffff', pipe: '#95C11F', pants: '#343a40', shoes: '#212529', hat: 'toque' } });
-Object.assign(NPC_NAMES, { u_bruno: 'Koch Bruno' });
-Object.assign(NPC_SHORT, { u_bruno: 'Bruno' });
-Object.assign(NPC_LINES, { u_bruno: 'Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen?' });
-Object.assign(VOICE_OF, { u_bruno: { pitch: 0.7, rate: 0.95, pick: 6 } });
+Object.assign(NPC_NAMES, { olli: 'Olli' });
+Object.assign(NPC_SHORT, { olli: 'Olli' });
+Object.assign(NPC_LINES, { olli: 'Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen?' });
+Object.assign(VOICE_OF, { olli: { pitch: 1.35, rate: 1.05, pick: 1 } });
 
-const UW = 1100, UH = 900;   // Start liegt weiter oben, damit die Figur nicht hinter Brunos Textkasten steht
+const UW = 1100, UH = 900;   // Start liegt weiter oben, damit die Figur nicht hinter Ollis Textkasten steht
 const UDECOR = [
   { id: 'tafel', t: 'tafel', x: 210, y: 300, r: 14, bb: [130, 170, 160, 140] },
   { id: 'kisten', t: 'kisten', x: 820, y: 470, x0: 760, y0: 430, w: 120, h: 50, bb: [740, 330, 160, 150] },
@@ -60,14 +59,14 @@ function buildGridUebung() {
 const USPOTS = [furnSpot(UDECOR, 'kisten', 'right'), furnSpot(UDECOR, 'fass', 'right'), furnSpot(UDECOR, 'wagen', 'right')];
 STAGE_DEFS.uebung = {
   id: 'uebung', w: UW, h: UH, bg: '#9ccc65', solo: true, finalExit: true, leaves: 3, start: { x: 560, y: 640 }, gate: { x: UW / 2, y: 190, ix: UW / 2, iy: 250, side: 'top' },
-  npcs: [{ id: 'u_bruno', pos: [[420, 480]] }],
+  npcs: [{ id: 'olli', pos: [[420, 480]] }],
   decor: UDECOR, spots: USPOTS, grid: buildGridUebung, ground: drawGroundUebung, decorDraw: UDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['leaf', 'twig', 'pebble'], items: ['kochloeffel'],
   gateName: 'Das Tor zum Abenteuer',
-  words: { one: 'Person', the: 'Bruno', a: 'Bruno', many: 'Leute', dat: 'Leuten', back: 'zu Bruno', each: 'Jede Person',
+  words: { one: 'Person', the: 'Olli', a: 'Olli', many: 'Leute', dat: 'Leuten', back: 'zu Olli', each: 'Jede Person',
     hide: 'bei den Kisten, am Fass und am Küchenwagen', junk: 'ein Blatt oder ein Stöckchen', gate: 'am Tor', gateTap: 'Lauf zum Tor und tippe es an!',
-    opened: 'Das Tor ist offen!', lock: 'Hilf zuerst Bruno!', progress: 'Schau bei den Kisten nach!', gateAsk: 'Hilf zuerst Bruno!', search: 'Schau bei den Kisten nach – dann tippe auf die Lupe!' },
+    opened: 'Das Tor ist offen!', lock: 'Hilf zuerst Olli!', progress: 'Schau bei den Kisten nach!', gateAsk: 'Hilf zuerst Olli!', search: 'Schau bei den Kisten nach – dann tippe auf die Lupe!' },
   pools: { easy: ['pop'], puzzle: ['oddone'], std: ['oddone'], sp: ['oddone'], hard: ['oddone'] },
   onExit(play) { uebungDone(play.diff); },
 };
@@ -78,20 +77,20 @@ if (typeof STAGE_COL !== 'undefined') STAGE_COL.uebung = '#95C11F';
 const UEB_RING = { x: 760, y: 560 };
 const UEBUNG_SAY = {
   walk: 'Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.',
-  talk: 'Super! Über Bruno ist ein Ausrufezeichen. Tippe Bruno an!',
-  taskEasy: 'Bruno gibt dir eine Aufgabe. Löse sie – dann hast du ihm geholfen!',
-  search: 'Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und bleib kurz stehen – dann suchst du von selbst.',
-  searchHard: 'Bruno hat seinen Kochlöffel verloren. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe.',
+  talk: 'Super! Über Olli ist ein Ausrufezeichen. Tippe Olli an!',
+  taskEasy: 'Olli gibt dir eine Aufgabe. Löse sie – dann hast du ihm geholfen!',
+  search: 'Der Sturm hat den Kochlöffel weggeweht. Lauf zum gelben Pfeil und bleib kurz stehen – dann suchst du von selbst.',
+  searchHard: 'Der Sturm hat den Kochlöffel weggeweht. Lauf zum gelben Pfeil und tippe dann unten rechts auf die Lupe.',
   clock: 'Siehst du die Uhr oben? Bist du schnell genug, bekommst du einen Extra-Joker.',
-  back: 'Gefunden! Bring den Kochlöffel zurück zu Bruno – tippe ihn an.',
+  back: 'Gefunden! Bring den Kochlöffel zurück zu Olli – tippe ihn an.',
   gate: 'Toll gemacht! Das Tor ist offen. Lauf hin und tippe es an – dann geht dein echtes Abenteuer los!',
-  locked: 'Hilf zuerst Bruno!',
+  locked: 'Hilf zuerst Olli!',
 };
 function uebungStep(p) {
   const st = p.st, q = st.active, easy = p.diff === 'easy';
-  if (st.done.u_bruno) return 'gate';
+  if (st.done.olli) return 'gate';
   if (!p.ueb.walked) return 'walk';
-  if (easy) return st.easy && st.easy.u_bruno ? 'taskEasy' : 'talk';
+  if (easy) return st.easy && st.easy.olli ? 'taskEasy' : 'talk';
   if (!q) return 'talk';
   return q.got.every(Boolean) ? 'back' : p.diff === 'hard' ? 'searchHard' : 'search';
 }
@@ -101,7 +100,7 @@ function uebungDone(diff) {   // geschafft: weiter ins echte Abenteuer (bzw. zur
   const back = window.UEBUNG_BACK; window.UEBUNG_BACK = null;
   if (back === 'menu') setScene(new Menu()); else setScene(new Play(diff, { stage: startArea(diff) }));
 }
-function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true;   /* die normalen Erst-Hinweise würden sich mit Brunos Schritten überlagern */
+function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true;   /* die normalen Erst-Hinweise würden sich mit Ollis Schritten überlagern */
   window.UEBUNG_BACK = back || null; SP(diff, 'uebung').run = null; Save.write(); Sfx.play('win'); setScene(new Play(diff, { stage: 'uebung' })); }
 {
   const P = Play.prototype;
@@ -114,13 +113,13 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
   };
   const talk0 = P.talk;
   P.talk = function (id) {
-    if (this.stage === 'uebung' && id === 'gate' && !this.st.done.u_bruno) { this.banner = { text: UEBUNG_SAY.locked, t: 0 }; Voice.say(UEBUNG_SAY.locked, true); Sfx.play('bad'); return; }
+    if (this.stage === 'uebung' && id === 'gate' && !this.st.done.olli) { this.banner = { text: UEBUNG_SAY.locked, t: 0 }; Voice.say(UEBUNG_SAY.locked, true, 'olli'); Sfx.play('bad'); return; }
     return talk0.call(this, id);
   };
   const bonusStart0 = P.bonusStart;
-  P.bonusStart = function (npc) { if (this.stage === 'uebung') { if (this.diff === 'easy') return; (this.ueb || (this.ueb = { said: null, t: 0, walked: false, clockSaid: false })).clock = true; return; } return bonusStart0.call(this, npc); };   // keine laute Bonus-Ansage – die Uhr erklärt Bruno selbst
+  P.bonusStart = function (npc) { if (this.stage === 'uebung') { if (this.diff === 'easy') return; (this.ueb || (this.ueb = { said: null, t: 0, walked: false, clockSaid: false })).clock = true; return; } return bonusStart0.call(this, npc); };   // keine laute Bonus-Ansage – die Uhr erklärt Olli selbst
   const coach0 = P.drawCoach;
-  P.drawCoach = function (c) { if (this.stage !== 'uebung') return coach0.call(this, c); };   // in der Schule erklärt Bruno – keine zweite Hand
+  P.drawCoach = function (c) { if (this.stage !== 'uebung') return coach0.call(this, c); };   // in der Schule erklärt Olli – keine zweite Hand
   const upd0 = P.update;
   P.update = function (dt) {
     upd0.call(this, dt);
@@ -128,11 +127,11 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     const U = this.ueb || (this.ueb = { said: null, t: 0, walked: false, clockSaid: false });
     U.t += dt;
     if (!U.walked && dist(this.p.x, this.p.y, UEB_RING.x, UEB_RING.y) < 60) { U.walked = true; Sfx.play('good'); const s = this.w2s(UEB_RING.x, UEB_RING.y); FX.sparkle(s.x, s.y, 20, '#c7f464'); }
-    if (this.st.done.u_bruno && !this.st.done.gate) { this.st.done.gate = true; Save.write(); }   // Tor geht auf, sobald Bruno geholfen ist
+    if (this.st.done.olli && !this.st.done.gate) { this.st.done.gate = true; Save.write(); }   // Tor geht auf, sobald Olli geholfen ist
     const step = uebungStep(this);
-    if (step !== U.said && !overlay) { U.said = step; U.stepT = 0; Voice.say(UEBUNG_SAY[step], true); }
+    if (step !== U.said && !overlay) { U.said = step; U.stepT = 0; Voice.say(UEBUNG_SAY[step], true, 'olli'); }
     U.stepT = (U.stepT || 0) + dt;
-    if (U.clock && !U.clockSaid && ['search', 'searchHard'].includes(step) && !overlay && U.stepT > 6 && !Voice.busy()) { U.clockSaid = true; this.ueb.clockT = 0; Voice.say(UEBUNG_SAY.clock, true); }
+    if (U.clock && !U.clockSaid && ['search', 'searchHard'].includes(step) && !overlay && U.stepT > 6 && !Voice.busy()) { U.clockSaid = true; this.ueb.clockT = 0; Voice.say(UEBUNG_SAY.clock, true, 'olli'); }
     if (this.ueb.clockT !== undefined) this.ueb.clockT += dt;
   };
   // Hinweis-Karte oben, Ring zum Hinlaufen, Pfeil zum Versteck, Knopf zum Überspringen
@@ -156,7 +155,7 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     const msg = UEBUNG_SAY[this.ueb.clockT !== undefined && this.ueb.clockT < 6 && step !== 'gate' && step !== 'back' ? 'clock' : step], w = Math.min(W - 250, 520);
     c.font = `900 14px ${FONT}`; const L = wrapLines(c, msg, w - 60, 14), h = 22 + L.length * 18, x = (W - w) / 2, y = H - h - 58;
     rrPath(c, x, y, w, h, 16); fs(c, 'rgba(255,247,230,.96)', 3, '#95C11F');
-    drawCritter(c, 'u_bruno', x + 26, y + h - 4, 0.42, t, { staff: true, noShadow: true });
+    drawCritter(c, 'olli', x + 26, y + h - 4, 0.42, t, { staff: true, noShadow: true });
     L.forEach((l, i) => txt(c, l, x + 52, y + 20 + i * 18, 14, '#3d2c1f', 'left', null));
     const order = this.diff === 'easy' ? ['walk', 'talk', 'taskEasy', 'gate'] : ['walk', 'talk', this.diff === 'hard' ? 'searchHard' : 'search', 'back', 'gate'], k = order.indexOf(step);
     order.forEach((_, i) => { ell(c, W / 2 + (i - (order.length - 1) / 2) * 16, y - 10, 5, 5); fs(c, i < k ? '#06d6a0' : i === k ? '#ffd166' : '#e9ecef', 1.5); });
