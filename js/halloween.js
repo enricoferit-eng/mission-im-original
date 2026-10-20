@@ -87,6 +87,8 @@ const HW_SAY = {
   shopEmpty: 'Kürbismünzen gibt es nur im Geisterwald: für jedes Bonbon, für jede Person, der du hilfst, und für das Kürbistor.',
 };
 
+// ganz neue Kinder: erst die Helfer-Schule, dann das Event-Fenster
+function hwNewKid() { const a = ACC(); return !!a && !a.tut.uebung && !['easy', 'medium', 'hard'].some(d => Object.entries(DP(d).stages).some(([k, sp]) => k !== 'uebung' && (sp.clears > 0 || (sp.run && Object.keys(sp.run.done || {}).length)))); }   // nur echte Fortschritte zählen (das Menü legt leere Spielstände an)
 if (HALLOWEEN) {
   // Bonus-Münzen in den Aufgaben: im Geisterwald sind es Kürbismünzen
   { const C0 = GAME_COIN, inWald = () => typeof scene !== 'undefined' && scene && scene.stage === 'geisterwald';
@@ -200,20 +202,29 @@ if (HALLOWEEN) {
     c.fillStyle = '#2b1a2f'; for (let x = 20; x < W; x += 120) { rrPath(c, x, gy - 34, 26, 36, 12); c.fill(); }
     c.strokeStyle = '#2b1a2f'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, gy - 14); c.lineTo(W, gy - 14); c.stroke();
     for (let x = 0; x < W; x += 16) { c.beginPath(); c.moveTo(x, gy); c.lineTo(x, gy - 24); c.stroke(); }
+    hwBats(c, performance.now() / 1000, 3);   // im Himmel, hinter allen Knöpfen
   };
   const menu0 = Menu.prototype.draw;
   Menu.prototype.draw = function (c) {
     menu0.call(this, c);
-    hwBats(c, this.t, 3);
-    const land = W > H, bw = land ? Math.min(300, W - 560) > 220 ? Math.min(300, W - 560) : 250 : Math.min(W - 40, 320), bh = 56, bx = land ? W - bw - 12 : W / 2 - bw / 2, by = land ? 88 : H - 150, b = Math.sin(this.t * 2.2) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+    const land = W > H, b = Math.sin(this.t * 2.2) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+    if (!land) {   // Hochformat: runder Kürbis-Knopf neben dem Logo (das breite Feld würde die Karten verdecken)
+      const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.4), x = W - 42, y = Math.max(170, H * 0.18) + 62 * ls + b;
+      ell(c, x, y, 34 + gl * 3, 34 + gl * 3); c.fillStyle = `rgba(255,140,20,${0.25 + gl * 0.25})`; c.fill(); ell(c, x, y, 27, 27); fs(c, '#3c096c', 3, '#f77f00'); jackO(c, x, y + 1, 1.5, 0.8);
+      rrPath(c, x - 26, y - 40, 52, 16, 8); fs(c, '#ef476f', 2, '#fff'); txt(c, 'EVENT', x, y - 31, 10, '#fff', 'center', null);
+      UI.btn(x - 34, y - 42, 68, 80, () => { Sfx.play('tap'); overlay = new HwLauncher(); });
+      if (!window.HW_POPPED && this.t > 0.7 && !overlay && !hwNewKid()) { window.HW_POPPED = true; overlay = new HwLauncher(); }
+      return;
+    }
+    const small = W < 760, bw = small ? 186 : Math.min(300, W - 560) > 220 ? Math.min(300, W - 560) : 250, bh = small ? 50 : 56, bx = W - bw - 12, by = 88;   // schmal (iPhone SE): kleiner, damit Logo und Spruch frei bleiben
     rrPath(c, bx - 5, by - 5 + b, bw + 10, bh + 10, 30); c.fillStyle = `rgba(255,140,20,${0.25 + gl * 0.3})`; c.fill();   // leuchtender Rand
     rrPath(c, bx, by + b, bw, bh, 26); { const g = c.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, '#5a189a'); g.addColorStop(1, '#f77f00'); fs(c, g, 3, '#ffd166'); }
     jackO(c, bx + 30, by + bh / 2 + b + Math.sin(this.t * 6) * 2, 1.5, 0.9);
-    txt(c, 'HALLOWEEN-EVENT', bx + 58, by + 19 + b, 15, '#ffd166', 'left', '#3c096c');
-    txt(c, 'Geisterwald – jetzt spielen ▶', bx + 58, by + 39 + b, 12, '#fff', 'left', null);
-    kmCoin(c, bx + bw - 26, by + 18 + b, 0.7); txt(c, String(hwKM()), bx + bw - 26, by + 40 + b, 11, '#fff', 'center', null);
+    txt(c, 'HALLOWEEN-EVENT', bx + 58, by + bh * 0.34 + b, small ? 13 : 15, '#ffd166', 'left', '#3c096c', bw - (small ? 66 : 96));
+    txt(c, small ? 'Geisterwald ▶' : 'Geisterwald – jetzt spielen ▶', bx + 58, by + bh * 0.7 + b, 12, '#fff', 'left', null, bw - (small ? 66 : 96));
+    if (!small) { kmCoin(c, bx + bw - 26, by + 18 + b, 0.7); txt(c, String(hwKM()), bx + bw - 26, by + 40 + b, 11, '#fff', 'center', null); }
     UI.btn(bx - 5, by - 5, bw + 10, bh + 10, () => { Sfx.play('tap'); overlay = new HwLauncher(); });
-    if (!window.HW_POPPED && this.t > 0.7 && !overlay) { window.HW_POPPED = true; overlay = new HwLauncher(); }   // einmal pro Sitzung von selbst aufpoppen
+    if (!window.HW_POPPED && this.t > 0.7 && !overlay && !hwNewKid()) { window.HW_POPPED = true; overlay = new HwLauncher(); }   // einmal pro Sitzung von selbst aufpoppen
   };
 }
 

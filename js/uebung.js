@@ -8,7 +8,7 @@ Object.assign(NPC_SHORT, { u_bruno: 'Bruno' });
 Object.assign(NPC_LINES, { u_bruno: 'Hallo, neuer Helfer! Ich habe meinen Kochlöffel verlegt. Hilfst du mir suchen?' });
 Object.assign(VOICE_OF, { u_bruno: { pitch: 0.7, rate: 0.95, pick: 6 } });
 
-const UW = 1100, UH = 900;
+const UW = 1100, UH = 900;   // Start liegt weiter oben, damit die Figur nicht hinter Brunos Textkasten steht
 const UDECOR = [
   { id: 'tafel', t: 'tafel', x: 210, y: 300, r: 14, bb: [130, 170, 160, 140] },
   { id: 'kisten', t: 'kisten', x: 820, y: 470, x0: 760, y0: 430, w: 120, h: 50, bb: [740, 330, 160, 150] },
@@ -59,8 +59,8 @@ function buildGridUebung() {
 }
 const USPOTS = [furnSpot(UDECOR, 'kisten', 'right'), furnSpot(UDECOR, 'fass', 'right'), furnSpot(UDECOR, 'wagen', 'right')];
 STAGE_DEFS.uebung = {
-  id: 'uebung', w: UW, h: UH, bg: '#9ccc65', solo: true, finalExit: true, leaves: 3, start: { x: 560, y: 790 }, gate: { x: UW / 2, y: 190, ix: UW / 2, iy: 250, side: 'top' },
-  npcs: [{ id: 'u_bruno', pos: [[460, 560]] }],
+  id: 'uebung', w: UW, h: UH, bg: '#9ccc65', solo: true, finalExit: true, leaves: 3, start: { x: 560, y: 640 }, gate: { x: UW / 2, y: 190, ix: UW / 2, iy: 250, side: 'top' },
+  npcs: [{ id: 'u_bruno', pos: [[420, 480]] }],
   decor: UDECOR, spots: USPOTS, grid: buildGridUebung, ground: drawGroundUebung, decorDraw: UDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['leaf', 'twig', 'pebble'], items: ['kochloeffel'],
@@ -75,7 +75,7 @@ if (typeof STAGE_NAME !== 'undefined') STAGE_NAME.uebung = 'Helfer-Schule';
 if (typeof STAGE_COL !== 'undefined') STAGE_COL.uebung = '#95C11F';
 
 // Schritte: was gerade zu tun ist (Text wird vorgelesen), woran man erkennt, dass es geschafft ist, und wohin der Pfeil zeigt
-const UEB_RING = { x: 700, y: 640 };
+const UEB_RING = { x: 760, y: 560 };
 const UEBUNG_SAY = {
   walk: 'Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.',
   talk: 'Super! Über Bruno ist ein Ausrufezeichen. Tippe Bruno an!',
@@ -118,7 +118,7 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     return talk0.call(this, id);
   };
   const bonusStart0 = P.bonusStart;
-  P.bonusStart = function (npc) { if (this.stage === 'uebung') { (this.ueb || (this.ueb = { said: null, t: 0, walked: false, clockSaid: false })).clock = true; return; } return bonusStart0.call(this, npc); };   // keine laute Bonus-Ansage – die Uhr erklärt Bruno selbst
+  P.bonusStart = function (npc) { if (this.stage === 'uebung') { if (this.diff === 'easy') return; (this.ueb || (this.ueb = { said: null, t: 0, walked: false, clockSaid: false })).clock = true; return; } return bonusStart0.call(this, npc); };   // keine laute Bonus-Ansage – die Uhr erklärt Bruno selbst
   const coach0 = P.drawCoach;
   P.drawCoach = function (c) { if (this.stage !== 'uebung') return coach0.call(this, c); };   // in der Schule erklärt Bruno – keine zweite Hand
   const upd0 = P.update;
@@ -132,7 +132,7 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     const step = uebungStep(this);
     if (step !== U.said && !overlay) { U.said = step; U.stepT = 0; Voice.say(UEBUNG_SAY[step], true); }
     U.stepT = (U.stepT || 0) + dt;
-    if (U.clock && !U.clockSaid && ['search', 'searchHard', 'taskEasy'].includes(step) && !overlay && U.stepT > 6 && !Voice.busy()) { U.clockSaid = true; this.ueb.clockT = 0; Voice.say(UEBUNG_SAY.clock, true); }
+    if (U.clock && !U.clockSaid && ['search', 'searchHard'].includes(step) && !overlay && U.stepT > 6 && !Voice.busy()) { U.clockSaid = true; this.ueb.clockT = 0; Voice.say(UEBUNG_SAY.clock, true); }
     if (this.ueb.clockT !== undefined) this.ueb.clockT += dt;
   };
   // Hinweis-Karte oben, Ring zum Hinlaufen, Pfeil zum Versteck, Knopf zum Überspringen

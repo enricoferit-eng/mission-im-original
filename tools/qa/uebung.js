@@ -7,11 +7,12 @@ const OUT = process.env.OUT || __dirname + '/shots';
   for (const diff of ['easy', 'medium', 'hard']) {
     await ev(d => { localStorage.clear(); Save.load(); Save.data.seenTrailer = true; createAccount('QA', [0, 0, 0, 0]); ACC().char = 'cat'; for (const g of Object.keys(GAMES)) ACC().tut['h_' + g] = true; setScene(new Menu()); }, diff); await sleep(1200); await ev(() => { overlay = null; window.HW_POPPED = true; });
     const cx = { easy: 180, medium: 422, hard: 665 }[diff]; await p.mouse.click(cx, 225); await sleep(1200);
-    const sc = await ev(() => scene.constructor.name + ':' + scene.stage); if (sc !== 'Play:uebung') { bad.push(diff + ': startet nicht in der Helfer-Schule (' + sc + ')'); continue; }
+    const sc = await ev(() => scene.constructor.name + ':' + scene.stage + (overlay ? '/' + overlay.constructor.name : '')); if (!/^Play:uebung/.test(sc)) { bad.push(diff + ': startet nicht in der Helfer-Schule (' + sc + ')'); await p.screenshot({ path: OUT + '/ueb_fail.png' }); continue; }
     const step = () => ev(() => uebungStep(scene)), clickW = async (x, y) => { const s = await ev(([x, y]) => scene.w2s(x, y), [x, y]); await p.mouse.click(s.x, s.y); };
+    const [UEB_RING_X, UEB_RING_Y] = await ev(() => [UEB_RING.x, UEB_RING.y]);
     const log = [await step()];
     await p.screenshot({ path: OUT + '/ueb_' + diff + '_1.png' });
-    for (let k = 0; k < 8 && await step() === 'walk'; k++) { await clickW(700, 640); await sleep(1500); }
+    for (let k = 0; k < 8 && await step() === 'walk'; k++) { await clickW(UEB_RING_X, UEB_RING_Y); await sleep(1500); }
     log.push(await step());
     const talkBruno = async () => { for (let k = 0; k < 8 && !(await ev(() => !!overlay)); k++) { const s = await ev(() => { const n = scene.npcs[0]; return scene.w2s(n.x, n.y - 50); }); await p.mouse.click(s.x, s.y); await sleep(1500); } };
     await talkBruno();

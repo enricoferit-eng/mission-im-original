@@ -739,6 +739,36 @@
  },
  {
   "who": "erzaehler",
+  "text": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht.",
+  "key": "b0b1e048",
+  "clean": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben.",
+  "key": "4612edf7",
+  "clean": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an, von unten nach oben."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist.",
+  "key": "8033fcb1",
+  "clean": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht.",
+  "key": "aeca202a",
+  "clean": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht."
+ },
+ {
+  "who": "erzaehler",
+  "text": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt.",
+  "key": "0ceeba52",
+  "clean": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt."
+ },
+ {
+  "who": "erzaehler",
   "text": "Dreh immer zwei Karten um.",
   "key": "c732cb74",
   "clean": "Dreh immer zwei Karten um."
@@ -883,39 +913,9 @@
  },
  {
   "who": "erzaehler",
-  "text": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht.",
-  "key": "b0b1e048",
-  "clean": "Beleg den Flammkuchen wie auf dem Rezept: Tippe unten auf die Schalen, bis von jeder Zutat genau so viele drauf sind wie auf dem Zettel steht."
- },
- {
-  "who": "erzaehler",
-  "text": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an – von unten nach oben.",
-  "key": "4612edf7",
-  "clean": "Bau den Eisbecher nach der Bestellung: Tippe die Eissorten in der richtigen Reihenfolge an, von unten nach oben."
- },
- {
-  "who": "erzaehler",
   "text": "Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept.",
   "key": "ce51de85",
   "clean": "Misch die hausgemachte Limo: Tippe auf die Zutaten, bis im Krug genau so viele sind wie auf dem Rezept."
- },
- {
-  "who": "erzaehler",
-  "text": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist.",
-  "key": "8033fcb1",
-  "clean": "Gieß die Palmen auf der Terrasse: Nimm die Gießkanne und halte sie über jede Palme, bis ihr Balken voll und grün ist."
- },
- {
-  "who": "erzaehler",
-  "text": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht.",
-  "key": "aeca202a",
-  "clean": "Bring jedem Tisch seine Bestellung: Zieh das Essen vom Tablett auf den Tisch, über dem es in der Sprechblase steht."
- },
- {
-  "who": "erzaehler",
-  "text": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt.",
-  "key": "0ceeba52",
-  "clean": "Feg das Laub von der Terrasse: Wisch mit dem Finger wie mit einem Besen, bis kein Blatt mehr auf dem Boden liegt."
  },
  {
   "who": "erzaehler",

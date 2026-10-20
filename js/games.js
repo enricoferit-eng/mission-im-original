@@ -7,6 +7,13 @@ const GAME_W = 400, GAME_H = 520;
 let GAME_MOTION = 1;                       // wie stark sich Dinge in den Aufgaben bewegen (Stufe)
 const PAR_LONG = { hanoi: 1.6, pipes: 1.5, rotimg: 1.5, mirror: 1.5, diff: 1.4, lights: 1.4, puzzle: 1.3, balance: 1.3, dials: 1.3, sequence: 1.3, pattern: 1.3, platform: 2 };
 // kurze Fassung des Hilfetexts (erster Satz) – für Leicht ab dem zweiten Mal
+// Erklärung passend zur Stufe: Sätze über andere Stufen („Bei Schwer …“) fallen weg – sonst verwirrt es die Kleinen
+function helpFor(id, diff) {
+  const t = HELP_TEXT[id] || 'Probier es einfach aus!', name = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' }[diff];
+  if (!name) return t;
+  const parts = t.match(/[^.!?]+[.!?]+(\s|$)/g) || [t];
+  return parts.filter(p => !/\b(Leicht|Mittel|Schwer)\b/.test(p) || new RegExp('\\b' + name + '\\b').test(p)).join('').trim() || t;
+}
 function helpShort(id) { const t = HELP_TEXT[id] || 'Probier es einfach aus!', m = /^.*?[.!?](\s|$)/.exec(t); return (m ? m[0] : t).trim(); }
 function parTime(id, diff, kind) { return Math.round((kind === 'easy' ? 22 : diff === 'hard' ? 38 : 32) * (PAR_LONG[id] || 1)); }
 try { document.addEventListener('visibilitychange', () => { if (document.hidden) Music.stop(); }); } catch (e) { /* egal */ }
@@ -47,7 +54,7 @@ class GameOverlay {
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
     GAME_MOTION = o.diff === 'easy' ? 0.7 : o.diff === 'hard' ? 1.3 : 1;
-    this.ready = this.retries > 0 || !!(o.steps && o.steps.i > 0); this.cd = this.ready ? 0.35 : 1; /* statt 3-2-1: das Kind drückt selbst auf „Los!“ – beim nochmal Versuchen und bei Folgeaufgaben geht es gleich los */ this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
+    this.ready = this.retries > 0; this.cd = this.ready ? 0.35 : 1; /* statt 3-2-1: das Kind drückt selbst auf „Los!“ – beim nochmal Versuchen und bei Folgeaufgaben geht es gleich los */ this.fuse = 0; this.stars = 3; this.falling = []; this.combo = 0; this.lastGood = -9; this.pops = []; this.shk = 0; this.tickAcc = 0; this.won3 = 0;
     this.par = parTime(this.id, o.diff, o.kind); this.thr = [this.par, Math.round(this.par * 1.7)];
     const burst0 = this.env.burst; this.env.burst = (x, y, n) => { burst0(x, y, n); self.good(x, y); };
     Sfx.hook = type => { if (overlay === self && type === 'bad') self.miss(); };
@@ -56,7 +63,7 @@ class GameOverlay {
     // Beim ersten Mal: kurzer Hinweis über dem Spielfeld (vorgelesen) + Zeigehand – kein Textfenster, das Spiel startet sofort
     this.tip = null; this.lastTouch = 0;
     if (!this.retries && o.diff === 'easy' && typeof ACC === 'function' && ACC() && ACC().tut['h_' + this.id]) { let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 18) { setTimeout(say, 100); return; } Voice.say(helpShort(me.id), true); }; setTimeout(say, 150); }   // bei Leicht jede Aufgabe vorlesen – nach der Bonus-Ansage
-    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: HELP_TEXT[this.id] || 'Probier es einfach aus!', t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 18) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
+    if (!this.retries && typeof ACC === 'function' && ACC() && !ACC().tut['h_' + this.id]) { this.tip = { text: helpFor(this.id, o.diff), t: 0 }; ACC().tut['h_' + this.id] = true; Save.write(); let n = 0; const me = this, say = () => { if (overlay !== me) return; if (Voice.busy() && n++ < 18) { setTimeout(say, 100); return; } Voice.say(me.tip ? me.tip.text : HELP_TEXT[me.id], true); }; setTimeout(say, 150); }
     this.cdWait = this.tip ? 1.2 : 0;   // erst Hinweis + Zeigehand ansehen, dann 3-2-1
     this.jokerT = 0; this.jokerSaid = false;
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + ABIL_VAL.zeitplus[ability('zeitplus')] : 0;
@@ -381,7 +388,7 @@ class GameOverlay {
     // Erklär-Knopf (?) + Erklärung mit Text
     if (this.state === 'play') roundBtn(c, W - 44, 42, 21, '#bde0fe', 'question', () => { this.help = !this.help; }, '#118ab2');
     if (this.help) {
-      const lines = [HELP_TEXT[this.id] || 'Probier es einfach aus!'];
+      const lines = [helpFor(this.id, this.opts.diff)];
       if (this.timed) lines.push('Du hast 3 Herzen und eine Zeit-Leiste. Sammle Uhren für mehr Zeit.');
       if (this.starsOn()) lines.push('Sei schnell: Die Zündschnur oben brennt. Erreicht die Flamme einen Stern, fällt er herunter. Mehrere Treffer schnell hintereinander geben eine Combo – dann wird die Zündschnur wieder länger.');
       if (this.opts.joker) lines.push('Kommst du nicht weiter, erscheint nach einer Weile unten links der Joker. Damit ist die Aufgabe sofort geschafft. Du hast 3 Joker pro Bereich.');

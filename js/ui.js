@@ -129,7 +129,7 @@ class Menu {
     logo(c, W / 2, LY, ls);
     claimBand(c, CLAIMS.urlaub, W / 2, LY + 76 * ls, 15 * Math.min(1.2, Math.max(0.8, ls)));
     accountChip.lastW = accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
-    if (!a.token) { const bx = 12, by = 84; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }   // nur solange nicht gesichert
+    if (!a.token) { const bx = 12, by = 84; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null, 104); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }   // nur solange nicht gesichert
     soundBtn(c, W - 40, 40);
     if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 96 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 46, 96 + b], [W - 40, 88 + b], [W - 34, 96 + b]]); c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 110 + b, 12, '#fff', 'center', null); }   /* iPhone: Ton geht erst nach einer Berührung */
     roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
@@ -148,7 +148,8 @@ class Menu {
         else { icon(c, ic, x + 28, by, 30); txt(c, label, x + 52, by + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null); }
         UI.btn(x, by - 24, bw, 48, fn); });
     }
-    { const cw = accountChip.lastW || 0; coinChip(c, 12 + (cw || 170) + 10, 40); }
+    { const cw = accountChip.lastW || 0, m = META(), x0 = 12 + (cw || 170) + 10; c.font = `900 17px ${FONT}`; const chipW = c.measureText(String(m ? m.coins : 0)).width + 52;
+      if (x0 + chipW <= W - 180) coinChip(c, x0, 40); else coinChip(c, x0 - 4, 40, true); }   // schmaler Bildschirm: kleinere Taler-Anzeige (nicht über „Anleitung“)
     DIFFS.forEach((d, i) => {
       let x, y, w, h;
       if (wide) { w = Math.min(215, (W - 100) / 3); h = Math.min(bottom - top - 10, w * 1.25); x = W / 2 + (i - 1) * (w + 28) - w / 2; y = top + (bottom - top - h) / 2; }
@@ -213,7 +214,7 @@ class InstallGuide {
       UI.btn(x + w / 2 - 180, by - 26, 240, 52, async () => { const p = INSTALL_PROMPT; INSTALL_PROMPT = null; try { p.prompt(); await p.userChoice; } catch (e) { /* egal */ } });
     }
     const sx = INSTALL_PROMPT ? x + w - 110 : x + w / 2;
-    rrPath(c, sx - 96, by - 20, 192, 40, 16); fs(c, '#e9ecef', 2.5); txt(c, 'Trotzdem im Browser spielen', sx, by + 1, 13, '#495057', 'center', null);
+    rrPath(c, sx - 96, by - 20, 192, 40, 16); fs(c, '#e9ecef', 2.5); txt(c, 'Trotzdem im Browser spielen', sx, by + 1, 13, '#495057', 'center', null, 176);
     UI.btn(sx - 96, by - 22, 192, 44, () => { Voice.stop(); this.next(); });
     c.restore();
   }
@@ -425,7 +426,7 @@ class PauseDialog {
   close() { if (overlay === this) overlay = null; Voice.stop(); if (this.o.onResume) this.o.onResume(); }
   draw(c) {
     Voice.once('Pause. Die Bonus-Uhr steht still.');
-    const w = Math.min(W - 30, 380), h = 200, x = (W - w) / 2, y = (H - h) / 2 - 10;
+    const w = Math.min(W - 30, 380), h = 240, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
     fitBegin(c, w, h + 50);
     panel(c, x, y, w, h, '#fff7e6', 24);
@@ -433,11 +434,12 @@ class PauseDialog {
     txt(c, 'Pause', W / 2, y + 80, 28, '#3d2c1f', 'center', null);
     txt(c, 'Die Bonus-Uhr steht still.', W / 2, y + 112, 16, '#6b5a48', 'center', null);
     const pu = 1 + Math.sin(this.t * 5) * 0.05;
-    c.save(); c.translate(W / 2 + 64, y + h - 18); c.scale(pu, pu); roundBtn(c, 0, 0, 32, '#06d6a0', 'play', null); c.restore();
-    UI.btn(W / 2 + 28, y + h - 54, 72, 72, () => { Sfx.play('tap'); this.close(); });
-    txt(c, 'Weiter', W / 2 + 64, y + h + 28, 14, '#fff', 'center', BRAND.olive);
-    roundBtn(c, W / 2 - 64, y + h - 18, 26, '#ced4da', 'stop', () => { if (overlay === this) overlay = null; Voice.stop(); this.o.onQuit(); });
-    txt(c, 'Beenden', W / 2 - 64, y + h + 28, 14, '#fff', 'center', BRAND.olive);
+    const by = y + h - 62;   // Knöpfe + Beschriftung ganz im Kasten
+    c.save(); c.translate(W / 2 + 64, by); c.scale(pu, pu); roundBtn(c, 0, 0, 30, '#06d6a0', 'play', null); c.restore();
+    UI.btn(W / 2 + 28, by - 36, 72, 90, () => { Sfx.play('tap'); this.close(); });
+    txt(c, 'Weiter', W / 2 + 64, by + 44, 14, '#2b9348', 'center', null);
+    roundBtn(c, W / 2 - 64, by, 26, '#ced4da', 'stop', () => { if (overlay === this) overlay = null; Voice.stop(); this.o.onQuit(); });
+    txt(c, 'Beenden', W / 2 - 64, by + 44, 14, '#6b5a48', 'center', null);
   }
 }
 class ConfirmDialog {
@@ -1212,7 +1214,7 @@ class Trailer {
     // Fortschritt + Überspringen
     for (let i = 0; i < 5; i++) { ell(c, cx + (i - 2) * 18, H - 24, 5, 5); fs(c, i <= s ? '#fff' : 'rgba(255,255,255,.35)', 2); }
     roundBtn(c, W - 40, 40, 26, '#fff', 'play', () => this.end(), '#06d6a0');
-    icon(c, 'play', W - 32, 40, 22, '#06d6a0'); txt(c, 'Überspringen', W - 40, 80, 13, '#fff', 'center', BRAND.ink);
+    icon(c, 'play', W - 32, 40, 22, '#06d6a0'); txt(c, 'Überspringen', W - 46, 80, 13, '#fff', 'center', BRAND.ink, 80);
   }
   down() { const s = this.scene(); if (s < this.cuts.length - 2) this.t = this.cuts[s + 1]; else this.end(); }
 }

@@ -592,6 +592,7 @@ class Play {
   }
   // Zeit-Bonus: laufender Auftrag + verbleibende Sekunden bis zum Extra-Joker
   bonusQuest() {
+    if (this.diff === 'easy') return null;   // bei Leicht keine Bonus-Uhr: eine Uhr reicht für die Kleinen
     if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
     return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
   }
@@ -618,6 +619,7 @@ class Play {
   bonusLeft() { const bq = this.bonusQuest(); return bq ? { left: this.bonusLimit(bq.npc) - (bq.q.tt || 0), limit: this.bonusLimit(bq.npc) } : null; }
   // Große Ankündigung, sobald ein Auftrag startet: jetzt zählt jede Sekunde
   bonusStart(npc) {
+    if (this.diff === 'easy') return;   // keine Bonus-Jagd bei Leicht
     const lim = this.bonusLimit(npc), mm = Math.floor(lim / 60) + ':' + String(lim % 60).padStart(2, '0');
     this.bonusIntro = { t: 0, text: 'Schaffe es in ' + mm + ' → +1 Joker!' };
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => Sfx.note(f, 0.16, 'square', 0.05), i * 110)); buzz([20, 30, 20]);

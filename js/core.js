@@ -104,7 +104,8 @@ function createAccount(name, code) {
   Save.data.accounts[id] = { name, code, login: loginCode(), avatar: Math.floor(rnd() * 6), created: Date.now(), sound: true, soundV2: true, tut: {}, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
   Save.data.current = id; Save.write(); return id;
 }
-function DP(diff) { const d = ACC().diff[diff]; if (!d.stages) d.stages = {}; if (d.equip === undefined) d.equip = null; return d; }
+const NO_ACC_DP = { stages: {}, equip: null };   // noch kein Konto (z. B. Intro-Film beim ersten Start): leerer Spielstand statt Absturz
+function DP(diff) { const a = ACC(); if (!a) return NO_ACC_DP; const d = a.diff[diff]; if (!d.stages) d.stages = {}; if (d.equip === undefined) d.equip = null; return d; }
 function SP(diff, stage = 'spielplatz') {
   const d = DP(diff);
   if (!d.stages[stage]) d.stages[stage] = { coins: 0, skins: [], speed: false, outfit: false, clears: 0, lastSkin: null, run: null };
@@ -299,10 +300,11 @@ function line(c, x1, y1, x2, y2, w, col, outline = true) {
   c.lineWidth = w; c.strokeStyle = col; c.stroke();
 }
 const TXT_DARK = { '#adb5bd': '#7b848c', '#868e96': '#5f676e', '#999': '#666', '#aaa': '#6b6b6b', '#6c757d': '#555c63', '#8a7d70': '#6b5d50', '#a0938a': '#6f6258' };
-function txt(c, s, x, y, size, col = '#fff', align = 'center', ol = OL) {
+function txt(c, s, x, y, size, col = '#fff', align = 'center', ol = OL, maxW = 0) {   // maxW: passt der Text nicht hinein, wird er kleiner
   if (!ol && TXT_DARK[col]) col = TXT_DARK[col];   // graue Schrift auf hellem Grund: dunkler, damit man sie lesen kann
   if (size < 12 && typeof DPR !== "undefined") { const T = c.getTransform(); if (Math.abs(T.a - DPR) < 0.01) size = 12; }   // Bildschirm-Schrift nie kleiner als 12 px
   c.font = `900 ${size}px ${FONT}`;
+  if (maxW > 0) { const w = c.measureText(s).width; if (w > maxW) { size = Math.max(9, Math.floor(size * maxW / w * 10) / 10); c.font = `900 ${size}px ${FONT}`; } }
   c.textAlign = align; c.textBaseline = 'middle'; c.lineJoin = 'round';
   if (ol) { c.lineWidth = Math.max(3, size * 0.2); c.strokeStyle = ol; c.strokeText(s, x, y); }
   c.fillStyle = col; c.fillText(s, x, y);

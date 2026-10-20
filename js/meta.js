@@ -98,10 +98,10 @@ function drawToasts(c, dt) {
   txt(c, q.title, W / 2 - w / 2 + 46, y + 15, 13, BRAND.olive, 'left', null); txt(c, q.sub, W / 2 - w / 2 + 46, y + 31, 12, '#c9762f', 'left', null);
   c.restore();
 }
-function coinChip(c, x, y) {
-  const m = META(); if (!m) return;
-  c.font = `900 17px ${FONT}`; const w = c.measureText(String(m.coins)).width + 52;
-  rrPath(c, x, y - 18, w, 36, 18); fs(c, '#fff7e6', 2.5); icon(c, 'coin', x + 18, y, 24); txt(c, String(m.coins), x + 36, y + 1, 17, '#8d5a3b', 'left', null);
+function coinChip(c, x, y, small) {   // small: schmale Bildschirme (Hochformat)
+  const m = META(); if (!m) return 0;
+  const fz = small ? 13 : 17, ih = small ? 28 : 36; c.font = `900 ${fz}px ${FONT}`; const w = c.measureText(String(m.coins)).width + (small ? 38 : 52);
+  rrPath(c, x, y - ih / 2, w, ih, ih / 2); fs(c, '#fff7e6', 2.5); icon(c, 'coin', x + ih / 2, y, small ? 18 : 24); txt(c, String(m.coins), x + (small ? 28 : 36), y + 1, fz, '#8d5a3b', 'left', null);
   return w;
 }
 
