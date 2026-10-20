@@ -183,12 +183,12 @@ GAMES.schmetterlinge = { challenge: true, make(env) {
       c.fillStyle = '#74c69d'; c.fillRect(0, 200, GAME_W, GAME_H - 200);
       for (let k = 0; k < 18; k++) { const x = (k * 71) % 400, y = 230 + (k * 53) % 280; line(c, x, y, x, y - 14, 2, '#2d6a4f', false); ell(c, x, y - 16, 5, 5); c.fillStyle = ['#ef476f', '#fff', '#ffd166', '#c77dff'][k % 4]; c.fill(); }
       rrPath(c, 110, 18, 180, 40, 20); fs(c, '#fff', 3); txt(c, got + ' / ' + need, 250, 39, 17, BRAND.olive, 'center', null); drawFly(c, 150, 38, want[0], t, 0.8);
-      bugs.forEach(b => { c.globalAlpha = Math.max(0, b.a); if (b.bee) drawBee(c, b.x, b.y, t); else drawFly(c, b.x, b.y, b.col[0], t + b.ph, 1, b.vx < 0); c.globalAlpha = 1; });
+      bugs.forEach(b => { c.globalAlpha = Math.max(0, b.a); if (b.bee) drawBee(c, b.x, b.y, t); else drawFly(c, b.x, b.y, b.col[0], t + b.ph, 1.45, b.vx < 0); c.globalAlpha = 1; });
       fxText(c, fx);
     },
     down(x, y) {
       if (fin.on()) return;
-      const b = bugs.find(q => !q.dead && dist(x, y, q.x, q.y) < 34); if (!b) return; b.dead = true;
+      const b = bugs.find(q => !q.dead && dist(x, y, q.x, q.y) < 42); if (!b) return; b.dead = true;
       if (b.bee) { env.hit(); Sfx.play('bad'); fx.push({ s: 'Au, Biene!', x: b.x, y: b.y - 20, t: 0 }); }
       else if (b.col === want) { got++; Sfx.play('good'); env.burst(b.x, b.y, 6); fx.push({ s: '+1', x: b.x, y: b.y - 20, t: 0, ok: true }); if (got >= need) fin.set(0.5); else if (L > 0 && got % 4 === 0) { want = pick(COLS.filter(q => q !== want), r); fx.push({ s: 'Jetzt ' + want[1] + '!', x: 200, y: 120, t: 0, ok: true }); env.conf(200, 60, 12); } }
       else { Sfx.play('bad'); fx.push({ s: 'Falsche Farbe', x: b.x, y: b.y - 20, t: 0 }); }

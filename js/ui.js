@@ -146,7 +146,7 @@ class Menu {
       B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + 8) - bw / 2, yy = by - hop;
         if (gift && ready) { const gl = 0.5 + 0.5 * Math.sin(this.t * 4); rrPath(c, x - 5, yy - 29, bw + 10, 58, 24); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }   // leuchtet, solange das Geschenk noch zu ist
         rrPath(c, x, yy - 24, bw, 48, 20); fs(c, col, 3);
-        const drawIc = (ix, iy, sz) => { if (gift) drawGift(c, ix, iy + sz * 0.15, sz * 1.15, this.t); else icon(c, ic, ix, iy, sz); };
+        const drawIc = (ix, iy, sz) => { if (gift) drawPresent(c, ix, iy + sz * 0.15, sz * 1.15, this.t); else icon(c, ic, ix, iy, sz); };
         if (bw < 130) { drawIc(x + bw / 2, yy - 7, 24); txt(c, label, x + bw / 2, yy + 14, 12, '#3d2c1f', 'center', null, bw - 8); }   // schmal (Hochformat): Symbol über dem Wort
         else { drawIc(x + 28, yy, 30); txt(c, label, x + 52, yy + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null, bw - 58); }
         if (gift && ready) { ell(c, x + bw - 8, yy - 20, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + bw - 8, yy - 19, 13, '#fff', 'center', null); }

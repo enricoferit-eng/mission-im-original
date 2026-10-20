@@ -97,7 +97,7 @@ class Cutscene {
     if (this.title > 0 || this.i < 0) { const k = clamp(Math.min(this.title, 2 - this.title) * 2.5, 0, 1); c.globalAlpha = k; c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H); txt(c, this.sc.title, W / 2, H / 2 - 26, 20, '#ffd166', 'center', BRAND.ink); txt(c, this.sc.name, W / 2, H / 2 + 12, Math.min(38, W / 14), '#fff', 'center', BRAND.ink, W - 40); c.globalAlpha = 1; UI.btn(0, 0, W, H, () => { this.title = 0; this.next(); }); return; }
     const line = this.lines[Math.min(this.i, this.lines.length - 1)], who = line[0], text = line[1];
     // Figuren: der Held (eigenes Tier) + die Besetzung; wer spricht, hüpft und ist vorne
-    const cast = this.sc.cast, n = cast.length + 1, base = H - 14, s = clamp(H / 300, 1.6, 2.8), gap = Math.min(W / (n + 1), 170 * s / 2.2);
+    const cast = this.sc.cast, n = cast.length + 1, base = H - 14, gap0 = W / (n + 0.6), s = clamp(Math.min(H / 300, gap0 / 40), 1.3, 2.8), gap = Math.min(gap0, 170 * s / 2.2);   // schmal (Hochformat): Figuren kleiner statt übereinander
     const kindA = (ACC() && ACC().char) || 'cat', all = [['hero']].concat(cast.map(id => [id]));
     all.forEach(([id], k) => {
       const x = W / 2 + (k - (n - 1) / 2) * gap, talk = id === who, hop = talk ? Math.abs(Math.sin(this.lt * 7)) * 8 : 0, fs2 = talk ? s * 1.08 : s;
@@ -115,9 +115,9 @@ class Cutscene {
     if (full) { const b = Math.abs(Math.sin(t * 4)) * 4; polyPath(c, [[bx + bw - 34, by + bh - 20 + b], [bx + bw - 22, by + bh - 20 + b], [bx + bw - 28, by + bh - 12 + b]]); fs(c, BRAND.olive, 0); }
     // Fortschritt + Überspringen
     for (let k = 0; k < this.lines.length; k++) { ell(c, W / 2 + (k - (this.lines.length - 1) / 2) * 16, by + bh + 14, 4.5, 4.5); fs(c, k <= this.i ? '#fff' : 'rgba(255,255,255,.4)', 1.5); }
-    rrPath(c, W - 128, H - 46, 116, 34, 17); fs(c, 'rgba(255,255,255,.85)', 2); txt(c, 'Überspringen', W - 70, H - 28, 13, '#3d2c1f', 'center', null, 100);
-    UI.btn(W - 132, H - 50, 124, 42, () => this.finish());
-    UI.btn(0, 0, W, H - 54, () => { if (!full) this.lt = 99; else this.next(); });
+    UI.btn(0, 0, W, H, () => { if (!full) this.lt = 99; else this.next(); });   // zuerst: sonst würde sie „Überspringen“ verdecken
+    const sy = by + bh + 28; rrPath(c, W - 128, sy - 17, 116, 34, 17); fs(c, 'rgba(255,255,255,.85)', 2); txt(c, 'Überspringen', W - 70, sy + 1, 13, '#3d2c1f', 'center', null, 100);   // unter der Sprechblase: verdeckt keine Figur
+    UI.btn(W - 132, sy - 21, 124, 42, () => this.finish());
   }
 }
 

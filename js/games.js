@@ -1192,8 +1192,8 @@ GAMES.diff = { make(env) {
   const r = env.r, k = env.hard ? 5 : 3, H2 = 225, Y1 = 34, Y2 = 280;
   const items = []; let guard = 0;
   while (items.length < (env.hard ? 12 : 9) && guard++ < 500) {
-    const it = { id: pick(MOT(), r), x: 34 + r() * 332, y: 30 + r() * 165, s: 36 + r() * 16, flip: 1 };
-    if (items.every(o => dist(o.x, o.y, it.x, it.y) > 52)) items.push(it);
+    const it = { id: pick(MOT(), r), x: 38 + r() * 324, y: 34 + r() * 160, s: 44 + r() * 14, flip: 1 };
+    if (items.every(o => dist(o.x, o.y, it.x, it.y) > 60)) items.push(it);
   }
   const bottom = items.map(o => Object.assign({}, o));
   const diffs = shuffle([...items.keys()], r).slice(0, k).map(i => {
@@ -1370,7 +1370,7 @@ GAMES.count = { make(env) {
     const n = env.hard ? ri(7, 11, r) : ri(4, 8, r), m = env.hard ? 16 : 9;
     const others = shuffle(MOT().filter(q => q !== target), r).slice(0, 5);
     its = [];
-    for (let i = 0; i < n + m; i++) its.push({ id: i < n ? target : pick(others, r), x: 30 + r() * 340, y: 110 + r() * 230, vx: (r() - 0.5) * (env.hard ? 70 : 36), vy: (r() - 0.5) * (env.hard ? 50 : 26), s: 34 + r() * 10 });
+    for (let i = 0; i < n + m; i++) its.push({ id: i < n ? target : pick(others, r), x: 30 + r() * 340, y: 110 + r() * 230, vx: (r() - 0.5) * (env.hard ? 70 : 36), vy: (r() - 0.5) * (env.hard ? 50 : 26), s: 44 + r() * 10 });
     const vals = shuffle([n - 2, n - 1, n, n + 1, n + 2].filter(v => v > 0), r).slice(0, 3);
     if (!vals.includes(n)) vals[0] = n;
     opts = shuffle([...new Set(vals.concat([n + (r() < 0.5 ? 3 : -3)]))].filter(v => v > 0), r).slice(0, 4).map(v => ({ v, ok: v === n }));

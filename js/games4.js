@@ -91,7 +91,7 @@ GAMES.servietten = { make(env) {
 // 2) Tablett balancieren: Finger nach links/rechts = Tablett kippen. Gäste rempeln, die Gläser rutschen
 GAMES.tablett = { make(env) {
   const r = env.r, L = LVL(env), n = 3 + L, len = 14 + L * 4;
-  const G = [...Array(n)].map((_, i) => ({ x: (i - (n - 1) / 2) * 40, v: 0, down: 0, col: pick(['#ff9f1c', '#e63946', '#ffd166', '#06d6a0'], r) }));
+  const G = [...Array(n)].map((_, i) => ({ x: (i - (n - 1) / 2) * 46, v: 0, down: 0, col: pick(['#ff9f1c', '#e63946', '#ffd166', '#06d6a0'], r) }));
   let tilt = 0, target = 0, el = 0, bump = 0, bumpT = 2.5, walk = 0, crash = []; const fin = finisher(env);
   return {
     hint: { type: 'drag', x: 200, y: 400, x2: 300, y2: 400 },
@@ -104,7 +104,7 @@ GAMES.tablett = { make(env) {
       G.forEach(g => {
         if (g.down > 0) { g.down -= dt; if (g.down <= 0) { g.x = 0; g.v = 0; } return; }
         g.v += (Math.sin(tilt + sway) * 520 + bump * 260) * dt; g.v *= 1 - dt * 0.8; g.x += g.v * dt;
-        if (Math.abs(g.x) > 112) { g.down = 1.2; crash.push({ x: 200 + Math.sign(g.x) * 130, y: 400, t: 0 }); Sfx.play('bad'); el = Math.max(0, el - 2.5); buzz(40); }
+        if (Math.abs(g.x) > 134) { g.down = 1.2; crash.push({ x: 200 + Math.sign(g.x) * 150, y: 400, t: 0 }); Sfx.play('bad'); el = Math.max(0, el - 2.5); buzz(40); }
       });
       bump *= Math.pow(0.02, dt);
       crash.forEach(k => (k.t += dt)); crash = crash.filter(k => k.t < 0.8);
@@ -119,11 +119,11 @@ GAMES.tablett = { make(env) {
       rrPath(c, 170, by - 40, 60, 90, 20); fs(c, '#212529', 3); leaf(c, 200, by - 10, 0.6, BRAND.lime);
       c.save(); c.translate(200, 420); c.rotate(tilt + Math.sin(walk * 0.7) * 0.05);
       line(c, -20, 30, -60, 6, 8, '#212529'); line(c, 20, 30, 60, 6, 8, '#212529');
-      ell(c, 0, 0, 130, 16); fs(c, '#adb5bd', 3); ell(c, 0, -3, 118, 11); fs(c, '#ced4da', 2);
-      G.forEach(g => { if (g.down <= 0) drawGlass(c, g.x, -4, 0.75, 0.7, g.col, g.v * 0.0008); });
+      ell(c, 0, 0, 152, 18); fs(c, '#adb5bd', 3); ell(c, 0, -3, 140, 12); fs(c, '#ced4da', 2);
+      G.forEach(g => { if (g.down <= 0) drawGlass(c, g.x, -4, 1.1, 0.7, g.col, g.v * 0.0008); });
       c.restore();
       crash.forEach(k => { for (let m = 0; m < 5; m++) { const a = m * 1.3; polyPath(c, [[k.x + Math.cos(a) * k.t * 60, k.y + 40 + Math.sin(a) * k.t * 30], [k.x + Math.cos(a) * k.t * 60 + 8, k.y + 44], [k.x + Math.cos(a) * k.t * 60, k.y + 50]]); c.fillStyle = 'rgba(220,240,255,.9)'; c.fill(); } });
-      txt(c, 'Finger links / rechts = kippen', 200, 506, 13, '#fff', 'center', OL);
+      txt(c, 'Finger links / rechts = kippen', 200, 504, 16, '#fff', 'center', OL);
     },
     down(x) { target = clamp((x - 200) / 160, -1, 1) * 0.5; },
     move(x) { target = clamp((x - 200) / 160, -1, 1) * 0.5; },
@@ -438,7 +438,7 @@ GAMES.tauben = { make(env) {
       // Tisch mit Pommes
       rrPath(c, 40, 270, 140, 70, 10); fs(c, '#6c584c', 3); drawFood(c, 'flammkuchen', 110, 300, 60);
       crumbs.forEach(k => { for (let m = 0; m < k.n; m++) { ell(c, k.x + Math.cos(m * 2.1) * 6, k.y + Math.sin(m * 2.1) * 4, 2.5, 2); c.fillStyle = '#e9c46a'; c.fill(); } });
-      P.slice().sort((a, b) => a.y - b.y).forEach(p => drawPigeon(c, p.x, p.y, 1.1, t * 3 + p.t, p.dir, false));
+      P.slice().sort((a, b) => a.y - b.y).forEach(p => drawPigeon(c, p.x, p.y, 2.1, t * 3 + p.t, p.dir, false));   // größer, damit man sie gut sieht
       txt(c, P.filter(inZone).length + ' / ' + n + ' auf der Wiese', 200, 36, 20, BRAND.olive, 'center', '#fff');
     },
     down(x, y) { if (fin.on() || y < 260) return; crumbs.push({ x, y, n: 4 }); if (crumbs.length > 3) crumbs.shift(); Sfx.play('tap'); },

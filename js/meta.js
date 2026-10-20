@@ -18,7 +18,7 @@ const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + St
 function giftReady() { const m = META(); return !!m && m.giftDay !== todayStr(); }
 function giftText(g) { return g.t === 'coins' ? g.n + ' Taler' : g.t === 'hint' ? 'Such-Joker' : g.t === 'joker' ? 'Aufgaben-Joker' : 'Gratis-Dreh am Glücksrad'; }
 function giftIcon(c, g, x, y, s) { if (g.t === 'coins') { icon(c, 'coin', x, y - s * 0.12, s * 0.8); txt(c, String(g.n), x, y + s * 0.42, Math.max(11, s * 0.32), '#3d2c1f', 'center', '#fff'); } else if (g.t === 'hint') icon(c, 'search', x, y, s * 0.85); else if (g.t === 'joker') icon(c, 'joker', x, y, s * 0.85); else { ell(c, x, y, s * 0.42, s * 0.42); for (let k = 0; k < 6; k++) { c.beginPath(); c.moveTo(x, y); c.arc(x, y, s * 0.42, k * TAU / 6, (k + 1) * TAU / 6); c.closePath(); c.fillStyle = ['#ffd166', '#a5d8ff', '#ffafcc', '#80ed99', '#cdb4db', '#fff3bf'][k]; c.fill(); } ell(c, x, y, s * 0.42, s * 0.42); c.lineWidth = 2; c.strokeStyle = OL; c.stroke(); } }
-function drawGift(c, x, y, s, t = 0, open = 0) {   // Päckchen mit Schleife; open 0…1 hebt den Deckel ab
+function drawPresent(c, x, y, s, t = 0, open = 0) {   // Päckchen mit Schleife; open 0…1 hebt den Deckel ab
   c.save(); c.translate(x, y); c.scale(s / 40, s / 40);
   rrPath(c, -16, -10, 32, 26, 4); fs(c, '#ef476f', 2.5); c.fillStyle = '#ffd166'; c.fillRect(-3, -10, 6, 26); rrPath(c, -16, -10, 32, 26, 4); c.lineWidth = 2.5; c.strokeStyle = OL; c.stroke();
   c.save(); c.translate(0, -open * 18); c.rotate(-open * 0.5); rrPath(c, -19, -17, 38, 9, 3); fs(c, '#ef476f', 2.5); c.fillStyle = '#ffd166'; c.fillRect(-3, -17, 6, 9);
@@ -44,13 +44,13 @@ class DailyGift {
     DAILY.forEach((g, k) => { const cx = W / 2 + (k - (n - 1) / 2) * (cw + 6), cur = k === this.i, past = k < this.i || (cur && (this.done || this.opening));
       rrPath(c, cx - cw / 2, y0 - 26, cw, 52, 12); fs(c, cur ? '#fff3bf' : past ? '#d8f5e3' : '#fff', cur ? 3 : 2, cur ? '#c9a227' : OL);
       if (past) { giftIcon(c, g, cx, y0 - 2, cw * 0.55); ell(c, cx + cw / 2 - 8, y0 - 18, 7, 7); fs(c, '#06d6a0', 1.5); icon(c, 'check', cx + cw / 2 - 8, y0 - 18, 10, '#fff'); }
-      else drawGift(c, cx, y0 + 4, cw * 0.62, this.t);
+      else drawPresent(c, cx, y0 + 4, cw * 0.62, this.t);
       txt(c, 'Tag ' + (k + 1), cx, y0 + 34, 10, '#6b5a48', 'center', null); });
     // heute: großes Päckchen
     const g = DAILY[this.i], gx = W / 2, gy = y + 118;
     if (this.done && !this.opening) { giftIcon(c, DAILY[(this.i + n - 1) % n], gx, gy - 6, 54); txt(c, 'Für heute schon ausgepackt – morgen gibt es das nächste!', W / 2, y + 178, 14, '#6b5a48', 'center', null, w - 40); return; }
     const pu = this.opening ? 1 : 1 + Math.sin(this.t * 5) * 0.05, wob = this.opening ? 0 : Math.sin(this.t * 9) * 0.06;
-    c.save(); c.translate(gx, gy); c.rotate(wob); c.scale(pu, pu); drawGift(c, 0, 10, 84, this.t, this.open); c.restore();
+    c.save(); c.translate(gx, gy); c.rotate(wob); c.scale(pu, pu); drawPresent(c, 0, 10, 84, this.t, this.open); c.restore();
     if (this.open > 0.5) { const k = ease.back(clamp((this.open - 0.5) * 2, 0, 1)); c.save(); c.translate(gx, gy - 40 * k); c.scale(k, k); ell(c, 0, 0, 34, 34); fs(c, '#fff', 3, '#c9a227'); giftIcon(c, g, 0, 0, 46); c.restore(); txt(c, giftText(g) + '!', W / 2, y + 190, 18, '#2b9348', 'center', null, w - 40); }
     else txt(c, 'Tippe auf das Geschenk!', W / 2, y + 190, 15, '#6b5a48', 'center', null);
     if (!this.opening) UI.btn(gx - 60, gy - 60, 120, 120, () => { this.opening = true; giveGift(g); Sfx.play('win'); FX.confetti(W / 2, gy, 50); buzz([30, 40, 30]); Voice.say('Du bekommst: ' + giftText(g) + '!', true); });

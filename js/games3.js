@@ -226,7 +226,7 @@ GAMES.eier = { make(env) {
 
 // 7) Kühlschrank packen: Sachen ziehen (antippen = drehen), bis alles genau hineinpasst
 GAMES.kuehlpacken = { make(env) {
-  const r = env.r, L = LVL(env), C = 3 + Math.min(L, 1), R = 3 + (L === 2 ? 1 : 0), cs = Math.min(70, 300 / C), ox = 200 - (C * cs) / 2, oy = 80;
+  const r = env.r, L = LVL(env), C = 3 + Math.min(L, 1), R = 3 + (L === 2 ? 1 : 0), cs = Math.min(R > 3 ? 58 : 70, 300 / C), ox = 200 - (C * cs) / 2, oy = 76;
   // Raster zufällig in Stücke (1x1, 2x1, 1x2, bei Schwer auch L-Formen) zerlegen -> immer lösbar
   const owner = new Array(C * R).fill(-1), pieces = [];
   const cols = ['#ef476f', '#ffd166', '#06d6a0', '#118ab2', '#f78c6b', '#9b5de5', '#e9c46a', '#74c0fc'];
@@ -239,13 +239,11 @@ GAMES.kuehlpacken = { make(env) {
     sh.forEach(([a, b]) => (owner[(y + b) * C + x + a] = pieces.length));
     pieces.push({ cells: sh, col: cols[pieces.length % cols.length], placed: null });
   }
-  const s2 = Math.min(cs * 0.55, 40); let cx = 24, cy = 372;
-  shuffle(pieces.slice(), r).forEach(p => {
-    p.cells = norm(p.cells.map(([a, b]) => (r() < 0.5 ? [b, a] : [a, b])));
-    const w = (Math.max(...p.cells.map(c => c[0])) + 1) * s2, h = (Math.max(...p.cells.map(c => c[1])) + 1) * s2;
-    if (cx + w > 386) { cx = 24; cy += 2 * s2 + 14; }
-    p.hx = cx + s2 / 2; p.hy = cy + s2 / 2; p.x = p.hx; p.y = p.hy; p.ph = r() * 6; cx += w + 14;
-  });
+  // Klötze unter dem Kühlfach auslegen: so groß wie möglich, aber alle ganz im Bild (Schwer hat ein größeres Fach)
+  const order = shuffle(pieces.slice(), r); order.forEach(p => { p.cells = norm(p.cells.map(([a, b]) => (r() < 0.5 ? [b, a] : [a, b]))); });
+  const top0 = oy + R * cs + 42;
+  const layout = s2 => { let cx = 24, cy = top0, rowH = 0; for (const p of order) { const w = (Math.max(...p.cells.map(c => c[0])) + 1) * s2, h = (Math.max(...p.cells.map(c => c[1])) + 1) * s2; if (cx + w > 386) { cx = 24; cy += rowH + 12; rowH = 0; } p.hx = cx + s2 / 2; p.hy = cy + s2 / 2; p.x = p.hx; p.y = p.hy; p.ph = r() * 6; cx += w + 14; rowH = Math.max(rowH, h); } return cy + rowH; };
+  let s2 = Math.min(cs * 0.62, 44); while (s2 > 24 && layout(s2) > 512) s2 -= 2;
   function norm(cells) { const mx = Math.min(...cells.map(c => c[0])), my = Math.min(...cells.map(c => c[1])); return cells.map(([a, b]) => [a - mx, b - my]); }
   const grid = new Array(C * R).fill(-1); let drag = null, t = 0, moved = false; const fin = finisher(env);
   const fits = (p, gx, gy) => p.cells.every(([a, b]) => { const x = gx + a, y = gy + b; return x >= 0 && y >= 0 && x < C && y < R && grid[y * C + x] < 0; });
@@ -259,7 +257,7 @@ GAMES.kuehlpacken = { make(env) {
       for (let i = 0; i < C * R; i++) { const x = ox + (i % C) * cs, y = oy + Math.floor(i / C) * cs; rrPath(c, x + 4, y + 4, cs - 8, cs - 8, 6); c.fillStyle = 'rgba(116,192,252,.25)'; c.fill(); }
       pieces.forEach(p => { if (p.placed) drawPiece(c, p, ox + p.placed[0] * cs, oy + p.placed[1] * cs, cs); });
       pieces.forEach(p => { if (!p.placed) { const big = drag && drag.p === p, s = big ? cs : s2; drawPiece(c, p, p.x - s / 2, p.y - s / 2, s); } });
-      txt(c, 'Antippen = drehen', 200, 505, 13, '#495057', 'center', null);
+      txt(c, 'Antippen = drehen', 200, top0 - 11, 14, '#495057', 'center', null);
     },
     down(x, y) {
       if (fin.on()) return;

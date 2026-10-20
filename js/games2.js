@@ -261,7 +261,7 @@ GAMES.bestellung = { make(env) {
         ell(c, tb.x, tb.y, 44, 44); fs(c, '#fbf8f2', 3.5);
         const done = tb.want.every((w, i) => tb.got[i]);
         rrPath(c, tb.x - 30, tb.y - 72, 60, 30, 12); fs(c, done ? '#d8f5e3' : '#fff', 2.5);
-        tb.want.forEach((w, i) => { const bx = tb.x - (per - 1) * 13 + i * 26; if (hideT > 0 || tb.got[i]) drawFood(c, w, bx, tb.y - 57, 22); else txt(c, '?', bx, tb.y - 56, 16, '#adb5bd', 'center', null); });
+        tb.want.forEach((w, i) => { const bx = tb.x - (per - 1) * 16 + i * 32; if (hideT > 0 || tb.got[i]) drawFood(c, w, bx, tb.y - 57, 30); else txt(c, '?', bx, tb.y - 56, 20, '#adb5bd', 'center', null); });
       });
       rrPath(c, 10, 388, 380, 124, 18); fs(c, '#adb5bd', 3); txt(c, 'Tablett', 46, 400, 11, '#fff', 'center', BRAND.ink);
       for (const q of kit.sorted()) drawFood(c, q.k, q.x, q.y, 40);
