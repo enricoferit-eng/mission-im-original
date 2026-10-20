@@ -1,12 +1,12 @@
 'use strict';
 // ---------- Leicht: erst etwas suchen, dann die Aufgaben ----------
 // Bei „Leicht“ gab jede Person nur Minispiele hintereinander – die Welt war dabei egal. Jetzt bittet sie zuerst um eine Sache,
-// die ganz in der Nähe liegt, groß leuchtet und mit einem Pfeil gezeigt wird. Hinlaufen = einsammeln, zurückbringen, dann
-// kommen 3 statt 4 Minispiele. (Nicht im Mehrspieler, nicht in der Helfer-Schule, nicht beim Tor.)
+// die ganz in der Nähe liegt, groß leuchtet und mit einem Pfeil gezeigt wird. Hinlaufen = einsammeln, danach starten sofort
+// 3 statt 4 Minispiele (kein Rückweg zur Person). (Nicht im Mehrspieler, nicht in der Helfer-Schule, nicht beim Tor.)
 const EASY_SAY = {
-  ask: 'Schau, da leuchtet etwas! Lauf hin, hol es und bring es zurück.',
-  remind: 'Hol zuerst das leuchtende Ding und bring es zurück!',
-  got: 'Gefunden! Bring es zurück – tippe die Person an.',
+  ask: 'Schau, da leuchtet etwas! Lauf hin und hol es.',
+  remind: 'Hol zuerst das leuchtende Ding!',
+  got: 'Gefunden! Jetzt kommen die Aufgaben.',
 };
 const EASY_STEPS = 3;
 {
@@ -55,6 +55,7 @@ const EASY_STEPS = 3;
         const s = this.w2s(f.x, f.y, 20); FX.sparkle(s.x, s.y, 24, '#ffd23f');
         FX.flyTo && FX.flyTo(s.x, s.y, W / 2, 104, (c, x, y, sc) => drawItem(c, f.item, x, y, 44 * sc));
         this.banner = { text: EASY_SAY.got, t: 0 }; Voice.say(EASY_SAY.got, true);
+        this.pending = { t: 1.2, fn: () => { if (!overlay && this.st.easy[id]) this.runEasyStep(id); } };   // Aufgaben gleich hier starten
       }
     }
   };

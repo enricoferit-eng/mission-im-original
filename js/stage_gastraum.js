@@ -285,7 +285,7 @@ function buildGridGastraum() {
 // Verstecke an den Möbeln: auf der Bar, unter Tischen und der langen Tafel, hinter Palmenstämmen, in Kübeln und im Weinfass,
 // auf dem Servierwagen und dem Palmentisch, unter der Treppe, in der Rundbank der Olivenbäume
 const GSPOTS = [
-  furnSpot(GDECOR, 'bar', 'on', { px: 505, py: 180, sx: 548, sy: 262, sz: 0.6, tag: 'r' }),
+  furnSpot(GDECOR, 'bar', 'on', { px: 545, py: 140, sx: 548, sy: 262, sz: 0.6, tag: 'r' }),
   furnSpot(GDECOR, 'bar', 'on', { px: 150, py: 178, sx: 166, sy: 300, sz: 0.6, tag: 'l' }),
   furnSpot(GDECOR, 'treppe', 'left', { px: 772, py: 404, sx: 735, sy: 440 }),
   furnSpot(GDECOR, 'kuebel2', 'top', { px: 592, py: 262, sx: 580, sy: 345 }),
@@ -305,7 +305,7 @@ const GSPOTS = [
   furnSpot(GDECOR, 'tafel', 'top', { px: 600, py: 1226, sx: 600, sy: 1290 }),
   furnSpot(GDECOR, 'tafel', 'on', { px: 420, py: 1192, sx: 420, sy: 1290, sz: 0.55, tag: 'tisch' }),
   furnSpot(GDECOR, 'kuebel1', 'top', { px: 162, py: 1248, sx: 205, sy: 1300 }),
-  furnSpot(GDECOR, 'fass', 'top', { px: 866, py: 1216, sx: 810, sy: 1300 }),
+  furnSpot(GDECOR, 'fass', 'top', { px: 886, py: 1196, sx: 810, sy: 1300 }),
 ];
 // Möbel vom früheren Hochformat an ihre neue Stelle im breiten Glashaus (Verstecke wandern mit)
 {

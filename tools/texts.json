@@ -1591,21 +1591,21 @@
  },
  {
   "who": "erzaehler",
-  "text": "Schau, da leuchtet etwas! Lauf hin, hol es und bring es zurück.",
-  "key": "375c8cea",
-  "clean": "Schau, da leuchtet etwas! Lauf hin, hol es und bring es zurück."
+  "text": "Schau, da leuchtet etwas! Lauf hin und hol es.",
+  "key": "f7448b38",
+  "clean": "Schau, da leuchtet etwas! Lauf hin und hol es."
  },
  {
   "who": "erzaehler",
-  "text": "Hol zuerst das leuchtende Ding und bring es zurück!",
-  "key": "fc4dcbb4",
-  "clean": "Hol zuerst das leuchtende Ding und bring es zurück!"
+  "text": "Hol zuerst das leuchtende Ding!",
+  "key": "66afc1b9",
+  "clean": "Hol zuerst das leuchtende Ding!"
  },
  {
   "who": "erzaehler",
-  "text": "Gefunden! Bring es zurück – tippe die Person an.",
-  "key": "85dcbf38",
-  "clean": "Gefunden! Bring es zurück, tippe die Person an."
+  "text": "Gefunden! Jetzt kommen die Aufgaben.",
+  "key": "d0b10381",
+  "clean": "Gefunden! Jetzt kommen die Aufgaben."
  },
  {
   "who": "erzaehler",

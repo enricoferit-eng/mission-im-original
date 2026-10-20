@@ -292,7 +292,7 @@ const KSPOTS = [
   furnSpot(KDECOR, 'faesser', 'top', { px: 802, py: 1241, sx: 720, sy: 1300 }),
   furnSpot(KDECOR, 'getraenke', 'left', { px: 574, py: 960, sx: 545, sy: 1062 }),
   furnSpot(KDECOR, 'stahl', 'right', { px: 746, py: 965, sx: 775, sy: 1062 }),
-  furnSpot(KDECOR, 'saecke', 'top', { px: 582, py: 1140, sx: 570, sy: 1228 }),
+  furnSpot(KDECOR, 'saecke', 'top', { px: 632, py: 1190, sx: 570, sy: 1228 }),
   furnSpot(KDECOR, 'kanister', 'left', { px: 757, py: 1158, sx: 742, sy: 1210 }),
 ];
 // Küchenmöbel rücken um KX nach rechts, die Lager-Möbel bekommen neue Plätze im Lager links (Verstecke wandern mit)

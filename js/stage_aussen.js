@@ -248,15 +248,13 @@ function buildGridAussen() {
   }
 }
 const ASPOTS = [
-  ...[1, 2, 3].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 300, 520, 740][k] + 26, py: 262, sx: [0, 300, 520, 740][k], sy: 318 })),
+  ...[1, 2, 3].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 300, 520, 740][k] + 26, py: 332, sx: [0, 300, 520, 740][k], sy: 318 })),
   ...[4, 5, 6].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 0, 0, 0, 300, 520, 740][k] - 26, py: 412, sx: [0, 0, 0, 0, 300, 520, 740][k], sy: 492 })),
-  furnSpot(ADECOR, 'topf1', 'top', { px: 436, py: 160, sx: 430, sy: 228 }),
-  furnSpot(ADECOR, 'topf2', 'top', { px: 564, py: 160, sx: 570, sy: 228 }),
   furnSpot(ADECOR, 'olive1', 'top', { px: 190, py: 196, sx: 230, sy: 290 }),
   furnSpot(ADECOR, 'olive2', 'top', { px: 865, py: 471, sx: 830, sy: 560 }),
   furnSpot(ADECOR, 'kissenbox', 'top', { px: 844, py: 186, cut: 194, front: true, sx: 850, sy: 285 }),
   furnSpot(ADECOR, 'lounge', 'top', { px: 190, py: 384, cut: 396, front: true, sx: 230, sy: 430 }),
-  furnSpot(ADECOR, 'cyp1', 'left', { px: 888, py: 280, sx: 860, sy: 320 }),
+  furnSpot(ADECOR, 'cyp1', 'left', { px: 878, py: 280, sx: 860, sy: 320 }),
   furnSpot(ADECOR, 'cyp3', 'left', { px: 888, py: 440, sx: 860, sy: 450 }),
   furnSpot(ADECOR, 'kugel1', 'right', { px: 530, py: 538, sx: 552, sy: 570 }),
   furnSpot(ADECOR, 'kugel2', 'left', { px: 868, py: 590, sx: 846, sy: 620 }),

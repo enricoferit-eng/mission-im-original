@@ -229,12 +229,12 @@ class GameOverlay {
     // Querformat: Knöpfe/Herzen/Zeit an die Seiten, Spielfeld bekommt die volle Höhe
     this.side = W > H * 1.1;
     if (this.side) {
-      const left = 92, right = this.timed ? 154 : 92, aw = W - left - right - 16, ah = H - 16;
+      const left = 92, right = this.timed ? 154 : 92, aw = W - left - right, ah = H;   // Vollbild: Spielfeld über die ganze Höhe, ohne Rand
       this.s = Math.min(aw / GAME_W, ah / GAME_H);
-      this.ox = left + 8 + (aw - GAME_W * this.s) / 2; this.oy = 8 + (ah - GAME_H * this.s) / 2;
+      this.ox = left + (aw - GAME_W * this.s) / 2; this.oy = (ah - GAME_H * this.s) / 2;
       return;
     }
-    const top = this.timed ? 156 : 124, pad = 10;
+    const top = this.timed ? 156 : 124, pad = 0;   // Vollbild: Feld von Rand zu Rand
     const aw = W - pad * 2, ah = H - top - pad - 6;
     this.s = Math.min(aw / GAME_W, ah / GAME_H);
     this.ox = (W - GAME_W * this.s) / 2;
@@ -301,9 +301,29 @@ class GameOverlay {
     c.save(); c.translate(side ? x + w - 40 : x + w - 32, side ? y + 89 : y + h / 2 + 1); c.scale(ss, ss);
     txt(c, String(Math.ceil(this.timeLeft)), 0, 0, 28, low ? '#ff4d6d' : '#fff'); c.restore();
   }
+  // Vollbild-Gefühl: der Rand neben dem Spielfeld zeigt das Spiel selbst, stark weichgezeichnet (wie bei Handy-Videos)
+  snapField() {
+    try {
+      if (!this.snap) { this.snap = document.createElement('canvas'); this.snap.width = 20; this.snap.height = 26; }
+      const g = this.snap.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(cv, Math.round(this.ox * DPR), Math.round(this.oy * DPR), Math.round(GAME_W * this.s * DPR), Math.round(GAME_H * this.s * DPR), 0, 0, 20, 26);
+    } catch (e) { this.snap = null; }
+  }
+  drawBackdrop(c) {
+    c.fillStyle = 'rgb(16,28,18)'; c.fillRect(0, 0, W, H);
+    if (this.snap) {
+      const k = Math.max(W / GAME_W, H / GAME_H) * 1.15, w = GAME_W * k, h = GAME_H * k;
+      c.save(); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(this.snap, (W - w) / 2, (H - h) / 2, w, h); c.restore();
+    }
+    c.fillStyle = 'rgba(16,28,18,.45)'; c.fillRect(0, 0, W, H);
+    if (this.side) { const sh = (x, d) => { const gr = c.createLinearGradient(x, 0, x + d * 18, 0); gr.addColorStop(0, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(Math.min(x, x + d * 18), 0, 18, H); };
+      sh(this.ox, -1); sh(this.ox + GAME_W * this.s, 1); }   // leichter Schatten am Feldrand
+    else { const sh = (y, d) => { const gr = c.createLinearGradient(0, y, 0, y + d * 18); gr.addColorStop(0, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(0, Math.min(y, y + d * 18), W, 18); };
+      sh(this.oy, -1); sh(this.oy + GAME_H * this.s, 1); }
+  }
   draw(c) {
     this.layout();
-    c.fillStyle = 'rgba(16,28,18,.78)'; c.fillRect(0, 0, W, H);
+    this.drawBackdrop(c);
     this.drawRays(c);
     const dz = this.danger();
     if (dz > 0) { const a = dz * (0.25 + 0.25 * Math.sin(this.t * 14)); const gr = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.7); gr.addColorStop(0, 'rgba(239,71,111,0)'); gr.addColorStop(1, `rgba(239,71,111,${a})`); c.fillStyle = gr; c.fillRect(0, 0, W, H); }
@@ -326,7 +346,8 @@ class GameOverlay {
     c.save();
     const sk = this.shk > 0 ? Math.sin(this.shk * 70) * this.shk * 22 : 0;
     c.translate(this.ox + sk, this.oy + (this.shk > 0 ? Math.cos(this.shk * 55) * this.shk * 10 : 0)); c.scale(this.s, this.s);
-    rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.save(); c.clip();
+    const rad = 0;   // Vollbild: Feld geht bis an den Rand
+    rrPath(c, 0, 0, GAME_W, GAME_H, rad); c.save(); c.clip();
     this.g.draw(c);
     const av = c.createRadialGradient(200, 230, 150, 200, 260, 380); av.addColorStop(0, 'rgba(0,0,0,0)'); av.addColorStop(1, 'rgba(40,25,10,.18)');
     c.fillStyle = av; c.fillRect(0, 0, GAME_W, GAME_H);
@@ -368,8 +389,8 @@ class GameOverlay {
       txt(c, 'Versuch es gleich nochmal.', 200, 245, 17, '#fbf8f2', 'center', BRAND.ink);
     }
     c.restore();
-    rrPath(c, 0, 0, GAME_W, GAME_H, 26); c.lineWidth = 5 / this.s; c.strokeStyle = OL; c.stroke();
     c.restore();
+    this.snapField();
     if (this.state === 'lost') {
       const p = this.toScreen(200, 318), r = 44 * Math.min(1.3, this.s * 1.3);
       roundBtn(c, p.x - r * 1.3, p.y, r, '#06d6a0', 'retry', () => { this.retries++; this.start(); });

@@ -29,7 +29,7 @@ let DECOR = [
   { id: 'y3', t: 'yucca', x: 765, y: 1128, r: 28 }, { id: 'y4', t: 'yucca', x: 100, y: 650, r: 24 },
   { id: 'y5', t: 'yucca', x: 130, y: 430, r: 30 }, { id: 'y6', t: 'yucca', x: 150, y: 910, r: 30 },
   { id: 'y7', t: 'yucca', x: 835, y: 1035, r: 30 },
-  { id: 'y8', t: 'yucca', x: 560, y: 455, r: 28 }, { id: 'y9', t: 'yucca', x: 200, y: 790, r: 28 },   // nicht mehr unter dem Schaukel-Balken (dort sah man das Versteck kaum)
+  { id: 'y8', t: 'yucca', x: 660, y: 900, r: 28 }, { id: 'y9', t: 'yucca', x: 200, y: 790, r: 28 },   // nicht mehr unter dem Schaukel-Balken (dort sah man das Versteck kaum)
   { id: 'r1', t: 'rock', x: 470, y: 335, r: 24 }, { id: 'r2', t: 'rock', x: 690, y: 300, r: 30 }, { id: 'r3', t: 'rock', x: 240, y: 835, r: 30 },
   { id: 'r4', t: 'rock', x: 560, y: 1060, r: 26 }, { id: 'r5', t: 'rock', x: 330, y: 940, r: 26 },
   { id: 'pl', t: 'planter', x: 390, y: 1110 }, { id: 'bench', t: 'bench', x: 690, y: 1020, w: 86, h: 26 },
@@ -309,7 +309,7 @@ function peekOf(h) {
   if (id.startsWith('s_wall')) return { x: h.x, y: 208 };
   if (id.startsWith('s_fence')) return { x: h.x, y: 1166 };
   if (id.startsWith('s_cyp')) return { x: h.x - 40, y: h.y + 8 };
-  if (h.behind) { const d = DECOR_BY[id.slice(2)], rr = d.t === 'planter' ? 34 : d.t === 'bench' ? 38 : d.r; return { x: h.x + (h.side || 1) * rr * 0.75, y: h.y - 4 }; }
+  if (h.behind) { const d = DECOR_BY[id.slice(2)], rr = d.t === 'planter' ? 54 : d.t === 'bench' ? 38 : d.r; return { x: h.x + (h.side || 1) * rr * 0.75, y: h.y - 4 }; }
   return { x: h.x + 10, y: h.y + 10 };
 }
 function moundAt(c, x, y, w) {
@@ -1310,7 +1310,7 @@ class Play {
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
     if (this.pushNb) this.pushNb(c, L, t);
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
-    if (SG.feat.house) this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : 1);
+    if (SG.feat.house) { const up = q && q.hidden.some((h, i) => h.l && !this.off(q, i)) && dist(p.x, p.y, HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2) < 420; this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : up ? 0.5 : 1); }   // liegt oben im Haus etwas: Dach in der Nähe halb durchsichtig
     if (SG.overlay) SG.overlay(c, this, t);   // z. B. Deckenlampen über allem
     if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
       if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
