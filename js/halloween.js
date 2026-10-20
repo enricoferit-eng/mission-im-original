@@ -119,7 +119,7 @@ if (HALLOWEEN) {
   Play.prototype.drawHud = function (c) {
     hud0.call(this, c);
     if (this.mp || this.helpOpen) return;
-    if (this.stage === 'uebung' || (this.stage !== 'geisterwald' && !firstAreaDone())) return;   // Helfer-Schule und erster Bereich: nicht ablenken
+    if (this.stage === 'uebung' || (this.stage !== 'geisterwald' && !areaClearedOnce())) return;   // Helfer-Schule und erster Bereich: nicht ablenken
     if (this.stage !== 'geisterwald') {   // aus jedem Bereich erreichbar: Knopf unter der Karte
       const x = W - 50, y = 146, pu = 1 + Math.sin(this.t * 4) * 0.07, gl = 0.5 + 0.5 * Math.sin(this.t * 3);   // groß, leuchtend, nicht zu übersehen
       const go = () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'In den Geisterwald reisen? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(this.diff, { stage: 'geisterwald' })); } }); };
@@ -142,7 +142,7 @@ if (HALLOWEEN) {
   const upd1 = Play.prototype.update;
   Play.prototype.update = function (dt) {
     upd1.call(this, dt);
-    if (!window.HW_HINTED && !this.mp && this.stage !== 'geisterwald' && this.stage !== 'uebung' && firstAreaDone() && this.t > 2.5 && !overlay && scene === this) { window.HW_HINTED = true; this.banner = { text: HW_SAY.hint, t: 0 }; Voice.say(HW_SAY.hint, true); }
+    if (!window.HW_HINTED && !this.mp && this.stage !== 'geisterwald' && this.stage !== 'uebung' && areaClearedOnce() && this.t > 2.5 && !overlay && scene === this) { window.HW_HINTED = true; this.banner = { text: HW_SAY.hint, t: 0 }; Voice.say(HW_SAY.hint, true); }
   };
   // Bereichs-Übersicht: der Geisterwald ist ein eigener Punkt am Ende des Wegs (immer offen)
   mapOrder = () => STAGE_ORDER.concat(['geisterwald']);   // eslint-disable-line no-func-assign

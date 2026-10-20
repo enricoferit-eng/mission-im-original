@@ -34,7 +34,7 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
   const ids = await ev(() => scene.npcs.map(n => n.id).concat(['gate']));
   for (const id of ids) {
     // 1) hinlaufen + antippen
-    const talked = await walkTo(id => { const T = scene.interactables().find(q => q.id === id); return T && scene.w2s(T.sx, T.sy); }, () => !!overlay, 60, id);
+    const talked = await walkTo(id => { const T = scene.interactables().find(q => q.id === id); return T && scene.w2s(T.sx, T.sy); }, id => !!overlay || !!(scene.diff === 'easy' && scene.st.easy[id]), 60, id);   /* Leicht: Ansprechen öffnet erst kein Fenster, sondern legt die Such-Sache fest */
     const ov = await ev(() => overlay && overlay.constructor.name + ':' + (overlay.o && overlay.o.mode));
     if (!talked) { bad.push(id + ': nicht ansprechbar'); continue; }
     log.push(id + ' angesprochen (' + ov + ')');

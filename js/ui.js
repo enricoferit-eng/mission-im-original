@@ -142,13 +142,13 @@ class Menu {
     const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
     // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
     { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }], ['gift', 'Geschenk', '#ffd6e0', () => { Sfx.play('tap'); overlay = new DailyGift(); }]];
-      if (!firstAreaDone()) B.length = 0;   // erst nach dem ersten geschafften Bereich
-      const nB = B.length, bw = Math.min(160, (W - 70) / nB - 4), by = H - (land ? 38 : 46), ready = typeof giftReady === 'function' && giftReady();
-      B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + 8) - bw / 2, yy = by - hop;
+      if (!firstAreaDone()) B.length = 0;   // ganz neue Kinder (noch kein Fortschritt): schlichtes Menü
+      const nB = B.length, gap = W < 500 ? 4 : 8, bw = Math.min(160, W < 500 ? (W - 12) / nB - gap : (W - 70) / nB - 4), by = H - (land ? 38 : 46), ready = typeof giftReady === 'function' && giftReady();
+      B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + gap) - bw / 2, yy = by - hop;
         if (gift && ready) { const gl = 0.5 + 0.5 * Math.sin(this.t * 4); rrPath(c, x - 5, yy - 29, bw + 10, 58, 24); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }   // leuchtet, solange das Geschenk noch zu ist
         rrPath(c, x, yy - 24, bw, 48, 20); fs(c, col, 3);
         const drawIc = (ix, iy, sz) => { if (gift) drawPresent(c, ix, iy + sz * 0.15, sz * 1.15, this.t); else icon(c, ic, ix, iy, sz); };
-        if (bw < 130) { drawIc(x + bw / 2, yy - 7, 24); txt(c, label, x + bw / 2, yy + 14, 12, '#3d2c1f', 'center', null, bw - 8); }   // schmal (Hochformat): Symbol über dem Wort
+        if (bw < 130) { drawIc(x + bw / 2, yy - 7, 24); txt(c, label, x + bw / 2, yy + 14, 13, '#3d2c1f', 'center', null, bw - 4); }   // schmal (Hochformat): Symbol über dem Wort
         else { drawIc(x + 28, yy, 30); txt(c, label, x + 52, yy + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null, bw - 58); }
         if (gift && ready) { ell(c, x + bw - 8, yy - 20, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + bw - 8, yy - 19, 13, '#fff', 'center', null); }
         UI.btn(x, yy - 24, bw, 48, fn); });
@@ -239,7 +239,12 @@ class InstallGuide {
 }
 function needsInstallGuide() { return TOUCH && !isStandalone() && Save.data.seenTrailer; }   // nicht beim allerersten Start (da soll das Kind gleich loslegen)
 // Hat das Kind schon einen Bereich geschafft? Vorher bleibt das Menü schlicht (kein Laden, Mehrspieler, Halloween …)
-function firstAreaDone() { const a = ACC(); return !!a && (isGameAdmin(a) || ['easy', 'medium', 'hard'].some(d => STAGE_ORDER.some(id => (DP(d).stages[id] || {}).clears > 0))); }
+function areaClearedOnce() { const a = ACC(); return !!a && (isGameAdmin(a) || ['easy', 'medium', 'hard'].some(d => STAGE_ORDER.some(id => (DP(d).stages[id] || {}).clears > 0))); }   // streng: wirklich einen Bereich geschafft (für Hinweise mitten im Spiel)
+function firstAreaDone() {   // jeder echte Fortschritt zählt (auch halb gespielte Bereiche, Taler, Kostüme, Erfolge, Server-Konto) – nur ganz neue Kinder sehen das schlichte Menü
+  const a = ACC(); if (!a) return false; if (isGameAdmin(a) || a.token) return true;
+  if (['easy', 'medium', 'hard'].some(d => Object.entries(DP(d).stages).some(([k, sp]) => k !== 'uebung' && sp && (sp.clears > 0 || (sp.run && Object.keys(sp.run.done || {}).length))))) return true;
+  const m = META(); return !!m && ((m.coins || 0) > 0 || (m.skins || []).length > 0 || Object.keys(m.ach || {}).length > 0);
+}
 // Erster Start: sofort spielen – ein Spielstand auf diesem Gerät wird automatisch angelegt.
 // Ein Konto (Name + Geheim-Code, auf dem Server) kann man später über „Spielstand sichern“ machen.
 function ensureProfile() {
