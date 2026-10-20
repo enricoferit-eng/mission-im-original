@@ -368,6 +368,7 @@ function icon(c, name, x, y, s, col) {
   c.save(); c.translate(x, y); const k = s / 40; c.scale(k, k);
   c.lineJoin = 'round'; c.lineCap = 'round';
   switch (name) {
+    case 'full': for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { c.beginPath(); c.moveTo(sx * 15, sy * 5); c.lineTo(sx * 15, sy * 15); c.lineTo(sx * 5, sy * 15); c.lineWidth = 5; c.strokeStyle = col || '#3d2c1f'; c.stroke(); } break;   // Vollbild
     case 'menu': for (const y of [-10, 0, 10]) { ell(c, -13, y, 3.5, 3.5); fs(c, col || '#118ab2', 2); rrPath(c, -6, y - 3.5, 22, 7, 3.5); fs(c, col || '#118ab2', 2); } break;   // „Mehr“
     case 'stop': ell(c, 0, 0, 19, 19); fs(c, '#e5383b', 3); rrPath(c, -7.5, -7.5, 15, 15, 3); fs(c, '#fff', 0); break;
     case 'coin':

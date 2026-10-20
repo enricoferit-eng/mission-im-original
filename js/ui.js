@@ -203,6 +203,7 @@ class Menu {
       const fresh = typeof hwNewKid === 'function' && hwNewKid();
       if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }   // geht einmal am Tag von selbst auf
     }
+    if (wantFullBtn()) { roundBtn(c, slotX, 40, 22, '#fff', 'full', () => { Sfx.play('tap'); goFull(); }); txt(c, 'Vollbild', slotX, 72, 11, '#fff', 'center', BRAND.olive); slotX -= 58; }   // im Browser: Vollbild per Knopf
     this.eventSlot = { x: slotX, y: 40 };   // Halloween & Co. hängen hier ihren runden Knopf an
     if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 70 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 84 + b, 12, '#fff', 'center', null); }
     // Logo
@@ -289,18 +290,18 @@ function isStandalone() { try { return matchMedia('(display-mode: fullscreen)').
 const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 class InstallGuide {
   constructor(next) { this.next = next; this.t = 0; this.portraitOk = true; }
-  enter() { FX.clear(); Voice.say('Bitte füge das Spiel zuerst zum Home-Bildschirm hinzu. Sonst stören die Leisten vom Browser, und das Spielerlebnis ist eingeschränkt.', true); }
+  enter() { FX.clear(); Voice.say('Für Vollbild auf dem iPhone: Füge das Spiel zum Home-Bildschirm hinzu. Du kannst aber auch einfach im Browser weiterspielen.', true); }
   update(dt) { this.t += dt; if (isStandalone()) this.next(); }
   draw(c) {
     const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, BRAND.olive); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
     const w = Math.min(W - 24, 620), land = W > H, h = land ? Math.min(H - 20, 400) : Math.min(H - 40, 620), x = (W - w) / 2, y = (H - h) / 2;
     fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fbf8f2', 26);
-    const narrow = w < 520, title = 'Zuerst: Spiel zum Home-Bildschirm hinzufügen';
+    const narrow = w < 520, title = 'Vollbild: Spiel zum Home-Bildschirm hinzufügen';
     let hy;
     if (narrow) { drawLogo(c, x + w / 2, y + 34, 120, false); const T = wrapLines(c, title, w - 40, 18); T.forEach((l, i) => txt(c, l, x + w / 2, y + 74 + i * 22, 18, BRAND.olive, 'center', null)); hy = y + 74 + T.length * 22; }
     else { drawLogo(c, x + 80, y + 40, 120, false); txt(c, title, x + w / 2 + 50, y + 34, Math.min(19, w / 30), BRAND.olive, 'center', null); hy = y + 62; }
-    const warn = 'Sonst stören die Leisten vom Browser und das Spielerlebnis ist eingeschränkt. Als App läuft es im Vollbild.';
+    const warn = 'Freiwillig: Als App läuft es ohne Browser-Leisten im Vollbild. Du kannst aber auch im Browser spielen.';
     const WL = wrapLines(c, warn, w - 60, 14); WL.forEach((l, i) => txt(c, l, x + w / 2, hy + 8 + i * 18, 14, '#9d0208', 'center', null));
     const steps = IS_IOS
       ? [['share', 'Tippe unten (oder oben) auf „Teilen“'], ['plus', 'Wähle „Zum Home-Bildschirm“ (evtl. etwas nach unten wischen)'], ['ok', 'Tippe oben rechts auf „Hinzufügen“'], ['app', 'Starte das Spiel über das neue Symbol']]
@@ -320,7 +321,7 @@ class InstallGuide {
       UI.btn(x + w / 2 - 180, by - 26, 240, 52, async () => { const p = INSTALL_PROMPT; INSTALL_PROMPT = null; try { p.prompt(); await p.userChoice; } catch (e) { /* egal */ } });
     }
     const sx = INSTALL_PROMPT ? x + w - 110 : x + w / 2;
-    rrPath(c, sx - 96, by - 20, 192, 40, 16); fs(c, '#e9ecef', 2.5); txt(c, 'Trotzdem im Browser spielen', sx, by + 1, 13, '#495057', 'center', null, 176);
+    rrPath(c, sx - 96, by - 20, 192, 40, 16); fs(c, '#e9ecef', 2.5); txt(c, 'Im Browser weiterspielen', sx, by + 1, 13, '#495057', 'center', null, 176);
     UI.btn(sx - 96, by - 22, 192, 44, () => { Voice.stop(); this.next(); });
     c.restore();
   }
@@ -334,7 +335,15 @@ class InstallGuide {
     c.restore();
   }
 }
-function needsInstallGuide() { return TOUCH && !isStandalone() && Save.data.seenTrailer; }   // nicht beim allerersten Start (da soll das Kind gleich loslegen)
+function needsInstallGuide() { return false; }   // kein Pflicht-Hinweis mehr beim Start: im Browser spielt man direkt, Vollbild gibt es per Knopf
+// Vollbild im Browser: Android, iPad und Computer können es (Fullscreen-API); das iPhone nicht – dort hilft nur „Zum Home-Bildschirm“
+function fullApi() { const el = document.documentElement; return el.requestFullscreen || el.webkitRequestFullscreen; }
+function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function wantFullBtn() { return !isStandalone() && !isFull(); }
+function goFull() {
+  const rq = fullApi(); if (!rq) { setScene(new InstallGuide(() => setScene(new Menu()))); return; }
+  try { const pr = rq.call(document.documentElement, { navigationUI: 'hide' }); const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* egal */ } }; if (pr && pr.then) pr.then(lock).catch(() => {}); else lock(); } catch (e) { /* egal */ }
+}
 // Erster Start: sofort spielen – ein Spielstand auf diesem Gerät wird automatisch angelegt.
 // Ein Konto (Name + Geheim-Code, auf dem Server) kann man später über „Spielstand sichern“ machen.
 function ensureProfile() {
@@ -1610,6 +1619,7 @@ cv.addEventListener('pointercancel', endPtr);
 cv.addEventListener('wheel', e => { const t = overlay || scene; if (t instanceof Wardrobe && t.box) t.sc = (t.sc || 0) + e.deltaY; else if (typeof Shop !== 'undefined' && t instanceof Shop && t.tab === 'skins') t.sc = (t.sc || 0) + e.deltaY; else return; e.preventDefault(); }, { passive: false });
 cv.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('resize', resize);
+document.addEventListener('fullscreenchange', () => setTimeout(resize, 50)); document.addEventListener('webkitfullscreenchange', () => setTimeout(resize, 50));
 document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });
 
 // Diese Fenster decken das Spiel ab: Hintergrund einfrieren spart viel Rechenzeit
