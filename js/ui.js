@@ -1523,7 +1523,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && Sav
 Save.load();
 resize();
 if (Save.data.seenTrailer) ensureProfile();
-const firstScene = () => (!Save.data.seenTrailer ? new Trailer() : ACC() ? new Menu() : new Accounts());
+const firstScene = () => { if (!Save.data.seenTrailer) { Save.data.seenTrailer = true; Save.write(); ensureProfile(); } return ACC() ? new Menu() : new Accounts(); };   // kein Film vorab: die Geschichte erzählt Olli in der Helfer-Schule (Film bleibt über den Knopf im Menü)
 try { history.pushState({ mio: 1 }, ''); window.addEventListener('popstate', () => { history.pushState({ mio: 1 }, ''); if (overlay && overlay.close) { overlay.close(); return; } if (overlay) { overlay = null; return; } if (scene instanceof Play) { if (scene.stop) scene.stop(); return; } if (!(scene instanceof Menu) && ACC()) setScene(new Menu()); }); } catch (e) { /* egal */ }
 // Tab im Hintergrund: laufende Aufgabe pausieren
 document.addEventListener('visibilitychange', () => { if (document.hidden && overlay instanceof GameOverlay && overlay.state === 'play') overlay.help = true; });

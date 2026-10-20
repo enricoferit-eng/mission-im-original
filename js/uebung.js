@@ -1,7 +1,8 @@
 'use strict';
 // ---------- Helfer-Schule: das Spiel spielend lernen (statt einer Anleitung zum Durchklicken) ----------
 // Ein kleiner eigener Bereich mit echter Steuerung. Olli, das kleine Blatt aus dem Original-Logo, führt Schritt für Schritt durch alles Wichtige:
-// laufen → ansprechen → suchen → Aufgabe lösen → zurückbringen → durchs Tor. Kein Überspringen: jeder lernt es einmal.
+// Geschichte (Olli erzählt vom Sturm, man kann dabei schon laufen) → laufen → ansprechen → suchen → Aufgabe lösen → zurückbringen → durchs Tor.
+// Die Geschichte steckt hier im Spiel statt in einem Film vorab: wer losläuft, überspringt sie, ein Tipp auf Ollis Kasten blättert weiter.
 Object.assign(NPC_NAMES, { olli: 'Olli' });
 Object.assign(NPC_SHORT, { olli: 'Olli' });
 Object.assign(NPC_LINES, { olli: 'Hallo! Ich bin Olli. Der Sturm hat den Kochlöffel weggeweht. Hilfst du mir suchen?' });
@@ -75,7 +76,11 @@ if (typeof STAGE_COL !== 'undefined') STAGE_COL.uebung = '#95C11F';
 
 // Schritte: was gerade zu tun ist (Text wird vorgelesen), woran man erkennt, dass es geschafft ist, und wohin der Pfeil zeigt
 const UEB_RING = { x: 760, y: 560 };
+const UEB_STORY = ['story0', 'story1', 'story2'];
 const UEBUNG_SAY = {
+  story0: 'Hui, was für ein Sturm! Ich bin Olli, das kleine Blatt vom Original-Schild. Der Wind hat mich weggeweht!',
+  story1: 'Heute Abend ist das große Original-Fest. Aber der Sturm hat überall Sachen verweht.',
+  story2: 'Zum Glück bist du da – unser neuer Helfer! Komm, ich zeig dir, wie es geht.',
   walk: 'Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.',
   talk: 'Super! Über Olli ist ein Ausrufezeichen. Tippe Olli an!',
   taskEasy: 'Olli gibt dir eine Aufgabe. Löse sie – dann hast du ihm geholfen!',
@@ -89,6 +94,7 @@ const UEBUNG_SAY = {
 function uebungStep(p) {
   const st = p.st, q = st.active, easy = p.diff === 'easy';
   if (st.done.olli) return 'gate';
+  if (!p.ueb.walked && (p.ueb.story || 0) < UEB_STORY.length) return UEB_STORY[p.ueb.story || 0];   // erst erzählt Olli die Geschichte
   if (!p.ueb.walked) return 'walk';
   if (easy) return st.easy && st.easy.olli ? 'taskEasy' : 'talk';
   if (!q) return 'talk';
@@ -126,6 +132,11 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     if (this.stage !== 'uebung' || scene !== this) return;
     const U = this.ueb || (this.ueb = { said: null, t: 0, walked: false, clockSaid: false });
     U.t += dt;
+    if ((U.story || 0) < UEB_STORY.length) {   // Geschichte: weiter, sobald Olli fertig erzählt hat (oder man schon losläuft)
+      if (this.p.path || this.p.target) U.story = UEB_STORY.length;
+      else if (U.said === UEB_STORY[U.story || 0] && U.stepT > 2.5 && !Voice.busy()) U.story = (U.story || 0) + 1;
+      if (U.story === UEB_STORY.length - 1 && !U.scarf) { U.scarf = true; const s = this.w2s(this.p.x, this.p.y, 50); FX.sparkle(s.x, s.y, 26, '#95C11F'); Sfx.play('good'); }
+    }
     if (!U.walked && dist(this.p.x, this.p.y, UEB_RING.x, UEB_RING.y) < 60) { U.walked = true; Sfx.play('good'); const s = this.w2s(UEB_RING.x, UEB_RING.y); FX.sparkle(s.x, s.y, 20, '#c7f464'); }
     if (this.st.done.olli && !this.st.done.gate) { this.st.done.gate = true; Save.write(); }   // Tor geht auf, sobald Olli geholfen ist
     const step = uebungStep(this);
@@ -140,6 +151,10 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     hud0.call(this, c);
     if (this.stage !== 'uebung' || !this.ueb || this.exiting) return;
     const step = uebungStep(this), t = this.t;
+    if (UEB_STORY.includes(step)) {   // Sturm: Blätter wirbeln übers Bild
+      for (let i = 0; i < 14; i++) { const sp = 160 + (i * 53) % 140, x = ((t * sp + i * 197) % (W + 120)) - 60, y = 96 + (i * 97) % Math.max(60, H - 250) + Math.sin(t * 3 + i) * 20;   /* oben (Knöpfe) und unten (Ollis Kasten) frei lassen */
+        c.save(); c.globalAlpha = 0.75; c.translate(x, y); c.rotate(t * 4 + i); drawJunk(c, 0, 0, i % 4 ? 'leaf' : 'twig', i % 4 ? 0.9 + (i % 3) * 0.2 : 0.6); c.restore(); }
+    }
     if (step === 'walk') { const s = this.w2s(UEB_RING.x, UEB_RING.y), pu = 1 + Math.sin(t * 5) * 0.12; ell(c, s.x, s.y, 46 * pu, 22 * pu); c.lineWidth = 6; c.strokeStyle = 'rgba(149,193,31,.9)'; c.stroke(); ell(c, s.x, s.y, 30 * pu, 14 * pu); c.fillStyle = 'rgba(199,244,100,.35)'; c.fill(); drawHand(c, s.x + 8, s.y + 8 + Math.abs(Math.sin(t * 4)) * 10, 1.4); }
     if ((step === 'search' || step === 'searchHard') && this.st.active) {   // Pfeil über dem Versteck
       const h = this.st.active.hidden[0], pk = peekOf(h), s = this.w2s(pk.x, pk.y - 70), b = Math.abs(Math.sin(t * 4)) * 10;
@@ -157,6 +172,7 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     rrPath(c, x, y, w, h, 16); fs(c, 'rgba(255,247,230,.96)', 3, '#95C11F');
     drawCritter(c, 'olli', x + 26, y + h - 4, 0.42, t, { staff: true, noShadow: true });
     L.forEach((l, i) => txt(c, l, x + 52, y + 20 + i * 18, 14, '#3d2c1f', 'left', null));
+    if (UEB_STORY.includes(step)) UI.btn(x, y, w, h, () => { Voice.stop(); this.ueb.story = (this.ueb.story || 0) + 1; Sfx.play('tap'); });   // Tipp auf den Kasten: weiter
     const order = this.diff === 'easy' ? ['walk', 'talk', 'taskEasy', 'gate'] : ['walk', 'talk', this.diff === 'hard' ? 'searchHard' : 'search', 'back', 'gate'], k = order.indexOf(step);
     order.forEach((_, i) => { ell(c, W / 2 + (i - (order.length - 1) / 2) * 16, y - 10, 5, 5); fs(c, i < k ? '#06d6a0' : i === k ? '#ffd166' : '#e9ecef', 1.5); });
   };

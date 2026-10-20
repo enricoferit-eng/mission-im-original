@@ -1339,6 +1339,24 @@
  },
  {
   "who": "olli",
+  "text": "Hui, was für ein Sturm! Ich bin Olli, das kleine Blatt vom Original-Schild. Der Wind hat mich weggeweht!",
+  "key": "551129bf",
+  "clean": "Hui, was für ein Sturm! Ich bin Olli, das kleine Blatt vom Original-Schild. Der Wind hat mich weggeweht!"
+ },
+ {
+  "who": "olli",
+  "text": "Heute Abend ist das große Original-Fest. Aber der Sturm hat überall Sachen verweht.",
+  "key": "b1dcafc2",
+  "clean": "Heute Abend ist das große Original-Fest. Aber der Sturm hat überall Sachen verweht."
+ },
+ {
+  "who": "olli",
+  "text": "Zum Glück bist du da – unser neuer Helfer! Komm, ich zeig dir, wie es geht.",
+  "key": "65b0af65",
+  "clean": "Zum Glück bist du da, unser neuer Helfer! Komm, ich zeig dir, wie es geht."
+ },
+ {
+  "who": "olli",
   "text": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin.",
   "key": "e62e5551",
   "clean": "Willkommen in der Helfer-Schule! Tippe auf den leuchtenden Kreis, dann läufst du dorthin."
@@ -1393,15 +1411,9 @@
  },
  {
   "who": "olli",
-  "text": "Hui, was für ein Sturm heute Nacht! Er hat mich glatt vom Original-Schild geweht.",
-  "key": "f6992902",
-  "clean": "Hui, was für ein Sturm heute Nacht! Er hat mich glatt vom Original-Schild geweht."
- },
- {
-  "who": "olli",
-  "text": "Und schau: Heute Abend ist das große Original-Fest – aber überall ist Chaos!",
-  "key": "67e51a28",
-  "clean": "Und schau: Heute Abend ist das große Original-Fest, aber überall ist Chaos!"
+  "text": "Jetzt geht es richtig los! Das hier ist die Küche vom Original.",
+  "key": "795f9080",
+  "clean": "Jetzt geht es richtig los! Das hier ist die Küche vom Original."
  },
  {
   "who": "k_marco",

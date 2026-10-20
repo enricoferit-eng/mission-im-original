@@ -6,8 +6,7 @@
 // Gesehene Szenen merkt sich das Konto (tut.st_…), auf der Bereichs-Karte kann man sie nochmal ansehen.
 const STORY = {
   kueche: { title: 'Kapitel 1', name: 'Sturm in der Küche', cast: ['olli', 'k_marco'],
-    intro: [['olli', 'Hui, was für ein Sturm heute Nacht! Er hat mich glatt vom Original-Schild geweht.'],
-      ['olli', 'Und schau: Heute Abend ist das große Original-Fest – aber überall ist Chaos!'],
+    intro: [['olli', 'Jetzt geht es richtig los! Das hier ist die Küche vom Original.'],
       ['k_marco', 'In der Küche liegt alles durcheinander. Ohne unsere Sachen gibt es kein Festessen!'],
       ['olli', 'Komm, wir helfen zusammen! Fang hier in der Küche an.']],
     outro: [['k_marco', 'Danke! Jetzt können wir das Festessen kochen.'],
