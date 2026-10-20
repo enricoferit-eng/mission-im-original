@@ -266,6 +266,9 @@ function isGameAdmin(a = ACC()) { return !!(a && a.admin); }   // beide Admin-Ko
 const NAME_A = ['Flinke', 'Mutige', 'Schlaue', 'Wilde', 'Lustige', 'Schnelle', 'Kleine', 'Starke'];
 const NAME_B = ['Rakete', 'Wolke', 'Pfote', 'Banane', 'Socke', 'Kugel', 'Brezel', 'Feder'];
 
+// Namen-Filter (gleiche Liste wie auf dem Server): keine Schimpfwörter, auch nicht mit Ziffern verschleiert
+const BAD_NAMES = ['arsch', 'fick', 'fuck', 'scheiss', 'scheiß', 'shit', 'hure', 'nutte', 'wichs', 'fotze', 'schlampe', 'bitch', 'hurensohn', 'penis', 'vagina', 'nazi', 'hitler', 'idiot', 'spast', 'behindert', 'schwuchtel', 'kacke', 'pisse', 'titten', 'sex', 'porno', 'dick', 'cock', 'pussy', 'kanake', 'neger', 'nigga', 'nigger', 'missgeburt', 'opfer', 'depp', 'trottel', 'blöd'];
+function nameBad(n) { const t = String(n).toLowerCase().replace(/0/g, 'o').replace(/1|!/g, 'i').replace(/3/g, 'e').replace(/4|@/g, 'a').replace(/5|\$/g, 's').replace(/7/g, 't').replace(/[^a-zäöüß]/g, ''); return BAD_NAMES.some(w => t.includes(w)); }
 // ---------- Passwort (ersetzt den Bilder-Code) ----------
 const PASS_MIN = 6;
 function placePass(x, y, w, show, ph) {   // das echte Eingabefeld über der Zeichnung platzieren
@@ -313,8 +316,12 @@ class PassDialog {
 // Passwort festlegen/ändern für das angemeldete Konto
 function askSetPass(o = {}) {
   const a = ACC(); if (!a || !a.token) return;
+  if (a.hasPass && o.old === undefined) {   // ändern: zuerst das bisherige Passwort (sonst könnte jeder mit dem Gerät es umstellen)
+    overlay = new PassDialog({ title: 'Bisheriges Passwort', sub: 'Gib zuerst dein jetziges Passwort ein.', ok: async old => { const r = await Net.call({ action: 'login', name: a.name, pass: old }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error); setTimeout(() => askSetPass(Object.assign({}, o, { old })), 0); return null; } });
+    return;
+  }
   overlay = new PassDialog({ title: a.hasPass ? 'Neues Passwort' : 'Wähle ein Passwort', sub: o.sub || ('Mindestens ' + PASS_MIN + ' Zeichen. Schreib es dir auf oder sag es deinen Eltern.'), later: o.later,
-    ok: async pass => { const r = await Net.call({ action: 'set_pass', login: a.login, token: a.token, pass }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error);
+    ok: async pass => { const r = await Net.call({ action: 'set_pass', login: a.login, token: a.token, pass, old: o.old }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error);
       a.hasPass = true; delete a.code; Save.write(false); Sfx.play('win'); toast('Passwort gespeichert', 'Melde dich ab jetzt mit Name + Passwort an', 'lock'); return null; } });
 }
 class CodePad {
@@ -393,11 +400,12 @@ class Accounts {
 }
 // Konto löschen: Geheim-Code, nochmal bestätigen, dann auch auf dem Server löschen
 function askDelete(id, a) {
+  let pw = '';
   const confirm = () => {
     overlay = new ConfirmDialog({ text: 'Konto „' + a.name + '“ wirklich löschen? Alle Skins und der ganze Fortschritt sind dann für immer weg – auch auf anderen Geräten.', onYes: async () => {
       if (a.token) {
         overlay = new MsgDialog({ text: 'Konto wird gelöscht …', wait: true });
-        const r = await Net.call({ action: 'delete', login: a.login, token: a.token });
+        const r = await Net.call({ action: 'delete', login: a.login, token: a.token, pass: pw });
         if (!r || (r.status !== 200 && r.status !== 401)) { overlay = new MsgDialog({ text: 'Keine Verbindung zum Server. Das Konto wurde nicht gelöscht. Bitte später nochmal versuchen.' }); return; }
       }
       delete Save.data.accounts[id]; if (Save.data.current === id) Save.data.current = null; Save.write(); Sfx.play('bad');
@@ -405,7 +413,7 @@ function askDelete(id, a) {
       overlay = new MsgDialog({ text: 'Das Konto wurde gelöscht.' });
     } });
   };
-  if (a.token && a.hasPass) overlay = new PassDialog({ title: 'Konto löschen?', sub: 'Gib zur Sicherheit das Passwort von „' + a.name + '“ ein.', ok: async pass => { const r = await Net.call({ action: 'login', name: a.name, pass }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error); setTimeout(confirm, 0); return null; } });
+  if (a.token && a.hasPass) overlay = new PassDialog({ title: 'Konto löschen?', sub: 'Gib zur Sicherheit das Passwort von „' + a.name + '“ ein.', ok: async pass => { const r = await Net.call({ action: 'login', name: a.name, pass }); if (!r) return passErr('offline'); if (r.status !== 200) return passErr(r.data && r.data.error); pw = pass; setTimeout(confirm, 0); return null; } });
   else if (Array.isArray(a.code) && a.code.length === 4) overlay = new CodePad({ acc: a, check: code => code.join() === a.code.join(), onDone: confirm });
   else confirm();
 }
@@ -804,7 +812,7 @@ class NewAccount {
       else { createAccount(this.name, null); const a = ACC(); a.avatar = this.avatar; a.localOnly = true; }
       Save.write(false); this.step = 'done'; this.offlineMade = true; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return;
     }
-    this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen und nochmal versuchen.' : e === 'name_taken' ? 'Diesen Namen gibt es schon. Denk dir einen anderen aus!' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
+    this.err = !r ? 'Keine Verbindung zum Server. Bitte Internet prüfen und nochmal versuchen.' : e === 'name_taken' ? 'Diesen Namen gibt es schon. Denk dir einen anderen aus!' : e === 'name_bad' ? 'Dieser Name geht leider nicht. Denk dir einen netten Fantasienamen aus!' : 'Das hat nicht geklappt. Bitte nochmal versuchen.';
     this.step = e === 'pass' ? 'pass' : 'name'; if (e === 'pass') this.err = passErr('pass'); Sfx.play('bad');
   }
   draw(c) {
@@ -824,7 +832,7 @@ class NewAccount {
       if (this.err) wrapLines(c, this.err, w - 40, 14).forEach((l, i) => txt(c, l, W / 2, y + 246 + i * 18, 14, '#c1121f', 'center', null));
       const ok = nameInput.value.trim().length >= 2;
       c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 300, 32, '#06d6a0', 'check', ok ? () => {
-        this.name = nameInput.value.trim().slice(0, 14); nameInput.style.display = 'none'; nameInput.blur(); this.err = '';
+        this.name = nameInput.value.trim().slice(0, 14); if (nameBad(this.name)) { this.err = 'Dieser Name geht leider nicht. Denk dir einen netten Fantasienamen aus!'; Sfx.play('bad'); return; } nameInput.style.display = 'none'; nameInput.blur(); this.err = '';
         this.step = 'pass'; passInput.value = ''; passInput.type = 'password';
       } : null); c.restore();
     } else if (this.step === 'pass') {

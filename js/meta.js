@@ -440,7 +440,7 @@ class MultiScene {
     else this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : r.data && r.data.error === 'self' ? 'Das ist dein eigener Code!' : 'Diesen Freundes-Code gibt es nicht.';
   }
   async answer(req, yes) {
-    const r = await api({ action: 'friend_answer', from: req.login, yes }); if (r && r.status === 200) { this.data = r.data; Sfx.play(yes ? 'win' : 'tap'); if (yes) { achieve('freund'); toast('Ihr seid jetzt Freunde!', req.name, 'friends'); } }
+    const r = await api({ action: 'friend_answer', from: req.id, yes }); if (r && r.status === 200) { this.data = r.data; Sfx.play(yes ? 'win' : 'tap'); if (yes) { achieve('freund'); toast('Ihr seid jetzt Freunde!', req.name, 'friends'); } }
   }
   async create(invite) {
     this.busy = true; const r = await api({ action: 'lobby_new', opts: this.opts, invite: invite || null }); this.busy = false;
@@ -524,7 +524,7 @@ class MultiScene {
       ell(c, lx + 46, yy + 12, 5, 5); c.fillStyle = f.online ? '#06d6a0' : '#adb5bd'; c.fill();
       txt(c, f.name, lx + 56, yy + 21, 14, '#3d2c1f', 'left', null); txt(c, '★ ' + (f.score || 0), lx + lw - 112, yy + 21, 12, '#c9762f', 'right', null);
       rrPath(c, lx + lw - 100, yy + 5, 80, 30, 12); fs(c, '#bde0fe', 2); txt(c, 'Einladen', lx + lw - 60, yy + 20, 12, '#3d2c1f', 'center', null);
-      UI.btn(lx + lw - 100, yy + 5, 80, 30, () => this.create(f.login)); yy += 46;
+      UI.btn(lx + lw - 100, yy + 5, 80, 30, () => this.create(f.id)); yy += 46;
     });
     // Spiel einstellen
     panel(c, rx, ry, rw, rh, '#fff7e6', 22);

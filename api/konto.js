@@ -15,6 +15,9 @@ const tokenOf = login => crypto.createHmac('sha256', SECRET).update('konto:' + l
 const sameStr = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
 const cleanLogin = l => String(l || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const fmtLogin = l => l.slice(0, 4) + '-' + l.slice(4, 8);
+// Namen-Filter: keine Schimpfwörter (auch mit Ziffern statt Buchstaben oder Leerzeichen dazwischen)
+const BAD = ['arsch', 'fick', 'fuck', 'scheiss', 'scheiß', 'shit', 'hure', 'nutte', 'wichs', 'fotze', 'schlampe', 'bitch', 'hurensohn', 'penis', 'vagina', 'nazi', 'hitler', 'idiot', 'spast', 'behindert', 'schwuchtel', 'kacke', 'pisse', 'titten', 'sex', 'porno', 'dick', 'cock', 'pussy', 'kanake', 'neger', 'nigga', 'nigger', 'missgeburt', 'opfer', 'depp', 'trottel', 'blöd'];
+const nameBad = n => { const t = String(n).toLowerCase().replace(/0/g, 'o').replace(/1|!/g, 'i').replace(/3/g, 'e').replace(/4|@/g, 'a').replace(/5|\$/g, 's').replace(/7/g, 't').replace(/[^a-zäöüß]/g, ''); return BAD.some(w => t.includes(w)); };
 const validCode = c => Array.isArray(c) && c.length === 4 && c.every(v => Number.isInteger(v) && v >= 0 && v <= 5);
 // Passwörter: nur als scrypt-Hash mit eigenem Salz gespeichert, nie im Klartext und nie zurückgegeben
 const PASS_MIN = 6;
@@ -60,6 +63,7 @@ function publicAcc(login, acc) {
 async function register(b) {
   const name = String(b.name || '').trim().slice(0, 14), nk = nameKey(name);
   if (nk.length < 2) return [400, { error: 'name_short' }];
+  if (nameBad(name)) return [400, { error: 'name_bad' }];
   if (b.pass !== undefined ? !validPass(b.pass) : !validCode(b.code)) return [400, { error: b.pass !== undefined ? 'pass' : 'code' }];   // Bilder-Code nur noch für alte, zwischengespeicherte Spiel-Versionen
   if (await readJSON(nameFile(nk))) return [409, { error: 'name_taken' }];
   let login = '';
@@ -83,17 +87,16 @@ async function login(b) {
   if (!idx) return [404, { error: 'not_found' }];
   const acc = await readJSON(accFile(idx.login));
   if (!acc) return [404, { error: 'not_found' }];
-  const now = Date.now();
-  if (acc.lockUntil > now) return [429, { error: 'locked', wait: Math.ceil((acc.lockUntil - now) / 60000) }];
+  const now = Date.now(), ip = b._ip || '-', F = acc.failIp = Object.fromEntries(Object.entries(acc.failIp || {}).filter(([, v]) => v.until > now || now - v.at < 3600000)), mine = F[ip] || (F[ip] = { n: 0, until: 0, at: now });
+  if (mine.until > now) return [429, { error: 'locked', wait: Math.ceil((mine.until - now) / 60000) }];   // gesperrt wird nur, wer falsch geraten hat
   if (!acc.pw && b.pass !== undefined && b.code === undefined) return [401, { error: 'need_code' }];   // altes Konto: einmal noch mit dem Bilder-Code, dann Passwort festlegen
   const ok = acc.pw ? passOk(acc, b.pass) : validCode(b.code) && Array.isArray(acc.code) && b.code.join() === acc.code.join();
   if (!ok) {
-    acc.fails = (acc.fails || 0) + 1;
-    if (acc.fails >= MAX_FAILS) { acc.fails = 0; acc.lockUntil = now + LOCK_MS; }
+    mine.n++; mine.at = now; if (mine.n >= MAX_FAILS) { mine.n = 0; mine.until = now + LOCK_MS; }
     await writeJSON(accFile(idx.login), acc);
     return [401, { error: acc.pw ? 'wrong_pass' : 'wrong_code' }];
   }
-  if (acc.fails) { acc.fails = 0; await writeJSON(accFile(idx.login), acc); }
+  if (F[ip] && F[ip].n) { delete F[ip]; await writeJSON(accFile(idx.login), acc); }
   return [200, publicAcc(idx.login, acc)];
 }
 
@@ -117,6 +120,7 @@ async function save(b) {
 async function set_pass(b) {   // Passwort festlegen oder ändern (angemeldet); ersetzt den Bilder-Code
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   if (!validPass(b.pass)) return [400, { error: 'pass' }];
+  if (a.acc.pw && !passOk(a.acc, b.old)) return [401, { error: 'wrong_pass' }];   // wer schon ein Passwort hat, muss das alte kennen
   a.acc.pw = hashPass(b.pass); delete a.acc.code; a.acc.fails = 0; a.acc.lockUntil = 0;
   await writeJSON(accFile(a.l), a.acc);
   return [200, { ok: true }];
@@ -124,6 +128,7 @@ async function set_pass(b) {   // Passwort festlegen oder ändern (angemeldet); 
 
 async function remove(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
+  if (a.acc.pw && !passOk(a.acc, b.pass)) return [403, { error: 'wrong_pass' }];   // Löschen nur mit Passwort
   await delJSON([accFile(a.l), nameFile(a.acc.nk), fcodeFile(fcodeOf(a.l)), reqFile(a.l)]);
   return [200, { ok: true }];
 }
@@ -143,14 +148,21 @@ async function addFriendPair(l1, acc1, l2, acc2) {
   await add(l1, pub(l2, acc2)); await add(l2, pub(l1, acc1));
 }
 async function dropRequest(l, from) { const R = await readJSON(reqFile(l)); if (R && R.list.some(x => cleanLogin(x.login) === from)) { R.list = R.list.filter(x => cleanLogin(x.login) !== from); await writeJSON(reqFile(l), R); } }
-const pub = (l, acc) => ({ login: fmtLogin(l), name: acc.name, avatar: acc.avatar || 0 });
+const pub = (l, acc) => ({ login: fmtLogin(l), name: acc.name, avatar: acc.avatar || 0 });   // nur intern gespeichert – nie so an andere schicken
+// Was andere Spieler über ein Konto sehen: Name, Tierbild und eine Kennung, mit der man sich NICHT anmelden kann (der Login-Code bleibt geheim)
+const pidOf = l => crypto.createHmac('sha256', SECRET).update('pub:' + cleanLogin(l)).digest('hex').slice(0, 16);
+const pubOut = x => (x ? { id: pidOf(x.login), name: x.name, avatar: x.avatar || 0 } : null);
+function lobbyOut(lob) {   // Lobby ohne Login-Codes
+  const o = Object.assign({}, lob); o.players = (lob.players || []).map(pubOut); o.host = pubOut(lob.host); o.guest = pubOut(lob.guest);
+  o.gone = (lob.gone || []).map(pidOf); if (lob.left) o.left = pidOf(lob.left); return o;
+}
 async function touch(l, score) { const o = { t: Date.now() }; if (Number.isInteger(score) && score >= 0 && score < 10000) o.score = score; else { const old = await readJSON(seenFile(l)).catch(() => null); if (old && old.score != null) o.score = old.score; } await writeJSON(seenFile(l), o); }
 async function friendList(l) {
   const f = (await readJSON(friendsFile(l))) || { list: [] };
-  const out = await Promise.all(f.list.map(async x => { const s = await readJSON(seenFile(cleanLogin(x.login))).catch(() => null); return { ...x, online: !!(s && Date.now() - s.t < 90000), score: (s && s.score) || 0 }; }));   // score: für die Freundes-Bestenliste
+  const out = await Promise.all(f.list.map(async x => { const s = await readJSON(seenFile(cleanLogin(x.login))).catch(() => null); return { ...pubOut(x), online: !!(s && Date.now() - s.t < 90000), score: (s && s.score) || 0 }; }));   // score: für die Freundes-Bestenliste
   const inv = ((await readJSON(invFile(l))) || { list: [] }).list.filter(i => Date.now() - i.at < 15 * 60000);
-  const requests = ((await readJSON(reqFile(l))) || { list: [] }).list;
-  return { friends: out, invites: inv, requests, myCode: await myFcode(l) };
+  const requests = ((await readJSON(reqFile(l))) || { list: [] }).list.map(x => ({ ...pubOut(x), at: x.at }));
+  return { friends: out, invites: inv.map(i => ({ code: i.code, at: i.at, from: pubOut(i.from) })), requests, myCode: await myFcode(l) };
 }
 async function friend_add() { return [410, { error: 'gone' }]; }   // früher: sofort befreundet über den Namen – jetzt nur noch Anfragen per Freundes-Code
 async function friend_request(b) {
@@ -173,7 +185,8 @@ async function friend_request(b) {
 }
 async function friend_answer(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  const from = cleanLogin(b.from); await dropRequest(a.l, from);
+  const R = (await readJSON(reqFile(a.l))) || { list: [] }, hit = R.list.find(x => pidOf(x.login) === String(b.from || '')); if (!hit) return [200, await friendList(a.l)];
+  const from = cleanLogin(hit.login); await dropRequest(a.l, from);
   if (b.yes) { const other = await readJSON(accFile(from)); if (other) await addFriendPair(a.l, a.acc, from, other); }
   return [200, await friendList(a.l)];
 }
@@ -184,7 +197,8 @@ async function friends(b) {
 }
 async function friend_remove(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
-  const other = cleanLogin(b.friend);
+  const F = (await readJSON(friendsFile(a.l))) || { list: [] }, hit = F.list.find(x => pidOf(x.login) === String(b.friend || '')); if (!hit) return [200, await friendList(a.l)];
+  const other = cleanLogin(hit.login);
   for (const [l, x] of [[a.l, other], [other, a.l]]) { const f = await readJSON(friendsFile(l)); if (f) { f.list = f.list.filter(y => cleanLogin(y.login) !== x); await writeJSON(friendsFile(l), f); } }
   return [200, await friendList(a.l)];
 }
@@ -196,20 +210,21 @@ async function lobby_new(b) {
   if (!opts.stages.length) opts.stages = [opts.stage]; opts.stage = opts.stages[0];
   const lob = { code, host: pub(a.l, a.acc), guest: null, players: [pub(a.l, a.acc)], gone: [], opts, seed: crypto.randomBytes(4).readUInt32BE(0), status: 'wait', created: Date.now(), started: 0 };
   await writeJSON(lobbyFile(code), lob);
-  if (b.invite) { const t = cleanLogin(b.invite), inv = (await readJSON(invFile(t))) || { list: [] }; inv.list = inv.list.filter(i => Date.now() - i.at < 15 * 60000).concat([{ code, from: lob.host, at: Date.now() }]).slice(-5); await writeJSON(invFile(t), inv); }
+  const F = b.invite ? (await readJSON(friendsFile(a.l))) || { list: [] } : null, fr = F && F.list.find(x => pidOf(x.login) === String(b.invite));   // nur eigene Freunde einladen
+  if (fr) { const t = cleanLogin(fr.login), inv = (await readJSON(invFile(t))) || { list: [] }; inv.list = inv.list.filter(i => Date.now() - i.at < 15 * 60000).concat([{ code, from: lob.host, at: Date.now() }]).slice(-5); await writeJSON(invFile(t), inv); }
   const st = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 }; st.lobbies++; await writeJSON('stats/mp.json', st);
-  return [200, lob];
+  return [200, lobbyOut(lob)];
 }
 async function lobby_join(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   const code = String(b.code || '').toUpperCase().replace(/[^A-Z]/g, ''), lob = code.length === 4 && (await readJSON(lobbyFile(code)));
   if (!lob || Date.now() - lob.created > 60 * 60000) return [404, { error: 'not_found' }];
   lob.players = lob.players || [lob.host].concat(lob.guest ? [lob.guest] : []);
-  if (lob.players.some(p => cleanLogin(p.login) === a.l)) { if ((lob.gone || []).includes(a.l) && lob.status !== 'closed') { lob.gone = lob.gone.filter(x => x !== a.l); await writeJSON(lobbyFile(code), lob); } return [200, lob]; }   // wieder beitreten (z. B. nach Verbindungsabbruch)
+  if (lob.players.some(p => cleanLogin(p.login) === a.l)) { if ((lob.gone || []).includes(a.l) && lob.status !== 'closed') { lob.gone = lob.gone.filter(x => x !== a.l); await writeJSON(lobbyFile(code), lob); } return [200, lobbyOut(lob)]; }   // wieder beitreten (z. B. nach Verbindungsabbruch)
   if (lob.status === 'run' || lob.players.length >= ((lob.opts && lob.opts.size) || 2)) return [409, { error: 'full' }];
   lob.players.push(pub(a.l, a.acc)); lob.guest = lob.players[1]; lob.status = 'ready'; await writeJSON(lobbyFile(code), lob);
   const inv = await readJSON(invFile(a.l)); if (inv) { inv.list = inv.list.filter(i => i.code !== code); await writeJSON(invFile(a.l), inv); }
-  return [200, lob];
+  return [200, lobbyOut(lob)];
 }
 async function lobby_poll(b) {
   // schnell: nur Schlüssel prüfen (kein Konto lesen), Schreiben + Lesen gleichzeitig
@@ -229,8 +244,8 @@ async function lobby_poll(b) {
   if (b.leave) { if (!lob.gone.includes(l)) lob.gone.push(l); if (isHost && lob.status !== 'run') lob.status = 'closed'; if (lob.players.length - lob.gone.length < 2) lob.status = 'closed'; lob.left = l; tasks.push(writeJSON(lobbyFile(code), lob)); }
   if (writeP) tasks.push(writeP);
   const [progs] = await Promise.all(tasks);
-  const others = oth.map((x, k) => ({ idx: x.i, name: x.p.name, login: x.p.login, gone: lob.gone.includes(cleanLogin(x.p.login)), prog: progs[k] }));
-  return [200, { lobby: lob, me: isHost ? 'host' : 'guest', idx, others, other: others[0] ? others[0].prog : null, now: Date.now() }];
+  const others = oth.map((x, k) => ({ idx: x.i, name: x.p.name, id: pidOf(x.p.login), gone: lob.gone.includes(cleanLogin(x.p.login)), prog: progs[k] }));
+  return [200, { lobby: lobbyOut(lob), me: isHost ? 'host' : 'guest', idx, others, other: others[0] ? others[0].prog : null, now: Date.now() }];
 
 }
 // Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig
@@ -293,6 +308,7 @@ module.exports = async (req, res) => {
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
+  b._ip = crypto.createHash('sha256').update(SECRET + String(req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip']) || '').split(',')[0].trim()).digest('hex').slice(0, 16);   // nur als Hash, für die Fehlversuch-Sperre
   const fn = { register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return res.status(400).json({ error: 'action' });
   try { const [status, out] = await fn(b); res.status(status).json(out); }
