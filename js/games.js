@@ -50,8 +50,8 @@ class GameOverlay {
       },
       addTime(s) { self.timeLeft = Math.min(self.timeMax, self.timeLeft + s); self.timeBonus = 0.8; Sfx.play('coin'); FX.sparkle(W - 80, 112, 14); },
       coinOn: !!GAMES[self.id].challenge && !(typeof scene !== 'undefined' && scene && scene.mp) && mulberry32(((o.seed || 7) * 31 + 17) >>> 0)() < GAME_COIN_CHANCE + 0.12 * ABIL_VAL.muenzfund[ability('muenzfund')],
-      coin(x, y) { if ((self.coinsGot || 0) >= coinMax()) return; self.coinsGot = (self.coinsGot || 0) + 1; GAME_COIN.add(1); Sfx.play('coin'); buzz(15); self.pops.push({ x, y: y - 10, t: -0.1, text: '+1', col: '#ffd166' }); },
-      drawCoin(c, x, y, s = 40) { if ((self.coinsGot || 0) >= coinMax()) return; ell(c, x, y, s * 0.62, s * 0.62); c.fillStyle = 'rgba(255,214,10,.28)'; c.fill(); GAME_COIN.draw(c, x, y, s * 0.45); if (Math.sin(self.t * 5 + x) > 0.7) { starPath(c, x + s * 0.3, y - s * 0.3, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); } },
+      coin(x, y) { if (self.opts.diff === 'easy' || (self.coinsGot || 0) >= coinMax()) return;   /* Leicht: keine Münzen in Aufgaben (weniger Ablenkung) */ self.coinsGot = (self.coinsGot || 0) + 1; GAME_COIN.add(1); Sfx.play('coin'); buzz(15); self.pops.push({ x, y: y - 10, t: -0.1, text: '+1', col: '#ffd166' }); },
+      drawCoin(c, x, y, s = 40) { if (self.opts.diff === 'easy' || (self.coinsGot || 0) >= coinMax()) return; ell(c, x, y, s * 0.62, s * 0.62); c.fillStyle = 'rgba(255,214,10,.28)'; c.fill(); GAME_COIN.draw(c, x, y, s * 0.45); if (Math.sin(self.t * 5 + x) > 0.7) { starPath(c, x + s * 0.3, y - s * 0.3, 5, 2, 4); c.fillStyle = '#fff'; c.fill(); } },
       burst(x, y, n = 14) { const p = self.toScreen(x, y); FX.sparkle(p.x, p.y, n); },
       conf(x, y, n = 18) { const p = self.toScreen(x, y); FX.confetti(p.x, p.y, n, 0.6); },
     };
@@ -127,12 +127,13 @@ class GameOverlay {
     this.combo = this.t - this.lastGood < 2.6 ? this.combo + 1 : 1; this.lastGood = this.t;
     const p = this.toScreen(x, y);
     if (this.combo >= 5 && typeof achieve === 'function') achieve('combo5');
-    if (this.combo >= 2) {
+    if (this.opts.diff === 'easy') { /* Leicht: keine Combo- und Punkte-Einblendungen, nur der Ton */ }
+    else if (this.combo >= 2) {
       const bonus = Math.min(2.5, 0.5 * this.combo), floor = this.stars < 3 ? this.thr[2 - this.stars] : 0;
       if (this.starsOn()) this.fuse = Math.max(floor, this.fuse - bonus);
       this.pops.push({ x: p.x, y: p.y - 30, t: 0, text: 'Super x' + this.combo, col: '#ffd23f', big: true });
       if (this.starsOn()) this.pops.push({ x: p.x, y: p.y + 4, t: -0.1, text: '+' + bonus.toFixed(1).replace('.0', '') + ' s', col: '#80ed99' });
-    } else this.pops.push({ x: p.x, y: p.y - 26, t: 0, text: '+1', col: '#fff' });
+    } else this.pops.push({ x: p.x, y: p.y - 26, t: 0, text: '+1', col: '#fff' });   // (Leicht: siehe oben)
     Sfx.note(523 * Math.pow(2, Math.min(this.combo - 1, 12) / 12 * 2), 0.14, 'triangle', 0.07, 1.5);
   }
   miss() { this.combo = 0; this.shk = 0.3; }

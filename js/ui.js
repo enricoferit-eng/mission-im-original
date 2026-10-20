@@ -124,61 +124,99 @@ class Menu {
       else if (mo >= 3 && mo <= 4) for (let i = 0; i < 6; i++) { const x = 40 + i * (W - 80) / 5, y = H - 18; for (let k = 0; k < 5; k++) { ell(c, x + Math.cos(k * 1.26) * 6, y - 14 + Math.sin(k * 1.26) * 6, 4, 4); c.fillStyle = ['#ffc8dd', '#fff', '#ffd166'][i % 3]; c.fill(); } }   // Frühling = Blumen
     }
     const a = ACC(); if (!a) return;
-    const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.2) : clamp(Math.min(W / 420, H / 760), 0.7, 1.4);
-    const LY = land ? 70 * ls + 18 : Math.max(170, H * 0.18);
-    logo(c, W / 2, LY, ls);
-    claimBand(c, CLAIMS.urlaub, W / 2, LY + 76 * ls, 15 * Math.min(1.2, Math.max(0.8, ls)));
+    // Aufgeräumtes Menü: Figur + ein großer SPIELEN-Knopf, Stufe als Schalter, unten nur Garderobe / Laden / Mehr.
+    // Alles andere (Mehrspieler, Erfolge, Anleitung, Film, Eltern, Ton) steckt unter „Mehr“ – nichts fällt weg.
+    const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.1) : clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
+    const diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium'; CUR_DIFF = diff;
     accountChip.lastW = accountChip(c, 12, 14, a, () => { overlay = new AccountPanel(); });
-    if (!a.token) { const bx = 12, by = 84; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null, 104); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }   // nur solange nicht gesichert
+    { const cw = accountChip.lastW || 0, x0 = 12 + (cw || 170) + 10; coinChip(c, x0, 40, x0 + 140 > W - 150); }
+    if (!a.token) { const bx = 12, by = 74; rrPath(c, bx, by, 140, 26, 13); c.fillStyle = 'rgba(255,214,102,.95)'; c.fill(); icon(c, 'lock', bx + 16, by + 13, 14); txt(c, 'Spielstand sichern', bx + 28, by + 14, 11, '#3d2c1f', 'left', null, 104); UI.btn(bx, by, 140, 26, () => setScene(new NewAccount({ migrate: Save.data.current }))); }
+    // oben rechts: Ton, Geschenk (nur wenn es eins gibt), Platz für das Event
     soundBtn(c, W - 40, 40);
-    if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 96 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 46, 96 + b], [W - 40, 88 + b], [W - 34, 96 + b]]); c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 110 + b, 12, '#fff', 'center', null); }   /* iPhone: Ton geht erst nach einer Berührung */
-    roundBtn(c, W - 92, 40, 22, '#fff', 'play', () => setScene(new Trailer()), '#ef476f');
-    roundBtn(c, W - 152, 40, 22, '#ffd166', 'book', () => startUebung(a.lastDiff || 'medium', 'menu'));   // Anleitung = Helfer-Schule zum Mitspielen
-    txt(c, 'Film', W - 92, 72, 11, '#fff', 'center', BRAND.olive); txt(c, 'Anleitung', W - 152, 72, 11, '#fff', 'center', BRAND.olive);
-    { const ex = land ? W - 212 : W - 40, ey = land ? 41 : 103; rrPath(c, ex - 26, ey - 11, 52, 20, 10); fs(c, 'rgba(255,255,255,.75)', 2); txt(c, 'Eltern', ex, ey, 11, '#3d2c1f', 'center', null); UI.btn(ex - 28, ey - 15, 56, 28, () => { overlay = new ParentPanel(); }); }   /* Datenschutz-Link vorerst ausgeblendet (Seite liegt im Zweig „datenschutz“) */
-    rrPath(c, W - 66, 64, 52, 20, 10); fs(c, 'rgba(255,255,255,.9)', 2); txt(c, 'Ton', W - 40, 75, 11, '#3d2c1f', 'center', null); UI.btn(W - 68, 60, 56, 28, () => { overlay = new VolumePanel(); });   /* Lautstärke einstellen */
-    if (false) { /* Hinweis nur kurz zeigen */ const b = Math.sin(this.t * 4) * 3; rrPath(c, W - 214, 70 + b, 140, 30, 15); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); polyPath(c, [[W - 150, 70 + b], [W - 144, 62 + b], [W - 138, 70 + b]]); c.fill(); txt(c, 'Anleitung als Video', W - 144, 85 + b, 13, '#fff', 'center', null); }
-    const wide = W > H * 0.95;
-    const top = LY + 102 * ls, bottom = H - (land ? 72 : 86);
-    // Untere Leiste: Mehrspieler, Laden, Erfolge + Taler
-    { const B = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['trophy', 'Erfolge', '#fff3b0', () => setScene(new Achievements())], ['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; }], ['gift', 'Geschenk', '#ffd6e0', () => { Sfx.play('tap'); overlay = new DailyGift(); }]];
-      const nB = B.length, bw = Math.min(160, (W - 70) / nB - 4), by = H - (land ? 38 : 46), ready = typeof giftReady === 'function' && giftReady();
-      B.forEach(([ic, label, col, fn], i) => { const gift = ic === 'gift', hop = gift && ready ? Math.abs(Math.sin(this.t * 5)) * 5 : 0, x = W / 2 + (i - (nB - 1) / 2) * (bw + 8) - bw / 2, yy = by - hop;
-        if (gift && ready) { const gl = 0.5 + 0.5 * Math.sin(this.t * 4); rrPath(c, x - 5, yy - 29, bw + 10, 58, 24); c.fillStyle = `rgba(255,214,10,${0.35 + gl * 0.35})`; c.fill(); }   // leuchtet, solange das Geschenk noch zu ist
-        rrPath(c, x, yy - 24, bw, 48, 20); fs(c, col, 3);
-        const drawIc = (ix, iy, sz) => { if (gift) drawPresent(c, ix, iy + sz * 0.15, sz * 1.15, this.t); else icon(c, ic, ix, iy, sz); };
-        if (bw < 130) { drawIc(x + bw / 2, yy - 7, 24); txt(c, label, x + bw / 2, yy + 14, 12, '#3d2c1f', 'center', null, bw - 8); }   // schmal (Hochformat): Symbol über dem Wort
-        else { drawIc(x + 28, yy, 30); txt(c, label, x + 52, yy + 1, Math.min(16, bw / 9), '#3d2c1f', 'left', null, bw - 58); }
-        if (gift && ready) { ell(c, x + bw - 8, yy - 20, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + bw - 8, yy - 19, 13, '#fff', 'center', null); }
-        UI.btn(x, yy - 24, bw, 48, fn); });
+    let slotX = W - 98;
+    if (typeof giftReady === 'function' && giftReady()) {
+      const hop = Math.abs(Math.sin(this.t * 5)) * 4, gl = 0.5 + 0.5 * Math.sin(this.t * 4);
+      ell(c, slotX, 40, 30 + gl * 3, 30 + gl * 3); c.fillStyle = `rgba(255,214,10,${0.3 + gl * 0.3})`; c.fill();
+      roundBtn(c, slotX, 40 - hop, 23, '#ffd6e0', null, () => { Sfx.play('tap'); overlay = new DailyGift(); }); drawPresent(c, slotX, 44 - hop, 30, this.t);
+      ell(c, slotX + 17, 22 - hop, 8, 8); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', slotX + 17, 23 - hop, 11, '#fff', 'center', null);
+      slotX -= 58;
+      const fresh = typeof hwNewKid === 'function' && hwNewKid();
+      if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }   // geht einmal am Tag von selbst auf
     }
-    { const cw = accountChip.lastW || 0, m = META(), x0 = 12 + (cw || 170) + 10; c.font = `900 17px ${FONT}`; const chipW = c.measureText(String(m ? m.coins : 0)).width + 52;
-      if (x0 + chipW <= W - 180) coinChip(c, x0, 40); else coinChip(c, x0 - 4, 40, true); }   // schmaler Bildschirm: kleinere Taler-Anzeige (nicht über „Anleitung“)
-    if (typeof giftReady === 'function' && giftReady()) {   // Tagesgeschenk: geht einmal am Tag von selbst auf (Knopf „Geschenk“ unten)
-      const fresh = typeof hwNewKid === 'function' && hwNewKid();   // ganz neue Kinder: erst die Helfer-Schule
-      if (this.giftAuto && this.t > 1.2 && !overlay && !fresh) { this.giftAuto = false; overlay = new DailyGift(); }
-    }
+    this.eventSlot = { x: slotX, y: 40 };   // Halloween & Co. hängen hier ihren runden Knopf an
+    if (a.sound && (!Sfx.ac || Sfx.ac.state !== 'running') && this.t > 1.5) { const b = Math.sin(this.t * 3) * 3; rrPath(c, W - 176, 70 + b, 162, 28, 14); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, 'Tippe irgendwo für Ton', W - 95, 84 + b, 12, '#fff', 'center', null); }
+    // Logo
+    const LY = land ? 64 * ls + 30 : Math.max(200, H * 0.19);
+    logo(c, W / 2, LY, land ? ls * 0.8 : ls);
+    // Stufen-Schalter
+    const swY = land ? LY + 82 * ls : LY + 92 * ls, swW = Math.min(W - 40, 420), segW = swW / 3, swX = (W - swW) / 2;
+    rrPath(c, swX, swY - 22, swW, 44, 22); fs(c, 'rgba(255,255,255,.85)', 3);
     DIFFS.forEach((d, i) => {
-      let x, y, w, h;
-      if (wide) { w = Math.min(215, (W - 100) / 3); h = Math.min(bottom - top - 10, w * 1.25); x = W / 2 + (i - 1) * (w + 28) - w / 2; y = top + (bottom - top - h) / 2; }
-      else { w = Math.min(W - 40, 380); h = Math.min(160, (bottom - top - 40) / 3); x = (W - w) / 2; y = top + i * (h + 18); }
-      const bob = Math.sin(this.t * 2 + i) * 2;
-      panel(c, x, y + bob, w, h, d.col, 24);
-      CUR_DIFF = d.id; const kind = ANIMAL_OF[d.id], sp = SP(d.id, 'spielplatz');
-      if (wide) {
-        txt(c, d.name, x + w / 2, y + bob + 36, 30, '#fff', 'center', OL);
-        drawAnimal(c, kind, x + w / 2, y + bob + h * 0.8, Math.min(2.6, h / 110), { t: this.t + i, cap: hasCap(kind) });
-        txt(c, d.age, x + w / 2, y + bob + h - 18, 16, '#fff');
-      } else {
-        drawAnimal(c, kind, x + h * 0.55, y + bob + h * 0.86, Math.min(2.4, h / 76), { t: this.t + i, cap: hasCap(kind) });
-        const sx0 = x + h * 1.05, ss = Math.min(42, (w - h * 1.05 - 60) / 3);
-        txt(c, d.name, sx0 - ss / 2, y + bob + h * 0.42, Math.min(30, ss * 0.9), '#fff', 'left', OL);
-        txt(c, d.age, sx0 - ss / 2, y + bob + h * 0.78, 16, '#fff', 'left');
-        icon(c, 'play', x + w - 26, y + bob + h / 2, 28, '#fff');
-      }
-      if (sp.clears > 0) icon(c, 'crown', x + w - 26, y + bob + 24, 30);
-      UI.btn(x, y + bob, w, h, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); a.lastDiff = d.id; const sp0 = SP(d.id, 'spielplatz'); const g0 = SP(d.id, 'gastraum'); const fresh = !sp0.clears && !sp0.run && !g0.clears && !g0.run; if (fresh && !a.tut.uebung) { startUebung(d.id, 'play'); return; } setScene(fresh ? new Play(d.id, { stage: startArea(d.id) }) : new StageMap(d.id)); });   // ganz neu: erst die Helfer-Schule (überspringbar)
+      const x = swX + i * segW, on = d.id === diff;
+      if (on) { rrPath(c, x + 3, swY - 19, segW - 6, 38, 19); fs(c, d.col, 3); }
+      txt(c, d.name, x + segW / 2, swY - (on ? 4 : 2), on ? 17 : 15, on ? '#fff' : '#6b5a48', 'center', on ? OL : null);
+      txt(c, d.age, x + segW / 2, swY + 12, 11, on ? '#fff' : '#9a8b78', 'center', on ? OL : null);
+      UI.btn(x, swY - 24, segW, 48, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('tap'); } });
     });
+    // Figur + SPIELEN
+    const fresh = STAGE_ORDER.every(id => { const sp0 = SP(diff, id); return !sp0.clears && !sp0.run; });   // auf dieser Stufe noch nichts gespielt
+    const area = fresh && !a.tut.uebung && !(typeof hwNewKid === 'function' && !hwNewKid()) ? 'uebung' : startArea(diff), st = typeof STORY !== 'undefined' && STORY[area];
+    const sub = area === 'uebung' ? 'Helfer-Schule' : (STAGE_NAME[area] || '') + (st ? ' · ' + st.title : '');
+    const done = STAGE_ORDER.filter(id => SP(diff, id).clears > 0).length;
+    const top = swY + 30, bottom = H - (land ? 64 : 84);
+    const bw = Math.min(land ? 300 : W - 60, 340), bh = land ? Math.min(88, (bottom - top) * 0.5) : 96;
+    let fx, fy, fs2, bx, by;
+    if (land) { fs2 = clamp((bottom - top - 20) / 80, 1.2, 2.3); const cy = Math.min(top + (bottom - top) / 2, bottom - 40 * fs2 - 10); fx = W / 2 - bw / 2 - 30 * fs2; fy = cy + 40 * fs2; bx = W / 2 - bw / 2 + 30; by = cy - bh / 2; }   // Figur und Knopf als Gruppe in der Mitte
+    else { fs2 = clamp((bottom - top - bh - 30) / 80, 1.4, 3); fx = W / 2; fy = top + 20 + 80 * fs2; bx = (W - bw) / 2; by = Math.min(bottom - bh - 6, fy + 24); }
+    ell(c, fx, fy, 40 * fs2, 10 * fs2); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
+    drawAnimal(c, ANIMAL_OF[diff], fx, fy - Math.abs(Math.sin(this.t * 2.4)) * 4, fs2, { t: this.t, cap: hasCap(ANIMAL_OF[diff]), noShadow: true });
+    { const pu = 1 + Math.sin(this.t * 3) * 0.025, cx = bx + bw / 2, cy = by + bh / 2;
+      c.save(); c.translate(cx, cy); c.scale(pu, pu); c.translate(-cx, -cy);
+      rrPath(c, bx, by + 6, bw, bh, bh / 2); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
+      rrPath(c, bx, by, bw, bh, bh / 2); { const g = c.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, '#b5e550'); g.addColorStop(1, BRAND.lime); fs(c, g, 4); }
+      ell(c, bx + bh / 2 + 6, cy, bh * 0.32, bh * 0.32); fs(c, '#fff', 3); icon(c, 'play', bx + bh / 2 + 9, cy, bh * 0.36, BRAND.olive);
+      txt(c, 'SPIELEN', bx + bh + 20, cy - (sub ? 11 : 0), Math.min(34, bh * 0.38), '#fff', 'left', OL, bw - bh - 30);
+      if (sub) txt(c, sub, bx + bh + 20, cy + 20, 14, BRAND.olive, 'left', null, bw - bh - 30);
+      c.restore(); }
+    if (done) { for (let i = 0; i < STAGE_ORDER.length; i++) { const x = bx + bw / 2 + (i - (STAGE_ORDER.length - 1) / 2) * 22, y = by + bh + 20; if (i < done) icon(c, 'crown', x, y, 18); else { ell(c, x, y, 5, 5); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill(); } } }
+    this.hit = { play: { x: bx + bw / 2, y: by + bh / 2 } };   // für die Klick-Tests
+    UI.btn(bx, by, bw, bh, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); a.lastDiff = diff; Save.write();
+      if (area === 'uebung') { startUebung(diff, 'play'); return; } setScene(fresh ? new Play(diff, { stage: startArea(diff) }) : new StageMap(diff)); });   // ganz neu: erst die Helfer-Schule
+    // Untere Leiste: nur drei Knöpfe
+    { const B = [['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(diff); w.stage = 'laden'; overlay = w; }], ['shop', 'Laden', '#ffd6a5', () => setScene(new Shop())], ['menu', 'Mehr', '#e7f5ff', () => { Sfx.play('tap'); overlay = new MoreMenu(); }]];
+      const nB = B.length, gap = 10, bw2 = Math.min(190, (W - 24) / nB - gap), by2 = H - (land ? 34 : 44);
+      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - (nB - 1) / 2) * (bw2 + gap) - bw2 / 2;
+        rrPath(c, x, by2 - 24, bw2, 48, 22); fs(c, col, 3);
+        if (bw2 < 120) { icon(c, ic, x + bw2 / 2, by2 - 7, 24); txt(c, label, x + bw2 / 2, by2 + 14, 13, '#3d2c1f', 'center', null, bw2 - 6); }
+        else { icon(c, ic, x + 30, by2, 28); txt(c, label, x + 54, by2 + 1, 17, '#3d2c1f', 'left', null, bw2 - 62); }
+        this.hit[ic] = { x: x + bw2 / 2, y: by2 }; UI.btn(x, by2 - 24, bw2, 48, fn); });
+    }
+  }
+}
+// „Mehr“: alles, was nicht jeden Tag gebraucht wird – große, klare Kacheln
+class MoreMenu {
+  constructor() { this.t = 0; }
+  update(dt) { this.t += dt; }
+  close() { if (overlay === this) overlay = null; }
+  draw(c) {
+    const a = ACC();
+    c.fillStyle = 'rgba(16,28,18,.6)'; c.fillRect(0, 0, W, H); UI.btn(0, 0, W, H, () => this.close());
+    const T = [['friends', 'Mehrspieler', '#bde0fe', () => { this.close(); setScene(new MultiScene()); }],
+      ['trophy', 'Erfolge', '#fff3b0', () => { this.close(); setScene(new Achievements()); }],
+      ['book', 'Anleitung', '#ffd166', () => { this.close(); startUebung((a && a.lastDiff) || 'medium', 'menu'); }],
+      ['play', 'Film', '#ffc8dd', () => { this.close(); setScene(new Trailer()); }],
+      ['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
+      ['lock', 'Eltern', '#e9ecef', () => { overlay = new ParentPanel(); }]];
+    const cols = W > H ? 3 : 2, tw = Math.min(170, (W - 60) / cols - 12), th = Math.min(110, tw * 0.75), rows = Math.ceil(T.length / cols);
+    const pw = cols * (tw + 12) + 28, ph = rows * (th + 12) + 76, px = (W - pw) / 2, py = (H - ph) / 2, k = ease.back(clamp(this.t * 4, 0, 1));
+    c.save(); c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
+    panel(c, px, py, pw, ph, '#fbf8f2', 26); UI.btn(px, py, pw, ph, () => {});
+    txt(c, 'Mehr', W / 2, py + 30, 22, BRAND.olive, 'center', null);
+    roundBtn(c, px + pw - 8, py + 8, 20, '#fff', 'cross', () => this.close());
+    T.forEach(([ic, label, col, fn], i) => { const x = px + 20 + (i % cols) * (tw + 12), y = py + 56 + Math.floor(i / cols) * (th + 12);
+      rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(40, th * 0.42)); txt(c, label, x + tw / 2, y + th - 18, 15, '#3d2c1f', 'center', null, tw - 10);
+      (this.hit || (this.hit = {}))[label] = { x: x + tw / 2, y: y + th / 2 }; UI.btn(x, y, tw, th, () => { Sfx.play('tap'); fn(); }); });
+    c.restore();
   }
 }
 
@@ -1282,19 +1320,16 @@ class Wardrobe {
     UI.btn(ox, by - 26, 130, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
     { const id = d.equip, sd = id && SKIN_SIDE[id], fx = ox + 142, fw = x + w - 18 - fx, M = META();
       rrPath(c, fx, by - 30, fw, 60, 18); fs(c, '#fffbe6', 3, '#c9a227');
-      if (!sd) wrapLines(c, id ? 'Dieses ältere Kostüm hat keine eigene Fähigkeit.' : 'Zieh ein Kostüm an: Jedes hat eine eigene kleine Fähigkeit, die du hier aufrüsten kannst.', fw - 30, 13).slice(0, 2).forEach((l, i) => txt(c, l, fx + 16, by - 8 + i * 18, 13, '#6b5a48', 'left', null));
+      if (!sd) wrapLines(c, id ? 'Dieses ältere Kostüm hat keine eigene Fähigkeit.' : 'Zieh ein Kostüm an: Jedes hat eine eigene kleine Kraft. Aufrüsten kannst du sie im Laden unter „Kräfte“.', fw - 30, 13).slice(0, 2).forEach((l, i) => txt(c, l, fx + 16, by - 8 + i * 18, 13, '#6b5a48', 'left', null));
       else {
         const A = SIDE[sd], lv = sideLevel(id), max = lv >= SIDE_MAX, price = max ? 0 : SIDE_PRICE[SKINS[id].rarity][lv - 1], bw = 134, tw = fw - bw - 70;
         ell(c, fx + 30, by, 21, 21); fs(c, '#fff', 2.5, '#c9a227'); icon(c, A.icon, fx + 30, by, 26);
         txt(c, A.name + ' · ' + '★'.repeat(lv) + '☆'.repeat(SIDE_MAX - lv), fx + 60, by - 14, 14, '#3d2c1f', 'left', null);
         wrapLines(c, A.f(lv) + (max ? '' : '  → Stufe ' + (lv + 1) + ': ' + A.f(lv + 1)), tw, 11).slice(0, 2).forEach((l, i) => txt(c, l, fx + 60, by + 4 + i * 14, 11, '#6b5a48', 'left', null));
-        const bx = fx + fw - bw - 12; rrPath(c, bx, by - 18, bw, 36, 16); fs(c, max ? '#d8f5e3' : '#06d6a0', 3);
+        const bx = fx + fw - bw - 12; rrPath(c, bx, by - 18, bw, 36, 16); fs(c, max ? '#d8f5e3' : '#ffe066', 3);   // Aufrüsten passiert jetzt im Laden unter „Kräfte“ (alles an einem Ort)
         if (max) txt(c, 'Ganz oben!', bx + bw / 2, by + 1, 14, '#2b9348', 'center', null);
-        else { icon(c, 'coin', bx + 20, by, 17); txt(c, 'Stufe ' + (lv + 1) + ' · ' + price, bx + bw / 2 + 10, by + 1, 13, '#fff', 'center', BRAND.ink); }
-        UI.btn(bx, by - 18, bw, 36, () => {
-          if (max) return; if (M.coins < price) { Sfx.play('bad'); toast('Zu wenig Taler', 'Du brauchst ' + price + ' Taler', 'coin'); return; }
-          M.coins -= price; M.sideLv = M.sideLv || {}; M.sideLv[id] = lv + 1; Save.write(); Sfx.play('win'); FX.confetti(fx + 30, by, 30); toast(A.name + ': Stufe ' + (lv + 1), SKINS[id].name, 'star');
-        });
+        else txt(c, 'Aufrüsten ›', bx + bw / 2, by + 1, 14, '#3d2c1f', 'center', null);
+        UI.btn(bx, by - 18, bw, 36, () => { if (max) return; Sfx.play('tap'); overlay = null; const sh = new Shop(); sh.tab = 'up'; setScene(sh); });
       } }
     if (!shop && !OPEN_STAGES.includes(this.stage)) { icon(c, 'hourglass', W / 2, y + 128 + ch, 44); }
   }

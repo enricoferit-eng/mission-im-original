@@ -163,7 +163,7 @@ function dailyOffers() {
   return upOff.concat([{ id: ex[0], price: ex[3], ex: true, off: 0 }]).concat(offs.map(o => { const off = pick([20, 30, 40, 50], r); return { id: o[0], off, price: Math.round(o[3] * (100 - off) / 100 / 5) * 5 }; }));
 }
 class Shop {
-  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'up'; this.msg = ''; this.msgT = 0; }
+  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'skins'; this.msg = ''; this.msgT = 0; }
   enter() { FX.clear(); }
   update(dt) { this.t += dt; this.msgT = Math.max(0, this.msgT - dt); if (!this.drag && Math.abs(this.vel || 0) > 5) { this.sc = (this.sc || 0) + this.vel * dt; this.vel *= Math.pow(0.04, dt); } }   // Schwung beim Wischen
   say(m) { this.msg = m; this.msgT = 2.5; }
@@ -182,10 +182,15 @@ class Shop {
     topBar(c, this.back);
     icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 170, 44);
-    roundBtn(c, W - 212, 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
-    const tabs = [['up', 'Kräfte'], ['joker', 'Angebote'], ['rad', 'Glücksrad'], ['skins', 'Kostüme'], ['tiere', 'Figur']]   /* einfache Wörter; die Garderobe gibt es im Menü */.concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis']] : []), tw = Math.min(130, (W - 40) / tabs.length - 8);
+    roundBtn(c, W < 600 ? W - 34 : W - 212, W < 600 ? 146 : 44, 16, '#fff', 'question', () => { overlay = new MsgDialog({ icon: 'coin', text: 'So bekommst du Taler: Hilf den Leuten in den Bereichen, schaffe Aufgaben mit vielen Sternen, hol dir Erfolge, spiele mit anderen zusammen – und jeden Tag gibt es ein Tagesgeschenk.' }); });   /* wie verdiene ich Taler? */
+    // nur 3 Reiter (+ Kürbis zur Halloween-Zeit); Glücksrad und Angebote sind zwei Knöpfe oben rechts
+    const narrow = W < 600, tabs = [['skins', 'Kostüme'], ['tiere', 'Figuren'], ['up', 'Kräfte']].concat(typeof HALLOWEEN !== 'undefined' && HALLOWEEN ? [['hw', 'Kürbis']] : []), tw = Math.min(150, (W - 40) / tabs.length - 8);
+    { const P = [['rad', 'Glücksrad', 'star', '#ffd6e0'], ['joker', 'Angebote', 'coin', '#fff3bf']], pw = narrow ? (W - 84) / 2 - 4 : W < 700 ? 44 : 128;   // Hochformat: eigene Zeile unter den Reitern
+      P.forEach(([id, name, ic, col], i) => { const x = narrow ? 20 + i * (pw + 8) : W - 240 - (P.length - i) * (pw + 8), y = narrow ? 128 : 26, on = this.tab === id;
+        rrPath(c, x, y, pw, 36, 18); fs(c, on ? '#ffd166' : col, 3); icon(c, ic, x + (pw < 60 ? pw / 2 : 22), y + 18, 22); if (pw >= 60) txt(c, name, x + 40, y + 19, 13, '#3d2c1f', 'left', null, pw - 46);
+        UI.btn(x, y, pw, 36, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); }); }
     tabs.forEach(([id, name], i) => { const x = W / 2 + (i - (tabs.length - 1) / 2) * (tw + 8) - tw / 2; if (id === 'up') { c.save(); c.shadowColor = '#ffd60a'; c.shadowBlur = 10 + 8 * Math.sin(this.t * 4); rrPath(c, x, 80, tw, 40, 16); c.fillStyle = '#ffd60a'; c.fill(); c.restore(); } rrPath(c, x, 80, tw, 40, 16); fs(c, this.tab === id ? '#ffd166' : id === 'up' ? '#ffe066' : id === 'garderobe' ? '#d8f5e3' : id === 'hw' ? '#ffb38a' : '#fff', 3); txt(c, name, x + tw / 2, 101, Math.min(16, tw / 6.2), '#3d2c1f', 'center', null); UI.btn(x, 80, tw, 40, () => { if (id === 'garderobe') { const w = new Wardrobe(CUR_DIFF || 'medium'); w.stage = 'laden'; overlay = w; Sfx.play('tap'); return; } this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
-    const top = 134, bottom = H - 16;
+    const top = narrow ? 178 : 134, bottom = H - 16;
     if (this.tab === 'hw' && typeof hwShopDraw === 'function') hwShopDraw(this, c, top, bottom);   // Halloween: Kürbis-Laden
     else if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
@@ -267,25 +272,29 @@ class Shop {
       UI.btn(bx - 80, by - 26, 160, 52, () => { if (this.spin || this.radNext) return; const free = (m.freeSpin || 0) > 0; (free ? (p, fn) => { m.freeSpin--; Save.write(); fn(m); } : (p, fn) => this.buy(p, fn))(SPIN, () => { const ws = pool.map(o => o.w), tot = ws.reduce((x, y) => x + y, 0); let r = rnd() * tot, k = 0; while (r > ws[k]) { r -= ws[k]; k++; } const target = -(segs[k][0] + segs[k][1] / 2), base = this.radA || 0; this.spin = { t0: this.t, a0: base, a1: base + TAU * 5 + (((target - base) % TAU) + TAU) % TAU, k }; this.radA = this.spin.a1; }); });
       wrapLines(c, 'Dreh das Rad: Kostüme, Kräfte oder Taler!', Math.min(220, W * 0.25), 12).forEach((l, i) => txt(c, l, Math.max(110, W * 0.14), cy - 20 + i * 16, 12, '#fff', 'center', BRAND.olive));
     } else if (this.tab === 'up') {
-      // Upgrades: groß und leuchtend – das Wichtigste im Laden
-      const n = UPGRADES.length, gap = 10, land = W > H, cw = land ? Math.min(176, (W - 40 - gap * (n - 1)) / n) : Math.min(W - 40, 420), ch = land ? Math.min(bottom - top - 6, 236) : Math.min(120, (bottom - top - gap * (n - 1)) / n), x0 = land ? (W - (cw * n + gap * (n - 1))) / 2 : (W - cw) / 2;
-      txt(c, 'Kräfte gelten immer – egal welches Kostüm du trägst', W / 2, H - 8, 12, '#fff', 'center', BRAND.olive);
-      UPGRADES.forEach((u, i) => {
-        const l = m.up[u.k] || 0, max = l >= UP_MAX, price = max ? 0 : u.price[l], x = land ? x0 + i * (cw + gap) : x0, y = land ? top + 2 : top + i * (ch + gap), bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3 + i);
-        c.save(); c.shadowColor = u.col; c.shadowBlur = 14 + gl * 12; rrPath(c, x, y + bob, cw, ch, 20); fs(c, '#fffdf5', 4, '#c9a227'); c.restore();
+      // Kräfte: die 5 Kräfte für alle + die Kraft des Kostüms, das du gerade trägst – alles Aufrüsten an einem Ort
+      const eq = DP(CUR_DIFF || 'medium').equip, sd = eq && typeof SKIN_SIDE !== 'undefined' && SKIN_SIDE[eq] && m.skins.includes(eq) ? SKIN_SIDE[eq] : null;
+      const items = UPGRADES.map(u => { const l = m.up[u.k] || 0, max = l >= UP_MAX; return { name: u.name, icon: u.icon, col: u.col, l, next: l + 1, maxL: UP_MAX, max, price: max ? 0 : u.price[l], desc: max ? u.f(l) : (l ? 'Jetzt: ' + u.f(l) + ' · Nächste: ' + u.f(l + 1) : u.f(1)), buy: mm => { mm.up[u.k] = l + 1; } }; });
+      if (sd) { const A = SIDE[sd], lv = sideLevel(eq), max = lv >= SIDE_MAX;
+        items.push({ name: A.name, tag: 'Kostüm-Kraft', icon: A.icon, col: '#ffe066', l: lv - 1, next: lv + 1, maxL: SIDE_MAX - 1, max, price: max ? 0 : SIDE_PRICE[SKINS[eq].rarity][lv - 1], desc: A.f(lv), buy: mm => { mm.sideLv = mm.sideLv || {}; mm.sideLv[eq] = lv + 1; } }); }
+      const n = items.length, gap = 10, land = W > H, cw = land ? Math.min(170, (W - 40 - gap * (n - 1)) / n) : Math.min(W - 40, 420), ch = land ? Math.min(bottom - top - 6, 236) : Math.min(110, (bottom - top - gap * (n - 1)) / n), x0 = land ? (W - (cw * n + gap * (n - 1))) / 2 : (W - cw) / 2;
+      txt(c, sd ? 'Die Kostüm-Kraft gehört zu dem Kostüm, das du trägst' : 'Kräfte gelten immer – egal welches Kostüm du trägst', W / 2, H - 8, 12, '#fff', 'center', BRAND.olive);
+      items.forEach((u, i) => {
+        const l = u.l, max = u.max, price = u.price, x = land ? x0 + i * (cw + gap) : x0, y = land ? top + 2 : top + i * (ch + gap), bob = Math.sin(this.t * 2 + i) * 2, gl = 0.5 + 0.5 * Math.sin(this.t * 3 + i);
+        c.save(); c.shadowColor = u.col; c.shadowBlur = 14 + gl * 12; rrPath(c, x, y + bob, cw, ch, 20); fs(c, u.tag ? '#fff8e1' : '#fffdf5', 4, '#c9a227'); c.restore();
         rrPath(c, x, y + bob, cw, ch, 20); c.lineWidth = 4; c.strokeStyle = '#c9a227'; c.stroke();
+        if (u.tag) { c.font = `900 11px ${FONT}`; const lw = c.measureText(u.tag).width + 20, lx = land ? x + cw / 2 : x + cw - lw / 2 - 12; rrPath(c, lx - lw / 2, y + bob - 9, lw, 18, 9); fs(c, '#9b5de5', 2, '#fff'); txt(c, u.tag, lx, y + bob + 1, 11, '#fff', 'center', null); }
         const ix = land ? x + cw / 2 : x + 48, iy = land ? y + bob + 46 : y + bob + ch / 2;
         ell(c, ix, iy, 32 + gl * 3, 32 + gl * 3); c.fillStyle = u.col; c.globalAlpha = 0.45; c.fill(); c.globalAlpha = 1; ell(c, ix, iy, 27, 27); fs(c, '#fff', 3); icon(c, u.icon, ix, iy, 36);
         const tx = land ? x + cw / 2 : x + 92, al = land ? 'center' : 'left';
-        txt(c, u.name, tx, land ? y + bob + 96 : y + bob + 22, 15, '#3d2c1f', al, null);
-        for (let k = 0; k < UP_MAX; k++) { const px = land ? x + cw / 2 + (k - 1.5) * 20 : tx + 7 + k * 20, py = land ? y + bob + 116 : y + bob + 44; rrPath(c, px - 8, py - 5, 16, 10, 5); fs(c, k < l ? '#06d6a0' : '#e9ecef', 2); }
-        const desc = max ? u.f(l) : (l ? 'Jetzt: ' + u.f(l) + ' · Nächste: ' + u.f(l + 1) : u.f(1));
-        wrapLines(c, desc, land ? cw - 18 : cw - 210, 11).slice(0, land ? 4 : 2).forEach((t2, k) => txt(c, t2, tx, (land ? y + bob + 138 : y + bob + 64) + k * 14, 11, '#6b5a48', al, null));
-        const bw = land ? cw - 24 : 150, bx = land ? x + 12 : x + cw - bw - 12, by = land ? y + bob + ch - 44 : y + bob + ch / 2 - 18;
+        txt(c, u.name, tx, land ? y + bob + 96 : y + bob + 22, 15, '#3d2c1f', al, null, land ? cw - 12 : cw - 250);
+        for (let k = 0; k < u.maxL; k++) { const px = land ? x + cw / 2 + (k - (u.maxL - 1) / 2) * 20 : tx + 7 + k * 20, py = land ? y + bob + 116 : y + bob + 44; rrPath(c, px - 8, py - 5, 16, 10, 5); fs(c, k < l ? '#06d6a0' : '#e9ecef', 2); }
+        wrapLines(c, u.desc, land ? cw - 18 : cw - 92 - 132, 13).slice(0, land ? 4 : 2).forEach((t2, k) => txt(c, t2, tx, (land ? y + bob + 138 : y + bob + 64) + k * 15, 13, '#6b5a48', al, null));   // 13 px = Mindestschrift (sonst misst der Umbruch zu klein)
+        const bw = land ? cw - 24 : 116, bx = land ? x + 12 : x + cw - bw - 12, by = land ? y + bob + ch - 44 : y + bob + ch / 2 - 18;
         rrPath(c, bx, by, bw, 36, 16); fs(c, max ? '#d8f5e3' : '#06d6a0', 3);
         if (max) txt(c, 'MAX', bx + bw / 2, by + 19, 15, '#2b9348', 'center', null);
-        else { icon(c, 'coin', bx + 22, by + 18, 18); txt(c, 'Stufe ' + (l + 1) + ' · ' + price, bx + bw / 2 + 10, by + 19, 13, '#fff', 'center', BRAND.ink); }
-        UI.btn(x, y + bob, cw, ch, () => { if (max) { this.say(u.name + ' ist schon ganz oben!'); return; } this.buy(price, mm => { mm.up[u.k] = l + 1; FX.confetti(ix, iy, 30); this.say(u.name + ': Stufe ' + (l + 1) + '!'); }, price < 150); });
+        else { icon(c, 'coin', bx + 22, by + 18, 18); txt(c, 'Stufe ' + u.next + ' · ' + price, bx + bw / 2 + 10, by + 19, 13, '#fff', 'center', BRAND.ink, bw - 44); }
+        UI.btn(x, y + bob, cw, ch, () => { if (max) { this.say(u.name + ' ist schon ganz oben!'); return; } this.buy(price, mm => { u.buy(mm); FX.confetti(ix, iy, 30); this.say(u.name + ': Stufe ' + u.next + '!'); }, price < 150); });
       });
     } else if (this.tab === 'skins') {
       // alle Skins auf einer Seite untereinander, sortiert: Normal → Selten → Legendär, dann nach Preis

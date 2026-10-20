@@ -6,7 +6,7 @@ const OUT = process.env.OUT || __dirname + '/shots';
   const ev = (f, a) => p.evaluate(f, a);
   for (const diff of ['easy', 'medium', 'hard']) {
     await ev(d => { localStorage.clear(); Save.load(); Save.data.seenTrailer = true; createAccount('QA', [0, 0, 0, 0]); ACC().char = 'cat'; for (const g of Object.keys(GAMES)) ACC().tut['h_' + g] = true; setScene(new Menu()); }, diff); await sleep(1200); await ev(() => { overlay = null; window.HW_POPPED = true; });
-    const cx = { easy: 180, medium: 422, hard: 665 }[diff]; await p.mouse.click(cx, 225); await sleep(1200);
+    await ev(d => { ACC().lastDiff = d; }, diff); await sleep(300); const pb = await ev(() => scene.hit.play); await p.mouse.click(pb.x, pb.y); await sleep(1200);   /* neues Menü: Stufe gewählt, dann SPIELEN */
     const sc = await ev(() => scene.constructor.name + ':' + scene.stage + (overlay ? '/' + overlay.constructor.name : '')); if (!/^Play:uebung/.test(sc)) { bad.push(diff + ': startet nicht in der Helfer-Schule (' + sc + ')'); await p.screenshot({ path: OUT + '/ueb_fail.png' }); continue; }
     const step = () => ev(() => uebungStep(scene)), clickW = async (x, y) => { const s = await ev(([x, y]) => scene.w2s(x, y), [x, y]); await p.mouse.click(s.x, s.y); };
     const [UEB_RING_X, UEB_RING_Y] = await ev(() => [UEB_RING.x, UEB_RING.y]);
@@ -34,7 +34,7 @@ const OUT = process.env.OUT || __dirname + '/shots';
   // kein Überspringen-Knopf mehr; Anleitung-Knopf öffnet die Schule
   await ev(() => { localStorage.clear(); Save.load(); Save.data.seenTrailer = true; createAccount('QA', [0, 0, 0, 0]); ACC().char = 'cat'; setScene(new Play('medium', { stage: 'uebung' })); }); await sleep(1000);
   const hasSkip = await ev(() => UI.next && UI.next.length !== undefined ? false : false); 
-  await ev(() => setScene(new Menu())); await sleep(600); await p.mouse.click(844 - 152, 40); await sleep(900);
+  await ev(() => setScene(new Menu())); await sleep(600); { const mb = await ev(() => scene.hit.menu); await p.mouse.click(mb.x, mb.y); await sleep(600); await ev(() => { ACC().lastDiff = 'medium'; }); await sleep(500); const ab = await ev(() => overlay && overlay.hit && overlay.hit.Anleitung); if (ab) await p.mouse.click(ab.x, ab.y); } await sleep(900);   /* Anleitung steckt unter „Mehr“ */
   const an = await ev(() => scene.constructor.name + ':' + scene.stage + ':' + scene.diff); console.log('Anleitung-Knopf: ' + an); if (!/uebung:medium/.test(an)) bad.push('Anleitung-Knopf');
   console.log(bad.length ? 'PROBLEME: ' + bad.join(' / ') : 'ALLES OK'); console.log('ERR', [...new Set(errs)].join(' / ') || 'none'); await b.close();
 })();

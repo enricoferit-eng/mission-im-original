@@ -7,7 +7,7 @@ const OUT = process.env.OUT || __dirname + '/shots';
   const mig = await ev(() => { const a = ACC(); a.meta = { coins: 0, skins: ['shop_rennfahrer', 'shop_zauberer'] }; const m = META(); return { up: m.up, coins: m.coins, ab: ability('bonuszeit') }; });
   console.log('Übertragung:', JSON.stringify(mig)); if (mig.up.bonuszeit !== 1 || !(mig.coins > 0)) bad.push('Übertragung');
   await ev(() => { META().coins = 2000; META().up = {}; setScene(new Shop()); }); await sleep(600); await p.screenshot({ path: OUT + '/s_up.png' });
-  const n = await ev(() => scene.tab); console.log('Start-Reiter:', n); if (n !== 'up') bad.push('Upgrades nicht zuerst');
+  const n = await ev(() => scene.tab); console.log('Start-Reiter:', n); if (n !== 'skins') bad.push('Kostüme nicht zuerst'); await ev(() => { scene.tab = 'up'; }); await sleep(300);
   // ersten Upgrade-Kasten anklicken (Turbo ist Nr. 2)
   for (let k = 0; k < 2; k++) { await p.mouse.click(260, 250); await sleep(400); if (await ev(() => !!overlay)) await ev(() => { overlay.o.onYes(); overlay = null; }); }
   const st = await ev(() => [JSON.stringify(META().up), META().coins, ability('turbo'), ABIL_VAL.turbo[ability('turbo')]]); console.log('nach 2× Kauf:', st.join(' | '));

@@ -393,7 +393,7 @@ class Play {
     this.leafPop = 0; this.justDone = null;
     if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
       const r = mulberry32(this.seedFor('leaves')), L = []; let g = 0;
-      while (L.length < (SG.leaves || LEAVES_PER_RUN) && g++ < 4000) { const x = SG.solo ? 80 + r() * (WORLD_W - 160) : 60 + r() * 880, y = SG.solo ? 120 + r() * (WORLD_H - 220) : 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
+      while (L.length < (SG.leaves || (this.diff === 'easy' ? 4 : LEAVES_PER_RUN)) && g++ < 4000)   /* Leicht: nur 4 Sammel-Sachen */ { const x = SG.solo ? 80 + r() * (WORLD_W - 160) : 60 + r() * 880, y = SG.solo ? 120 + r() * (WORLD_H - 220) : 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
       this.st.leaves = L; Save.write();
     }
     this.shake = {};
@@ -1512,12 +1512,14 @@ class Play {
       rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       c.save(); c.translate(174, 46); c.scale(k, k); drawCollect(c, this.stage, 0, 0, 2.2, -0.5); c.restore();
       txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
-    if (!this.mp) {   // eigene Taler immer sichtbar (springt kurz, wenn neue dazukommen)
+    if (!this.mp) {   // Taler nur kurz einblenden, wenn neue dazukommen (sonst ist oben weniger los)
       const m = META(), v = m ? m.coins : 0; if (this.coinShown === undefined) this.coinShown = v;
-      if (v !== this.coinShown) { this.coinPop = 1; this.coinShown = v; } this.coinPop = Math.max(0, (this.coinPop || 0) - 0.04);
+      if (v !== this.coinShown) { this.coinPop = 1; this.coinShown = v; this.coinShowT = 3.5; } this.coinPop = Math.max(0, (this.coinPop || 0) - 0.04); this.coinShowT = Math.max(0, (this.coinShowT || 0) - 1 / 60);
+      if (this.coinShowT > 0) {
       const k = 1 + this.coinPop * 0.3; c.font = `900 15px ${FONT}`; const tw = Math.max(56, c.measureText(String(v)).width + 44);
       rrPath(c, 150, 70, tw, 30, 15); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       c.save(); c.translate(168, 85); c.scale(k, k); GAME_COIN.draw(c, 0, 0, 10); c.restore(); txt(c, String(v), 184, 86, 15, '#ffd166', 'left', null);
+      }
     }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
     const narrow = W < 640, rowY = narrow ? 92 : 46;
