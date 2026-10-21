@@ -305,11 +305,11 @@ function drawWoodGate(c, x, y, s, open, locked, t) {
 STAGE_DEFS.chalet = {
   id: 'chalet', w: CW, h: CH, bg: '#dbe4ee', start: { x: 70, y: 1360 }, gate: { x: 500, y: CH - 8, ix: 500, iy: CH - 80 },
   npcs: [
-    { id: 'c_gerda', pos: [[300, 500], [700, 500], [240, 760]] },
-    { id: 'c_felix', pos: [[300, 1200], [1250, 1300], [200, 1360]] },
+    { id: 'c_gerda', pos: [[285, 463], [728, 472], [240, 760]] },
+    { id: 'c_felix', pos: [[260, 1200], [1250, 1300], [237, 1375]] },
     { id: 'c_berger', pos: [[500, 720], [760, 760], [1300, 160]] },
     { id: 'c_toni', pos: [[1000, 600], [1450, 1050], [640, 940]] },
-    { id: 'c_anna', pos: [[380, 1080], [600, 1420], [1150, 1000]] },
+    { id: 'c_anna', pos: [[380, 1080], [600, 1420], [1095, 1023]] },
   ],
   decor: CDECOR, spots: CSPOTS, grid: buildGridChalet, ground: drawGroundChalet, decorDraw: CDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },

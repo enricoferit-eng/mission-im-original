@@ -348,11 +348,11 @@ const GJUNK = {
 STAGE_DEFS.gastraum = {
   id: 'gastraum', w: GW2, h: GH2, bg: '#7a4a35', start: { x: 70, y: 260 }, gate: { x: 715, y: GH2 - 8, ix: 715, iy: GH2 - 80 },
   npcs: [
-    { id: 'g_rosi', pos: [[880, 760], [1180, 590], [600, 900]] },
-    { id: 'g_becker', pos: [[250, 615], [845, 760], [420, 900]] },
+    { id: 'g_rosi', pos: [[922, 718], [1180, 590], [600, 900]] },
+    { id: 'g_becker', pos: [[130, 615], [845, 840], [420, 900]] },
     { id: 'g_lina', pos: [[500, 900], [170, 860], [1250, 520]] },
-    { id: 'g_schulz', pos: [[1300, 790], [1060, 600], [1100, 300]] },
-    { id: 'g_ben', pos: [[300, 305], [450, 305], [175, 305]] },
+    { id: 'g_schulz', pos: [[1229, 719], [1060, 600], [1100, 300]] },
+    { id: 'g_ben', pos: [[300, 305], [450, 305], [255, 305]] },
   ],
   decor: GDECOR, spots: GSPOTS, grid: buildGridGastraum, ground: drawGroundGastraum, decorDraw: GDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },

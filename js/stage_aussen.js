@@ -297,9 +297,9 @@ STAGE_DEFS.aussen = {
   npcs: [
     { id: 'a_weber', pos: [[300, 490], [520, 495], [740, 490]] },
     { id: 'a_hoffmann', pos: [[410, 325], [630, 325], [240, 330]] },
-    { id: 'a_klaus', pos: [[1350, 620], [1150, 450], [1650, 400]] },
-    { id: 'a_mila', pos: [[560, 600], [900, 620], [1250, 720]] },
-    { id: 'a_noah', pos: [[1450, 180], [1600, 680], [300, 700]] },
+    { id: 'a_klaus', pos: [[1350, 620], [1150, 450], [1673, 345]] },
+    { id: 'a_mila', pos: [[560, 600], [971, 549], [1250, 720]] },
+    { id: 'a_noah', pos: [[1376, 211], [1560, 680], [300, 700]] },
   ],
   decor: ADECOR, spots: ASPOTS, grid: buildGridAussen, ground: drawGroundAussen, decorDraw: ADRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },

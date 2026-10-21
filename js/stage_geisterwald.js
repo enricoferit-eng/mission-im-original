@@ -46,6 +46,9 @@ function drawGroundGeisterwald(g, R) {
   // Friedhof: heller Kies und niedriger Zaun mit Tor-Lücke
   rrPath(g, 1340, 790, 560, 380, 20); g.fillStyle = '#5c5a52'; g.fill(); for (let i = 0; i < 1600; i++) { g.fillStyle = i % 2 ? '#6e6b62' : '#4f4d46'; g.fillRect(1350 + R() * 540, 800 + R() * 360, 2, 2); }
   g.strokeStyle = '#2b2b2b'; g.lineWidth = 4; for (let x = 1340; x <= 1900; x += 22) { if (x > 1360 && x < 1460) continue; line(g, x, 780, x, 810, 4, '#2b2b2b', false); } line(g, 1460, 790, 1900, 790, 3, '#2b2b2b', false); line(g, 1340, 790, 1360, 790, 3, '#2b2b2b', false);
+  // Holzboden in den beiden begehbaren Häusern (sieht man nur von innen)
+  for (const hx of [220, 2260]) { g.fillStyle = '#7a5a3c'; g.fillRect(hx + 8, 200, 304, 160); g.strokeStyle = 'rgba(40,25,10,.35)'; g.lineWidth = 2; for (let y = 216; y < 360; y += 22) { g.beginPath(); g.moveTo(hx + 8, y); g.lineTo(hx + 312, y); g.stroke(); }
+    ell(g, hx + 170, 300, 70, 26); g.fillStyle = '#6a1b4d'; g.fill(); ell(g, hx + 170, 300, 54, 18); g.fillStyle = '#9d4edd'; g.fill(); }   // Teppich
   // Spukgelände: zweiter, kleiner Friedhof und ein Kürbis-Hügel
   rrPath(g, 2520, 1140, 330, 280, 20); g.fillStyle = '#5c5a52'; g.fill(); for (let i = 0; i < 900; i++) { g.fillStyle = i % 2 ? '#6e6b62' : '#4f4d46'; g.fillRect(2530 + R() * 310, 1150 + R() * 260, 2, 2); }
   ell(g, 2150, 700, 220, 130); g.fillStyle = '#4a3624'; g.fill(); for (let i = 0; i < 14; i++) { ell(g, 2000 + (i % 5) * 70, 620 + Math.floor(i / 5) * 70, 16, 6); g.fillStyle = '#2d6a4f'; g.fill(); }
@@ -63,7 +66,10 @@ const deadTree = (id, x, y) => ({ id, t: 'totbaum', x, y, r: 24, bb: [x - 100, y
 const grave = (id, x, y, k) => ({ id, t: 'grab', x, y, r: 22, k, bb: [x - 32, y - 74, 64, 80] });
 const bigPumpkin = (id, x, y, s = 1) => ({ id, t: 'riesenkuerbis', x, y, r: 26 * s, s, bb: [x - 44 * s, y - 70 * s, 88 * s, 78 * s] });
 const GWDECOR = [
-  { id: 'hexenhaus', t: 'hexenhaus', x: 380, y: 360, x0: 220, y0: 170, w: 320, h: 190, bb: [190, 0, 380, 372] },
+  { id: 'hexenhaus', t: 'hexenhaus', inside: true, x: 380, y: 360, x0: 220, y0: 170, w: 320, h: 190, bb: [190, 0, 380, 372] },
+  // innen (nur zu sehen, wenn man drin ist): Trank-Regal und Tisch mit Kristallkugel
+  { id: 'regal1', t: 'trankregal', x: 290, y: 232, x0: 240, y0: 212, w: 100, h: 20 },
+  { id: 'ktisch1', t: 'kugeltisch', x: 490, y: 282, r: 20 },
   { id: 'kessel', t: 'kessel', x: 640, y: 380, r: 34, bb: [590, 290, 100, 100], anim: true },
   { id: 'besenstaender', t: 'besen', x: 170, y: 420, r: 12, bb: [140, 300, 60, 126] },
   deadTree('baum1', 820, 560), deadTree('baum2', 1260, 600), deadTree('baum3', 130, 640), deadTree('baum4', 1880, 640), deadTree('baum5', 760, 1250), deadTree('baum6', 1240, 1330),
@@ -82,7 +88,9 @@ const GWDECOR = [
   { id: 'busch1', t: 'gbusch', x: 1780, y: 1290, r: 26, bb: [1730, 1240, 100, 60] },
   { id: 'busch2', t: 'gbusch', x: 620, y: 700, r: 26, bb: [570, 650, 100, 60] },
   // ---- Spukgelände (rechts) ----
-  { id: 'spukhaus', t: 'hexenhaus', x: 2420, y: 360, x0: 2260, y0: 170, w: 320, h: 190, bb: [2230, 0, 380, 372] },
+  { id: 'regal2', t: 'trankregal', x: 2330, y: 232, x0: 2280, y0: 212, w: 100, h: 20 },
+  { id: 'ktisch2', t: 'kugeltisch', x: 2530, y: 282, r: 20 },
+  { id: 'spukhaus', t: 'hexenhaus', inside: true, x: 2420, y: 360, x0: 2260, y0: 170, w: 320, h: 190, bb: [2230, 0, 380, 372] },
   deadTree('baum7', 2120, 420), deadTree('baum8', 2760, 560), deadTree('baum9', 2240, 1380), deadTree('baum10', 2050, 980),
   grave('grab9', 2580, 1210, 1), grave('grab10', 2700, 1200, 0), grave('grab11', 2800, 1230, 2), grave('grab12', 2620, 1350, 0), grave('grab13', 2760, 1370, 1),
   bigPumpkin('pk6', 2030, 650, 1.1), bigPumpkin('pk7', 2250, 760, 0.9), bigPumpkin('pk8', 2130, 830, 1.2),
@@ -106,6 +114,14 @@ const GWDRAW = {
     rrPath(c, x0 + 30, y0 + 70, 70, 56, 6); fs(c, '#ffd166', 3); line(c, x0 + 65, y0 + 70, x0 + 65, y0 + 126, 3, '#3d2c1f', false); line(c, x0 + 30, y0 + 98, x0 + 100, y0 + 98, 3, '#3d2c1f', false);
     rrPath(c, x0 + w / 2 + 20, y0 + 80, 70, h - 80, 30); fs(c, '#3d2c1f', 3); ell(c, x0 + w / 2 + 75, y0 + 140, 5, 5); fs(c, '#ffd60a', 1.5);
     jackO(c, x0 + w / 2 - 10, y0 + h - 10, 1.4, 0); jackO(c, x0 + w + 4, y0 + h - 6, 1.1, 0);
+  },
+  trankregal(c, d) {   // Regal an der Rückwand mit bunten Tränken
+    rrPath(c, d.x0, d.y0 - 70, d.w, 90, 4); fs(c, '#5c3d24', 3); for (const yy of [-44, -14]) line(c, d.x0 + 4, d.y0 + yy, d.x0 + d.w - 4, d.y0 + yy, 4, '#3b2a20', false);
+    ['#9ef01a', '#c77dff', '#ff8fa3', '#4cc9f0', '#ffd166', '#80ed99'].forEach((col, i) => { const x = d.x0 + 14 + (i % 3) * 32, y = d.y0 - 50 + Math.floor(i / 3) * 30; rrPath(c, x - 7, y - 14, 14, 18, 5); fs(c, col, 2); rrPath(c, x - 3, y - 20, 6, 7, 2); fs(c, '#f1e3c8', 1.5); });
+  },
+  kugeltisch(c, d) {   // runder Tisch mit leuchtender Kristallkugel
+    c.fillStyle = 'rgba(0,0,0,.25)'; ell(c, d.x, d.y + 2, 28, 8); c.fill(); line(c, d.x, d.y, d.x, d.y - 26, 6, '#3b2a20'); ell(c, d.x, d.y - 28, 30, 10); fs(c, '#5c3d24', 3);
+    ell(c, d.x, d.y - 46, 22, 22); c.fillStyle = 'rgba(199,125,255,.35)'; c.fill(); ell(c, d.x, d.y - 46, 15, 15); fs(c, '#c8b6ff', 2.5, '#3c096c'); ell(c, d.x - 5, d.y - 51, 4, 3); c.fillStyle = '#fff'; c.fill();
   },
   kessel(c, d, t) {
     for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(d.x - 24 + k * 24, d.y + 4); c.quadraticCurveTo(d.x - 14 + k * 24 + Math.sin(t * 8 + k) * 6, d.y - 14, d.x - 24 + k * 24, d.y - 24); c.lineWidth = 8; c.strokeStyle = ['#ff9f1c', '#ffd60a', '#ff6b35'][k]; c.stroke(); }
@@ -153,6 +169,13 @@ function buildGridGeisterwald() {
   for (let y = GW_POND.y - GW_POND.ry - 10; y <= GW_POND.y + GW_POND.ry + 10; y += 10) for (let x = GW_POND.x - GW_POND.rx - 10; x <= GW_POND.x + GW_POND.rx + 10; x += 10) {
     const k = ((x - GW_POND.x) / (GW_POND.rx + 8)) ** 2 + ((y - GW_POND.y) / (GW_POND.ry + 8)) ** 2; if (k <= 1) { const i = cellIdx(x, y); if (i >= 0) G0[i] = 0; } }
   for (const d of GWDECOR) {
+    if (d.inside) {   // begehbares Haus: nur Wände sperren, vorne eine Tür-Lücke
+      const dl = d.x0 + d.w / 2 + 24, dr = d.x0 + d.w / 2 + 86;
+      cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + 46, i => (G0[i] = 0));
+      cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + 14, d.y0 + d.h + 6, i => (G0[i] = 0)); cellsIn(d.x0 + d.w - 14, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + 6, i => (G0[i] = 0));
+      cellsIn(d.x0 - 4, d.y0 + d.h - 12, dl, d.y0 + d.h + 6, i => (G0[i] = 0)); cellsIn(dr, d.y0 + d.h - 12, d.x0 + d.w + 4, d.y0 + d.h + 6, i => (G0[i] = 0));
+      continue;
+    }
     if (d.w) cellsIn(d.x0 - 4, d.y0 - 4, d.x0 + d.w + 4, d.y0 + d.h + 6, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(6, d.r - 6), i => (G0[i] = 0));
   }
@@ -174,6 +197,8 @@ const GWSPOTS = [
   furnSpot(GWDECOR, 'baum7', 'right'), furnSpot(GWDECOR, 'baum8', 'left'), furnSpot(GWDECOR, 'baum9', 'right'), furnSpot(GWDECOR, 'baum10', 'left'),
   furnSpot(GWDECOR, 'grab9', 'left'), furnSpot(GWDECOR, 'grab11', 'right'), furnSpot(GWDECOR, 'grab13', 'left'),
   furnSpot(GWDECOR, 'pk6', 'left'), furnSpot(GWDECOR, 'pk8', 'right'),
+  furnSpot(GWDECOR, 'regal1', 'top', { px: 300, py: 196, sx: 300, sy: 268, tag: 'i' }), furnSpot(GWDECOR, 'ktisch1', 'right', { px: 512, py: 262, sx: 470, sy: 330, tag: 'i' }),
+  furnSpot(GWDECOR, 'regal2', 'top', { px: 2340, py: 196, sx: 2340, sy: 268, tag: 'i' }), furnSpot(GWDECOR, 'ktisch2', 'right', { px: 2552, py: 262, sx: 2510, sy: 330, tag: 'i' }),
   furnSpot(GWDECOR, 'heu2', 'top'), furnSpot(GWDECOR, 'kessel2', 'left'), furnSpot(GWDECOR, 'busch3', 'top'), furnSpot(GWDECOR, 'busch4', 'top'),
 ];
 // Kürbistor (Finale): Bogen aus Ästen mit Kürbissen, geht auf, wenn allen geholfen wurde
@@ -190,19 +215,19 @@ function drawPumpkinGate(c, x, y, s, open, locked, t) {
 STAGE_DEFS.geisterwald = {
   id: 'geisterwald', w: GWW, h: GWH, bg: '#1b3022', solo: true, finalExit: true, start: { x: GW_IN, y: GWH - 70 }, gate: { x: 1000, y: 230, ix: 1000, iy: 290, side: 'top' },
   npcs: [
-    { id: 'h_hexe', pos: [[700, 470], [420, 520], [820, 440]] },
+    { id: 'h_hexe', pos: [[700, 470], [420, 520], [940, 440]] },
     { id: 'h_vamp', pos: [[1300, 740], [1700, 1300], [1100, 900]] },
-    { id: 'h_geist', pos: [[1560, 980], [1360, 1200], [1820, 1240]] },
+    { id: 'h_geist', pos: [[1532, 1008], [1360, 1200], [1860, 1240]] },
     { id: 'h_bauer', pos: [[260, 1290], [620, 1010], [120, 1020]] },
-    { id: 'h_mond', pos: [[1420, 560], [1160, 420], [1780, 560]] },
-    { id: 'h_mumie', pos: [[2400, 520], [2160, 1000], [2700, 700]] },
-    { id: 'h_zauber', pos: [[2680, 1060], [2300, 1240], [2050, 520]] },
-    { id: 'h_katze', pos: [[1880, 1100], [2500, 820], [1300, 1300]] },
+    { id: 'h_mond', pos: [[1420, 560], [1132, 448], [1752, 588]] },
+    { id: 'h_mumie', pos: [[2400, 520], [2200, 1000], [2700, 700]] },
+    { id: 'h_zauber', pos: [[2680, 1060], [2360, 1240], [2050, 520]] },
+    { id: 'h_katze', pos: [[1880, 1100], [2500, 820], [1360, 1300]] },
   ],
   decor: GWDECOR, spots: GWSPOTS, grid: buildGridGeisterwald, ground: drawGroundGeisterwald, decorDraw: GWDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
   junk: ['leaf', 'twig', 'pebble'], items: HW_ITEM_IDS, cover: typeof drawLeafPile === 'function' ? drawLeafPile : undefined,
-  drawGate: drawPumpkinGate, gateName: 'Das Kürbistor', dialogGate: 0.35, gateFace: (c, x, y, s, t) => drawPumpkinGate(c, x, y + 20, s * 0.25, 0, true, t),
+  drawGate: drawPumpkinGate, gateName: 'Das Kürbistor', dialogGate: 0.35, gateFace: (c, x, y, s, t) => drawPumpkinGate(c, x, y + 3, s * 0.25, 0, true, t),   // Fuß auf Höhe der Figuren in der oberen Leiste
   words: { one: 'Person', the: 'die Person', a: 'eine Person', many: 'Leute', dat: 'Leuten', back: 'zur Person', each: 'Jede Person',
     hide: 'hinter Grabsteinen, Riesenkürbissen und kahlen Bäumen, am Hexenhaus und im Heu', junk: 'ein Blatt oder ein Stöckchen', gate: 'am Kürbistor', gateTap: 'Lauf zum Kürbistor und tippe es an!',
     opened: 'Das Kürbistor ist offen!',

@@ -775,8 +775,9 @@ class Play {
     g.moving = !!(g.path && g.path.length);
   }
   seeThru(bb, d) {   // hohe Dinge (Palmen, Schränke) werden durchsichtig, wenn die Figur dahinter steht
-    if (!bb || bb[3] < 170) return 1;
     const p = this.p, py = p.y - 30;
+    if (d && d.inside && p.x > d.x0 && p.x < d.x0 + d.w && p.y > d.y0 && p.y < d.y0 + d.h) return 0.12;   // begehbares Haus: von innen fast durchsichtig
+    if (!bb || bb[3] < 170) return 1;
     return p.x > bb[0] + 10 && p.x < bb[0] + bb[2] - 10 && py > bb[1] && p.y < d.y + (d.zy || 0) - 4 ? 0.45 : 1;
   }
   onStairs() { const i = cellIdx(this.p.x, this.p.y); return i >= 0 && !!ST[i]; }

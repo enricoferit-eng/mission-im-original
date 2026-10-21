@@ -318,7 +318,7 @@ STAGE_DEFS.kueche = {
     { id: 'k_marco', pos: [[650, 520, 0], [650, 780, 0], [1070, 560, 0]] },
     { id: 'k_luca', pos: [[1250, 285, 0], [1100, 330, 0], [1160, 470, 0]] },
     { id: 'k_tom', pos: [[560, 260, 0], [800, 270, 0], [780, 840, 0]] },
-    { id: 'k_nina', pos: [[200, 300, 0], [220, 640, 0], [330, 780, 0]] },
+    { id: 'k_nina', pos: [[200, 300, 0], [220, 500, 0], [330, 780, 0]] },
     { id: 'k_lea', pos: [[920, 820, 0], [1100, 800, 0], [750, 650, 0]] },
   ],
   decor: KDECOR, spots: KSPOTS, grid: buildGridKueche, ground: drawGroundKueche, decorDraw: KDRAW,
