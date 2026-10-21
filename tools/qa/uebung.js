@@ -36,7 +36,7 @@ const OUT = process.env.OUT || __dirname + '/shots';
   // kein Überspringen-Knopf mehr; Anleitung-Knopf öffnet die Schule
   await ev(() => { localStorage.clear(); Save.load(); Save.data.seenTrailer = true; createAccount('QA', [0, 0, 0, 0]); ACC().char = 'cat'; setScene(new Play('medium', { stage: 'uebung' })); }); await sleep(1000);
   const hasSkip = await ev(() => UI.next && UI.next.length !== undefined ? false : false); 
-  await ev(() => setScene(new Menu())); await sleep(600); { const mb = await ev(() => scene.hit.menu); await p.mouse.click(mb.x, mb.y); await sleep(600); await ev(() => { ACC().lastDiff = 'medium'; }); await sleep(500); const ab = await ev(() => overlay && overlay.hit && overlay.hit.Anleitung); if (ab) await p.mouse.click(ab.x, ab.y); } await sleep(900);   /* Anleitung steckt unter „Mehr“ */
+  await ev(() => setScene(new Menu())); await sleep(600); { await ev(() => { scene.page = 4; scene.off = 0; ACC().lastDiff = 'medium'; }); await sleep(600); const ab = await ev(() => scene.moreHit && scene.moreHit.Anleitung); if (ab) await p.mouse.click(ab.x, ab.y); }   /* Anleitung steckt auf der Seite „Mehr“ */ await sleep(900);   /* Anleitung steckt unter „Mehr“ */
   const an = await ev(() => scene.constructor.name + ':' + scene.stage + ':' + scene.diff); console.log('Anleitung-Knopf: ' + an); if (!/uebung:medium/.test(an)) bad.push('Anleitung-Knopf');
   console.log(bad.length ? 'PROBLEME: ' + bad.join(' / ') : 'ALLES OK'); console.log('ERR', [...new Set(errs)].join(' / ') || 'none'); await b.close();
 })();

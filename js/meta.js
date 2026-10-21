@@ -181,8 +181,8 @@ class Shop {
     themeBg(c, 'shop');
     const m = META(); if (!m) return;
     // Kopf: nur Zurück, „Laden“ und die Taler. Darunter EINE Reiterleiste (Hochformat: zwei Reihen).
-    roundBtn(c, 44, 44, 28, '#fff', 'back', this.back, '#ffd166');
-    icon(c, 'shop', 104, 44, 40); txt(c, 'Laden', 130, 44, 24, '#fff', 'left', BRAND.olive);
+    const hx = EMBED ? 20 : 74; if (!EMBED) roundBtn(c, 44, 44, 28, '#fff', 'back', this.back, '#ffd166');
+    icon(c, 'shop', hx + 30, 44, 40); txt(c, 'Laden', hx + 56, 44, 24, '#fff', 'left', BRAND.olive);
     coinChip(c, W - 130, 44);
     const narrow = W < 600, cmp = !narrow && H < 480, gift = typeof giftReady === 'function' && giftReady();
     const tabs = [['joker', 'Angebote'], ['skins', 'Kostüme'], ['tiere', 'Figuren'], ['up', 'Kräfte'], ['rad', 'Glücksrad']].concat(this.tab === 'hw' ? [['hw', 'Kürbis']] : []);   // Kürbis-Laden: über das Halloween-Fenster

@@ -143,6 +143,7 @@ function soundBtn(c, x, y) {
   if (on && V.music <= 0) { ell(c, x + 15, y + 15, 9, 9); fs(c, '#fff', 2); txt(c, '♪', x + 15, y + 16, 11, '#c1121f', 'center', null); line(c, x + 9, y + 21, x + 21, y + 9, 2, '#c1121f', false); }
 }
 function topBar(c, back) {
+  if (EMBED) return;
   if (back) roundBtn(c, 44, 44, 28, '#fff', 'back', back, '#ffd166');
   soundBtn(c, W - 40, 44);
 }
@@ -165,7 +166,7 @@ function accountChip(c, x, y, a, onTap) {
 }
 
 class Menu {
-  constructor() { this.t = 0; }
+  constructor(page) { this.t = 0; this.page = page != null ? page : 2; this.off = 0; this.pages = []; }
   enter() {
     FX.clear(); ensureProfile(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
     if (a.token && !a.hasPass && !a.admin && !window.PASS_ASKED) { window.PASS_ASKED = true; setTimeout(() => { if (scene === this && !overlay) askSetPass({ later: 'Später', sub: 'Neu: Passwort statt Bilder-Code. Mindestens ' + PASS_MIN + ' Zeichen.' }); }, 900); }
@@ -174,8 +175,98 @@ class Menu {
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
     applyVolume();
   }
-  update(dt) { this.t += dt; }
+  update(dt) {
+    this.t += dt;
+    if (!this.sw) this.off = Math.abs(this.off) < 0.002 ? 0 : this.off * Math.pow(0.0005, dt);   // nach dem Wischen sanft einrasten
+    const P = this.pageObj(this.page); if (P && P.update) P.update(dt);
+  }
+  // ---- Seiten wie bei Royal Match: unten 5 Reiter, dazwischen wischen. 0 Laden · 1 Garderobe · 2 Start · 3 Erfolge · 4 Mehr ----
+  pageObj(i) {
+    if (i === 2 || i === 4) return null;
+    if (!this.pages[i]) {
+      const a = ACC(), d = (a && a.lastDiff) || 'medium';
+      if (i === 0) { const sh = new Shop(() => {}); sh.embedded = true; if (typeof giftReady === 'function' && giftReady()) sh.tab = 'joker'; this.pages[0] = sh; }
+      if (i === 1) { const w = new Wardrobe(d); w.stage = 'laden'; w.embedded = true; this.pages[1] = w; }
+      if (i === 3) { const ac = new Achievements(() => {}); ac.embedded = true; this.pages[3] = ac; }
+    }
+    return this.pages[i];
+  }
+  drawPage(c, i) {
+    const bar = MENU_BAR_H(), H0 = H; H = H0 - bar; EMBED = true;   // die Seite sieht nur den Platz über der Leiste
+    try { if (i === 2) this.drawHome(c); else if (i === 4) this.drawMore(c); else { const P = this.pageObj(i); if (P) P.draw(c); } }
+    finally { H = H0; EMBED = false; }
+  }
+  goPage(i) { if (i < 0 || i > 4 || i === this.page) return; this.off = (i - this.page) * 1; this.page = i; this.eventSlot = null; Sfx.play('tap'); if (i === 1 && this.pages[1]) this.pages[1].diff = (ACC() && ACC().lastDiff) || 'medium'; }
   draw(c) {
+    this.eventSlot = null;
+    const moving = Math.abs(this.off) > 0.01 || (this.sw && this.sw.on);
+    if (!moving) this.drawPage(c, this.page);
+    else {   // während des Wischens: aktuelle und Nachbarseite nebeneinander (ohne Knöpfe)
+      const o = this.off, cur = this.page, nb = o > 0 ? cur - 1 : cur + 1;
+      c.save(); c.translate(o * W, 0); this.drawPage(c, cur); c.restore();
+      if (nb >= 0 && nb <= 4) { c.save(); c.translate((o > 0 ? o - 1 : o + 1) * W, 0); this.drawPage(c, nb); c.restore(); }
+      UI.next = []; this.eventSlot = null;   // während des Wischens kein Event-Knopf (er würde an der falschen Stelle stehen)
+    }
+    this.drawBar(c);
+  }
+  drawBar(c) {   // Reiterleiste unten (wie Magic Sort / Royal Match): Kacheln mit großen Symbolen, der aktive Reiter ist breiter, ragt heraus und zeigt sein Wort
+    const T = [['shop', 'Laden'], ['hanger', 'Garderobe'], ['play', 'Start'], ['trophy', 'Erfolge'], ['menu', 'Mehr']];
+    const bh = MENU_BAR_H(), y0 = H - bh, act = this.page - this.off;
+    const wt = T.map((_, i) => 1 + 0.7 * clamp(1 - Math.abs(act - i), 0, 1)), sum = wt.reduce((a, b) => a + b, 0);
+    { const g = c.createLinearGradient(0, y0, 0, H); g.addColorStop(0, '#5f7a43'); g.addColorStop(1, '#35452F'); c.fillStyle = g; c.fillRect(0, y0, W, bh); }
+    c.fillStyle = '#ffd166'; c.fillRect(0, y0 - 3, W, 4); c.fillStyle = '#c9762f'; c.fillRect(0, y0 + 1, W, 2);   // goldene Kante
+    let x = 0;
+    T.forEach(([ic, label], i) => {
+      const w = W * wt[i] / sum, k = clamp(1 - Math.abs(act - i), 0, 1), cx = x + w / 2;
+      if (i > 0) { c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(x - 1, y0 + 8, 2, bh - 14); }
+      if (k > 0.02) {   // herausragende Kachel
+        const up = 16 * k, tx = x + 3, tw = w - 6, ty = y0 - up;
+        c.save(); c.globalAlpha = k; rrPath(c, tx, ty, tw, bh + up + 10, 20); { const g = c.createLinearGradient(0, ty, 0, H); g.addColorStop(0, '#b5e550'); g.addColorStop(1, '#5f8f2a'); c.fillStyle = g; c.fill(); } c.lineWidth = 3.5; c.strokeStyle = '#ffd166'; c.stroke();
+        rrPath(c, tx + 6, ty + 5, tw - 12, 10, 5); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill(); c.restore();
+      }
+      const isz = 30 + k * 12, iy = y0 + bh / 2 - k * (bh * 0.22) - 2;
+      c.save(); c.translate(cx, iy); ell(c, 0, 2, isz * 0.62, isz * 0.62); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill(); ell(c, 0, 0, isz * 0.6, isz * 0.6); fs(c, '#fffbe6', 2.5, '#3d2c1f');
+      if (ic === 'play') icon(c, 'play', 2, 0, isz * 0.8, BRAND.olive); else icon(c, ic, 0, 0, isz * 0.82); c.restore();
+      if (k > 0.45) { c.save(); c.globalAlpha = clamp((k - 0.45) * 2, 0, 1); txt(c, label, cx, y0 + bh - 12, 15, '#fff', 'center', '#3d2c1f', w - 8); c.restore(); }
+      if (ic === 'shop' && typeof giftReady === 'function' && giftReady()) { ell(c, cx + isz * 0.5, iy - isz * 0.45, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', cx + isz * 0.5, iy - isz * 0.45 + 1, 12, '#fff', 'center', null); }
+      (this.tabHit || (this.tabHit = []))[i] = { x: cx, y: y0 + bh / 2 };
+      UI.btn(x, y0 - 16, w, bh + 16, () => this.goPage(i));
+      x += w;
+    });
+  }
+  pageTitle(c, title) {   // Titel-Schild oben in der Mitte (wie „Sammlung“)
+    c.font = `900 22px ${FONT}`; const w = Math.min(W - 40, c.measureText(title).width + 70), x = (W - w) / 2;
+    rrPath(c, x, -14, w, 60, 18); { const g = c.createLinearGradient(0, 0, 0, 46); g.addColorStop(0, '#7a9a4f'); g.addColorStop(1, '#35452F'); c.fillStyle = g; c.fill(); } c.lineWidth = 3.5; c.strokeStyle = '#ffd166'; c.stroke();
+    txt(c, title, W / 2, 22, 22, '#fff', 'center', '#3d2c1f', w - 20);
+  }
+  drawMore(c) {   // Seite „Mehr“: große Kacheln
+    menuBg(c, this.t); c.fillStyle = 'rgba(16,28,18,.35)'; c.fillRect(0, 0, W, H);
+    const a = ACC();
+    const T = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())],
+      ['book', 'Anleitung', '#ffd166', () => startUebung((a && a.lastDiff) || 'medium', 'menu')],
+      ['play', 'Film', '#ffc8dd', () => setScene(new Trailer())],
+      ['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
+      ['lock', 'Eltern', '#e9ecef', () => { overlay = new ParentPanel(); }]];
+    this.pageTitle(c, 'Mehr');
+    const cols = W > H ? 3 : 2, tw = Math.min(190, (W - 50) / cols - 12), th = Math.min(110, (H - 90) / Math.ceil(T.length / cols) - 12), rows = Math.ceil(T.length / cols), x0 = (W - cols * (tw + 12) + 12) / 2;
+    T.forEach(([ic, label, col, fn], i) => { const x = x0 + (i % cols) * (tw + 12), y = 70 + Math.floor(i / cols) * (th + 12);
+      rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(40, th * 0.42)); txt(c, label, x + tw / 2, y + th - 18, 15, '#3d2c1f', 'center', null, tw - 10);
+      (this.moreHit || (this.moreHit = {}))[label] = { x: x + tw / 2, y: y + th / 2 }; UI.btn(x, y, tw, th, () => { Sfx.play('tap'); fn(); }); });
+  }
+  // Wischen: waagerecht = Seite wechseln, sonst geht der Finger an die Seite (Scrollen im Laden usw.)
+  down(x, y, id) { this.sw = { x0: x, y0: y, on: false, id }; const P = this.pageObj(this.page); if (P && P.down && y < H - MENU_BAR_H()) { this.fwd = true; P.down(x, y, id); } else this.fwd = false; }
+  move(x, y, id) {
+    const s = this.sw; if (!s) return;
+    if (!s.on && Math.abs(x - s.x0) > 18 && Math.abs(x - s.x0) > Math.abs(y - s.y0) * 1.3) { s.on = true; const P = this.pageObj(this.page); if (this.fwd && P && P.up) P.up(-9999, -9999, id); this.fwd = false; }
+    if (s.on) { let o = (x - s.x0) / W; if ((this.page === 0 && o > 0) || (this.page === 4 && o < 0)) o *= 0.3; this.off = clamp(o, -1, 1); return; }
+    const P = this.pageObj(this.page); if (this.fwd && P && P.move) P.move(x, y, id);
+  }
+  up(x, y, id) {
+    const s = this.sw; this.sw = null;
+    if (s && s.on) { const o = this.off; if (o < -0.18 && this.page < 4) { this.page++; this.off = o + 1; Sfx.play('tap'); } else if (o > 0.18 && this.page > 0) { this.page--; this.off = o - 1; Sfx.play('tap'); } return; }
+    const P = this.pageObj(this.page); if (this.fwd && P && P.up) P.up(x, y, id); this.fwd = false;
+  }
+  drawHome(c) {
     menuBg(c, this.t);
     // schwebende Leckereien: aus (die Szene im Hintergrund reicht, sonst wird es unruhig)
     for (let i = 0; i < 0; i++) { const sp = 18 + (i % 4) * 7, y = H + 40 - ((this.t * sp + i * 137) % (H + 120)), x = ((i * 211) % 100) / 100 * W + Math.sin(this.t * 0.8 + i) * 24; c.save(); c.globalAlpha = 0.55; c.translate(x, y); c.rotate(Math.sin(this.t + i) * 0.4); drawFood(c, FOOD_IDS[i % FOOD_IDS.length], 0, 0, 34 + (i % 3) * 8); c.restore(); }
@@ -214,7 +305,7 @@ class Menu {
     const area = fresh && !a.tut.uebung && !(typeof hwNewKid === 'function' && !hwNewKid()) ? 'uebung' : startArea(diff), st = typeof STORY !== 'undefined' && STORY[area];
     const sub = area === 'uebung' ? 'Helfer-Schule' : (STAGE_NAME[area] || '') + (st ? ' · ' + st.title : '');
     const done = STAGE_ORDER.filter(id => SP(diff, id).clears > 0).length;
-    const top = swY + 30, bottom = H - (land ? 64 : 84);
+    const top = swY + 30, bottom = H - 8;   // unten ist jetzt die Reiterleiste (H ist schon ohne sie)
     const bw = Math.min(land ? 300 : W - 60, 340), bh = land ? Math.min(88, (bottom - top) * 0.5) : 96;
     let fx, fy, fs2, bx, by;
     if (land) { fs2 = clamp((bottom - top - 20) / 80, 1.2, 2.3); const cy = Math.min(top + (bottom - top) / 2, bottom - 40 * fs2 - 10); fx = W / 2 - bw / 2 - 30 * fs2; fy = cy + 40 * fs2; bx = W / 2 - bw / 2 + 30; by = cy - bh / 2; }   // Figur und Knopf als Gruppe in der Mitte
@@ -233,16 +324,7 @@ class Menu {
     this.hit = { play: { x: bx + bw / 2, y: by + bh / 2 } };   // für die Klick-Tests
     UI.btn(bx, by, bw, bh, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); a.lastDiff = diff; Save.write();
       if (area === 'uebung') { startUebung(diff, 'play'); return; } setScene(fresh ? new Play(diff, { stage: startArea(diff) }) : new StageMap(diff)); });   // ganz neu: erst die Helfer-Schule
-    // Untere Leiste: nur drei Knöpfe
-    { const B = [['hanger', 'Garderobe', '#d8f5e3', () => { const w = new Wardrobe(diff); w.stage = 'laden'; overlay = w; }], ['shop', 'Laden', '#ffd6a5', () => { const sh = new Shop(); if (typeof giftReady === 'function' && giftReady()) sh.tab = 'joker'; setScene(sh); }], ['menu', 'Mehr', '#e7f5ff', () => { Sfx.play('tap'); overlay = new MoreMenu(); }]];
-      const nB = B.length, gap = 10, bw2 = Math.min(190, (W - 24) / nB - gap), by2 = H - (land ? 34 : 44);
-      B.forEach(([ic, label, col, fn], i) => { const x = W / 2 + (i - (nB - 1) / 2) * (bw2 + gap) - bw2 / 2;
-        rrPath(c, x, by2 - 24, bw2, 48, 22); fs(c, col, 3);
-        if (bw2 < 120) { icon(c, ic, x + bw2 / 2, by2 - 7, 24); txt(c, label, x + bw2 / 2, by2 + 14, 13, '#3d2c1f', 'center', null, bw2 - 6); }
-        else { icon(c, ic, x + 30, by2, 28); txt(c, label, x + 54, by2 + 1, 17, '#3d2c1f', 'left', null, bw2 - 62); }
-        if (ic === 'shop' && typeof giftReady === 'function' && giftReady()) { const bx2 = x + bw2 - 10, by3 = by2 - 22 - Math.abs(Math.sin(this.t * 5)) * 3; ell(c, bx2, by3, 11, 11); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', bx2, by3 + 1, 13, '#fff', 'center', null); }   // Geschenk wartet im Laden
-        this.hit[ic] = { x: x + bw2 / 2, y: by2 }; UI.btn(x, by2 - 24, bw2, 48, fn); });
-    }
+    // (unten steht jetzt die Reiterleiste – siehe drawBar)
   }
 }
 // „Mehr“: alles, was nicht jeden Tag gebraucht wird – große, klare Kacheln
@@ -1335,7 +1417,7 @@ class Wardrobe {
     themeBg(c, 'dress'); c.fillStyle = 'rgba(16,28,18,.25)'; c.fillRect(0, 0, W, H);   // Garderobe: eigene Umkleide statt abgedunkeltem Menü
     const land = W > H, w = Math.min(W - 20, land ? 860 : 560), h = Math.min(H - 20, 660), x = (W - w) / 2, y = (H - h) / 2;
     panel(c, x, y, w, h, '#fff7e6', 26);
-    roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
+    if (!EMBED) roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
     icon(c, 'hanger', x + 34, y + 32, 34);
     const d = DP(this.diff);
     txt(c, '', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
@@ -1498,7 +1580,9 @@ let W = 0, H = 0, DPR = 1, scene = null, overlay = null, last = performance.now(
 const Perf = { cap: 2, acc: 0, n: 0, slow: 0 };
 const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
 let frozen = null, frozenFor = null;
-let OX = 0, OY = 0;   // Versatz des Spielfelds (Sicherheitsabstand) – Fingerpositionen werden darum korrigiert
+let OX = 0, OY = 0;
+let EMBED = false;   // eine Seite wird im Wisch-Menü gezeichnet: ohne eigenen Zurück-/Schließen-Knopf
+const MENU_BAR_H = () => (H < 420 ? 60 : 70);   // Versatz des Spielfelds (Sicherheitsabstand) – Fingerpositionen werden darum korrigiert
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, Perf.cap);
   frozenFor = null;
@@ -1572,13 +1656,14 @@ function frame(now) {
   UI.flip();
   requestAnimationFrame(frame);
 }
-const swallowed = new Set(), TAPS = [];
+const swallowed = new Set(), TAPS = [], pendBtn = new Map();
 cv.addEventListener('pointerdown', e => {
   e.preventDefault(); lastInput = performance.now(); TAPS.push({ x: (e.clientX - OX), y: (e.clientY - OY), t: 0 });
   try { if (Sfx.on()) Sfx.ctx(); } catch (err) { /* Audio erst nach einer Berührung erlaubt (iPhone) */ }
   tryLandscape();
   try { cv.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
   const b = UI.hit((e.clientX - OX), (e.clientY - OY));
+  if (b && scene instanceof Menu && !overlay) { pendBtn.set(e.pointerId, b); scene.down((e.clientX - OX), (e.clientY - OY), e.pointerId); return; }   // Wisch-Menü: Knopf erst beim Loslassen (sonst löst Wischen über einen Knopf aus)
   if (b) { swallowed.add(e.pointerId); Sfx.play('tap'); b.fn(); return; }
   const tgt = overlay || scene; if (tgt && tgt.down) tgt.down((e.clientX - OX), (e.clientY - OY), e.pointerId);
 });
@@ -1588,6 +1673,7 @@ cv.addEventListener('pointermove', e => {
   const tgt = overlay || scene; if (tgt && tgt.move) tgt.move((e.clientX - OX), (e.clientY - OY), e.pointerId);
 });
 const endPtr = e => {
+  if (pendBtn.has(e.pointerId)) { const b = pendBtn.get(e.pointerId); pendBtn.delete(e.pointerId); const swiped = scene && scene.sw && scene.sw.on; if (scene && scene.up) scene.up((e.clientX - OX), (e.clientY - OY), e.pointerId); if (!swiped && e.type === 'pointerup') { Sfx.play('tap'); b.fn(); } return; }
   if (swallowed.has(e.pointerId)) { swallowed.delete(e.pointerId); return; }
   const tgt = overlay || scene; if (tgt && tgt.up) tgt.up((e.clientX - OX), (e.clientY - OY), e.pointerId);
 };
