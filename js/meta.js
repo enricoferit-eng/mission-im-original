@@ -167,9 +167,10 @@ class Shop {
   enter() { FX.clear(); }
   update(dt) { this.t += dt; this.msgT = Math.max(0, this.msgT - dt); if (!this.drag && Math.abs(this.vel || 0) > 5) { this.sc = (this.sc || 0) + this.vel * dt; this.vel *= Math.pow(0.04, dt); } }   // Schwung beim Wischen
   say(m) { this.msg = m; this.msgT = 2.5; }
-  down(x, y) { this.vel = 0; if (this.tab === 'skins') this.drag = { y0: y, s0: this.sc || 0, moved: false, x, y, ly: y, lt: performance.now() }; }
-  move(x, y) { if (this.drag) { if (Math.abs(y - this.drag.y0) > 8) this.drag.moved = true; this.sc = this.drag.s0 - (y - this.drag.y0); const now = performance.now(), dt = Math.max(1, now - this.drag.lt) / 1000; this.vel = -(y - this.drag.ly) / dt; this.drag.ly = y; this.drag.lt = now; } }
+  down(x, y) { this.vel = 0; if (this.tab === 'skins') this.drag = { y0: y, s0: this.sc || 0, moved: false, x, y, ly: y, lt: performance.now() }; else if (this.cmax > 0) this.cdrag = { y0: y, s0: this.csc || 0 }; }
+  move(x, y) { if (this.cdrag) { this.csc = clamp(this.cdrag.s0 - (y - this.cdrag.y0), 0, this.cmax || 0); return; } if (this.drag) { if (Math.abs(y - this.drag.y0) > 8) this.drag.moved = true; this.sc = this.drag.s0 - (y - this.drag.y0); const now = performance.now(), dt = Math.max(1, now - this.drag.lt) / 1000; this.vel = -(y - this.drag.ly) / dt; this.drag.ly = y; this.drag.lt = now; } }
   up(x, y) {
+    this.cdrag = null;
     const d = this.drag; this.drag = null; if (!d || d.moved || this.tab !== 'skins') return;
     const h = (this.skinHit || []).find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h); if (!h) return;
     if (x < h.x + 40 && y < h.y + 40) { Sfx.play('tap'); overlay = new SkinInfo(h.id); return; }   // „i“ oben links
@@ -192,7 +193,11 @@ class Shop {
       if (id === 'joker' && gift) { ell(c, x + tw - 6, y + 2, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + tw - 6, y + 3, 12, '#fff', 'center', null); }   // Tagesgeschenk wartet
       UI.btn(x, y, tw, tH, () => { this.tab = id; if (id === 'rad' && !this.spin) this.radPool = null; Sfx.play('tap'); }); });
     const tabRows = Math.ceil(tabs.length / perRow);
-    const top = tY0 + tabRows * (tH + 8) + 14, bottom = H - 16;
+    // Jeder Reiter bekommt genug Höhe; ist der Bildschirm niedriger (Handy quer), wird der Inhalt scrollbar (Finger ziehen)
+    const realH = H, topY = tY0 + tabRows * (tH + 8) + 14, need = { joker: 470, tiere: 560, up: W > realH ? 400 : 760, rad: 440, hw: 420 }[this.tab] || 0, virt = need > realH;
+    this.cmax = virt ? need - realH : 0; this.csc = clamp(this.csc || 0, 0, this.cmax); let n0 = 0;
+    if (virt) { H = need; c.save(); c.beginPath(); c.rect(0, topY - 14, W, realH - topY + 14); c.clip(); c.translate(0, -this.csc); n0 = UI.next.length; }
+    const top = topY, bottom = H - 16;
     if (this.tab === 'hw' && typeof hwShopDraw === 'function') hwShopDraw(this, c, top, bottom);   // Halloween: Kürbis-Laden
     else if (this.tab === 'joker') {
       // Tages-Shop: jeden Tag 1 exklusiver Skin + 3 Skins mit Rabatt (für alle gleich, wechselt um Mitternacht)
@@ -310,7 +315,7 @@ class Shop {
     } else if (this.tab === 'skins') {
       // alle Skins auf einer Seite untereinander, sortiert: Normal → Selten → Legendär, dann nach Preis
       const RO = { common: 0, rare: 1, legend: 2 }, list = this.skinList || (this.skinList = SHOP_SKINS.slice().sort((a, b) => RO[a[2]] - RO[b[2]] || a[3] - b[3] || a[1].localeCompare(b[1])));
-      const cols = W > H ? 5 : 3, gap = 12, cw = Math.min(150, (W - 110 - gap * (cols - 1)) / cols), ch = Math.min(170, cw * 1.18), x0 = (W - 70 - (cw * cols + gap * (cols - 1))) / 2;
+      const cols = W > H ? 5 : 3, gap = 12, ch0 = Math.max(118, bottom - top - 48), cw = Math.min(150, (W - 110 - gap * (cols - 1)) / cols, ch0 / 1.18), ch = Math.min(170, cw * 1.18)   /* niedriger Bildschirm: Karten so hoch, dass eine ganze Reihe sichtbar ist */, x0 = (W - 70 - (cw * cols + gap * (cols - 1))) / 2;
       const kind = ACC().char || 'cat', rows = Math.ceil(list.length / cols), headH = 36;
       // Abschnitte je Seltenheit
       const groups = [['common', 'Normal'], ['rare', 'Selten'], ['legend', 'Legendär']].map(([r, n]) => [n, list.filter(o => o[2] === r)]);
@@ -346,6 +351,9 @@ class Shop {
         UI.btn(x, y, cw, ch, () => { if (own) { ACC().char = k; Save.write(); Sfx.play('good'); return; } this.buy(price, mm => { mm.animals.push(k); ACC().char = k; this.say(ANIMAL_NAMES[k] + ' ist jetzt deine Figur!'); }); });
       });
     }
+    if (virt) { c.restore(); H = realH; UI.next = UI.next.slice(0, n0).concat(UI.next.slice(n0).filter(q => q.y + q.h > topY - 14 && q.y < realH));   // nur sichtbare Knöpfe
+      const vh = realH - topY, bh2 = Math.max(30, vh * vh / (vh + this.cmax)), by2 = topY + (vh - bh2) * (this.csc / this.cmax); rrPath(c, W - 8, by2, 5, bh2, 3); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill();
+      if (this.csc < this.cmax - 4) { const b2 = Math.abs(Math.sin(this.t * 3)) * 4; c.save(); c.translate(W - 30, realH - 26 + b2); c.rotate(-Math.PI / 2); roundBtn(c, 0, 0, 16, '#ffd166', 'back', null); c.restore(); UI.btn(W - 50, realH - 46, 40, 40, () => { this.csc = Math.min(this.cmax, this.csc + vh * 0.7); }); } }   // Pfeil: es geht weiter nach unten
     if (this.msgT > 0) { c.globalAlpha = clamp(this.msgT * 2, 0, 1); c.font = `900 15px ${FONT}`; const mw = c.measureText(this.msg).width + 30; rrPath(c, W / 2 - mw / 2, H - 52, mw, 36, 18); c.fillStyle = 'rgba(32,44,30,.92)'; c.fill(); txt(c, this.msg, W / 2, H - 34, 15, '#fff', 'center', null); c.globalAlpha = 1; }
   }
 }

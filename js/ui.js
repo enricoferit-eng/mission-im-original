@@ -258,6 +258,7 @@ class Menu {
   move(x, y, id) {
     const s = this.sw; if (!s) return;
     if (!s.on && Math.abs(x - s.x0) > 18 && Math.abs(x - s.x0) > Math.abs(y - s.y0) * 1.3) { s.on = true; const P = this.pageObj(this.page); if (this.fwd && P && P.up) P.up(-9999, -9999, id); this.fwd = false; }
+    if (Math.abs(x - s.x0) > 10 || Math.abs(y - s.y0) > 10) s.moved = true;   // gezogen = kein Tipp (Knopf löst dann nicht aus)
     if (s.on) { let o = (x - s.x0) / W; if ((this.page === 0 && o > 0) || (this.page === 4 && o < 0)) o *= 0.3; this.off = clamp(o, -1, 1); return; }
     const P = this.pageObj(this.page); if (this.fwd && P && P.move) P.move(x, y, id);
   }
@@ -1673,7 +1674,7 @@ cv.addEventListener('pointermove', e => {
   const tgt = overlay || scene; if (tgt && tgt.move) tgt.move((e.clientX - OX), (e.clientY - OY), e.pointerId);
 });
 const endPtr = e => {
-  if (pendBtn.has(e.pointerId)) { const b = pendBtn.get(e.pointerId); pendBtn.delete(e.pointerId); const swiped = scene && scene.sw && scene.sw.on; if (scene && scene.up) scene.up((e.clientX - OX), (e.clientY - OY), e.pointerId); if (!swiped && e.type === 'pointerup') { Sfx.play('tap'); b.fn(); } return; }
+  if (pendBtn.has(e.pointerId)) { const b = pendBtn.get(e.pointerId); pendBtn.delete(e.pointerId); const swiped = scene && scene.sw && (scene.sw.on || scene.sw.moved); if (scene && scene.up) scene.up((e.clientX - OX), (e.clientY - OY), e.pointerId); if (!swiped && e.type === 'pointerup') { Sfx.play('tap'); b.fn(); } return; }
   if (swallowed.has(e.pointerId)) { swallowed.delete(e.pointerId); return; }
   const tgt = overlay || scene; if (tgt && tgt.up) tgt.up((e.clientX - OX), (e.clientY - OY), e.pointerId);
 };
