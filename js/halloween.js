@@ -222,7 +222,7 @@ function hwShopDraw(shop, c, top, bottom) {
     drawAnimal(c, kind, x + cw / 2, yy + ch * 0.64, Math.min(1.65, (ch - 50) / 78), { look: sk, cap: true, t: shop.t + i, noShadow: true });
     jackO(c, x + 16, yy + 16, 0.55, 0.5);
     { const sd = typeof SKIN_SIDE !== 'undefined' && SKIN_SIDE[id]; if (sd) { ell(c, x + 36, yy + 16, 9, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, x + 36, yy + 16, 12); } }
-    txt(c, name, x + cw / 2, yy + ch - 32, cw < 130 ? 11 : 13, '#fff', 'center', '#3c096c');
+    txt(c, name, x + cw / 2, yy + ch - 32, cw < 130 ? 11 : 13, '#fff', 'center', '#3c096c', cw - 8);
     if (worn) { rrPath(c, x + cw / 2 - 30, yy + ch - 22, 60, 18, 9); fs(c, '#06d6a0', 2); txt(c, 'trägst du', x + cw / 2, yy + ch - 13, 10, '#fff', 'center', null); }
     else if (own) txt(c, 'anziehen', x + cw / 2, yy + ch - 13, 11, '#80ed99', 'center', null);
     else { rrPath(c, x + cw / 2 - 34, yy + ch - 23, 68, 19, 9.5); fs(c, '#2b1a4a', 2, '#f77f00'); kmCoin(c, x + cw / 2 - 16, yy + ch - 13, 0.6); txt(c, String(price), x + cw / 2 + 8, yy + ch - 12, 13, '#ffd166', 'center', null); }
