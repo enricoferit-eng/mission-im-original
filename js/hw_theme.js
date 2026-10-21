@@ -3,7 +3,7 @@
 // Die normalen Bereiche behalten ihre Sachen, Aufgaben und Texte – nur Aussehen und Musik ändern sich ein bisschen.
 const HW_AREA = () => typeof AREA === 'function' && AREA() === 'geisterwald';
 // Kostüm-Teile auf dem Kopf: 0 Hexenhut, 1 Katzenohren, 2 Teufelshörner, 3 Vampir-Tolle, 'sheet' Gespenst-Tuch, 'none'
-const HW_COSTUME_OF = { h_hexe: 0, h_vamp: 3, h_geist: 'sheet', h_bauer: 'none', h_mond: 1 };
+const HW_COSTUME_OF = { h_hexe: 0, h_vamp: 3, h_geist: 'sheet', h_bauer: 'none', h_mond: 1, h_mumie: 'none', h_zauber: 0, h_katze: 1 };
 function hwCostume(c, id, x, y, s = 1) {
   let k = HW_COSTUME_OF[id]; if (k === 'none') return;
   if (k == null) { let h = 0; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; k = h % 4; }

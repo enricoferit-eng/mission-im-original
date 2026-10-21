@@ -104,7 +104,26 @@ function uebungDone(diff) {   // geschafft: weiter ins echte Abenteuer (bzw. zur
   const a = ACC(); if (a) { a.tut.uebung = true; a.tut.coach = true; a.tut.symbol = true; }
   SP(diff, 'uebung').run = null; Save.write();
   const back = window.UEBUNG_BACK; window.UEBUNG_BACK = null;
-  if (back === 'menu') setScene(new Menu()); else setScene(new Play(diff, { stage: startArea(diff) }));
+  if (back === 'menu') setScene(new Menu()); else { setScene(new Menu()); overlay = new DiffPick(d => { const a2 = ACC(); if (a2) { a2.lastDiff = d; Save.write(); } setScene(new Play(d, { stage: startArea(d) })); }); }   // nach der Schule: Stufe wählen
+}
+// Nach der Helfer-Schule: Welche Stufe? Drei große Karten mit Figur und Alter, Ansage wird vorgelesen
+class DiffPick {
+  constructor(done) { this.done = done; this.t = 0; Voice.say('Super gemacht! Wie schwer soll dein Abenteuer sein?', true); }
+  update(dt) { this.t += dt; }
+  draw(c) {
+    c.fillStyle = 'rgba(16,28,18,.72)'; c.fillRect(0, 0, W, H);
+    const land = W > H, n = DIFFS.length, gap = 14, cw = land ? Math.min(220, (W - 60 - gap * 2) / 3) : Math.min(W - 60, 360), chh = land ? Math.min(H - 130, cw * 1.15) : Math.min(150, (H - 190) / 3 - gap);
+    txt(c, 'Wie schwer soll es sein?', W / 2, land ? 48 : 90, 24, '#fff', 'center', BRAND.olive, W - 30);
+    DIFFS.forEach((d, i) => {
+      const x = land ? W / 2 + (i - 1) * (cw + gap) - cw / 2 : (W - cw) / 2, y = land ? 84 + (H - 100 - chh) / 2 : 130 + i * (chh + gap), k = ease.back(clamp(this.t * 3 - i * 0.25, 0, 1));
+      c.save(); c.translate(x + cw / 2, y + chh / 2); c.scale(k, k); c.translate(-(x + cw / 2), -(y + chh / 2));
+      panel(c, x, y, cw, chh, d.col, 24);
+      if (land) { txt(c, d.name, x + cw / 2, y + 34, 28, '#fff', 'center', OL); drawAnimal(c, ANIMAL_OF[d.id], x + cw / 2, y + chh * 0.78, Math.min(2.2, chh / 120), { t: this.t + i }); txt(c, d.age + ' Jahre', x + cw / 2, y + chh - 18, 16, '#fff', 'center', OL); }
+      else { drawAnimal(c, ANIMAL_OF[d.id], x + chh * 0.5, y + chh * 0.86, Math.min(2, chh / 80), { t: this.t + i }); txt(c, d.name, x + chh, y + chh * 0.42, 28, '#fff', 'left', OL); txt(c, d.age + ' Jahre', x + chh, y + chh * 0.72, 16, '#fff', 'left', OL); }
+      c.restore();
+      UI.btn(x, y, cw, chh, () => { Sfx.play('good'); Voice.stop(); overlay = null; this.done(d.id); });
+    });
+  }
 }
 function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true;   /* die normalen Erst-Hinweise würden sich mit Ollis Schritten überlagern */
   window.UEBUNG_BACK = back || null; SP(diff, 'uebung').run = null; Save.write(); Sfx.play('win'); setScene(new Play(diff, { stage: 'uebung' })); }

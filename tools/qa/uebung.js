@@ -28,7 +28,9 @@ const OUT = process.env.OUT || __dirname + '/shots';
     log.push(await step());
     await p.screenshot({ path: OUT + '/ueb_' + diff + '_3.png' });
     for (let k = 0; k < 10 && (await ev(() => scene.stage)) === 'uebung'; k++) { if (await ev(() => !!scene.exiting)) { await sleep(1500); continue; } const s = await ev(() => { const g = scene.w2s(GATE.x, GATE.y - 50); return g.y > 60 ? g : scene.w2s(GATE.ix, Math.min(scene.p.y - 140, GATE.iy + 200)); }); await p.mouse.click(s.x, s.y);   /* Tor außerhalb des Bildes: erst hinlaufen */ await sleep(1800); await solve(); }
-    const end = await ev(() => scene.constructor.name + ':' + scene.stage + ' tut=' + ACC().tut.uebung);
+    { await sleep(800); const pk = await ev(() => overlay && overlay.constructor.name); if (pk !== 'DiffPick') bad.push(diff + ': keine Stufen-Abfrage nach der Schule (' + pk + ')');   /* Stufe wählen: auf die passende Karte tippen */
+      else { const pos = await ev(d => { const i = DIFFS.findIndex(x => x.id === d), land = W > H, gap = 14, cw = Math.min(220, (W - 60 - gap * 2) / 3); return { x: W / 2 + (i - 1) * (cw + gap), y: H / 2 + 20 }; }, diff); await p.mouse.click(pos.x, pos.y); await sleep(900); } }
+    const end = await ev(() => scene.constructor.name + ':' + scene.stage + ' tut=' + ACC().tut.uebung + ' diff=' + scene.diff);
     console.log(diff + ': ' + log.join(' → ') + ' → ' + end); if (!/Play:kueche tut=true/.test(end)) bad.push(diff + ': nicht ins Abenteuer');
   }
   // kein Überspringen-Knopf mehr; Anleitung-Knopf öffnet die Schule

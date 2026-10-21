@@ -7,20 +7,26 @@ Object.assign(STAFF_PEOPLE, {
   h_vamp: { kid: true, skin: '#f1e3f3', hair: '#212529', jacket: '#212529', vest: '#c1121f', pants: '#212529', shoes: '#212529' },
   h_geist: { kid: true, skin: '#f8f9fa', hair: '#f8f9fa', jacket: '#f8f9fa', pants: '#e9ecef', shoes: '#adb5bd' },
   h_bauer: { skin: '#e0ac85', hair: '#bc6c25', beard: '#bc6c25', jacket: '#bc4749', check: true, pants: '#1d3557', shoes: '#6f4e37', hat: 'straw', hatCol: '#e9c46a' },
+  h_mumie: { kid: true, skin: '#f1e3c8', hair: '#f1e3c8', jacket: '#f1e3c8', pants: '#e9dcc4', shoes: '#adb5bd' },
+  h_zauber: { skin: '#e0ac85', hair: '#adb5bd', beard: '#e9ecef', jacket: '#3a0ca3', pants: '#240046', shoes: '#212529' },
+  h_katze: { kid: true, skin: '#f3c9a8', hair: '#212529', long: true, jacket: '#212529', pants: '#212529', shoes: '#ef476f', skirt: '#495057' },
   h_mond: { skin: '#d9a57e', hair: '#e9ecef', bun: true, glasses: '#7b2cbf', jacket: '#3a0ca3', scarf: '#ffd60a', pants: '#3a0ca3', shoes: '#212529' },
 });
-Object.assign(NPC_NAMES, { h_hexe: 'Hexe Hilda', h_vamp: 'Vampir Vinz', h_geist: 'Gespenst Greta', h_bauer: 'Bauer Kurt', h_mond: 'Frau Mondschein' });
-Object.assign(NPC_SHORT, { h_hexe: 'Hexe Hilda', h_vamp: 'Vampir Vinz', h_geist: 'Gespenst Greta', h_bauer: 'Bauer Kurt', h_mond: 'Frau Mondschein' });
+Object.assign(NPC_NAMES, { h_hexe: 'Hexe Hilda', h_vamp: 'Vampir Vinz', h_geist: 'Gespenst Greta', h_bauer: 'Bauer Kurt', h_mond: 'Frau Mondschein', h_mumie: 'Mumie Mo', h_zauber: 'Zauberer Zappo', h_katze: 'Katzen-Kim' });
+Object.assign(NPC_SHORT, { h_hexe: 'Hexe Hilda', h_vamp: 'Vampir Vinz', h_geist: 'Gespenst Greta', h_bauer: 'Bauer Kurt', h_mond: 'Frau Mondschein', h_mumie: 'Mumie Mo', h_zauber: 'Zauberer Zappo', h_katze: 'Katzen-Kim' });
 Object.assign(NPC_LINES, {
+  h_mumie: 'Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg!',
+  h_zauber: 'Simsalabim! Mein Zauberkasten ist leer – hilfst du mir suchen?',
+  h_katze: 'Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren!',
   h_hexe: 'Hihihi! Mein Zaubertrank wird nichts, mir fehlen noch Zutaten!',
   h_vamp: 'Ich will heute Nacht Süßes sammeln, aber mein Kostüm ist nicht komplett!',
   h_geist: 'Buuuh! Ich habe beim Spuken meine Sachen verloren!',
   h_bauer: 'Auf meinem Kürbisfeld ist alles durcheinander. Hilfst du mir?',
   h_mond: 'Meine Kristallkugel sagt: Du findest meine Sachen bestimmt!',
 });
-Object.assign(VOICE_OF, { h_hexe: { pitch: 1.3, rate: 1.1, pick: 2 }, h_vamp: { pitch: 1.25, rate: 1.05, pick: 3 }, h_geist: { pitch: 1.35, rate: 0.95, pick: 2 }, h_bauer: { pitch: 0.8, rate: 0.9, pick: 4 }, h_mond: { pitch: 1.0, rate: 0.85, pick: 1 } });
+Object.assign(VOICE_OF, { h_mumie: { pitch: 1.2, rate: 0.95, pick: 3 }, h_zauber: { pitch: 0.85, rate: 0.95, pick: 4 }, h_katze: { pitch: 1.35, rate: 1.1, pick: 2 }, h_hexe: { pitch: 1.3, rate: 1.1, pick: 2 }, h_vamp: { pitch: 1.25, rate: 1.05, pick: 3 }, h_geist: { pitch: 1.35, rate: 0.95, pick: 2 }, h_bauer: { pitch: 0.8, rate: 0.9, pick: 4 }, h_mond: { pitch: 1.0, rate: 0.85, pick: 1 } });
 
-const GWW = 2000, GWH = 1500, GW_POND = { x: 1600, y: 330, rx: 240, ry: 140 }, GW_IN = 1000;
+const GWW = 2900, GWH = 1500,   /* rechts (x 2000–2900): das Spukgelände mit Spukhaus und zweitem Friedhof */ GW_POND = { x: 1600, y: 330, rx: 240, ry: 140 }, GW_IN = 1000;
 function drawGroundGeisterwald(g, R) {
   g.fillStyle = '#3f5a3a'; g.fillRect(0, 0, WORLD_W, WORLD_H);   // Waldboden, Moos
   for (let i = 0; i < 22000; i++) { g.fillStyle = ['#36502f', '#4a6a41', '#2f4628', '#557548'][i % 4]; g.fillRect(R() * WORLD_W, R() * WORLD_H, 2, 2); }
@@ -31,7 +37,8 @@ function drawGroundGeisterwald(g, R) {
     g.beginPath(); g.moveTo(GW_IN, GWH + 20); g.bezierCurveTo(1150, 1150, 820, 900, 1000, 640); g.bezierCurveTo(1120, 460, 940, 260, 1000, 40); g.stroke();
     g.beginPath(); g.moveTo(980, 700); g.quadraticCurveTo(700, 560, 520, 420); g.stroke();
     g.beginPath(); g.moveTo(1040, 820); g.quadraticCurveTo(1300, 900, 1500, 960); g.stroke();
-    g.beginPath(); g.moveTo(960, 1000); g.quadraticCurveTo(700, 1080, 420, 1050); g.stroke(); }
+    g.beginPath(); g.moveTo(960, 1000); g.quadraticCurveTo(700, 1080, 420, 1050); g.stroke();
+    g.beginPath(); g.moveTo(1500, 960); g.quadraticCurveTo(1960, 1240, 2300, 1120); g.quadraticCurveTo(2560, 1020, 2500, 640); g.quadraticCurveTo(2460, 420, 2300, 380); g.stroke(); }   // Weg ins Spukgelände
   g.restore();
   for (let i = 0; i < 900; i++) { g.fillStyle = 'rgba(60,45,25,.35)'; ell(g, 650 + R() * 700, R() * WORLD_H, 2 + R() * 2, 1.5, R() * 3); g.fill(); }
   // Kürbisfeld: Erd-Reihen mit Ranken
@@ -39,6 +46,9 @@ function drawGroundGeisterwald(g, R) {
   // Friedhof: heller Kies und niedriger Zaun mit Tor-Lücke
   rrPath(g, 1340, 790, 560, 380, 20); g.fillStyle = '#5c5a52'; g.fill(); for (let i = 0; i < 1600; i++) { g.fillStyle = i % 2 ? '#6e6b62' : '#4f4d46'; g.fillRect(1350 + R() * 540, 800 + R() * 360, 2, 2); }
   g.strokeStyle = '#2b2b2b'; g.lineWidth = 4; for (let x = 1340; x <= 1900; x += 22) { if (x > 1360 && x < 1460) continue; line(g, x, 780, x, 810, 4, '#2b2b2b', false); } line(g, 1460, 790, 1900, 790, 3, '#2b2b2b', false); line(g, 1340, 790, 1360, 790, 3, '#2b2b2b', false);
+  // Spukgelände: zweiter, kleiner Friedhof und ein Kürbis-Hügel
+  rrPath(g, 2520, 1140, 330, 280, 20); g.fillStyle = '#5c5a52'; g.fill(); for (let i = 0; i < 900; i++) { g.fillStyle = i % 2 ? '#6e6b62' : '#4f4d46'; g.fillRect(2530 + R() * 310, 1150 + R() * 260, 2, 2); }
+  ell(g, 2150, 700, 220, 130); g.fillStyle = '#4a3624'; g.fill(); for (let i = 0; i < 14; i++) { ell(g, 2000 + (i % 5) * 70, 620 + Math.floor(i / 5) * 70, 16, 6); g.fillStyle = '#2d6a4f'; g.fill(); }
   // Nebelteich
   ell(g, GW_POND.x, GW_POND.y, GW_POND.rx + 14, GW_POND.ry + 12); g.fillStyle = '#4a4036'; g.fill();
   ell(g, GW_POND.x, GW_POND.y, GW_POND.rx, GW_POND.ry); g.fillStyle = '#2c4a5a'; g.fill();
@@ -71,6 +81,18 @@ const GWDECOR = [
   { id: 'lat4', t: 'laterne', x: 1500, y: 600, r: 8, bb: [1480, 490, 40, 116] },
   { id: 'busch1', t: 'gbusch', x: 1780, y: 1290, r: 26, bb: [1730, 1240, 100, 60] },
   { id: 'busch2', t: 'gbusch', x: 620, y: 700, r: 26, bb: [570, 650, 100, 60] },
+  // ---- Spukgelände (rechts) ----
+  { id: 'spukhaus', t: 'hexenhaus', x: 2420, y: 360, x0: 2260, y0: 170, w: 320, h: 190, bb: [2230, 0, 380, 372] },
+  deadTree('baum7', 2120, 420), deadTree('baum8', 2760, 560), deadTree('baum9', 2240, 1380), deadTree('baum10', 2050, 980),
+  grave('grab9', 2580, 1210, 1), grave('grab10', 2700, 1200, 0), grave('grab11', 2800, 1230, 2), grave('grab12', 2620, 1350, 0), grave('grab13', 2760, 1370, 1),
+  bigPumpkin('pk6', 2030, 650, 1.1), bigPumpkin('pk7', 2250, 760, 0.9), bigPumpkin('pk8', 2130, 830, 1.2),
+  { id: 'heu2', t: 'heu', x: 2380, y: 900, x0: 2330, y0: 860, w: 110, h: 44, bb: [2320, 810, 130, 96] },
+  { id: 'kessel2', t: 'kessel', x: 2680, y: 400, r: 34, bb: [2630, 310, 100, 100], anim: true },
+  { id: 'lat5', t: 'laterne', x: 2200, y: 560, r: 8, bb: [2180, 450, 40, 116] },
+  { id: 'lat6', t: 'laterne', x: 2560, y: 980, r: 8, bb: [2540, 870, 40, 116] },
+  { id: 'lat7', t: 'laterne', x: 2000, y: 1180, r: 8, bb: [1980, 1070, 40, 116] },
+  { id: 'busch3', t: 'gbusch', x: 2800, y: 820, r: 26, bb: [2750, 770, 100, 60] },
+  { id: 'busch4', t: 'gbusch', x: 2440, y: 1300, r: 26, bb: [2390, 1250, 100, 60] },
 ];
 const GWDRAW = {
   hexenhaus(c, d) {
@@ -148,6 +170,11 @@ const GWSPOTS = [
   furnSpot(GWDECOR, 'heu', 'top'),
   furnSpot(GWDECOR, 'karren', 'right'),
   furnSpot(GWDECOR, 'busch1', 'top'), furnSpot(GWDECOR, 'busch2', 'top'),
+  furnSpot(GWDECOR, 'spukhaus', 'left', { px: 2262, py: 330, sx: 2235, sy: 380, tag: 's' }), furnSpot(GWDECOR, 'spukhaus', 'right', { px: 2580, py: 330, sx: 2605, sy: 380, tag: 's' }),
+  furnSpot(GWDECOR, 'baum7', 'right'), furnSpot(GWDECOR, 'baum8', 'left'), furnSpot(GWDECOR, 'baum9', 'right'), furnSpot(GWDECOR, 'baum10', 'left'),
+  furnSpot(GWDECOR, 'grab9', 'left'), furnSpot(GWDECOR, 'grab11', 'right'), furnSpot(GWDECOR, 'grab13', 'left'),
+  furnSpot(GWDECOR, 'pk6', 'left'), furnSpot(GWDECOR, 'pk8', 'right'),
+  furnSpot(GWDECOR, 'heu2', 'top'), furnSpot(GWDECOR, 'kessel2', 'left'), furnSpot(GWDECOR, 'busch3', 'top'), furnSpot(GWDECOR, 'busch4', 'top'),
 ];
 // Kürbistor (Finale): Bogen aus Ästen mit Kürbissen, geht auf, wenn allen geholfen wurde
 function drawPumpkinGate(c, x, y, s, open, locked, t) {
@@ -168,6 +195,9 @@ STAGE_DEFS.geisterwald = {
     { id: 'h_geist', pos: [[1560, 980], [1360, 1200], [1820, 1240]] },
     { id: 'h_bauer', pos: [[260, 1290], [620, 1010], [120, 1020]] },
     { id: 'h_mond', pos: [[1420, 560], [1160, 420], [1780, 560]] },
+    { id: 'h_mumie', pos: [[2400, 520], [2160, 1000], [2700, 700]] },
+    { id: 'h_zauber', pos: [[2680, 1060], [2300, 1240], [2050, 520]] },
+    { id: 'h_katze', pos: [[1880, 1100], [2500, 820], [1300, 1300]] },
   ],
   decor: GWDECOR, spots: GWSPOTS, grid: buildGridGeisterwald, ground: drawGroundGeisterwald, decorDraw: GWDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
@@ -176,17 +206,18 @@ STAGE_DEFS.geisterwald = {
   words: { one: 'Person', the: 'die Person', a: 'eine Person', many: 'Leute', dat: 'Leuten', back: 'zur Person', each: 'Jede Person',
     hide: 'hinter Grabsteinen, Riesenkürbissen und kahlen Bäumen, am Hexenhaus und im Heu', junk: 'ein Blatt oder ein Stöckchen', gate: 'am Kürbistor', gateTap: 'Lauf zum Kürbistor und tippe es an!',
     opened: 'Das Kürbistor ist offen!',
-    lock: 'Das Kürbistor geht erst auf, wenn du allen fünf im Geisterwald geholfen hast.',
+    lock: 'Das Kürbistor geht erst auf, wenn du allen im Geisterwald geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!',
     gateAsk: 'Das Kürbistor ist verhext! Bring mir diese Sachen, dann löse ich den Zauber.',
     search: 'Schau hinter Grabsteine und Kürbisse – dann tippe auf die Lupe!' },
-  pools: {
-    easy: ['hw_schnitzen', 'hw_trank', 'hw_suesses', 'hw_netz', 'hw_klingeln', 'hw_zaehlen'],
-    puzzle: ['hw_schnitzen', 'hw_trank', 'hw_klingeln', 'hw_zaehlen', 'hw_suesses', 'hw_netz'],
-    std: ['hw_geister', 'hw_flug', 'hw_besen'],
-    sp: ['hw_geister', 'hw_besen', 'hw_flug'],
-    hard: ['hw_flug', 'hw_geister', 'hw_besen'],
+  pools: {   // eigene Halloween-Spiele + viele allgemeine Spiele im Halloween-Look (Motive/Hintergründe aus hw_theme.js)
+    easy: ['hw_schnitzen', 'hw_trank', 'hw_suesses', 'hw_netz', 'hw_klingeln', 'hw_zaehlen', 'memory', 'connect', 'pop', 'shadow', 'sort', 'findall', 'count_easy', 'cups', 'maze_easy', 'dots_easy', 'size_row', 'stack'],
+    puzzle: ['hw_schnitzen', 'hw_trank', 'hw_klingeln', 'hw_zaehlen', 'hw_suesses', 'hw_netz', 'pairs', 'diff', 'maze', 'pipes', 'lights', 'sequence', 'oddone', 'pattern', 'nextrow', 'count', 'dials', 'mirror'],
+    std: ['hw_geister', 'hw_flug', 'hw_besen', 'run', 'jump', 'collect', 'balance_walk'],
+    sp: ['hw_geister', 'hw_besen', 'hw_flug', 'run', 'collect'],
+    hard: ['hw_flug', 'hw_geister', 'hw_besen', 'platform'],
   },
+
   extras(play) {   // Nebel über dem Teich, Glühwürmchen
     const flies = []; for (let i = 0; i < 26; i++) flies.push({ x: Math.random() * GWW, y: Math.random() * GWH, p: Math.random() * 6 });
     return {

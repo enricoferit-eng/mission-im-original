@@ -4039,9 +4039,9 @@
  },
  {
   "who": "gate",
-  "text": "Das Kürbistor geht erst auf, wenn du allen fünf im Geisterwald geholfen hast.",
-  "key": "b1032190",
-  "clean": "Das Kürbistor geht erst auf, wenn du allen fünf im Geisterwald geholfen hast."
+  "text": "Das Kürbistor geht erst auf, wenn du allen im Geisterwald geholfen hast.",
+  "key": "9feea711",
+  "clean": "Das Kürbistor geht erst auf, wenn du allen im Geisterwald geholfen hast."
  },
  {
   "who": "erzaehler",
@@ -4110,6 +4110,24 @@
   "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
  },
  {
+  "who": "h_hexe",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "01d2ad67",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_hexe",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "5e855efa",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
+ },
+ {
+  "who": "h_hexe",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "d191e2f5",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
+ },
+ {
   "who": "h_vamp",
   "text": "Ich will heute Nacht Süßes sammeln, aber mein Kostüm ist nicht komplett! Kannst du diese Sachen für mich finden?",
   "key": "999a6eac",
@@ -4156,6 +4174,24 @@
   "text": "Hilf zuerst Frau Mondschein, danach bin ich dran!",
   "key": "b2ae74c0",
   "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
+ },
+ {
+  "who": "h_vamp",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "ad1c7cfb",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_vamp",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "9bab59de",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
+ },
+ {
+  "who": "h_vamp",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "f0f33271",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
  },
  {
   "who": "h_geist",
@@ -4206,6 +4242,24 @@
   "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
  },
  {
+  "who": "h_geist",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "4d0c2c7b",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_geist",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "b3a18d5e",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
+ },
+ {
+  "who": "h_geist",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "22e52df1",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
+ },
+ {
   "who": "h_bauer",
   "text": "Auf meinem Kürbisfeld ist alles durcheinander. Hilfst du mir? Kannst du diese Sachen für mich finden?",
   "key": "cf1da853",
@@ -4254,6 +4308,24 @@
   "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
  },
  {
+  "who": "h_bauer",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "ac7836ae",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_bauer",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "e5c7e027",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
+ },
+ {
+  "who": "h_bauer",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "118a2e94",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
+ },
+ {
   "who": "h_mond",
   "text": "Meine Kristallkugel sagt: Du findest meine Sachen bestimmt! Kannst du diese Sachen für mich finden?",
   "key": "6fcb0538",
@@ -4300,6 +4372,222 @@
   "text": "Hilf zuerst Bauer Kurt, danach bin ich dran!",
   "key": "528c7e4f",
   "clean": "Hilf zuerst Bauer Kurt, danach bin ich dran!"
+ },
+ {
+  "who": "h_mond",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "e4434f2d",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_mond",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "3cf5a1b4",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
+ },
+ {
+  "who": "h_mond",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "a374ed47",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg! Kannst du diese Sachen für mich finden?",
+  "key": "0a9434a4",
+  "clean": "Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "6171fede",
+  "clean": "Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "f8b86495",
+  "clean": "Mmmh! Meine Binden haben sich gelöst, und meine Sachen sind weg! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!",
+  "key": "1591b0e4",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Hexe Hilda, danach bin ich dran!",
+  "key": "5b3ff2d9",
+  "clean": "Hilf zuerst Hexe Hilda, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Vampir Vinz, danach bin ich dran!",
+  "key": "2077a3b9",
+  "clean": "Hilf zuerst Vampir Vinz, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Gespenst Greta, danach bin ich dran!",
+  "key": "49c7f96b",
+  "clean": "Hilf zuerst Gespenst Greta, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Bauer Kurt, danach bin ich dran!",
+  "key": "7c3f1928",
+  "clean": "Hilf zuerst Bauer Kurt, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Frau Mondschein, danach bin ich dran!",
+  "key": "91ec242f",
+  "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "5deb4f07",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
+ },
+ {
+  "who": "h_mumie",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "a6904cf4",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Simsalabim! Mein Zauberkasten ist leer – hilfst du mir suchen? Kannst du diese Sachen für mich finden?",
+  "key": "d5e6933b",
+  "clean": "Simsalabim! Mein Zauberkasten ist leer, hilfst du mir suchen? Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Simsalabim! Mein Zauberkasten ist leer – hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?",
+  "key": "a1da9e95",
+  "clean": "Simsalabim! Mein Zauberkasten ist leer, hilfst du mir suchen? Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Simsalabim! Mein Zauberkasten ist leer – hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!",
+  "key": "c15516e0",
+  "clean": "Simsalabim! Mein Zauberkasten ist leer, hilfst du mir suchen? Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!",
+  "key": "bd3eeb46",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Hexe Hilda, danach bin ich dran!",
+  "key": "29aaa97b",
+  "clean": "Hilf zuerst Hexe Hilda, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Vampir Vinz, danach bin ich dran!",
+  "key": "410ed1db",
+  "clean": "Hilf zuerst Vampir Vinz, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Gespenst Greta, danach bin ich dran!",
+  "key": "50083f65",
+  "clean": "Hilf zuerst Gespenst Greta, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Bauer Kurt, danach bin ich dran!",
+  "key": "149e2bfa",
+  "clean": "Hilf zuerst Bauer Kurt, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Frau Mondschein, danach bin ich dran!",
+  "key": "890f32d9",
+  "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "2e0e6174",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_zauber",
+  "text": "Hilf zuerst Katzen-Kim, danach bin ich dran!",
+  "key": "a8f2f4e6",
+  "clean": "Hilf zuerst Katzen-Kim, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren! Kannst du diese Sachen für mich finden?",
+  "key": "67707507",
+  "clean": "Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren! Kannst du diese Sachen für mich finden?"
+ },
+ {
+  "who": "h_katze",
+  "text": "Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren! Hilfst du mir, diese Sachen zu suchen?",
+  "key": "2d0aff31",
+  "clean": "Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren! Hilfst du mir, diese Sachen zu suchen?"
+ },
+ {
+  "who": "h_katze",
+  "text": "Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren! Findest du diese Sachen für mich? Das wäre super!",
+  "key": "5b351a9c",
+  "clean": "Miau! Ich habe mich im Spukhaus verlaufen und meine Sachen verloren! Findest du diese Sachen für mich? Das wäre super!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!",
+  "key": "76dae86a",
+  "clean": "Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter Grabsteine, Riesenkürbisse und kahle Bäume!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Hexe Hilda, danach bin ich dran!",
+  "key": "db1f889f",
+  "clean": "Hilf zuerst Hexe Hilda, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Vampir Vinz, danach bin ich dran!",
+  "key": "fb7c07f7",
+  "clean": "Hilf zuerst Vampir Vinz, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Gespenst Greta, danach bin ich dran!",
+  "key": "aafa77c9",
+  "clean": "Hilf zuerst Gespenst Greta, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Bauer Kurt, danach bin ich dran!",
+  "key": "39d86f5e",
+  "clean": "Hilf zuerst Bauer Kurt, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Frau Mondschein, danach bin ich dran!",
+  "key": "96340965",
+  "clean": "Hilf zuerst Frau Mondschein, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Mumie Mo, danach bin ich dran!",
+  "key": "9e6307d8",
+  "clean": "Hilf zuerst Mumie Mo, danach bin ich dran!"
+ },
+ {
+  "who": "h_katze",
+  "text": "Hilf zuerst Zauberer Zappo, danach bin ich dran!",
+  "key": "0c1888ad",
+  "clean": "Hilf zuerst Zauberer Zappo, danach bin ich dran!"
  },
  {
   "who": "gate",

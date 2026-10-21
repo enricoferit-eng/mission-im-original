@@ -843,7 +843,7 @@ class Play {
     const z = this.z(), hw = W / 2 / this.zoom, hh = H / 2 / this.zoom;
     const wb = this.wb || { x0: 0, y0: 0, x1: WORLD_W, y1: WORLD_H };
     const tx = wb.x1 - wb.x0 < hw * 2 ? (wb.x0 + wb.x1) / 2 : clamp(p.x, wb.x0 + hw, wb.x1 - hw);
-    const ty = wb.y1 - wb.y0 < hh * 2 ? (wb.y0 + wb.y1) / 2 : clamp(p.y - z - 30, wb.y0 + hh, wb.y1 - hh);
+    const ty = wb.y1 - wb.y0 < hh * 2 ? (wb.y0 + wb.y1) / 2 : clamp(p.y - z - 30, wb.y0 + hh - 80 / this.zoom, wb.y1 - hh);   // oben 80 px Luft: die Anzeigeleiste verdeckt sonst Tore am oberen Rand
     const k = Math.min(1, dt * 8.5); this.camX = lerp(this.camX, tx, k); this.camY = lerp(this.camY, ty, k);
   }
   updatePlayer(dt) {
@@ -1120,7 +1120,8 @@ class Play {
     if (!e) {
       const seed = this.seedFor('e_' + id), r = mulberry32(seed);
       // 6 Auftraggeber x 4 Aufgaben = 24 verschiedene Aufgaben pro Durchgang, keine doppelt
-      if (!st.easyPlan || st.easyPlan.length < 24) { { const E = POOL('easy'), rr = mulberry32(this.seedFor('plan')); let pl = shuffle(E, rr); while (pl.length < 24) pl = pl.concat(shuffle(E, rr)); st.easyPlan = pl.slice(0, 24); } if (this.mp && this.mp.me === 'guest') st.easyPlan = st.easyPlan.slice(4).concat(st.easyPlan.slice(0, 4)); }
+      const NE = ALL_IDS.length * 4;   // 4 Aufgaben je Person (auch wenn ein Bereich mehr als 5 Leute hat)
+      if (!st.easyPlan || st.easyPlan.length < NE) { { const E = POOL('easy'), rr = mulberry32(this.seedFor('plan')); let pl = shuffle(E, rr); while (pl.length < NE) pl = pl.concat(shuffle(E, rr)); st.easyPlan = pl.slice(0, NE); } if (this.mp && this.mp.me === 'guest') st.easyPlan = st.easyPlan.slice(4).concat(st.easyPlan.slice(0, 4)); }
       const slot = Math.max(0, ALL_IDS.indexOf(id)), steps = st.easyPlan.slice(slot * 4, slot * 4 + 4);
       e = st.easy[id] = { steps, idx: 0, seed, lim: this.questTime(id, [], steps, 'easy') }; Save.write(); this.bonusStart(id);
     }
@@ -1709,9 +1710,9 @@ function emoBubble(c, x, y, e) { const k = ease.back(clamp(e.t * 4, 0, 1)), a = 
 function bonusSay(lim) { const m = Math.floor(lim / 60), sec = lim % 60; return 'Bonus-Jagd! Schaffe den Auftrag in ' + (m ? (m === 1 ? 'einer Minute' : m + ' Minuten') + (sec ? ' und ' + sec + ' Sekunden' : '') : sec + ' Sekunden') + ', dann bekommst du einen Extra-Joker.'; }
 const BONUS_TIME = { easy: 50, medium: 90, hard: 110 };   // nur noch für alte Spielstände ohne eigene Auftrags-Zeit (Tor: +30 s)
 // Bonus-Joker-Zeit pro Auftrag (siehe questTime): so ist jeder Auftrag gleich knapp, egal wie weit die Wege oder wie lang die Aufgaben sind
-const BONUS_PUFFER = 1.15;   // so viel mehr Zeit als geschätzt (wer sich beeilt, schafft es)
-const BONUS_WALK = 180;      // Laufen ohne Turbo-Schuhe (Pixel pro Sekunde)
-const BONUS_SEARCH = { easy: 0, medium: 6, hard: 9 };   // Sekunden je Sache fürs Entdecken und Suchen
+const BONUS_PUFFER = 0.9;   // knapp: etwas weniger als geschätzt – nur wer sich beeilt, schafft es (User: Bonus-Zeit war zu lang)
+const BONUS_WALK = 230;      // Laufen ohne Turbo-Schuhe (Pixel pro Sekunde)
+const BONUS_SEARCH = { easy: 0, medium: 4, hard: 6 };   // Sekunden je Sache fürs Entdecken und Suchen
 // Wie lange eine Aufgabe ungefähr dauert (Sekunden bei Mittel); fehlt eine, gilt der Standard ihrer Art
 const GAME_SEC = {
   run: 15, balance_walk: 16, jump: 22, collect: 19, slide: 20, swing: 14, platform: 36, heimfahrt: 30,

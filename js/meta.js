@@ -160,7 +160,7 @@ function dailyOffers() {
   const r = mulberry32(h), ex = pick(EXCLUSIVE_SKINS, r), offs = shuffle(SHOP_SKINS.filter(o => o[2] !== 'legend'), r).slice(0, 2);
   const m = META(), ups = UPGRADES.filter(u => !m || (m.up[u.k] || 0) < UP_MAX), u = ups.length ? ups[Math.floor(r() * ups.length)] : null;   // Upgrade des Tages: 25 % günstiger
   const upOff = u ? [{ up: u.k, off: 25, price: Math.round(u.price[m ? m.up[u.k] || 0 : 0] * 0.75 / 5) * 5 }] : [];
-  return upOff.concat([{ id: ex[0], price: ex[3], ex: true, off: 0 }]).concat(offs.map(o => { const off = pick([20, 30, 40, 50], r); return { id: o[0], off, price: Math.round(o[3] * (100 - off) / 100 / 5) * 5 }; }));
+  return upOff.concat([{ id: ex[0], price: Math.round(ex[3] * 0.7 / 5) * 5, ex: true, off: 30 }])   /* Highlight des Tages: immer 30 % günstiger */.concat(offs.map(o => { const off = pick([20, 30, 40, 50], r); return { id: o[0], off, price: Math.round(o[3] * (100 - off) / 100 / 5) * 5 }; }));
 }
 class Shop {
   constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'joker'; this.msg = ''; this.msgT = 0; }
@@ -172,6 +172,7 @@ class Shop {
   up(x, y) {
     const d = this.drag; this.drag = null; if (!d || d.moved || this.tab !== 'skins') return;
     const h = (this.skinHit || []).find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h); if (!h) return;
+    if (x < h.x + 40 && y < h.y + 40) { Sfx.play('tap'); overlay = new SkinInfo(h.id); return; }   // „i“ oben links
     if (h.own) { wearSkin(h.id); this.say(h.name + ' hast du jetzt an!'); return; }
     this.buy(h.price, mm => { mm.skins.push(h.id); wearSkin(h.id); this.say(h.name + ' gekauft und gleich angezogen!'); });
   }
@@ -221,8 +222,9 @@ class Shop {
           return;
         }
         const x = cx(i), y = cy(i), sk = SKINS[o.id], own = m.skins.includes(o.id), bob = Math.sin(this.t * 2 + i) * 2;
-        skinCard(c, x, y + bob, cw, ch, o.id, { plain: true, kind, own, worn: own && DP(CUR_DIFF || 'medium').equip === o.id, price: o.price, oldPrice: o.off ? sk.price : 0, sticker: o.off ? '-' + o.off + '%' : '', ribbon: o.ex ? (cw < 160 ? 'Highlight' : 'Highlight des Tages') : '', t: this.t + i });
+        skinCard(c, x, y + bob, cw, ch, o.id, { plain: true, info: true, kind, own, worn: own && DP(CUR_DIFF || 'medium').equip === o.id, price: o.price, oldPrice: o.off ? sk.price : 0, sticker: o.off ? '-' + o.off + '%' : '', ribbon: o.ex ? (cw < 160 ? 'Highlight' : 'Highlight des Tages') : '', t: this.t + i });
         UI.btn(x, y + bob, cw, ch, () => { if (own) { wearSkin(o.id); this.say(sk.name + ' hast du jetzt an!'); return; } this.buy(o.price, mm => { mm.skins.push(o.id); wearSkin(o.id); this.say(sk.name + ' gekauft und gleich angezogen!'); }); });
+        UI.btn(x, y + bob, 40, 40, () => { Sfx.play('tap'); overlay = new SkinInfo(o.id); });
       });
       { const today = new Date().toISOString().slice(0, 10); if (m.day !== today) { m.day = today; m.dayJ = 0; m.dayS = 0; }
         [['Aufgaben-Joker', 'joker', JOKER_PRICE, JOKERS_PER_DAY - (m.dayJ || 0), m.bank, mm => { mm.bank++; mm.dayJ = (mm.dayJ || 0) + 1; }, 'Schafft eine Aufgabe sofort.'],
@@ -319,7 +321,7 @@ class Shop {
         const y = top + P.y - this.sc; if (y > bottom || y + ch < top - 40) return;
         if (P.head) { const rk = { Normal: 'common', Selten: 'rare', 'Legendär': 'legend' }[P.head], R = RARE_LOOK[rk], lab = P.head + ' · ' + { common: 40, rare: 100, legend: 250 }[rk] + ' Taler'; c.font = `900 15px ${FONT}`; const lw = c.measureText(lab).width + 46; rrPath(c, x0, y, lw, 26, 13); fs(c, R.a, 2.5, R.line); gemIcon(c, x0 + 16, y + 13, 7, rk); txt(c, lab, x0 + 30, y + 14, 15, '#3d2c1f', 'left', null); return; }
         const [id, name, rarity, price] = P.o, x = P.x, own = m.skins.includes(id);
-        skinCard(c, x, y, cw, ch, id, { plain: true, kind, own, worn: own && DP(CUR_DIFF || 'medium').equip === id, price, t: this.t });
+        skinCard(c, x, y, cw, ch, id, { plain: true, info: true, kind, own, worn: own && DP(CUR_DIFF || 'medium').equip === id, price, t: this.t });
         this.skinHit.push({ x, y, w: cw, h: ch, id, name, price, own });
       });
       c.restore();
@@ -359,6 +361,7 @@ function skinCard(c, x, y, cw, ch, id, o) {
   ell(c, x + cw / 2, y + ch * 0.62, cw * 0.3, cw * 0.09); c.fillStyle = 'rgba(0,0,0,.08)'; c.fill();
   drawAnimal(c, o.kind, x + cw / 2, y + ch * 0.64, Math.min(1.65, (ch - 50) / 78), { look: sk, cap: true, t, noShadow: true });
   if (!o.plain) gemIcon(c, x + 16, y + 16, 7, sk.rarity);
+  if (o.info) { ell(c, x + 20, y + 20, 14, 14); fs(c, '#fff', 2.5, '#118ab2'); icon(c, 'info', x + 20, y + 20, 22); }   // „i“: zeigt die Fähigkeit des Kostüms
   { const sd = !o.plain && SKIN_SIDE[id]; if (sd) { ell(c, x + 36, y + 16, 9, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, x + 36, y + 16, 12); } }   // eigene Neben-Fähigkeit
   txt(c, sk.name, x + cw / 2, y + ch - 32, cw < 130 ? 11 : 13, '#3d2c1f', 'center', null);
   if (o.worn) { rrPath(c, x + cw / 2 - 30, y + ch - 22, 60, 18, 9); fs(c, '#06d6a0', 2); txt(c, 'trägst du', x + cw / 2, y + ch - 13, 10, '#fff', 'center', null); }
@@ -392,7 +395,10 @@ class SkinInfo {
       icon(c, ABIL_ICON[sk.ability], x + 162, y + 112, 22); txt(c, 'Fähigkeit: ' + A.name, x + 180, y + 112, 16, '#c9762f', 'left', null);
       wrapLines(c, abilityText(sk), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 138 + i * 19, 14, '#3d2c1f', 'left', null));
       wrapLines(c, 'Wirkt, wenn du den Skin anziehst – bei Mittel und Schwer.', w - 170, 12).forEach((l, i) => txt(c, l, x + 150, y + 214 + i * 16, 12, '#6b5a48', 'left', null));
-    } else wrapLines(c, (SKIN_SIDE[this.sid] ? 'Eigene Fähigkeit: ' + SIDE[SKIN_SIDE[this.sid]].name + ' – ' + SIDE[SKIN_SIDE[this.sid]].f(1) + ' Wirkt, solange du den Skin trägst, und lässt sich in der Garderobe bis Stufe 3 aufrüsten. Die Upgrades im Laden gelten dagegen immer.' : 'Dieser Skin hat keine eigene Fähigkeit.'), w - 170, 14).forEach((l, i) => txt(c, l, x + 150, y + 112 + i * 19, 14, '#3d2c1f', 'left', null));
+    } else { const sd = SKIN_SIDE[this.sid], A = sd && SIDE[sd];   // kurz: was kann das Kostüm?
+      if (A) { ell(c, x + 172, y + 122, 20, 20); fs(c, '#fff3bf', 2.5, '#c9a227'); icon(c, A.icon, x + 172, y + 122, 26); txt(c, A.name, x + 200, y + 122, 17, '#c9762f', 'left', null, w - 220);
+        wrapLines(c, A.f(1), w - 170, 14).slice(0, 4).forEach((l, i) => txt(c, l, x + 150, y + 160 + i * 19, 14, '#3d2c1f', 'left', null));
+        txt(c, 'Wirkt, wenn du es anziehst.', x + 150, y + h - 30, 12, '#6b5a48', 'left', null, w - 170); } }
     c.restore();
   }
   down() {} move() {} up() {}

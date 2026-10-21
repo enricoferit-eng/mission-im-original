@@ -52,6 +52,9 @@ CAST = {
   'h_geist':   ('kerstin-low', None, 1.05, 0.4, 0.8, 6, True),              # Gespenst Greta: Mädchen
   'h_bauer':   ('thorsten-high', None, 1.05, 0.6, 0.8, -3, True),           # Bauer Kurt: tief, gemütlich
   'h_mond':    ('kerstin-low', None, 1.1, 0.333, 0.8, -1, False),           # Frau Mondschein: ruhig, geheimnisvoll
+  'h_mumie':   ('thorsten_emotional-medium', 0, 0.85, 0.4, 0.8, 4, True),  # Mumie Mo: Kind, dumpf
+  'h_zauber':  ('thorsten-high', None, 1.0, 0.6, 0.8, -2, True),           # Zauberer Zappo: alt, feierlich
+  'h_katze':   ('kerstin-low', None, 0.95, 0.4, 0.8, 6.5, True),            # Katzen-Kim: Mädchen
 }
 SAY = [('Joker', 'Dschoker'), ('Original-Blätter', 'Original Blätter'), ('Im Original', 'im Original')]
 texts = json.load(open(os.path.join(ROOT, 'tools', 'texts.json')))

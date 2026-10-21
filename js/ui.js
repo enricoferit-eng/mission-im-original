@@ -1341,13 +1341,13 @@ class Wardrobe {
     txt(c, '', x + 60, y + 33, 18, '#8d5a3b', 'left', null);
     // alle eigenen Skins auf einer Seite (keine Bereichs-Reiter mehr – Skins gibt es im Laden)
     this.stage = 'laden';
-    if (w > 560) txt(c, 'Antippen zum Anziehen', x + w / 2 + 60, y + 33, 14, '#6b5a48', 'center', null);
+    if (w > 640) txt(c, 'Antippen zum Anziehen', x + 70, y + 33, 14, '#6b5a48', 'left', null);
     const earned = [], shop = this.stage === 'laden', sp = { skins: META().skins }, allIds = [...new Set(SHOP_SKINS.map(x => x[0]).concat(OLD_SHOP_SKINS.map(x => x[0]), OLD_EXCLUSIVE_SKINS.map(x => x[0]), Object.keys(SKINS).filter(id => /^hwskin_/.test(id))).filter(id => META().skins.includes(id)))];   // nur gekaufte/gewonnene Laden-Skins
     const cols = land ? (shop ? 7 : 6) : 3, cw = (w - 30 - (cols - 1) * 10) / cols, ch = shop ? Math.min(170, cw * 1.45) : land ? Math.min(190, h - 196) : Math.min(170, (h - 200 - 10) / 2);
     const best = new Map(); allIds.forEach(id => { const k2 = SKINS[id] ? SKINS[id].name : id, cur = best.get(k2), sl = q => (SKINS[q] && SKINS[q].ability ? skinLevel(SKINS[q]) : 0); if (!cur || sl(id) > sl(cur) || (META().skins.includes(id) && !META().skins.includes(cur) && sl(id) === sl(cur))) best.set(k2, id); });
     const RK = { legend: 0, rare: 1, common: 2 }, ids = [...best.values()].filter(id => !this.abilOnly || (SKINS[id] && SKINS[id].ability)).sort((a, b) => (RK[(SKINS[a] || {}).rarity] ?? 3) - (RK[(SKINS[b] || {}).rarity] ?? 3) || String((SKINS[a] || {}).name).localeCompare(String((SKINS[b] || {}).name)));
     // Laden-Skins: eine lange Liste zum Runterscrollen (Finger ziehen oder Mausrad)
-    const top = y + 60, bot = y + h - 82, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
+    const top = y + 60, bot = y + h - 14, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
     this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
     if (shop) { c.save(); c.beginPath(); c.rect(x + 4, top - 2, w - 8, bot - top + 4); c.clip(); }
     if (shop && !allIds.length) wrapLines(c, 'Noch keine Kostüme. Kauf welche im Laden oder gewinne sie am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
@@ -1359,38 +1359,22 @@ class Wardrobe {
       rrPath(c, cx, cy, cw, ch, 18); fs(c, eq ? '#d8f5e3' : own ? '#fff' : '#dee2e6', SKINS[sid] && SKINS[sid].rarity === 'legend' ? 4.5 : 3.5, eq ? '#2b9348' : rcol);
       if (own && shop) {   // Figur, Name und Fähigkeit
         const sk = SKINS[sid] || {};
-        drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.6, Math.min(1.5, ch / 120), { look: sk, cap: true, t: this.t + i });
-        txt(c, sk.name || '', cx + cw / 2, cy + ch - 34, cw < 110 ? 10 : 12, '#3d2c1f', 'center', null);
-        { const sd = SKIN_SIDE[sid]; if (sd) { const lv = sideLevel(sid); rrPath(c, cx + 6, cy + ch - 24, cw - 12, 19, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, cx + 17, cy + ch - 14.5, 13); txt(c, '★'.repeat(lv) + '☆'.repeat(SIDE_MAX - lv), cx + cw / 2 + 8, cy + ch - 14, 11, '#c9762f', 'center', null); } }   // eigene Neben-Fähigkeit + Stufe
+        drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.72, Math.min(1.6, ch / 110), { look: sk, cap: true, t: this.t + i });
+        txt(c, sk.name || '', cx + cw / 2, cy + ch - 16, cw < 110 ? 11 : 13, '#3d2c1f', 'center', null, cw - 10);
+        if (false) { const sd = SKIN_SIDE[sid]; if (sd) { const lv = sideLevel(sid); rrPath(c, cx + 6, cy + ch - 24, cw - 12, 19, 9); fs(c, '#fff3bf', 1.5, '#c9a227'); icon(c, SIDE[sd].icon, cx + 17, cy + ch - 14.5, 13); txt(c, '★'.repeat(lv) + '☆'.repeat(SIDE_MAX - lv), cx + cw / 2 + 8, cy + ch - 14, 11, '#c9762f', 'center', null); } }   // eigene Neben-Fähigkeit + Stufe
       } else if (own) drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: SKINS[sid], cap: true, t: this.t + i });
       else { c.save(); c.globalAlpha = 0.25; drawAnimal(c, this.kind, cx + cw / 2, cy + ch * 0.82, Math.min(1.9, ch / 85), { look: { cap: '#495057', scarf: '#495057' }, cap: true, noShadow: true }); c.restore(); icon(c, 'question', cx + cw / 2, cy + ch * 0.45, 40, '#868e96'); }
-      if (rar) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
+      if (rar && !shop) { rrPath(c, cx + 34, cy + 7, cw - 42, 18, 9); fs(c, rar.col, 2); txt(c, rar.name, cx + 34 + (cw - 42) / 2, cy + 16, cw < 110 ? 9 : 11, '#3d2c1f', 'center', null); }
       if (eq) icon(c, 'check', cx + cw - 18, cy + 44, 24, '#06d6a0');
       if (own && shop) this.hits.push({ x: cx, y: cy, w: cw, h: ch, sid });
       else if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
       if (own && (!shop || cy + 6 > top)) skinInfoBtn(c, cx + 18, cy + 18, sid);
     });
     if (shop) { c.restore(); if (maxS > 0) { const bh = (bot - top) * (bot - top) / (bot - top + maxS), byy = top + (bot - top - bh) * (this.sc / maxS); rrPath(c, x + w - 10, byy, 5, bh, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); } }
-    // Standard-Look (links) und die Fähigkeit des angezogenen Skins mit Aufrüsten (rechts)
-    const by = y + h - 50, ox = x + 18;
-    rrPath(c, ox, by - 26, 130, 52, 18); fs(c, d.equip === null ? '#d8f5e3' : '#fff', 3);
-    txt(c, 'Ohne Skin', ox + 88, by + 18, 11, '#6b5a48', 'center', null);
-    drawAnimal(c, this.kind, ox + 34, by + 20, 0.75, { look: DEFAULT_LOOK, cap: hasCap(this.kind), noShadow: true });
-    if (d.equip === null) icon(c, 'check', ox + 108, by - 4, 22, '#06d6a0');
-    UI.btn(ox, by - 26, 130, 52, () => { d.equip = null; Save.write(); Sfx.play('tap'); });
-    { const id = d.equip, sd = id && SKIN_SIDE[id], fx = ox + 142, fw = x + w - 18 - fx, M = META();
-      rrPath(c, fx, by - 30, fw, 60, 18); fs(c, '#fffbe6', 3, '#c9a227');
-      if (!sd) wrapLines(c, id ? 'Dieses ältere Kostüm hat keine eigene Fähigkeit.' : 'Zieh ein Kostüm an: Jedes hat eine eigene kleine Kraft. Aufrüsten kannst du sie im Laden unter „Kräfte“.', fw - 30, 13).slice(0, 2).forEach((l, i) => txt(c, l, fx + 16, by - 8 + i * 18, 13, '#6b5a48', 'left', null));
-      else {
-        const A = SIDE[sd], lv = sideLevel(id), max = lv >= SIDE_MAX, price = max ? 0 : SIDE_PRICE[SKINS[id].rarity][lv - 1], bw = 134, tw = fw - bw - 70;
-        ell(c, fx + 30, by, 21, 21); fs(c, '#fff', 2.5, '#c9a227'); icon(c, A.icon, fx + 30, by, 26);
-        txt(c, A.name + ' · ' + '★'.repeat(lv) + '☆'.repeat(SIDE_MAX - lv), fx + 60, by - 14, 14, '#3d2c1f', 'left', null);
-        wrapLines(c, A.f(lv) + (max ? '' : '  → Stufe ' + (lv + 1) + ': ' + A.f(lv + 1)), tw, 11).slice(0, 2).forEach((l, i) => txt(c, l, fx + 60, by + 4 + i * 14, 11, '#6b5a48', 'left', null));
-        const bx = fx + fw - bw - 12; rrPath(c, bx, by - 18, bw, 36, 16); fs(c, max ? '#d8f5e3' : '#ffe066', 3);   // Aufrüsten passiert jetzt im Laden unter „Kräfte“ (alles an einem Ort)
-        if (max) txt(c, 'Ganz oben!', bx + bw / 2, by + 1, 14, '#2b9348', 'center', null);
-        else txt(c, 'Aufrüsten ›', bx + bw / 2, by + 1, 14, '#3d2c1f', 'center', null);
-        UI.btn(bx, by - 18, bw, 36, () => { if (max) return; Sfx.play('tap'); overlay = null; const sh = new Shop(); sh.tab = 'up'; setScene(sh); });
-      } }
+    // „Ohne Kostüm“: kleiner Knopf oben (Fähigkeiten zeigt das „i“ an jeder Karte, Aufrüsten gibt es im Laden unter „Kräfte“)
+    { const bw = 150, bx = x + w - 70 - bw, byy = y + 14; rrPath(c, bx, byy, bw, 36, 18); fs(c, d.equip === null ? '#d8f5e3' : '#fff', 2.5);
+      drawAnimal(c, this.kind, bx + 22, byy + 33, 0.45, { look: DEFAULT_LOOK, cap: hasCap(this.kind), noShadow: true }); txt(c, 'Ohne Kostüm', bx + 44, byy + 18, 13, '#3d2c1f', 'left', null, bw - 52);
+      UI.btn(bx, byy, bw, 36, () => { d.equip = null; Save.write(); Sfx.play('tap'); }); }
     if (!shop && !OPEN_STAGES.includes(this.stage)) { icon(c, 'hourglass', W / 2, y + 128 + ch, 44); }
   }
   enter() {}
@@ -1514,10 +1498,14 @@ let W = 0, H = 0, DPR = 1, scene = null, overlay = null, last = performance.now(
 const Perf = { cap: 2, acc: 0, n: 0, slow: 0 };
 const TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
 let frozen = null, frozenFor = null;
+let OX = 0, OY = 0;   // Versatz des Spielfelds (Sicherheitsabstand) – Fingerpositionen werden darum korrigiert
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, Perf.cap);
   frozenFor = null;
-  W = window.innerWidth; H = window.innerHeight;
+  // sichtbare Fläche (ohne Browser-Leisten) minus Sicherheitsabstand (Home-Balken, Kamera-Aussparung)
+  const cs = getComputedStyle(document.body), pd = k => parseFloat(cs['padding' + k]) || 0, vv = window.visualViewport;
+  const vw = vv ? Math.min(vv.width, window.innerWidth) : window.innerWidth, vh = vv ? Math.min(vv.height, window.innerHeight) : window.innerHeight;
+  OX = pd('Left'); OY = pd('Top'); W = Math.round(vw - OX - pd('Right')); H = Math.round(vh - OY - pd('Bottom'));
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
 }
@@ -1558,7 +1546,7 @@ function frame(now) {
   Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
   if (!(scene instanceof Play) && !overlay) { Perf.acc = 0; Perf.n = 0; }   /* gemessen wird nur im Spiel (Menüs laufen absichtlich langsamer) */
   if (Perf.acc > 2) { const avg = Perf.acc / Perf.n; if (avg > 0.022 && Perf.cap > 1.01 && document.visibilityState === 'visible') { Perf.cap = Math.max(1, Perf.cap - 0.25); resize(); } Perf.acc = 0; Perf.n = 0; }
-  if (TOUCH && H > W && !(scene && scene.portraitOk)) { rotT += dt; try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
+  if (false && TOUCH && H > W && !(scene && scene.portraitOk)) { rotT += dt;   /* Hochformat geht jetzt überall (kein „bitte drehen“ mehr) */ try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
   try {
     // Während Minispielen/Dialogen: Hintergrund einfrieren statt ständig neu zu zeichnen
     const freeze = overlay && overlay.freezeBg;
@@ -1586,30 +1574,29 @@ function frame(now) {
 }
 const swallowed = new Set(), TAPS = [];
 cv.addEventListener('pointerdown', e => {
-  e.preventDefault(); lastInput = performance.now(); TAPS.push({ x: e.clientX, y: e.clientY, t: 0 });
+  e.preventDefault(); lastInput = performance.now(); TAPS.push({ x: (e.clientX - OX), y: (e.clientY - OY), t: 0 });
   try { if (Sfx.on()) Sfx.ctx(); } catch (err) { /* Audio erst nach einer Berührung erlaubt (iPhone) */ }
   tryLandscape();
-  if (TOUCH && H > W && !(scene && scene.portraitOk)) return;
   try { cv.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
-  const b = UI.hit(e.clientX, e.clientY);
+  const b = UI.hit((e.clientX - OX), (e.clientY - OY));
   if (b) { swallowed.add(e.pointerId); Sfx.play('tap'); b.fn(); return; }
-  const tgt = overlay || scene; if (tgt && tgt.down) tgt.down(e.clientX, e.clientY, e.pointerId);
+  const tgt = overlay || scene; if (tgt && tgt.down) tgt.down((e.clientX - OX), (e.clientY - OY), e.pointerId);
 });
 cv.addEventListener('pointermove', e => {
   lastInput = performance.now();
   if (swallowed.has(e.pointerId)) return;
-  const tgt = overlay || scene; if (tgt && tgt.move) tgt.move(e.clientX, e.clientY, e.pointerId);
+  const tgt = overlay || scene; if (tgt && tgt.move) tgt.move((e.clientX - OX), (e.clientY - OY), e.pointerId);
 });
 const endPtr = e => {
   if (swallowed.has(e.pointerId)) { swallowed.delete(e.pointerId); return; }
-  const tgt = overlay || scene; if (tgt && tgt.up) tgt.up(e.clientX, e.clientY, e.pointerId);
+  const tgt = overlay || scene; if (tgt && tgt.up) tgt.up((e.clientX - OX), (e.clientY - OY), e.pointerId);
 };
 cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
 // Mausrad scrollt Listen (Laden-Skins, Kleiderschrank)
 cv.addEventListener('wheel', e => { const t = overlay || scene; if (t instanceof Wardrobe && t.box) t.sc = (t.sc || 0) + e.deltaY; else if (typeof Shop !== 'undefined' && t instanceof Shop && t.tab === 'skins') t.sc = (t.sc || 0) + e.deltaY; else return; e.preventDefault(); }, { passive: false });
 cv.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('resize', resize);
+window.addEventListener('resize', resize); if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);   // Browser-Leiste ein/aus
 document.addEventListener('fullscreenchange', () => setTimeout(resize, 50)); document.addEventListener('webkitfullscreenchange', () => setTimeout(resize, 50));
 document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });
 
@@ -1633,5 +1620,10 @@ class BootError {   // falls beim Start etwas schiefgeht: Meldung statt leerem g
     rrPath(c, W / 2 - 90, H / 2 + 10, 180, 44, 22); fs(c, '#06d6a0', 3, BRAND.ink); txt(c, 'Neu laden', W / 2, H / 2 + 32, 16, '#fff', 'center', null); UI.btn(W / 2 - 90, H / 2 + 10, 180, 44, () => location.reload()); }
   update() {}
 }
-function bootAll() { try { boot(); } catch (e) { console.error(e); scene = new BootError(e); overlay = null; } requestAnimationFrame(frame); }
+// Jedes Kostüm hat eine eigene Fähigkeit (auch die aus den Bereichen und vom Glücksrad) – fest nach dem Namen verteilt, damit sie sich nie ändert
+function fillSkinSides() {
+  const pool = Object.keys(SIDE); if (!pool.length) return;
+  for (const id in SKINS) { if (SKIN_SIDE[id]) continue; let h = 7; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; SKIN_SIDE[id] = pool[h % pool.length]; }
+}
+function bootAll() { try { fillSkinSides(); boot(); } catch (e) { console.error(e); scene = new BootError(e); overlay = null; } requestAnimationFrame(frame); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootAll); else bootAll();
