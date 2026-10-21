@@ -52,7 +52,7 @@ const W0 = 844, H0 = 390, AREA = process.env.AREA || 'geisterwald', DIFF = proce
     const n = await ev(() => scene.st.active ? scene.st.active.hidden.length : 0);
     for (let i = 0; i < n; i++) {
       const got = await walkTo(i => { const q = scene.st.active; if (!q) return null; const h = q.hidden[i], pk = peekOf(h); return scene.w2s(pk.x, pk.y - 8); }, i => { const q = scene.st.active; return !q || q.got[i] || !!overlay; }, 40, i);
-      for (let w = 0; w < 10; w++) { await sleep(400); if (await ev(() => !!overlay)) break; if (await ev(i => !scene.st.active || scene.st.active.got[i], i)) break; if (w === 2) await p.mouse.click(W0 - 58, H0 - 112); }   // Lupe drücken (Schwer sucht nicht von selbst)
+      for (let w = 0; w < 10; w++) { await sleep(400); if (await ev(() => !!overlay)) break; if (await ev(i => !scene.st.active || scene.st.active.got[i], i)) break; if (w === 2) await p.mouse.click(W0 - 46, H0 - 74); }   // Lupe drücken (Schwer sucht nicht von selbst)
       const r = await solve();
       const ok = await ev(i => !scene.st.active || scene.st.active.got[i], i);
       if (!ok) bad.push(id + ': Sache ' + (i + 1) + ' nicht gefunden (' + r + ') ' + await ev(i => { const q = scene.st.active, h = q.hidden[i], P = scene.p; return 'Versteck ' + (h.spot || 'Boden') + ' bei ' + Math.round(h.x) + ',' + Math.round(h.y) + ' Figur ' + Math.round(P.x) + ',' + Math.round(P.y) + ' Abstand ' + Math.round(dist(P.x, P.y, h.x, h.y)) + ' Reichweite ' + h.reach + ' still ' + (scene.stillT || 0).toFixed(1) + ' auto ' + scene.autoSearched; }, i));

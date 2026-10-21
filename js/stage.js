@@ -1615,17 +1615,17 @@ class Play {
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
     if (this.canSearch() && hq && !this.swinging) {
-      const HELP = ABIL_VAL.glueck[ability('glueck')], f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 150, hy = H - 112;
+      const HELP = ABIL_VAL.glueck[ability('glueck')], f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 112, hy = H - 74;   // klein und dezent; leuchtet erst, wenn die Hilfe bereit ist
       const pu = ready ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
-      c.save(); c.translate(hx, hy); c.scale(pu, pu);
-      ell(c, 0, 4, 32, 32); c.fillStyle = 'rgba(0,0,0,.3)'; c.fill();
-      ell(c, 0, 0, 32, 32); fs(c, ready ? '#ffd166' : '#e9ecef', 4);
-      if (!ready) { c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 26, -Math.PI / 2, -Math.PI / 2 + f * TAU); c.closePath(); c.fillStyle = 'rgba(255,209,102,.7)'; c.fill(); }
-      c.globalAlpha = ready ? 1 : 0.55; icon(c, 'star', 0, 0, 34, ready ? '#fff' : '#adb5bd'); c.globalAlpha = 1;
+      c.save(); c.translate(hx, hy); c.scale(pu, pu); if (!ready) c.globalAlpha = 0.75;
+      ell(c, 0, 3, 23, 23); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
+      ell(c, 0, 0, 23, 23); fs(c, ready ? '#ffd166' : '#e9ecef', 3);
+      if (!ready) { c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 19, -Math.PI / 2, -Math.PI / 2 + f * TAU); c.closePath(); c.fillStyle = 'rgba(255,209,102,.7)'; c.fill(); }
+      icon(c, 'star', 0, 0, 25, ready ? '#fff' : '#adb5bd');
       c.restore();
-      txt(c, 'Hilfe', hx, hy + 44, 13, '#fff');
-      const hb = (META() && META().hint) || 0; if (!ready && hb > 0 && !this.mp) { ell(c, hx + 24, hy - 24, 12, 12); fs(c, '#118ab2', 2); txt(c, String(hb), hx + 24, hy - 24, 12, '#fff', 'center', null); }
-      if (ready || (hb > 0 && !this.mp)) UI.btn(hx - 40, hy - 40, 80, 90, () => {
+      if (ready) txt(c, 'Hilfe', hx, hy + 33, 12, '#fff', 'center', BRAND.olive);
+      const hb = (META() && META().hint) || 0; if (!ready && hb > 0 && !this.mp) { ell(c, hx + 18, hy - 18, 10, 10); fs(c, '#118ab2', 2); txt(c, String(hb), hx + 18, hy - 18, 11, '#fff', 'center', null); }
+      if (ready || (hb > 0 && !this.mp)) UI.btn(hx - 32, hy - 32, 64, 70, () => {
         if (!ready) { const mm = META(); if (!mm.hint) return; mm.hint--; }   // Such-Joker eingesetzt
         let k = -1, bd = 1e9; hq.hidden.forEach((h, i) => { if (this.off(hq, i)) return; const d = dist(h.x, h.y, this.p.x, this.p.y); if (d < bd) { bd = d; k = i; } });
         if (k >= 0) { hq.hint = k; hq.helpT = 0; Save.write(); Sfx.play('good'); FX.sparkle(hx, hy, 16, '#ffd23f'); }
@@ -1641,20 +1641,19 @@ class Play {
     }
     // Lupe zum Suchen + Spürnase (Mittel)
     if (this.canSearch() && !this.swinging) {
-      const bx = W - 58, by = H - 112, pulse = !ACC().tut.search ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
+      const bx = W - 46, by = H - 74, pulse = !ACC().tut.search ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(bx, by); c.scale(pulse, pulse);
-      roundBtn(c, 0, 0, 32, this.searching ? '#ffd166' : '#fff', 'search', null);
+      roundBtn(c, 0, 0, 26, this.searching ? '#ffd166' : '#fff', 'search', null);
       c.restore();
-      txt(c, 'Suchen', bx, by + 44, 12, '#fff', 'center', BRAND.olive);
-      UI.btn(bx - 46, by - 46, 92, 92, () => this.startSearch());
+      txt(c, 'Suchen', bx, by + 36, 12, '#fff', 'center', BRAND.olive);
+      UI.btn(bx - 38, by - 38, 76, 82, () => this.startSearch());
       if (!ACC().tut.search) drawHand(c, bx + 4, by + 30 + Math.abs(Math.sin(this.t * 4)) * 10, 1.4);
       if (this.diff === 'medium') {
         if (!ACC().tut.nose) { ACC().tut.nose = true; toast('Spürnase', 'Rot = ganz nah, blau = weit weg', 'search'); }
-        const h = this.heat(), px = bx - 30, py = by - 112;
-        panel(c, px - 4, py, 68, 64, '#3d2c1f', 16);
-        ell(c, px + 30, py + 18, 12, 9); fs(c, '#2b1d14', 2.5, '#000'); ell(c, px + 26, py + 15, 3, 2); c.fillStyle = 'rgba(255,255,255,.5)'; c.fill();
+        const h = this.heat(), px = bx - 30, py = by - 58;   // Spürnase: schmale Leiste direkt über der Lupe
+        rrPath(c, px, py, 60, 24, 12); c.fillStyle = 'rgba(30,20,10,.55)'; c.fill();
         const cols = ['#4dabf7', '#74c0fc', '#ffd166', '#f78c6b', '#ef476f'];
-        for (let i = 0; i < 5; i++) { rrPath(c, px + 6 + i * 11, py + 50 - (i + 1) * 4, 8, (i + 1) * 4, 2); c.fillStyle = i < h ? cols[h - 1] : 'rgba(255,255,255,.2)'; c.fill(); }
+        for (let i = 0; i < 5; i++) { rrPath(c, px + 8 + i * 9.5, py + 19 - (i + 1) * 3, 7, (i + 1) * 3, 2); c.fillStyle = i < h ? cols[h - 1] : 'rgba(255,255,255,.25)'; c.fill(); }
       }
     }
     if (this.banner) {

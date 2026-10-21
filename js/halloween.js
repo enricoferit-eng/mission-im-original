@@ -121,14 +121,14 @@ if (HALLOWEEN) {
     if (this.mp || this.helpOpen) return;
     if (this.stage === 'uebung') return;   // in der Helfer-Schule nicht ablenken
     if (this.stage !== 'geisterwald') {   // kleiner, ruhiger Knopf unter der Karte: direkt in den Geisterwald (ohne Leuchten/Einblendung)
-      const x = 46, y = H - 64;   // unten links: dort ist in beiden Lagen frei
-      ell(c, x, y, 22, 22); fs(c, '#3c096c', 3, '#f77f00'); jackO(c, x, y + 1, 1.2, 0.8); txt(c, 'Geisterwald', x, y + 32, 11, '#ffd166', 'center', '#3c096c');
-      UI.btn(x - 30, y - 28, 60, 72, () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'In den Geisterwald? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(this.diff, { stage: 'geisterwald' })); } }); });
+      const x = 40, y = H - 48;   // unten links, klein und halb durchsichtig
+      c.save(); c.globalAlpha = 0.85; ell(c, x, y, 17, 17); fs(c, '#3c096c', 2.5, '#f77f00'); jackO(c, x, y + 1, 0.95, 0.8); c.restore(); txt(c, 'Geisterwald', x, y + 26, 10, '#ffd166', 'center', '#3c096c');
+      UI.btn(x - 24, y - 24, 52, 58, () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'In den Geisterwald? Dein Fortschritt hier bleibt gespeichert.', icon: 'play', onYes: () => { Sfx.play('win'); Save.write(); setScene(new Play(this.diff, { stage: 'geisterwald' })); } }); });
       return;
     }
-    { const back = ((ACC() || {}).lastArea || {})[this.diff] || 'kueche', x = W - 46, y = 100;   // zurück in den Bereich, aus dem man kam
-      roundBtn(c, x, y, 20, '#fff', 'back', () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'Zurück in den Bereich ' + STAGE_NAME[back] + '?', icon: 'play', onYes: () => { Save.write(); setScene(new Play(this.diff, { stage: back })); } }); });
-      txt(c, 'Zurück', x, y + 32, 11, '#fff', 'center', '#3c096c'); }
+    { const back = ((ACC() || {}).lastArea || {})[this.diff] || 'kueche', x = 32, y = H - 48;   // unten links (oben rechts lag es auf dem Auftrag)   // zurück in den Bereich, aus dem man kam
+      roundBtn(c, x, y, 17, '#fff', 'back', () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'Zurück in den Bereich ' + STAGE_NAME[back] + '?', icon: 'play', onYes: () => { Save.write(); setScene(new Play(this.diff, { stage: back })); } }); });
+      txt(c, 'Zurück', x + 4, y + 26, 10, '#fff', 'center', '#3c096c'); }
     const s = String(hwKM()), w = 52 + s.length * 10, x = W - w - 14, y = 30;
     rrPath(c, x, y, w, 34, 17); c.fillStyle = 'rgba(30,15,45,.7)'; c.fill(); kmCoin(c, x + 20, y + 17, 1.15); txt(c, s, x + 38, y + 18, 17, '#ffd166', 'left', null);
   };
