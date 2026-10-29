@@ -3,18 +3,19 @@
 // iPhone: Web-Audio ist im Lautlos-Modus stumm und startet erst nach einer Berührung. Deshalb beim ersten Tippen:
 // Audio-Session auf "playback" stellen, Kontext fortsetzen und einen stillen Ton abspielen.
 (function unlockAudio() {
-  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* egal */ }
+  // Keine Audio-Session „playback“ und kein <audio>-Element: sonst meldet sich das Spiel beim Handy als Musik-Player
+  // und auf dem Sperrbildschirm / in den Mitteilungen erscheint eine Player-Anzeige wie bei Spotify.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch (e) { /* egal */ }
+  try { if (navigator.mediaSession) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } } catch (e) { /* egal */ }
   const go = () => {
     try {
       const c = Sfx.ctx(); if (c.state !== 'running') c.resume();
       const b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0);
-      const a = document.createElement('audio'); a.setAttribute('playsinline', ''); a.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8isVNoMPMjAAAA0gAAABEVFGmgqK////9bP/6XCykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
-      a.play().catch(() => {});
     } catch (e) { /* egal */ }
     window.removeEventListener('pointerdown', go, true); window.removeEventListener('touchend', go, true);
   };
   window.addEventListener('pointerdown', go, true); window.addEventListener('touchend', go, true);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { try { if (Sfx.ac && Sfx.ac.state !== 'running') Sfx.ac.resume(); } catch (e) { /* egal */ } } });
+  document.addEventListener('visibilitychange', () => { try { if (!Sfx.ac) return; if (document.hidden) { Sfx.ac.suspend(); Voice.stop(); } else if (Sfx.ac.state !== 'running') Sfx.ac.resume(); } catch (e) { /* egal */ } });   // Bildschirm aus / anderes App: Ton ganz anhalten
 })();
 
 // Melodien je Bereich (Tonleiter-Schritte, Tempo, Klangfarbe) – ruhig im Hintergrund, Spannungsmusik bleibt in den Aufgaben

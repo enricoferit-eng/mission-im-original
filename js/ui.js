@@ -11,10 +11,9 @@ function diffDots(c, d, x, y, r, on = true) {   // 1–3 Punkte (gefüllt = Stuf
   for (let i = 0; i < 3; i++) { ell(c, x + (i - 1) * r * 2.6, y, r, r); fs(c, i < d.stars ? (on ? '#fff' : d.col) : on ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.12)', 0); }
 }
 function diffBadge(c, id, cx, cy, size = 15) {   // Pille in Stufen-Farbe: Name + Punkte; gibt die Breite zurück
-  const d = DIFF_OF(id); c.font = `900 ${size}px ${FONT}`; const tw = c.measureText(d.name).width, w = tw + size * 3.4 + 16, h = size * 2;
+  const d = DIFF_OF(id), lab = d.name + ' · ' + d.age + ' J.'; c.font = `900 ${size}px ${FONT}`; const tw = c.measureText(lab).width, w = tw + 28, h = size * 2;
   rrPath(c, cx - w / 2, cy - h / 2, w, h, h / 2); fs(c, d.col, 2.5, '#fff');
-  txt(c, d.name, cx - w / 2 + 10 + tw / 2, cy + 1, size, '#fff', 'center', d.dark);
-  diffDots(c, d, cx + w / 2 - 8 - size * 1.3, cy, size * 0.22);
+  txt(c, lab, cx, cy + 1, size, '#fff', 'center', d.dark);
   return w;
 }
 
@@ -177,6 +176,7 @@ function accountChip(c, x, y, a, onTap) {
   return w;
 }
 
+const MENU_LAST = 3;   // letzte Seite im Wisch-Menü (Mehr)
 class Menu {
   constructor(page) { this.t = 0; this.page = page != null ? page : 2; this.off = 0; this.pages = []; }
   enter() {
@@ -187,28 +187,30 @@ class Menu {
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
     applyVolume();
   }
+  easy() { const a = ACC(); return !!a && a.lastDiff === 'easy'; }   // Leicht (für die Kleinsten): nur Start, keine Leiste mit Laden/Garderobe
+  barH() { return this.easy() ? 0 : MENU_BAR_H(); }
   update(dt) {
     this.t += dt;
+    if (this.easy() && (this.page === 0 || this.page === 1)) { this.page = 2; this.off = 0; }
     if (!this.sw) this.off = Math.abs(this.off) < 0.002 ? 0 : this.off * Math.pow(0.0005, dt);   // nach dem Wischen sanft einrasten
     const P = this.pageObj(this.page); if (P && P.update) P.update(dt);
   }
-  // ---- Seiten wie bei Royal Match: unten 5 Reiter, dazwischen wischen. 0 Laden · 1 Garderobe · 2 Start · 3 Erfolge · 4 Mehr ----
+  // ---- Seiten wie bei Royal Match: unten 4 Reiter, dazwischen wischen. 0 Laden · 1 Garderobe · 2 Start · 3 Mehr (Erfolge gibt es nicht mehr) ----
   pageObj(i) {
-    if (i === 2 || i === 4) return null;
+    if (i === 2 || i === 3) return null;
     if (!this.pages[i]) {
       const a = ACC(), d = (a && a.lastDiff) || 'medium';
-      if (i === 0) { const sh = new Shop(() => {}); sh.embedded = true; if (typeof giftReady === 'function' && giftReady()) sh.tab = 'joker'; this.pages[0] = sh; }
+      if (i === 0) { const sh = new Shop(() => {}); sh.embedded = true; this.pages[0] = sh; }
       if (i === 1) { const w = new Wardrobe(d); w.stage = 'laden'; w.embedded = true; this.pages[1] = w; }
-      if (i === 3) { const ac = new Achievements(() => {}); ac.embedded = true; this.pages[3] = ac; }
     }
     return this.pages[i];
   }
   drawPage(c, i) {
-    const bar = MENU_BAR_H(), H0 = H; H = H0 - bar; EMBED = true;   // die Seite sieht nur den Platz über der Leiste
-    try { if (i === 2) this.drawHome(c); else if (i === 4) this.drawMore(c); else { const P = this.pageObj(i); if (P) P.draw(c); } }
+    const bar = this.barH(), H0 = H; H = H0 - bar; EMBED = true;   // die Seite sieht nur den Platz über der Leiste
+    try { if (i === 2) this.drawHome(c); else if (i === 3) this.drawMore(c); else { const P = this.pageObj(i); if (P) P.draw(c); } }
     finally { H = H0; EMBED = false; }
   }
-  goPage(i) { if (i < 0 || i > 4 || i === this.page) return; this.off = (i - this.page) * 1; this.page = i; this.eventSlot = null; Sfx.play('tap'); if (i === 1 && this.pages[1]) this.pages[1].diff = (ACC() && ACC().lastDiff) || 'medium'; }
+  goPage(i) { if (i < 0 || i > MENU_LAST || i === this.page) return; this.off = (i - this.page) * 1; this.page = i; this.eventSlot = null; Sfx.play('tap'); if (i === 1 && this.pages[1]) this.pages[1].diff = (ACC() && ACC().lastDiff) || 'medium'; }
   draw(c) {
     this.eventSlot = null;
     const moving = Math.abs(this.off) > 0.01 || (this.sw && this.sw.on);
@@ -216,13 +218,13 @@ class Menu {
     else {   // während des Wischens: aktuelle und Nachbarseite nebeneinander (ohne Knöpfe)
       const o = this.off, cur = this.page, nb = o > 0 ? cur - 1 : cur + 1;
       c.save(); c.translate(o * W, 0); this.drawPage(c, cur); c.restore();
-      if (nb >= 0 && nb <= 4) { c.save(); c.translate((o > 0 ? o - 1 : o + 1) * W, 0); this.drawPage(c, nb); c.restore(); }
+      if (nb >= 0 && nb <= MENU_LAST) { c.save(); c.translate((o > 0 ? o - 1 : o + 1) * W, 0); this.drawPage(c, nb); c.restore(); }
       UI.next = []; this.eventSlot = null;   // während des Wischens kein Event-Knopf (er würde an der falschen Stelle stehen)
     }
-    this.drawBar(c);
+    if (!this.easy()) this.drawBar(c);
   }
   drawBar(c) {   // Reiterleiste unten (wie Magic Sort / Royal Match): Kacheln mit großen Symbolen, der aktive Reiter ist breiter, ragt heraus und zeigt sein Wort
-    const T = [['shop', 'Laden'], ['hanger', 'Garderobe'], ['play', 'Start'], ['trophy', 'Erfolge'], ['menu', 'Mehr']];
+    const T = [['shop', 'Laden'], ['hanger', 'Garderobe'], ['play', 'Start'], ['menu', 'Mehr']];
     const bh = MENU_BAR_H(), y0 = H - bh, act = this.page - this.off;
     const wt = T.map((_, i) => 1 + 0.7 * clamp(1 - Math.abs(act - i), 0, 1)), sum = wt.reduce((a, b) => a + b, 0);
     { const g = c.createLinearGradient(0, y0, 0, H); g.addColorStop(0, '#5f7a43'); g.addColorStop(1, '#35452F'); c.fillStyle = g; c.fillRect(0, y0, W, bh); }
@@ -240,7 +242,6 @@ class Menu {
       c.save(); c.translate(cx, iy); ell(c, 0, 2, isz * 0.62, isz * 0.62); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill(); ell(c, 0, 0, isz * 0.6, isz * 0.6); fs(c, '#fffbe6', 2.5, '#3d2c1f');
       if (ic === 'play') icon(c, 'play', 2, 0, isz * 0.8, BRAND.olive); else icon(c, ic, 0, 0, isz * 0.82); c.restore();
       if (k > 0.45) { c.save(); c.globalAlpha = clamp((k - 0.45) * 2, 0, 1); txt(c, label, cx, y0 + bh - 12, 15, '#fff', 'center', '#3d2c1f', w - 8); c.restore(); }
-      if (ic === 'shop' && typeof giftReady === 'function' && giftReady()) { ell(c, cx + isz * 0.5, iy - isz * 0.45, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', cx + isz * 0.5, iy - isz * 0.45 + 1, 12, '#fff', 'center', null); }
       (this.tabHit || (this.tabHit = []))[i] = { x: cx, y: y0 + bh / 2 };
       UI.btn(x, y0 - 16, w, bh + 16, () => this.goPage(i));
       x += w;
@@ -251,32 +252,46 @@ class Menu {
     rrPath(c, x, -14, w, 60, 18); { const g = c.createLinearGradient(0, 0, 0, 46); g.addColorStop(0, '#7a9a4f'); g.addColorStop(1, '#35452F'); c.fillStyle = g; c.fill(); } c.lineWidth = 3.5; c.strokeStyle = '#ffd166'; c.stroke();
     txt(c, title, W / 2, 22, 22, '#fff', 'center', '#3d2c1f', w - 20);
   }
-  drawMore(c) {   // Seite „Mehr“: große Kacheln
-    menuBg(c, this.t); c.fillStyle = 'rgba(16,28,18,.35)'; c.fillRect(0, 0, W, H);
-    const a = ACC();
-    const T = [['friends', 'Mehrspieler', '#bde0fe', () => setScene(new MultiScene())],
-      ['book', 'Anleitung', '#ffd166', () => startUebung((a && a.lastDiff) || 'medium', 'menu')],
-      ['play', 'Film', '#ffc8dd', () => setScene(new Trailer())],
+  drawMore(c) {   // Seite „Mehr“ = Eltern-Modus: Stufe (mit Alter), Konto, Ton, Spielzeit
+    menuBg(c, this.t); c.fillStyle = 'rgba(16,28,18,.45)'; c.fillRect(0, 0, W, H);
+    const a = ACC(); if (!a) return;
+    this.pageTitle(c, 'Eltern');
+    if (this.easy()) roundBtn(c, 40, 30, 22, '#fff', 'back', () => { this.page = 2; this.off = 0; Sfx.play('tap'); }, '#ffd166');   // Leicht: keine Leiste – Zurück-Knopf
+    const cw = Math.min(W - 28, 520), x0 = (W - cw) / 2; let y = 64;
+    // Stufe: drei große Knöpfe, jeweils mit Alter
+    txt(c, 'Stufe', x0 + 4, y + 10, 15, '#fff', 'left', BRAND.olive); y += 24;
+    const land = W > H, cur = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium', bh = land ? 64 : 58, bw = land ? (cw - 20) / 3 : cw;
+    DIFFS.forEach((d, i) => {
+      const x = land ? x0 + i * (bw + 10) : x0, yy = land ? y : y + i * (bh + 8), on = d.id === cur;
+      rrPath(c, x, yy, bw, bh, 20); fs(c, on ? d.col : 'rgba(255,255,255,.92)', 3, on ? d.dark : d.col);
+      drawAnimal(c, ANIMAL_OF[d.id], x + 30, yy + bh - 8, bh / 95, { noShadow: true, cap: hasCap(ANIMAL_OF[d.id]) });
+      txt(c, d.name, x + 62, yy + bh / 2 - 9, 18, on ? '#fff' : d.dark, 'left', on ? d.dark : null, bw - 110);
+      txt(c, 'für ' + d.age + ' Jahre', x + 62, yy + bh / 2 + 12, 13, on ? '#fff' : '#6b5a48', 'left', on ? d.dark : null, bw - 110);
+      if (on) icon(c, 'check', x + bw - 24, yy + bh / 2, 22, '#fff');
+      UI.btn(x, yy, bw, bh, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('good'); } });
+    });
+    y += land ? bh + 18 : DIFFS.length * (bh + 8) + 10;
+    // Kacheln: Konto, Ton, Spielzeit
+    const T = [['lock', a.token ? 'Konto' : 'Konto / sichern', '#e9ecef', () => { overlay = new AccountPanel(); }],
       ['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
-      ['lock', 'Eltern', '#e9ecef', () => { overlay = new ParentPanel(); }]];
-    this.pageTitle(c, 'Mehr');
-    const cols = W > H ? 3 : 2, tw = Math.min(190, (W - 50) / cols - 12), th = Math.min(110, (H - 90) / Math.ceil(T.length / cols) - 12), rows = Math.ceil(T.length / cols), x0 = (W - cols * (tw + 12) + 12) / 2;
-    T.forEach(([ic, label, col, fn], i) => { const x = x0 + (i % cols) * (tw + 12), y = 70 + Math.floor(i / cols) * (th + 12);
-      rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(40, th * 0.42)); txt(c, label, x + tw / 2, y + th - 18, 15, '#3d2c1f', 'center', null, tw - 10);
+      ['clock', 'Spielzeit', '#fff3bf', () => { overlay = new ParentPanel(); }]];
+    const n = T.length, tg = 10, tw = (cw - tg * (n - 1)) / n, th = Math.max(74, Math.min(104, H - y - 14));
+    T.forEach(([ic, label, col, fn], i) => { const x = x0 + i * (tw + tg);
+      rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(36, th * 0.4)); txt(c, label, x + tw / 2, y + th - 16, 14, '#3d2c1f', 'center', null, tw - 10);
       (this.moreHit || (this.moreHit = {}))[label] = { x: x + tw / 2, y: y + th / 2 }; UI.btn(x, y, tw, th, () => { Sfx.play('tap'); fn(); }); });
   }
   // Wischen: waagerecht = Seite wechseln, sonst geht der Finger an die Seite (Scrollen im Laden usw.)
-  down(x, y, id) { this.sw = { x0: x, y0: y, on: false, id }; const P = this.pageObj(this.page); if (P && P.down && y < H - MENU_BAR_H()) { this.fwd = true; P.down(x, y, id); } else this.fwd = false; }
+  down(x, y, id) { this.sw = { x0: x, y0: y, on: false, id }; const P = this.pageObj(this.page); if (P && P.down && y < H - this.barH()) { this.fwd = true; P.down(x, y, id); } else this.fwd = false; }
   move(x, y, id) {
     const s = this.sw; if (!s) return;
-    if (!s.on && Math.abs(x - s.x0) > 18 && Math.abs(x - s.x0) > Math.abs(y - s.y0) * 1.3) { s.on = true; const P = this.pageObj(this.page); if (this.fwd && P && P.up) P.up(-9999, -9999, id); this.fwd = false; }
+    if (!s.on && !this.easy() && Math.abs(x - s.x0) > 18 && Math.abs(x - s.x0) > Math.abs(y - s.y0) * 1.3) { s.on = true; const P = this.pageObj(this.page); if (this.fwd && P && P.up) P.up(-9999, -9999, id); this.fwd = false; }
     if (Math.abs(x - s.x0) > 10 || Math.abs(y - s.y0) > 10) s.moved = true;   // gezogen = kein Tipp (Knopf löst dann nicht aus)
-    if (s.on) { let o = (x - s.x0) / W; if ((this.page === 0 && o > 0) || (this.page === 4 && o < 0)) o *= 0.3; this.off = clamp(o, -1, 1); return; }
+    if (s.on) { let o = (x - s.x0) / W; if ((this.page === 0 && o > 0) || (this.page === MENU_LAST && o < 0)) o *= 0.3; this.off = clamp(o, -1, 1); return; }
     const P = this.pageObj(this.page); if (this.fwd && P && P.move) P.move(x, y, id);
   }
   up(x, y, id) {
     const s = this.sw; this.sw = null;
-    if (s && s.on) { const o = this.off; if (o < -0.18 && this.page < 4) { this.page++; this.off = o + 1; Sfx.play('tap'); } else if (o > 0.18 && this.page > 0) { this.page--; this.off = o - 1; Sfx.play('tap'); } return; }
+    if (s && s.on) { const o = this.off; if (o < -0.18 && this.page < MENU_LAST) { this.page++; this.off = o + 1; Sfx.play('tap'); } else if (o > 0.18 && this.page > 0) { this.page--; this.off = o - 1; Sfx.play('tap'); } return; }
     const P = this.pageObj(this.page); if (this.fwd && P && P.up) P.up(x, y, id); this.fwd = false;
   }
   drawHome(c) {
@@ -288,57 +303,52 @@ class Menu {
       else if (mo >= 3 && mo <= 4) for (let i = 0; i < 6; i++) { const x = 40 + i * (W - 80) / 5, y = H - 18; for (let k = 0; k < 5; k++) { ell(c, x + Math.cos(k * 1.26) * 6, y - 14 + Math.sin(k * 1.26) * 6, 4, 4); c.fillStyle = ['#ffc8dd', '#fff', '#ffd166'][i % 3]; c.fill(); } }   // Frühling = Blumen
     }
     const a = ACC(); if (!a) return;
-    // Aufgeräumtes Menü: Figur + ein großer SPIELEN-Knopf, Stufe als Schalter, unten nur Garderobe / Laden / Mehr.
-    // Alles andere (Mehrspieler, Erfolge, Anleitung, Film, Eltern, Ton) steckt unter „Mehr“ – nichts fällt weg.
-    const land = W > H, ls = land ? clamp(H / 560, 0.55, 1.1) : clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
-    const diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium'; CUR_DIFF = diff;
-    const compact = land && H < 480;   // Handy quer im Browser: wenig Höhe – alles enger und kleiner
-    accountChip.lastW = accountChip(c, 12, 12, a, () => { overlay = new AccountPanel(); });
-    if (!a.token) { const lx = 12 + (accountChip.lastW || 120) - 6, ly = 56; ell(c, lx, ly, 12, 12); fs(c, '#ffd166', 2.5); icon(c, 'lock', lx, ly, 14); }   // noch nicht gesichert: kleines Schloss am Namen (Tipp darauf = sichern)
-    { const cw = accountChip.lastW || 0, x0 = 12 + (cw || 170) + 10; if (compact || x0 + 150 > W / 2 - 90) coinChip(c, 12, 88, true); else coinChip(c, x0, 38); }
-    // oben rechts: Vollbild (nur im Browser) und das Event – Ton steckt unter „Mehr“, das Tagesgeschenk im Laden
-    let slotX = W - 40;
-    if (wantFullBtn()) { roundBtn(c, slotX, 38, 22, '#fff', 'full', () => { Sfx.play('tap'); goFull(); }); txt(c, 'Vollbild', slotX, 70, 11, '#fff', 'center', BRAND.olive); slotX -= 58; }
-    this.eventSlot = { x: slotX, y: 38 };
-    // Logo
-    const lsc = compact ? clamp(H / 640, 0.42, 0.56) : land ? ls * 0.8 : ls, LY = compact ? 72 * lsc + 4 : land ? 64 * ls + 30 : Math.max(200, H * 0.19);
-    logo(c, W / 2, LY, lsc);
-    // Stufen-Schalter
-    const swY = compact ? LY + 66 * lsc + 26 : land ? LY + 82 * ls : LY + 92 * ls, swW = Math.min(W - 40, 420), segW = swW / 3, swX = (W - swW) / 2;
-    rrPath(c, swX, swY - 22, swW, 44, 22); fs(c, 'rgba(255,255,255,.85)', 3);
-    DIFFS.forEach((d, i) => {
-      const x = swX + i * segW, on = d.id === diff;
-      if (on) { rrPath(c, x + 3, swY - 19, segW - 6, 38, 19); fs(c, d.col, 3, d.dark); }
-      txt(c, d.name, x + segW / 2, swY - 5, on ? 17 : 15, on ? '#fff' : d.dark, 'center', on ? d.dark : null);
-      diffDots(c, d, x + segW / 2, swY + 11, 3.2, on);
-      UI.btn(x, swY - 24, segW, 48, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('tap'); } });
-    });
-    // Figur + SPIELEN
+    // Aufgeräumtes Menü (Hochformat zuerst): Logo, Stufe als kleines Schild, ein großer SPIELEN-Knopf. Keine Figur – sonst wird es eng.
+    // Stufe, Konto, Ton, Spielzeit: unter „Mehr“ (Eltern-Modus). Leicht: gar keine Leiste, nur ein kleiner Eltern-Knopf.
+    const land = W > H, diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium', easy = diff === 'easy'; CUR_DIFF = diff;
+    if (!easy) coinChip(c, 14, 32, W < 600);
+    if (easy) { roundBtn(c, W - 38, 36, 20, 'rgba(255,255,255,.85)', 'lock', () => { Sfx.play('tap'); overlay = new ParentGate(() => { this.page = 3; this.off = 0; }); }); txt(c, 'Eltern', W - 38, 66, 11, '#fff', 'center', BRAND.olive); }
+    const ls = land ? clamp(H / 470, 0.55, 1.1) : clamp(Math.min(W / 380, H / 720), 0.85, 1.45), LY = land ? H * 0.26 : H * 0.25;
+    logo(c, W / 2, LY, ls);
+    diffBadge(c, diff, W / 2, LY + 78 * ls + 10, 14);
     const fresh = STAGE_ORDER.every(id => { const sp0 = SP(diff, id); return !sp0.clears && !sp0.run; });   // auf dieser Stufe noch nichts gespielt
-    const area = fresh && !a.tut.uebung && !(typeof hwNewKid === 'function' && !hwNewKid()) ? 'uebung' : startArea(diff), st = typeof STORY !== 'undefined' && STORY[area];
-    const sub = area === 'uebung' ? 'Helfer-Schule' : (STAGE_NAME[area] || '') + (st ? ' · ' + st.title : '');
+    const area = fresh && !a.tut.uebung ? 'uebung' : startArea(diff);
+    const sub = area === 'uebung' ? 'Helfer-Schule' : (STAGE_NAME[area] || '');
     const done = STAGE_ORDER.filter(id => SP(diff, id).clears > 0).length;
-    const top = swY + 30, bottom = H - 8;   // unten ist jetzt die Reiterleiste (H ist schon ohne sie)
-    const bw = Math.min(land ? 300 : W - 60, 340), bh = land ? Math.min(88, (bottom - top) * 0.5) : 96;
-    let fx, fy, fs2, bx, by;
-    if (land) { fs2 = clamp((bottom - top - 20) / 80, 1.2, 2.3); const cy = Math.min(top + (bottom - top) / 2, bottom - 40 * fs2 - 10); fx = W / 2 - bw / 2 - 30 * fs2; fy = cy + 40 * fs2; bx = W / 2 - bw / 2 + 30; by = cy - bh / 2; }   // Figur und Knopf als Gruppe in der Mitte
-    else { fs2 = clamp((bottom - top - bh - 30) / 80, 1.4, 3); fx = W / 2; fy = top + 20 + 80 * fs2; bx = (W - bw) / 2; by = Math.min(bottom - bh - 6, fy + 24); }
-    ell(c, fx, fy, 40 * fs2, 10 * fs2); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
-    drawAnimal(c, ANIMAL_OF[diff], fx, fy - Math.abs(Math.sin(this.t * 2.4)) * 4, fs2, { t: this.t, cap: hasCap(ANIMAL_OF[diff]), noShadow: true });
+    const bw = Math.min(W - 48, 360), bh = easy ? 116 : 100, bx = (W - bw) / 2, by = land ? Math.min(H - bh - 40, LY + 78 * ls + 44) : Math.max(LY + 78 * ls + 50, H * 0.6 - bh / 2);
     { const pu = 1 + Math.sin(this.t * 3) * 0.025, cx = bx + bw / 2, cy = by + bh / 2;
       c.save(); c.translate(cx, cy); c.scale(pu, pu); c.translate(-cx, -cy);
       rrPath(c, bx, by + 6, bw, bh, bh / 2); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
       rrPath(c, bx, by, bw, bh, bh / 2); { const g = c.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, '#b5e550'); g.addColorStop(1, BRAND.lime); fs(c, g, 4); }
       ell(c, bx + bh / 2 + 6, cy, bh * 0.32, bh * 0.32); fs(c, '#fff', 3); icon(c, 'play', bx + bh / 2 + 9, cy, bh * 0.36, BRAND.olive);
-      txt(c, 'SPIELEN', bx + bh + 20, cy - (sub ? 11 : 0), Math.min(34, bh * 0.38), '#fff', 'left', OL, bw - bh - 30);
-      if (sub) txt(c, sub, bx + bh + 20, cy + 20, 14, BRAND.olive, 'left', null, bw - bh - 30);
+      txt(c, 'SPIELEN', bx + bh + 18, cy - (sub ? 11 : 0), Math.min(36, bh * 0.38), '#fff', 'left', OL, bw - bh - 30);
+      if (sub) txt(c, sub, bx + bh + 18, cy + 21, 15, BRAND.olive, 'left', null, bw - bh - 30);
       c.restore(); }
-    if (done) { for (let i = 0; i < STAGE_ORDER.length; i++) { const x = bx + bw / 2 + (i - (STAGE_ORDER.length - 1) / 2) * 22, y = by + bh + 20; if (i < done) icon(c, 'crown', x, y, 18); else { ell(c, x, y, 5, 5); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill(); } } }
+    if (done) { for (let i = 0; i < STAGE_ORDER.length; i++) { const x = bx + bw / 2 + (i - (STAGE_ORDER.length - 1) / 2) * 24, y = by + bh + 24; if (i < done) icon(c, 'crown', x, y, 20); else { ell(c, x, y, 5, 5); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill(); } } }
     this.hit = { play: { x: bx + bw / 2, y: by + bh / 2 } };   // für die Klick-Tests
     UI.btn(bx, by, bw, bh, () => { if (a.limitMin && a.playDay === new Date().toISOString().slice(0, 10) && (a.playSec || 0) > a.limitMin * 60) { overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Bis morgen!' }); return; } Sfx.play('good'); a.lastDiff = diff; Save.write();
       if (area === 'uebung') { startUebung(diff, 'play'); return; } setScene(fresh ? new Play(diff, { stage: startArea(diff) }) : new StageMap(diff)); });   // ganz neu: erst die Helfer-Schule
     // (unten steht jetzt die Reiterleiste – siehe drawBar)
   }
+}
+// Eltern-Tor (Leicht-Modus): Knopf 2 Sekunden gedrückt halten – kleine Kinder tippen nur kurz
+class ParentGate {
+  constructor(ok) { this.ok = ok; this.t = 0; this.hold = 0; this.down0 = false; }
+  update(dt) { this.t += dt; if (this.down0) { this.hold += dt; if (this.hold >= 2) { this.down0 = false; if (overlay === this) overlay = null; Sfx.play('good'); this.ok(); } } else this.hold = Math.max(0, this.hold - dt * 2); }
+  close() { if (overlay === this) overlay = null; }
+  geo() { const w = Math.min(W - 30, 360), h = 250; return { w, h, x: (W - w) / 2, y: (H - h) / 2, bx: W / 2, by: (H - h) / 2 + 160 }; }
+  draw(c) {
+    const G = this.geo(); c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
+    panel(c, G.x, G.y, G.w, G.h, '#fff7e6', 24); roundBtn(c, G.x + G.w - 28, G.y + 28, 18, '#ced4da', 'cross', () => this.close());
+    txt(c, 'Für Eltern', W / 2, G.y + 38, 20, BRAND.olive, 'center', null);
+    txt(c, 'Halte den Knopf 2 Sekunden gedrückt.', W / 2, G.y + 72, 14, '#6b5a48', 'center', null, G.w - 40);
+    const f = clamp(this.hold / 2, 0, 1); ell(c, G.bx, G.by, 46, 46); fs(c, '#e9ecef', 3);
+    if (f > 0) { c.beginPath(); c.moveTo(G.bx, G.by); c.arc(G.bx, G.by, 46, -Math.PI / 2, -Math.PI / 2 + f * TAU); c.closePath(); c.fillStyle = '#06d6a0'; c.fill(); }
+    ell(c, G.bx, G.by, 34, 34); fs(c, '#fff', 3); icon(c, 'lock', G.bx, G.by, 34);
+  }
+  down(x, y) { const G = this.geo(); if (dist(x, y, G.bx, G.by) < 56) this.down0 = true; }
+  move() {}
+  up() { this.down0 = false; }
 }
 // „Mehr“: alles, was nicht jeden Tag gebraucht wird – große, klare Kacheln
 class MoreMenu {
@@ -348,10 +358,7 @@ class MoreMenu {
   draw(c) {
     const a = ACC();
     c.fillStyle = 'rgba(16,28,18,.6)'; c.fillRect(0, 0, W, H); UI.btn(0, 0, W, H, () => this.close());
-    const T = [['friends', 'Mehrspieler', '#bde0fe', () => { this.close(); setScene(new MultiScene()); }],
-      ['trophy', 'Erfolge', '#fff3b0', () => { this.close(); setScene(new Achievements()); }],
-      ['book', 'Anleitung', '#ffd166', () => { this.close(); startUebung((a && a.lastDiff) || 'medium', 'menu'); }],
-      ['play', 'Film', '#ffc8dd', () => { this.close(); setScene(new Trailer()); }],
+    const T = [
       ['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
       ['lock', 'Eltern', '#e9ecef', () => { overlay = new ParentPanel(); }]];
     const cols = W > H ? 3 : 2, tw = Math.min(170, (W - 60) / cols - 12), th = Math.min(110, tw * 0.75), rows = Math.ceil(T.length / cols);
@@ -652,22 +659,22 @@ class PauseDialog {
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; Voice.stop(); if (this.o.onResume) this.o.onResume(); }
   draw(c) {
-    Voice.once('Pause. Die Bonus-Uhr steht still.');
-    const a = ACC(), V = VOL(), allOn = !!(a && a.sound !== false) && V.all > 0, full = wantFullBtn();
+    Voice.once('Pause.');
+    const a = ACC(), V = VOL(), allOn = !!(a && a.sound !== false) && V.all > 0, full = false;   // Vollbild-Knopf gibt es nicht mehr
     const w = Math.min(W - 24, 400), h = 372, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
     fitBegin(c, w, h + 50);
     panel(c, x, y, w, h, '#fff7e6', 24);
     rrPath(c, W / 2 - 14, y + 18, 10, 30, 4); fs(c, '#ef476f', 0); rrPath(c, W / 2 + 4, y + 18, 10, 30, 4); fs(c, '#ef476f', 0);
     txt(c, 'Pause', W / 2, y + 70, 26, '#3d2c1f', 'center', null);
-    txt(c, 'Die Bonus-Uhr steht still.', W / 2, y + 98, 14, '#6b5a48', 'center', null);
+    txt(c, 'Das Spiel ist angehalten.', W / 2, y + 98, 14, '#6b5a48', 'center', null);
     // Einstellungen: große Schalter zum Antippen
     const rows = [
       ['all', allOn ? 'sound' : 'mute', 'Ton', allOn, '#118ab2'],
       ['music', 'music', 'Musik', allOn && V.music > 0, '#9b5de5'],
       ['voice', 'voice', 'Vorlesen', allOn && V.voice > 0, '#ef476f'],
     ];
-    const n = rows.length + 1 + (full ? 1 : 0), gw = Math.min(76, (w - 24) / n), gx = W / 2 - (gw * n) / 2 + gw / 2, gy = y + 156;
+    const help = !!this.o.onHelp, n = rows.length + 1 + (full ? 1 : 0) + (help ? 1 : 0), gw = Math.min(76, (w - 24) / n), gx = W / 2 - (gw * n) / 2 + gw / 2, gy = y + 156;
     rows.forEach(([k, ic, name, on, col], i) => {
       const bx = gx + i * gw;
       ell(c, bx, gy, 27, 27); fs(c, on ? '#fff' : '#e9ecef', 3, on ? col : '#adb5bd');
@@ -679,6 +686,7 @@ class PauseDialog {
     });
     { const bx = gx + rows.length * gw; roundBtn(c, bx, gy, 27, '#d8f5e3', 'sound', () => { Sfx.play('tap'); overlay = new VolumePanel(this); }, '#2b9348'); txt(c, 'Lautstärke', bx, gy + 42, 13, '#3d2c1f', 'center', null, gw - 2); }
     if (full) { const bx = gx + (rows.length + 1) * gw; roundBtn(c, bx, gy, 27, '#fff', 'full', () => { Sfx.play('tap'); goFull(); }); txt(c, 'Vollbild', bx, gy + 42, 13, '#3d2c1f', 'center', null); }
+    if (help) { const bx = gx + (n - 1) * gw; roundBtn(c, bx, gy, 27, '#bde0fe', 'question', () => { Sfx.play('tap'); if (overlay === this) overlay = null; Voice.stop(); this.o.onHelp(); }, '#118ab2'); txt(c, 'Hilfe', bx, gy + 42, 13, '#3d2c1f', 'center', null); }
     const pu = 1 + Math.sin(this.t * 5) * 0.05;
     const by = y + h - 62;   // Knöpfe + Beschriftung ganz im Kasten
     line(c, x + 24, by - 52, x + w - 24, by - 52, 2, 'rgba(0,0,0,.08)', false);
@@ -703,8 +711,8 @@ class ConfirmDialog {
     panel(c, x, y, w, h, '#fff7e6', 24);
     icon(c, this.o.icon || 'trash', W / 2, y + 40, 40);
     lines.forEach((l, i) => txt(c, l, W / 2, y + 86 + i * 25, 18, '#3d2c1f', 'center', null));
-    roundBtn(c, W / 2 - 60, y + h - 10, 28, '#ced4da', 'cross', () => this.close());
-    roundBtn(c, W / 2 + 60, y + h - 10, 28, '#ef476f', 'check', () => { this.close(); this.o.onYes(); });
+    roundBtn(c, W / 2 - 60, y + h - 10, 28, '#ced4da', 'cross', () => { this.close(); if (this.o.onNo) this.o.onNo(); });
+    roundBtn(c, W / 2 + 60, y + h - 10, 28, this.o.icon === 'lock' ? '#06d6a0' : '#ef476f', 'check', () => { this.close(); this.o.onYes(); });
     c.restore();
   }
   down() {} move() {} up() {}
@@ -842,8 +850,7 @@ class AccountPanel {
     fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
-    rrPath(c, x + 14, y + 14, 112, 36, 14); fs(c, '#caffbf', 2.5); drawAnimal(c, a.char || 'cat', x + 34, y + 46, 0.55, { noShadow: true }); txt(c, 'Figur gestalten', x + 50, y + 33, 11, BRAND.olive, 'left', null);
-    UI.btn(x + 14, y + 14, 112, 36, () => { this.close(); setScene(new CharEditor(() => setScene(new Menu()))); });
+    // (Figur gestalten gibt es nicht mehr – Figuren wählt man im Laden)
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
     txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
     { const st = Net.status(a); c.font = `900 13px ${FONT}`; const sw = c.measureText(st.text).width + 40; rrPath(c, W / 2 - sw / 2, y + 148, sw, 26, 13); fs(c, '#fff', 2, st.col); ell(c, W / 2 - sw / 2 + 14, y + 161, 7, 7); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - sw / 2 + 26, y + 162, 13, '#3d2c1f', 'left', null); }   /* online/offline deutlich */
@@ -1036,7 +1043,7 @@ class CharSelect {
 }
 
 class NewAccount {
-  constructor(o = {}) { this.t = 0; this.step = 'name'; this.avatar = Math.floor(rnd() * 6); this.err = ''; this.migrate = o.migrate || null; }
+  constructor(o = {}) { this.t = 0; this.step = 'name'; this.avatar = Math.floor(rnd() * 6); this.err = ''; this.migrate = o.migrate || null; this.next = o.next || null; }   // next: wohin es nach dem Anlegen geht
   enter() { FX.clear(); nameInput.value = ''; nameInput.placeholder = 'Fantasiename'; nameInput.maxLength = 14; }
   update(dt) { this.t += dt; }
   leave(to) { nameInput.style.display = 'none'; nameInput.blur(); setScene(to); }
@@ -1047,7 +1054,7 @@ class NewAccount {
       const old = this.migrate && Save.data.accounts[this.migrate];
       adoptAccount(r.data);
       if (old) {   // bisherigen Spielstand vom Gerät ins neue Konto übernehmen
-        const a = ACC(); ['diff', 'tut', 'char', 'recent', 'recentEasy', 'sound'].forEach(k => { if (old[k] !== undefined) a[k] = old[k]; });
+        const a = ACC(); ['diff', 'tut', 'char', 'recent', 'recentEasy', 'sound', 'meta', 'lastDiff', 'lastArea', 'vol'].forEach(k => {   /* meta = Taler, Joker, Kostüme, Figuren */ if (old[k] !== undefined) a[k] = old[k]; });
         delete Save.data.accounts[this.migrate]; a.changed = Date.now(); Save.write(false); Net.syncNow();
       }
       this.step = 'done'; Sfx.play('win'); FX.confetti(W / 2, 200, 50); return;
@@ -1108,7 +1115,7 @@ class NewAccount {
       if (a.localOnly) wrapLines(c, 'Dein Konto ist auf diesem Gerät gespeichert. Der Server ist gerade nicht erreichbar – später kannst du es sichern.', w - 60, 13).forEach((l, i) => txt(c, l, W / 2, y + 276 + i * 18, 13, '#8d5a3b', 'center', null));
       else { txt(c, 'Dein Login-Code (für andere Geräte):', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
       rrPath(c, W / 2 - 110, y + 286, 220, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null); }
-      roundBtn(c, H < 560 ? x + w + 40 : W / 2, H < 560 ? y + 190 : y + 380, 34, '#06d6a0', 'play', () => this.leave(new Menu()));
+      roundBtn(c, H < 560 ? x + w + 40 : W / 2, H < 560 ? y + 190 : y + 380, 34, '#06d6a0', 'play', () => { if (this.next) { nameInput.style.display = 'none'; nameInput.blur(); this.next(); } else this.leave(new Menu()); });
     }
   }
 }
@@ -1330,31 +1337,32 @@ class StageMap {
     }
     // Weg: breiter Kiesweg + Punkte; schon gelaufener Teil leuchtet
     c.lineCap = 'round'; c.lineJoin = 'round';
-    c.beginPath(); P.list.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.lineWidth = 30; c.strokeStyle = '#6b4f2a'; c.stroke(); c.lineWidth = 24; c.strokeStyle = '#e9dfcc'; c.stroke();
+    c.beginPath(); P.list.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.lineWidth = 22; c.strokeStyle = 'rgba(107,79,42,.35)'; c.stroke(); c.lineWidth = 16; c.strokeStyle = '#f1e6cf'; c.stroke();
+    c.setLineDash([2, 16]); c.lineWidth = 6; c.strokeStyle = '#c9a46b'; c.stroke(); c.setLineDash([]);   // Trittsteine auf dem Weg
     if (false) for (let i = 0; i < P.list.length; i += 6) { const p = P.list[i], open = i <= P.at[OPEN_STAGES.map(o => this.order.indexOf(o)).reduce((a, b) => Math.max(a, b), 0)]; ell(c, p.x, p.y, 4, 4); c.fillStyle = open ? '#c9a46b' : 'rgba(150,130,100,.45)'; c.fill(); }
-    // Knoten
+    // Knoten: runde Bild-Medaillons mit dem Bereich (Bild statt Teller + Schild), Name als Schild darunter
     G.nodes.forEach((n, i) => {
-      const open = OPEN_STAGES.includes(n.id), sp = SP(this.diff, n.id), here = i === this.cur, R = 40;
-      const bob = open ? Math.sin(t * 3 + i) * 3 : 0, pu = here && !this.walk ? 1 + Math.sin(t * 5) * 0.05 : 1;
-      c.save(); c.translate(n.x, n.y + bob); c.scale(pu, pu);
-      ell(c, 0, 10, R + 6, (R + 6) * 0.45); c.fillStyle = 'rgba(0,0,0,.2)'; c.fill();
-      ell(c, 0, 4, R, R * 0.55); fs(c, open ? '#b5651d' : '#868e96', 4);
-      ell(c, 0, 0, R, R * 0.55); fs(c, open ? (here ? BRAND.lime : '#ffd166') : '#ced4da', 4);
+      const open = OPEN_STAGES.includes(n.id), sp = SP(this.diff, n.id), here = i === this.cur, R = 44;
+      const bob = open ? Math.sin(t * 2.4 + i) * 2.5 : 0, pu = here && !this.walk ? 1 + Math.sin(t * 4) * 0.04 : 1, cy = n.y - 34 + bob;
+      ell(c, n.x, n.y + 6, R * 0.9, R * 0.3); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();   // Schatten auf dem Boden
+      c.save(); c.translate(n.x, cy); c.scale(pu, pu);
+      if (here) { ell(c, 0, 0, R + 10 + Math.sin(t * 4) * 2, R + 10 + Math.sin(t * 4) * 2); c.fillStyle = 'rgba(255,214,10,.45)'; c.fill(); }
+      ell(c, 0, 4, R + 5, R + 5); c.fillStyle = open ? '#8d5a3b' : '#6c757d'; c.fill();
+      ell(c, 0, 0, R + 5, R + 5); fs(c, open ? (here ? '#ffd23f' : '#fff7e6') : '#dee2e6', 3, '#3d2c1f');
+      c.save(); ell(c, 0, 0, R - 2, R - 2); c.clip(); stageArt(c, n.id, -R * 1.25, -R, R * 2.5, R * 2, t); if (!open) { c.fillStyle = 'rgba(70,70,80,.55)'; c.fillRect(-R, -R, R * 2, R * 2); } c.restore();
+      ell(c, 0, 0, R - 2, R - 2); c.lineWidth = 3; c.strokeStyle = 'rgba(61,44,31,.6)'; c.stroke();
+      if (!open) { ell(c, 0, 0, 18, 18); fs(c, '#fff', 3); icon(c, 'lock', 0, 0, 22); }
+      ell(c, -R + 2, -R + 6, 13, 13); fs(c, open ? BRAND.lime : '#adb5bd', 2.5, '#3d2c1f'); txt(c, String(i + 1), -R + 2, -R + 7, 13, '#fff', 'center', null);
+      if (sp.clears) icon(c, 'crown', R - 6, -R + 2, 28);
       c.restore();
-      // Bereichs-Symbol als Schild über dem Knoten
-      const sx = n.x, sy = n.y - 78 + bob;
-      line(c, sx, sy + 20, sx, n.y - 8 + bob, 5, '#8d5a3b');
-      c.save(); if (!open) c.globalAlpha = 0.65; ell(c, sx, sy, 30, 30); fs(c, '#fff7e6', 4); stageIcon(c, n.id, sx, sy, 36); c.restore();
-      ell(c, sx - 26, sy - 22, 12, 12); fs(c, open ? BRAND.lime : '#adb5bd', 2.5); txt(c, String(i + 1), sx - 26, sy - 21, 13, '#fff', 'center', null);
-      if (!open) { ell(c, sx + 26, sy - 22, 13, 13); fs(c, '#fff', 2.5); icon(c, 'lock', sx + 26, sy - 22, 16); }
-      if (sp.clears) icon(c, 'crown', sx + 26, sy - 24, 24);
-      txt(c, STAGE_INFO[n.id].name, n.x, n.y + 40, 15, '#fff', 'center', BRAND.ink);
-      UI.btn(n.x - 50, n.y - 115, 100, 170, () => this.goTo(i));   // UI.btn rechnet die Verschiebung selbst um
+      { const nm = STAGE_INFO[n.id].name; c.font = `900 14px ${FONT}`; const lw = c.measureText(nm).width + 22, ly = cy + R + 18;
+        rrPath(c, n.x - lw / 2, ly - 12, lw, 24, 12); fs(c, open ? '#fff7e6' : '#e9ecef', 2.5, '#3d2c1f'); txt(c, nm, n.x, ly + 1, 14, open ? BRAND.olive : '#6c757d', 'center', null); }
+      UI.btn(n.x - 56, cy - R - 10, 112, R * 2 + 50, () => this.goTo(i));   // UI.btn rechnet die Verschiebung selbst um
     });
     // Figur auf dem Weg
     const fp = Math.round(this.pos), me = P.list[fp], nxt = P.list[Math.min(P.list.length - 1, fp + 1)], hop = this.walk ? Math.abs(Math.sin(t * 12)) * 16 : 0;
     const dir = this.walk ? Math.sign(this.walk.to - this.pos) || 1 : 1;
-    drawAnimal(c, kind, me.x, me.y - 14 - hop, 1.25, { t, moving: !!this.walk, dir, cap: hasCap(kind) });
+    { const side = this.walk ? 0 : (me.x < W / 2 ? 1 : -1) * 66;   /* steht neben dem Medaillon, nicht davor */ drawAnimal(c, kind, me.x + side, me.y - 2 - hop, 1.1, { t, moving: !!this.walk, dir: side < 0 ? -1 : dir, cap: hasCap(kind) }); }
     if (this.walk && Math.floor(t * 10) % 2) { const sp2 = this.scr(me); FX.puff && FX.puff(sp2.x, sp2.y - 6, 1); }
     c.restore();
     // Kopfleiste
@@ -1369,8 +1377,8 @@ class StageMap {
       stageArt(c, id, cx + 8, cy + 8, artW, ch - 16, t);
       const tx = cx + artW + 18, tw = cw - artW - 18 - (open ? 92 : 14);   // Platz für Text bis zum Start-Knopf
       txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null, tw);
-      { const sc = typeof STORY !== 'undefined' && STORY[id]; txt(c, sc ? sc.title + ' · ' + sc.name : info.sub, tx, cy + 52, 13, sc ? '#c9762f' : '#6b5a48', 'left', null, tw);   // Kapitel der Geschichte
-        if (sc && storySeen('in_' + id)) { roundBtn(c, cx + artW - 4, cy + 16, 15, '#fff3bf', 'book', () => storyReplay(id), '#c9a227'); } }
+      { const sc = typeof STORY !== 'undefined' && STORY[id]; txt(c, info.sub, tx, cy + 52, 13, '#6b5a48', 'left', null, tw);   // (Kapitel-Namen gehörten zum Film – der ist raus)   // Kapitel der Geschichte
+      }
       if (open) {
         const ids = STAGE_DEFS[id] ? STAGE_DEFS[id].npcs.map(n => n.id).concat(['gate']) : ALL_IDS, done = ids.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
         const dg = Math.min(15, (tw - 4) / ids.length);
@@ -1381,8 +1389,8 @@ class StageMap {
         UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
       } else { const prev = this.order[this.order.indexOf(id) - 1], lab = prev ? 'Schaffe zuerst: ' + STAGE_INFO[prev].name : 'gesperrt'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 44; rrPath(c, tx, cy + 64, lw, 28, 14); fs(c, '#fff', 2); icon(c, 'lock', tx + 16, cy + 78, 18); txt(c, lab, tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
     }
-    if (vert) roundBtn(c, W - 40, H - ch - 50, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });   // Hochformat: über der Karte
-    else roundBtn(c, W - 46, H - 52, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
+    if (this.diff !== 'easy') { if (vert) roundBtn(c, W - 40, H - ch - 50, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });   // Hochformat: über der Karte
+    else roundBtn(c, W - 46, H - 52, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); }); }   // Leicht: keine Garderobe
   }
   down(x, y) { this.drag = { x0: this.vert ? y : x, cam0: this.camX, moved: false }; }
   move(x, y) { const d = this.drag; if (!d) return; const v = this.vert ? y : x; if (Math.abs(v - d.x0) > 10) d.moved = true; if (d.moved) { const G = this.geo(); this.camX = clamp(d.cam0 - (v - d.x0), 0, G.mapW - this.view()); } }
@@ -1509,7 +1517,7 @@ class Wardrobe {
     const top = y + 60, bot = y + h - 14, maxS = shop ? Math.max(0, Math.ceil(ids.length / cols) * (ch + 10) - (bot - top)) : 0;
     this.sc = shop ? clamp(this.sc || 0, 0, maxS) : 0; this.box = shop ? { top, bot } : null; this.hits = [];
     if (shop) { c.save(); c.beginPath(); c.rect(x + 4, top - 2, w - 8, bot - top + 4); c.clip(); }
-    if (shop && !allIds.length) wrapLines(c, 'Noch keine Kostüme. Kauf welche im Laden oder gewinne sie am Glücksrad!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
+    if (shop && !allIds.length) wrapLines(c, 'Noch keine Kostüme. Kauf welche im Laden oder schaffe einen Bereich!', w - 80, 15).forEach((l, i) => txt(c, l, x + w / 2, y + 180 + i * 22, 15, '#6b5a48', 'center', null));
     ids.forEach((sid, i) => {
       const cx = x + 15 + (i % cols) * (cw + 10), cy = y + 64 + Math.floor(i / cols) * (ch + 10) - this.sc;
       if (shop && (cy > bot || cy + ch < top)) return;
@@ -1527,7 +1535,6 @@ class Wardrobe {
       if (eq) icon(c, 'check', cx + cw - 18, cy + 44, 24, '#06d6a0');
       if (own && shop) this.hits.push({ x: cx, y: cy, w: cw, h: ch, sid });
       else if (own) UI.btn(cx, cy, cw, ch, () => { d.equip = sid; Save.write(); Sfx.play('good'); });
-      if (own && (!shop || cy + 6 > top)) skinInfoBtn(c, cx + 18, cy + 18, sid);
     });
     if (shop) { c.restore(); if (maxS > 0) { const bh = (bot - top) * (bot - top) / (bot - top + maxS), byy = top + (bot - top - bh) * (this.sc / maxS); rrPath(c, x + w - 10, byy, 5, bh, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); } }
     // „Ohne Kostüm“: kleiner Knopf oben (Fähigkeiten zeigt das „i“ an jeder Karte, Aufrüsten gibt es im Laden unter „Kräfte“)

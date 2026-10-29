@@ -105,7 +105,7 @@ function createAccount(name, code) {
   Save.data.current = id; Save.write(); return id;
 }
 const NO_ACC_DP = { stages: {}, equip: null };   // noch kein Konto (z. B. Intro-Film beim ersten Start): leerer Spielstand statt Absturz
-function DP(diff) { const a = ACC(); if (!a) return NO_ACC_DP; const d = a.diff[diff]; if (!d.stages) d.stages = {}; if (d.equip === undefined) d.equip = null; return d; }
+function DP(diff) { const a = ACC(); if (!a) return NO_ACC_DP; const d = a.diff[diff]; if (!d.stages) d.stages = {}; if (d.equip === undefined || (d.equip && typeof SKINS !== 'undefined' && !SKINS[d.equip])) d.equip = null; return d; }   // angezogenes Kostüm, das es nicht mehr gibt (Halloween): ausziehen
 function SP(diff, stage = 'spielplatz') {
   const d = DP(diff);
   if (!d.stages[stage]) d.stages[stage] = { coins: 0, skins: [], speed: false, outfit: false, clears: 0, lastSkin: null, run: null };

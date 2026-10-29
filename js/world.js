@@ -303,7 +303,7 @@ function pushSigns(c, L, id, diff, t) {
 // wo man weiterspielt: der Bereich, in dem man zuletzt war (wenn frei), sonst der neueste freie
 function startArea(diff) {
   const a = ACC(), last = a && a.lastArea && a.lastArea[diff];
-  if (last && areaUnlocked(diff, last)) return last;
+  if (last && STAGE_ORDER.includes(last) && areaUnlocked(diff, last)) return last;   // (alte Spielstände: Geisterwald gibt es nicht mehr)
   let best = STAGE_ORDER[0]; for (const id of STAGE_ORDER) if (areaUnlocked(diff, id)) best = id; return best;
 }
 { const c0 = Play.prototype.constructor; }

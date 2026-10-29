@@ -391,7 +391,8 @@ class Play {
     }
 
     this.leafPop = 0; this.justDone = null;
-    if (!this.st.leaves) {   // 8 Original-Blätter pro Durchgang: kleine Erfolge beim Herumlaufen
+    this.st.leaves = [];   // Sammel-Blätter gibt es nicht mehr (Joker nur noch im Laden)
+    if (!this.st.leaves) {   // (alt) 8 Original-Blätter pro Durchgang
       const r = mulberry32(this.seedFor('leaves')), L = []; let g = 0;
       while (L.length < (SG.leaves || (this.diff === 'easy' ? 4 : LEAVES_PER_RUN)) && g++ < 4000)   /* Leicht: nur 4 Sammel-Sachen */ { const x = SG.solo ? 80 + r() * (WORLD_W - 160) : 60 + r() * 880, y = SG.solo ? 120 + r() * (WORLD_H - 220) : 300 + r() * 1040; if (canStand(0, x, y) && !L.some(o => dist(o.x, o.y, x, y) < 150) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 70) && dist(x, y, START.x, START.y) > 90) L.push({ x: Math.round(x), y: Math.round(y), got: false }); }
       this.st.leaves = L; Save.write();
@@ -524,7 +525,7 @@ class Play {
   // ---- Geheime Joker ----
   secretJoker(key) {
     if (this.st.secret[key]) return false;
-    this.st.secret[key] = true; this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1; Save.write();
+    this.st.secret[key] = true; if (!this.mp) { const m = META(); if (m) m.coins += SECRET_COINS; } Save.write();   // Geheimnis = Taler (Joker gibt es nur im Laden)
     this.secretPop = { t: 0, why: SECRET_NAMES[key] || '' }; FX.confetti(W / 2, H * 0.3, 70); Sfx.play('win'); buzz([40, 40, 80]);
     if (!this.mp) achieve('g_' + key);
     return true;
@@ -592,6 +593,7 @@ class Play {
   }
   // Zeit-Bonus: laufender Auftrag + verbleibende Sekunden bis zum Extra-Joker
   bonusQuest() {
+    return null;   // Bonus-Jagd gibt es nicht mehr (User-Wunsch: Joker nur noch im Laden)
     if (this.diff === 'easy') return null;   // bei Leicht keine Bonus-Uhr: eine Uhr reicht für die Kleinen
     if (this.diff === 'easy') { const id = Object.keys(this.st.easy || {})[0]; return id ? { q: this.st.easy[id], npc: id } : null; }
     return this.st.active ? { q: this.st.active, npc: this.st.active.npc } : null;
@@ -619,6 +621,7 @@ class Play {
   bonusLeft() { const bq = this.bonusQuest(); return bq ? { left: this.bonusLimit(bq.npc) - (bq.q.tt || 0), limit: this.bonusLimit(bq.npc) } : null; }
   // Große Ankündigung, sobald ein Auftrag startet: jetzt zählt jede Sekunde
   bonusStart(npc) {
+    return;   // keine Bonus-Jagd mehr
     if (this.diff === 'easy') return;   // keine Bonus-Jagd bei Leicht
     const lim = this.bonusLimit(npc), mm = Math.floor(lim / 60) + ':' + String(lim % 60).padStart(2, '0');
     this.bonusIntro = { t: 0, text: 'Schaffe es in ' + mm + ' → +1 Joker!' };
@@ -630,7 +633,7 @@ class Play {
       const a = ACC(), bt = a && !a.admin ? (a.bt || (a.bt = {})) : null;
       if (bt) { const e = bt[this.diff] || (bt[this.diff] = [0, 0, 0]); if (e[0] >= 100) { e[1] *= 0.99; e[2] *= 0.99; e[0] = 99; } e[0]++; e[1] = Math.round((e[1] + (q.tt || 0) / q.lim) * 100) / 100; if ((q.tt || 0) <= this.bonusLimit(npc, q)) e[2]++; }
     }
-    if (!q || (q.tt || 0) > this.bonusLimit(npc, q)) return;
+    return;   // keine Bonus-Joker mehr
     this.st.jokers = (this.st.jokers === undefined ? JOKERS_PER_RUN : this.st.jokers) + 1;
     this.bonusPop = { t: 0 }; Sfx.note(880, 0.3, 'triangle', 0.08, 1.5); buzz([30, 40, 30]); if (!this.mp) stat('bonusJ');
   }
@@ -764,7 +767,7 @@ class Play {
   }
   // ab und zu schlendert ein Gast ohne Auftrag durch den Bereich (macht es lebendiger)
   updateGuest(dt) {
-    if (this.mp || typeof STAFF_PEOPLE === 'undefined') return;
+    if (this.mp || typeof STAFF_PEOPLE === 'undefined' || this.stage === 'kueche') { this.guest = null; return; }   // in der Küche laufen keine Besucher herum (User-Wunsch)
     if (this.guest === undefined) { const own = new Set(NPC_DEFS.map(n => n.id)), ids = Object.keys(STAFF_PEOPLE).filter(k => !own.has(k)); this.guest = ids.length && Math.random() < 0.6 ? { id: ids[Math.floor(Math.random() * ids.length)], x: 0, y: 0, tx: 0, ty: 0, wait: 2, on: false, dir: 1 } : null; }
     const g = this.guest; if (!g) return;
     const pick = () => { for (let k = 0; k < 40; k++) { const x = 80 + Math.random() * (WORLD_W - 160), y = 200 + Math.random() * (WORLD_H - 260); if (canStand(0, x, y) && dist(x, y, this.p.x, this.p.y) > 120) return [x, y]; } return null; };
@@ -782,7 +785,7 @@ class Play {
   }
   onStairs() { const i = cellIdx(this.p.x, this.p.y); return i >= 0 && !!ST[i]; }
   // ---- Ablauf ----
-  pause() { if (this.mp) { this.stop(); return; } Sfx.play('tap'); overlay = new PauseDialog({ onQuit: () => this.stop() }); }   // Mehrspieler: wie bisher (dort läuft die Zeit für alle weiter)
+  pause() { if (this.mp) { this.stop(); return; } Sfx.play('tap'); overlay = new PauseDialog({ onQuit: () => this.stop(), onHelp: () => { this.helpOpen = true; } }); }   // Mehrspieler: wie bisher (dort läuft die Zeit für alle weiter)
   stop() { if (this.mp && !this.mpOver && !(overlay instanceof ConfirmDialog)) { overlay = new ConfirmDialog({ text: 'Mehrspieler-Spiel wirklich verlassen? Die anderen spielen dann ohne dich weiter.', icon: 'stop', onYes: () => { this.mpOver = 'left'; this.stop(); } }); return; }
     overlay = null; Save.write(); if (this.mp) { this.mp.leave(); setScene(new MultiScene()); return; } setScene(new Menu()); }
   update(dt) {
@@ -1508,13 +1511,16 @@ class Play {
   drawHud(c) {
     if (this.fadeIn > 0) { c.fillStyle = `rgba(20,30,20,${this.fadeIn / 0.35 * 0.8})`; c.fillRect(0, 0, W, H); this.fadeIn -= 1 / 60; }   // Bereichswechsel weich einblenden
     roundBtn(c, 46, 46, 25, '#fff', 'stop', () => this.pause());
-    roundBtn(c, 106, 46, 20, '#bde0fe', 'question', () => { this.helpOpen = true; }, '#118ab2');
-    if (this.mp) soundBtn(c, W - 40, 46);   /* sonst steckt der Ton-Knopf im Hilfe-Fenster (weniger Knöpfe oben) */
-    { const n = this.st.leaves.filter(o => o.got).length, k = 1 + this.leafPop * 0.35;
-      rrPath(c, 150, 28, 92, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
-      c.save(); c.translate(174, 46); c.scale(k, k); drawCollect(c, this.stage, 0, 0, 2.2, -0.5); c.restore();
-      txt(c, n + '/' + this.st.leaves.length, 214, 47, 17, '#fff', 'center', null); }
-    if (!this.mp) {   // Taler nur kurz einblenden, wenn neue dazukommen (sonst ist oben weniger los)
+    // (Hilfe-Knopf steckt jetzt im Pause-Menü – oben weniger Knöpfe)
+    if (this.mp) soundBtn(c, W - 40, 46);
+    if (!this.mp && this.diff !== 'easy') {   // Joker-Anzeige: wie viele Joker man hat (kaufen im Laden; Leicht: kein Laden)
+      const n = this.jokerApi().left(), k = 1 + (this.jokerPop || 0) * 0.35; this.jokerPop = Math.max(0, (this.jokerPop || 0) - 0.04);
+      if (this.jokerShown !== undefined && n !== this.jokerShown) this.jokerPop = 1; this.jokerShown = n;
+      rrPath(c, 84, 28, 78, 36, 18); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill(); c.lineWidth = 2.5; c.strokeStyle = n > 0 ? '#ffd23f' : 'rgba(255,255,255,.25)'; c.stroke();
+      c.save(); c.translate(106, 46); c.scale(k, k); icon(c, 'joker', 0, 0, 26); c.restore();
+      txt(c, n >= 99 ? '∞' : String(n), 140, 47, 18, n > 0 ? '#ffd23f' : '#fff', 'center', null);
+    }
+    if (!this.mp && this.diff !== 'easy') {   // Taler nur kurz einblenden, wenn neue dazukommen (Leicht: gar keine Taler-Anzeige)
       const m = META(), v = m ? m.coins : 0; if (this.coinShown === undefined) this.coinShown = v;
       if (v !== this.coinShown) { this.coinPop = 1; this.coinShown = v; this.coinShowT = 3.5; } this.coinPop = Math.max(0, (this.coinPop || 0) - 0.04); this.coinShowT = Math.max(0, (this.coinShowT || 0) - 1 / 60);
       if (this.coinShowT > 0) {
@@ -1609,7 +1615,7 @@ class Play {
         rrPath(c, W / 2 - gw / 2, H - 94, gw, 28, 14); c.fillStyle = R.cpMe ? 'rgba(6,214,160,.9)' : 'rgba(255,183,3,.92)'; c.fill(); txt(c, goal, W / 2, H - 80, 14, '#fff', 'center', BRAND.ink);
       }
     }
-    if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'joker', -96, 0, 46); txt(c, 'Geheimer Joker! +1', 20, 0, 24, '#ffd23f', 'center', OL); if (q.why) txt(c, q.why, 0, 34, 17, '#fff', 'center', OL); c.restore(); }
+    if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'coin', -110, 0, 46); txt(c, 'Geheimnis! +' + SECRET_COINS + ' Taler', 20, 0, 24, '#ffd23f', 'center', OL); if (q.why) txt(c, q.why, 0, 34, 17, '#fff', 'center', OL); c.restore(); }
     if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') this.drawCoach(c);
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
@@ -1692,7 +1698,7 @@ class Play {
 
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
-const JOKERS_PER_RUN = 3, LEAVES_PER_RUN = 8;
+const JOKERS_PER_RUN = 0, LEAVES_PER_RUN = 0, SECRET_COINS = 25;   // Joker gibt es nur noch im Laden (Bank); Geheimnisse bringen Taler
 // Sammel-Sachen je Bereich (statt immer nur Blätter)
 const COLLECT_NAME = { spielplatz: 'Original-Blätter', kueche: 'Kochmützen', gastraum: 'Kaffeebohnen', aussen: 'Sonnenblumen', parkplatz: 'Sterne', chalet: 'Schneeflocken' };
 function drawCollect(c, stage, x, y, s, rot) {

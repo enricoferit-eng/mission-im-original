@@ -439,7 +439,8 @@ function skinLevel(sk) { return sk.lvl || (sk.rarity === 'legend' ? 2 : 1); }
 function abilityText(sk) { const A = ABILITIES[sk.ability], l = skinLevel(sk); return A.f(l) + ' (Stufe ' + l + ' von 4)' + (sk.exclusiveStage ? ' – gibt es nur im Bereich ' + ({ kueche: 'Küche', gastraum: 'Innenbereich', aussen: 'Außenbereich', spielplatz: 'Spielplatz', parkplatz: 'Parkplatz', chalet: 'Chalet' })[sk.exclusiveStage] + '.' : ''); }
 // Stufe eines Upgrades (gilt fürs ganze Spiel, unabhängig vom Skin)
 const UP_KEYS = ['bonuszeit', 'turbo', 'extraherz', 'zeitplus', 'magnet'];
-function ability(name) {   // Upgrade-Stufe (gilt immer) oder – bei Neben-Fähigkeiten – die Stufe des angezogenen Skins
+function ability(name) {   // Kräfte gibt es nicht mehr (User-Wunsch): alles läuft auf Grundstufe 0
+  return 0;
   const m = typeof META === 'function' && META(); if (!m) return 0;
   if (UP_KEYS.includes(name)) return m.up ? clamp(m.up[name] || 0, 0, 4) : 0;
   const a = ACC(), id = a && DP(CUR_DIFF || 'medium').equip; return id && SKIN_SIDE[id] === name ? sideLevel(id) : 0;

@@ -104,7 +104,15 @@ function uebungDone(diff) {   // geschafft: weiter ins echte Abenteuer (bzw. zur
   const a = ACC(); if (a) { a.tut.uebung = true; a.tut.coach = true; a.tut.symbol = true; }
   SP(diff, 'uebung').run = null; Save.write();
   const back = window.UEBUNG_BACK; window.UEBUNG_BACK = null;
-  if (back === 'menu') setScene(new Menu()); else { setScene(new Menu()); overlay = new DiffPick(d => { const a2 = ACC(); if (a2) { a2.lastDiff = d; Save.write(); } setScene(new Play(d, { stage: startArea(d) })); }); }   // nach der Schule: Stufe wählen
+  const pick = () => { setScene(new Menu()); overlay = new DiffPick(d => { const a2 = ACC(); if (a2) { a2.lastDiff = d; Save.write(); } setScene(new Play(d, { stage: startArea(d) })); }); };   // nach der Schule: Stufe wählen
+  if (back === 'menu') { setScene(new Menu()); return; }
+  // Ohne Konto gespielt? Nach der Schule fragen, ob ein Konto angelegt werden soll (Spielstand sichern) – Nein geht einfach weiter
+  if (a && !a.token && !a.admin && !a.askedAcc) {
+    a.askedAcc = true; Save.write(); setScene(new Menu());
+    overlay = new ConfirmDialog({ text: 'Möchtest du ein Konto erstellen? Dann ist dein Spielstand sicher und du kannst auf anderen Geräten weiterspielen.', icon: 'lock', onYes: () => setScene(new NewAccount({ migrate: Save.data.current, next: pick })), onNo: pick });
+    return;
+  }
+  pick();
 }
 // Nach der Helfer-Schule: Welche Stufe? Drei große Karten mit Figur und Alter, Ansage wird vorgelesen
 class DiffPick {
@@ -188,7 +196,7 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     // Überspringen: klein und halb durchsichtig oben rechts (dort ist in der Schule frei), mit Rückfrage
     { c.font = `900 12px ${FONT}`; const sl = 'Überspringen ›', sw = c.measureText(sl).width + 22, sx = W - 12 - sw, sy = 46;
       c.save(); c.globalAlpha = 0.55; rrPath(c, sx, sy - 13, sw, 26, 13); c.fillStyle = 'rgba(30,20,10,.45)'; c.fill(); txt(c, sl, sx + sw / 2, sy + 1, 12, '#fff', 'center', null); c.restore();
-      UI.btn(sx - 6, sy - 20, sw + 12, 40, () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'Helfer-Schule überspringen? Du kannst sie später unter „Mehr“ → „Anleitung“ wiederholen.', icon: 'play', onYes: () => { Voice.stop(); this.exiting = true; uebungDone(this.diff); } }); }); }
+      UI.btn(sx - 6, sy - 20, sw + 12, 40, () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'Helfer-Schule überspringen?', icon: 'play', onYes: () => { Voice.stop(); this.exiting = true; uebungDone(this.diff); } }); }); }
     // Karte mit dem aktuellen Schritt
     const msg = UEBUNG_SAY[this.ueb.clockT !== undefined && this.ueb.clockT < 6 && step !== 'gate' && step !== 'back' ? 'clock' : step], w = W > H ? Math.min(W - 250, 520) : Math.min(W - 24, 520);   // Hochformat: ganze Breite (sonst wird der Kasten ein schmaler Turm)
     c.font = `900 14px ${FONT}`; const L = wrapLines(c, msg, w - 60, 14), h = 22 + L.length * 18, x = (W - w) / 2, y = H - h - 58;

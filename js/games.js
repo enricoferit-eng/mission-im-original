@@ -71,20 +71,34 @@ class GameOverlay {
     this.timeMax = this.timed ? (this.g.timeLimit || 30) + ABIL_VAL.zeitplus[ability('zeitplus')] : 0;
     this.timeLeft = this.timeMax; this.timeBonus = 0;
   }
-  // Joker: wer nicht weiterkommt, darf die Aufgabe überspringen (nur wenige pro Bereich)
+  // Joker: wer nicht weiterkommt, darf die Aufgabe überspringen. Joker gibt es nur im Laden – hat man keinen mehr,
+  // kann man nach einer Niederlage (oder langem Hängen) direkt hier einen kaufen und gleich einsetzen.
   jokerLeft() { const j = this.opts.joker; return j ? j.left() : 0; }
-  jokerReady() {
-    if (this.state === 'won' || this.help || this.jokerLeft() <= 0) return false;
+  jokerWaited() {
     if (this.state === 'lost') return true;
     if (typeof isGameAdmin === 'function' && isGameAdmin()) return this.state === 'play';   // Admin: Joker sofort
     const wait = this.opts.diff === 'easy' ? 25 : this.opts.diff === 'medium' ? 50 : 70;
     return this.retries >= 2 || this.t > wait;
   }
+  jokerMode() {   // null | 'idle' (sichtbar, noch nicht nutzbar) | 'use' | 'buy'
+    if (!this.opts.joker || this.state === 'won' || this.help || (this.opts.diff === 'easy' && !(typeof isGameAdmin === 'function' && isGameAdmin()))) return null;   // Leicht: kein Laden, keine Joker
+    const left = this.jokerLeft(), waited = this.jokerWaited();
+    if (left > 0) return waited ? 'use' : 'idle';
+    if (!waited || (scene && scene.mp) || typeof META !== 'function' || !META()) return left === 0 && !(scene && scene.mp) ? 'idle' : null;
+    return 'buy';
+  }
+  jokerReady() { return this.jokerMode() === 'use'; }
   useJoker() {
     if (!this.jokerReady()) return;
     this.opts.joker.use(); Voice.stop();
     const p = this.toScreen(200, 250); FX.confetti(p.x, p.y, 70, 1.2); FX.sparkle(p.x, p.y, 30, '#ffd23f');
     this.state = 'play'; this.usedJoker = true; this.env.win();
+  }
+  buyJoker() {   // direkt in der Aufgabe kaufen und einsetzen
+    const m = META(); if (!m) return;
+    if (m.coins < JOKER_PRICE) { Sfx.play('bad'); this.jokerMsg = { t: 0, text: 'Dafür fehlen dir noch ' + (JOKER_PRICE - m.coins) + ' Taler.' }; return; }
+    m.coins -= JOKER_PRICE; m.bank = (m.bank || 0) + 1; Save.write(); Sfx.play('coin');
+    if (this.jokerReady()) this.useJoker();
   }
   // Bonus-Uhr pausiert, solange man nicht spielen kann: Erklärung, 3-2-1, Hilfe-Fenster, Sternen-Feier
   bonusPaused() { return !!(this.help || this.cdWait > 0 || this.cd > 0 || this.state !== 'play'); }
@@ -99,12 +113,28 @@ class GameOverlay {
     c.restore();
   }
   drawJoker(c) {
-    if (!this.jokerReady()) return;
+    const mode = this.jokerMode(); if (!mode) return;
     const lost = this.state === 'lost';
-    if (!this.jokerSaid && !lost) { this.jokerSaid = true; Voice.say('Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft.', true); }
     let x, y;
     if (lost) { const p = this.toScreen(200, 432); x = p.x; y = p.y; }
     else if (this.side) { x = 46; y = H - 56; } else { x = 46; y = H - 52; }
+    if (mode === 'idle') {   // immer zu sehen: wie viele Joker man hat (nutzbar erst nach einer Weile)
+      const n = this.jokerLeft(); c.save(); c.globalAlpha = 0.6; roundBtn(c, x, y, 22, '#fff7e6', 'joker', null);
+      ell(c, x + 17, y - 17, 10, 10); fs(c, n > 0 ? '#ef476f' : '#adb5bd', 2); txt(c, String(n >= 99 ? '∞' : n), x + 17, y - 16, 12, '#fff', 'center', null); c.restore();
+      return;
+    }
+    if (mode === 'buy') {   // keiner mehr übrig: kaufen
+      const pu = 1 + Math.sin(this.t * 6) * 0.05, bw = 196, bh = 50, bx = lost ? x - bw / 2 : x - 30, by = y - bh / 2;
+      c.save(); c.translate(bx + bw / 2, y); c.scale(pu, pu); c.translate(-(bx + bw / 2), -y);
+      rrPath(c, bx, by, bw, bh, 25); fs(c, '#ffd166', 3); icon(c, 'joker', bx + 28, y, 30);
+      txt(c, 'Joker kaufen', bx + 54, y - 8, 15, '#3d2c1f', 'left', null); icon(c, 'coin', bx + 62, y + 11, 15); txt(c, String(JOKER_PRICE) + ' Taler', bx + 74, y + 12, 13, '#8d5a3b', 'left', null);
+      c.restore();
+      UI.btn(bx, by, bw, bh, () => this.buyJoker());
+      if (lost) txt(c, 'Damit ist die Aufgabe sofort geschafft', x, y + bh / 2 + 16, 13, '#fff', 'center', BRAND.ink);
+      if (this.jokerMsg) { this.jokerMsg.t += 1 / 60; const a = clamp(2.5 - this.jokerMsg.t, 0, 1); if (a <= 0) this.jokerMsg = null; else { c.save(); c.globalAlpha = a; txt(c, this.jokerMsg.text, W / 2, lost ? y - bh : H - 110, 15, '#fff', 'center', BRAND.ink, W - 30); c.restore(); } }
+      return;
+    }
+    if (!this.jokerSaid && !lost) { this.jokerSaid = true; Voice.say('Kommst du nicht weiter? Tippe auf den Joker. Dann ist die Aufgabe geschafft.', true); }
     const pop = ease.back(clamp(this.jokerT * 3, 0, 1)), pu = 1 + Math.sin(this.t * 6) * 0.07, r = lost ? 34 : 32;
     c.save(); c.translate(x, y); c.scale(pop * pu, pop * pu);
     ell(c, 0, 0, r + 8, r + 8); c.fillStyle = 'rgba(255,210,63,.35)'; c.fill();

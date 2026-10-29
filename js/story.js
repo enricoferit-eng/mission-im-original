@@ -126,11 +126,12 @@ class Cutscene {
   const dc0 = drawCritter;
   drawCritter = function (c, id, x, y, s, t, o = {}) { if (id === 'olli') return drawOlli(c, x, y, s, t, !!o.wave); return dc0(c, id, x, y, s, t, o); };   // eslint-disable-line no-func-assign
   const P = Play.prototype;
+  var STORY_SCENES = false;   // Film + Kapitel-Einleitungen: raus (User-Wunsch)
   // Kapitel-Anfang: beim ersten Betreten des Bereichs
   const upd0 = P.update;
   P.update = function (dt) {
     upd0.call(this, dt);
-    if (this.mp || scene !== this || overlay || this.storyChecked || this.t < 0.4) return;
+    if (!STORY_SCENES || this.mp || scene !== this || overlay || this.storyChecked || this.t < 0.4) return;   // Kapitel-Filme sind aus (User-Wunsch)
     this.storyChecked = true;
     const sc = STORY[this.stage]; if (!sc || storySeen('in_' + this.stage)) return;
     if (this.stage === 'geisterwald' && !(typeof HALLOWEEN !== 'undefined' && HALLOWEEN)) return;
@@ -139,7 +140,7 @@ class Cutscene {
   // Kapitel-Ende: nach dem Schaffen erst die Geschichte, dann die Belohnung; nach dem 5. Kapitel das große Fest
   const clear0 = P.stageClear;
   P.stageClear = function () {
-    const r = clear0.call(this); if (this.mp) return r;
+    const r = clear0.call(this); if (this.mp || !STORY_SCENES) return r;
     const sc = STORY[this.stage], reward = overlay, st = this.stage, queue = [];
     if (sc && sc.outro && !storySeen('out_' + st)) queue.push(() => new Cutscene(Object.assign({ stage: st }, sc), 'outro', () => { storyMark('out_' + st); step(); }));
     if (STORY_MAIN.includes(st) && !storySeen('fest') && STORY_MAIN.every(id => ['easy', 'medium', 'hard'].some(d => SP(d, id).clears > 0))) queue.push(() => new Cutscene(STORY_FEST, 'fest', () => { storyMark('fest'); achieve('welt'); step(); }));
