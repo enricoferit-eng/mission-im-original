@@ -164,7 +164,7 @@ function buildGround() {
   const Q = Math.min(1.25, Math.sqrt(2.2e6 / (WORLD_W * WORLD_H))), cv2 = document.createElement('canvas'); cv2.width = Math.round(WORLD_W * Q); cv2.height = Math.round(WORLD_H * Q);   // große Bereiche etwas gröber (Speicher)
   const g = cv2.getContext('2d'); g.scale(Q, Q); g.lineJoin = 'round';
   const R = mulberry32(4242);
-  SG.ground(g, R);
+  if (lpActive()) lpGround(g); else SG.ground(g, R);   // Low-Poly: fertiges Bild mit Möbeln
   GROUND = cv2; GROUND_CACHE[SG.id] = cv2;
 }
 const GROUND_CACHE = {};
@@ -1248,13 +1248,13 @@ class Play {
       (q.decoys || []).forEach(d => { if (d.done) return; if (d.px != null) L.push({ y: d.zy + (d.front ? 0.5 : -0.5), f: () => { c.save(); c.translate(d.px, d.py + 6); c.rotate(d.rot); drawJunk(c, 0, 0, d.kind, hard ? 1.25 : 1.4); c.restore(); } }); else L.push({ y: d.y + 0.5, f: () => drawJunk(c, d.x, d.y, d.kind, hard ? 1.25 : 1.4) }); });
     }
     const dig = this.searching ? Math.abs(Math.sin(this.searching.t * 18)) * 0.25 : 0;
-    const drawPlayer = () => { drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir }); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); };
+    const drawPlayer = () => { if (lpActive()) { lpDrawPlayer(c, p, p.x, p.y - pz - (this.swingZ || 0), dig * p.dir); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); return; } drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir }); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); };
     // nur zeichnen, was im Bild ist
     const vx0 = this.camX - W / 2 / z - 120, vx1 = this.camX + W / 2 / z + 120, vy0 = this.camY - H / 2 / z - 40, vy1 = this.camY + H / 2 / z + 260;
     const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
     const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
     const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
-    for (const d of DECOR) {
+    for (const d of (lpActive() ? [] : DECOR)) {   // Low-Poly: Möbel sind im Bodenbild
       { const B = BB_CACHE[SG.id + '_d_' + d.id] || d.bb; if (B ? (B[0] > vx1 || B[0] + B[2] < vx0 || B[1] > vy1 + 100 || B[1] + B[3] < vy0 - 200) : !vis(d.x, d.y)) continue; }   // hohe/lange Möbel: ganze Fläche zählt
       const sh = this.shake[d.id] || 0, k = SG.id + '_d_' + d.id;
       if (d.t === 'yucca') L.push({ y: d.y, f: () => sh > 0 ? drawYucca(c, d.x, d.y, 1, t, sh) : drawSprite(c, sprite(k, d.x - 48, d.y - 62, 96, 76, g => drawYucca(g, d.x, d.y, 1, 0, 0))) });
@@ -1331,6 +1331,7 @@ class Play {
   drawNpc(c, n) {
     const a = this.npcAnim[n.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 12 : 0;
     const zz = n.l ? HOUSE.fz : 0;
+    if (lpActive() && lpDrawStaff(c, n, n.x, n.y - zz - j, this.t, a.wave > 0 || this.npcState(n.id) === 'ready')) return;
     drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { staff: true, ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
   }
   drawSwingFrame(c) { drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
@@ -1430,7 +1431,7 @@ class Play {
   }
   drawMarkers(c) {
     const t = this.t, q = this.st.active, diff = this.diff, p = this.p;
-    const marks = this.npcs.map(n => { const P = this.npcPos(n); return { id: n.id, x: n.x, y: P.hy - P.hz - 72 }; });
+    const marks = this.npcs.map(n => { const P = this.npcPos(n); return { id: n.id, x: n.x, y: P.hy - P.hz - (lpActive() && LP.stages[SG.id].staff[n.id] ? LP.staffH + 22 : 72) }; });   // Low-Poly-Figuren sind größer
     marks.push({ id: 'gate', x: GATE.x, y: GATE.y - 128 });
     if (SG.feat.racer && this.racer && this.racer.state === 'idle' && !this.mp && dist(p.x, p.y, this.racer.x, this.racer.y) < 260) {   // Leo lädt zum Wettrennen ein
       const R = this.racer, b = Math.sin(t * 3) * 3, bx = R.x, by = R.y - 118 + b; c.font = `900 13px ${FONT}`; const tw = c.measureText('Wettrennen? Tipp mich an!').width + 22;

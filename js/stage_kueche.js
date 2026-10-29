@@ -344,6 +344,7 @@ STAGE_DEFS.kueche = {
     return {
       update(dt) { if (Math.random() < 0.3) steam.push({ x: KX + 155 + (Math.random() - 0.5) * 20, y: 505, t: 0 }); if (Math.random() < 0.2) steam.push({ x: KX + 100, y: 375, t: 0 }); steam.forEach(s => (s.t += dt)); for (let i = steam.length - 1; i >= 0; i--) if (steam[i].t > 1.6) steam.splice(i, 1); },
       draw(c, L, vis, t) {
+        if (lpActive()) return;   // Low-Poly-Bild hat eigenes Licht
         L.push({ y: 2000, f: () => { steam.forEach(s => { c.globalAlpha = 0.5 * (1 - s.t / 1.6); ell(c, s.x + Math.sin(s.t * 3 + s.x) * 8, s.y - s.t * 60, 8 + s.t * 10, 6 + s.t * 8); c.fillStyle = '#fff'; c.fill(); }); c.globalAlpha = 1; } });
         L.push({ y: 230, f: () => { for (let k = 0; k < 2; k++) { c.globalAlpha = 0.25 + 0.15 * Math.sin(t * 7 + k); rrPath(c, KX + 800, 70 + k * 82, 100, 36, 4); c.fillStyle = '#ff8c42'; c.fill(); } c.globalAlpha = 1; } });
       },
