@@ -118,8 +118,8 @@ class DiffPick {
       const x = land ? W / 2 + (i - 1) * (cw + gap) - cw / 2 : (W - cw) / 2, y = land ? 84 + (H - 100 - chh) / 2 : 130 + i * (chh + gap), k = ease.back(clamp(this.t * 3 - i * 0.25, 0, 1));
       c.save(); c.translate(x + cw / 2, y + chh / 2); c.scale(k, k); c.translate(-(x + cw / 2), -(y + chh / 2));
       panel(c, x, y, cw, chh, d.col, 24);
-      if (land) { txt(c, d.name, x + cw / 2, y + 34, 28, '#fff', 'center', OL); drawAnimal(c, ANIMAL_OF[d.id], x + cw / 2, y + chh * 0.78, Math.min(2.2, chh / 120), { t: this.t + i }); txt(c, d.age + ' Jahre', x + cw / 2, y + chh - 18, 16, '#fff', 'center', OL); }
-      else { drawAnimal(c, ANIMAL_OF[d.id], x + chh * 0.5, y + chh * 0.86, Math.min(2, chh / 80), { t: this.t + i }); txt(c, d.name, x + chh, y + chh * 0.42, 28, '#fff', 'left', OL); txt(c, d.age + ' Jahre', x + chh, y + chh * 0.72, 16, '#fff', 'left', OL); }
+      if (land) { txt(c, d.name, x + cw / 2, y + 34, 28, '#fff', 'center', d.dark); diffDots(c, d, x + cw / 2, y + 60, 5); drawAnimal(c, ANIMAL_OF[d.id], x + cw / 2, y + chh * 0.82, Math.min(2.2, chh / 120), { t: this.t + i }); txt(c, d.age + ' Jahre', x + cw / 2, y + chh - 18, 16, '#fff', 'center', d.dark); }
+      else { drawAnimal(c, ANIMAL_OF[d.id], x + chh * 0.5, y + chh * 0.86, Math.min(2, chh / 80), { t: this.t + i }); txt(c, d.name, x + chh, y + chh * 0.36, 28, '#fff', 'left', d.dark); diffDots(c, d, x + chh + 13, y + chh * 0.6, 5); txt(c, d.age + ' Jahre', x + chh, y + chh * 0.8, 16, '#fff', 'left', d.dark); }
       c.restore();
       UI.btn(x, y, cw, chh, () => { Sfx.play('good'); Voice.stop(); overlay = null; this.done(d.id); });
     });
@@ -185,8 +185,12 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
       else { const ax = clamp(s.x, 60, W - 60), ay = clamp(s.y, 90, H - 120), ang = Math.atan2(s.y - ay, s.x - ax), pu = 1 + Math.sin(t * 6) * 0.12; c.save(); c.translate(ax, ay); c.rotate(ang); c.scale(pu, pu); polyPath(c, [[30, 0], [-14, -24], [-4, 0], [-14, 24]]); fs(c, '#ffd23f', 4, '#3d2c1f'); c.restore(); }
     }
     if (overlay) return;
+    // Überspringen: klein und halb durchsichtig oben rechts (dort ist in der Schule frei), mit Rückfrage
+    { c.font = `900 12px ${FONT}`; const sl = 'Überspringen ›', sw = c.measureText(sl).width + 22, sx = W - 12 - sw, sy = 46;
+      c.save(); c.globalAlpha = 0.55; rrPath(c, sx, sy - 13, sw, 26, 13); c.fillStyle = 'rgba(30,20,10,.45)'; c.fill(); txt(c, sl, sx + sw / 2, sy + 1, 12, '#fff', 'center', null); c.restore();
+      UI.btn(sx - 6, sy - 20, sw + 12, 40, () => { Sfx.play('tap'); overlay = new ConfirmDialog({ text: 'Helfer-Schule überspringen? Du kannst sie später unter „Mehr“ → „Anleitung“ wiederholen.', icon: 'play', onYes: () => { Voice.stop(); this.exiting = true; uebungDone(this.diff); } }); }); }
     // Karte mit dem aktuellen Schritt
-    const msg = UEBUNG_SAY[this.ueb.clockT !== undefined && this.ueb.clockT < 6 && step !== 'gate' && step !== 'back' ? 'clock' : step], w = Math.min(W - 250, 520);
+    const msg = UEBUNG_SAY[this.ueb.clockT !== undefined && this.ueb.clockT < 6 && step !== 'gate' && step !== 'back' ? 'clock' : step], w = W > H ? Math.min(W - 250, 520) : Math.min(W - 24, 520);   // Hochformat: ganze Breite (sonst wird der Kasten ein schmaler Turm)
     c.font = `900 14px ${FONT}`; const L = wrapLines(c, msg, w - 60, 14), h = 22 + L.length * 18, x = (W - w) / 2, y = H - h - 58;
     rrPath(c, x, y, w, h, 16); fs(c, 'rgba(255,247,230,.96)', 3, '#95C11F');
     drawCritter(c, 'olli', x + 26, y + h - 4, 0.42, t, { staff: true, noShadow: true });

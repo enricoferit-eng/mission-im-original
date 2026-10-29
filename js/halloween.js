@@ -160,14 +160,14 @@ if (HALLOWEEN) {
     smap0.call(this, c);
     const ei = this.order.indexOf('geisterwald'), n = this.geo().nodes[ei]; if (!n) return;
     // Event-Punkt hervorheben: Leuchten + EVENT-Schild (in Kartenkoordinaten)
-    const x = n.x - this.camX, sy = n.y - 78 + Math.sin(this.t * 3 + ei) * 3, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
-    if (x > -80 && x < W + 80) {
-      ell(c, x, n.y + 2, 52 + gl * 6, 30 + gl * 4); c.lineWidth = 5; c.strokeStyle = `rgba(255,140,20,${0.45 + gl * 0.4})`; c.stroke();
+    const sn = this.scr(n), x = sn.x, ny = sn.y, sy = ny - 78 + Math.sin(this.t * 3 + ei) * 3, gl = 0.5 + 0.5 * Math.sin(this.t * 3);
+    if (x > -80 && x < W + 80 && ny > -120 && ny < H + 80) {
+      ell(c, x, ny + 2, 52 + gl * 6, 30 + gl * 4); c.lineWidth = 5; c.strokeStyle = `rgba(255,140,20,${0.45 + gl * 0.4})`; c.stroke();
       rrPath(c, x - 100, sy - 9, 56, 18, 9); fs(c, '#ef476f', 2, '#fff'); txt(c, 'EVENT', x - 72, sy + 1, 11, '#fff', 'center', null);   // links neben dem Schild (oben Bildrand, rechts Ton-Knopf)
     }
     if (overlay || this.cur === ei || this.walk) return;
     // Abkürzung unten rechts: läuft zum Event-Punkt
-    const bx = W - 42, by = H - 128, b = Math.sin(this.t * 2.2) * 1.5;   // über dem Garderoben-Knopf, verdeckt nichts
+    const bx = W - 42, by = this.vert ? H - 104 - 120 : H - 128, b = Math.sin(this.t * 2.2) * 1.5;   // über dem Garderoben-Knopf, verdeckt nichts
     roundBtn(c, bx, by + b, 22, '#3c096c', null, () => this.goTo(ei), '#f77f00');
     jackO(c, bx, by + b, 1.3, 0.6); txt(c, 'Geisterwald', bx - 4, by + 36, 11, '#ffd166', 'center', '#3c096c');
   };

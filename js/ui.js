@@ -1,10 +1,22 @@
 'use strict';
 // ---------- Menü, Stage-Karte, Shop, Stage-Abschluss, Start ----------
+// Jede Stufe hat überall dieselbe kräftige Farbe (grün/orange/rot) + 1–3 Punkte – so sieht man sofort, auf welcher Stufe man ist
 const DIFFS = [
-  { id: 'easy', stars: 1, name: 'Leicht', age: '6–8', col: '#f6d3a3' },
-  { id: 'medium', stars: 2, name: 'Mittel', age: '9–11', col: '#d5e8a6' },
-  { id: 'hard', stars: 3, name: 'Schwer', age: '12–14', col: '#e9bb93' },
+  { id: 'easy', stars: 1, name: 'Leicht', age: '6–8', col: '#2fb466', dark: '#1f7a45' },
+  { id: 'medium', stars: 2, name: 'Mittel', age: '9–11', col: '#f08c00', dark: '#a85f00' },
+  { id: 'hard', stars: 3, name: 'Schwer', age: '12–14', col: '#e03131', dark: '#9b1c1c' },
 ];
+const DIFF_OF = id => DIFFS.find(d => d.id === id) || DIFFS[1];
+function diffDots(c, d, x, y, r, on = true) {   // 1–3 Punkte (gefüllt = Stufe), mittig um x
+  for (let i = 0; i < 3; i++) { ell(c, x + (i - 1) * r * 2.6, y, r, r); fs(c, i < d.stars ? (on ? '#fff' : d.col) : on ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.12)', 0); }
+}
+function diffBadge(c, id, cx, cy, size = 15) {   // Pille in Stufen-Farbe: Name + Punkte; gibt die Breite zurück
+  const d = DIFF_OF(id); c.font = `900 ${size}px ${FONT}`; const tw = c.measureText(d.name).width, w = tw + size * 3.4 + 16, h = size * 2;
+  rrPath(c, cx - w / 2, cy - h / 2, w, h, h / 2); fs(c, d.col, 2.5, '#fff');
+  txt(c, d.name, cx - w / 2 + 10 + tw / 2, cy + 1, size, '#fff', 'center', d.dark);
+  diffDots(c, d, cx + w / 2 - 8 - size * 1.3, cy, size * 0.22);
+  return w;
+}
 
 function skyBg(c) {
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#7cc6e8'); g.addColorStop(0.55, '#c9ecf7'); g.addColorStop(0.56, '#8fbf6a'); g.addColorStop(1, '#5d8f45');
@@ -296,9 +308,9 @@ class Menu {
     rrPath(c, swX, swY - 22, swW, 44, 22); fs(c, 'rgba(255,255,255,.85)', 3);
     DIFFS.forEach((d, i) => {
       const x = swX + i * segW, on = d.id === diff;
-      if (on) { rrPath(c, x + 3, swY - 19, segW - 6, 38, 19); fs(c, d.col, 3); }
-      txt(c, d.name, x + segW / 2, swY - (on ? 4 : 2), on ? 17 : 15, on ? '#fff' : '#6b5a48', 'center', on ? OL : null);
-      txt(c, d.age, x + segW / 2, swY + 12, 11, on ? '#fff' : '#9a8b78', 'center', on ? OL : null);
+      if (on) { rrPath(c, x + 3, swY - 19, segW - 6, 38, 19); fs(c, d.col, 3, d.dark); }
+      txt(c, d.name, x + segW / 2, swY - 5, on ? 17 : 15, on ? '#fff' : d.dark, 'center', on ? d.dark : null);
+      diffDots(c, d, x + segW / 2, swY + 11, 3.2, on);
       UI.btn(x, swY - 24, segW, 48, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('tap'); } });
     });
     // Figur + SPIELEN
@@ -416,7 +428,7 @@ function isFull() { return !!(document.fullscreenElement || document.webkitFulls
 function wantFullBtn() { return !isStandalone() && !isFull(); }
 function goFull() {
   const rq = fullApi(); if (!rq) { setScene(new InstallGuide(() => setScene(new Menu()))); return; }
-  try { const pr = rq.call(document.documentElement, { navigationUI: 'hide' }); const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* egal */ } }; if (pr && pr.then) pr.then(lock).catch(() => {}); else lock(); } catch (e) { /* egal */ }
+  try { const pr = rq.call(document.documentElement, { navigationUI: 'hide' }); const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) { /* egal */ } }; if (pr && pr.then) pr.then(lock).catch(() => {}); else lock(); } catch (e) { /* egal */ }
 }
 // Ohne Konto spielen: ein Spielstand nur auf diesem Gerät (Gast). Ein Konto auf dem Server kann man später über „Spielstand sichern“ machen.
 function playAsGuest() {
@@ -627,27 +639,55 @@ function askDelete(id, a) {
   else confirm();
 }
 
-// Pause (roter Knopf im Spiel): alles steht, auch die Bonus-Uhr; Weiter = zurück ins Spiel, Beenden = ins Menü
+// Pause (roter Knopf im Spiel): alles steht, auch die Bonus-Uhr. Hier liegt alles Wichtige: Ton/Musik/Vorlesen schnell an/aus,
+// Ton-Regler, Vollbild – Weiter = zurück ins Spiel, Beenden = ins Menü
+function soundToggle(kind) {   // schnelles An/Aus; beim Wieder-Einschalten kommt die alte Lautstärke zurück
+  const a = ACC(); if (!a) return; const V = VOL();
+  if (kind === 'all') { const mute = a.sound !== false; a.sound = !mute; if (mute) { Voice.stop(); Music.stop(); if (typeof Tune !== 'undefined') Tune.stop(); } else if (V.all <= 0) V.all = 1; }
+  else { const keep = a.volKeep || (a.volKeep = {}); if (V[kind] > 0) { keep[kind] = V[kind]; V[kind] = 0; if (kind === 'voice') Voice.stop(); } else { V[kind] = keep[kind] || (kind === 'music' ? 0.8 : 1); if (a.sound === false) a.sound = true; } }
+  Save.write(); applyVolume(); Sfx.play('tap');
+}
 class PauseDialog {
   constructor(o) { this.o = o; this.t = 0; }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; Voice.stop(); if (this.o.onResume) this.o.onResume(); }
   draw(c) {
     Voice.once('Pause. Die Bonus-Uhr steht still.');
-    const w = Math.min(W - 30, 380), h = 240, x = (W - w) / 2, y = (H - h) / 2;
+    const a = ACC(), V = VOL(), allOn = !!(a && a.sound !== false) && V.all > 0, full = wantFullBtn();
+    const w = Math.min(W - 24, 400), h = 372, x = (W - w) / 2, y = (H - h) / 2;
     c.fillStyle = 'rgba(16,28,18,.7)'; c.fillRect(0, 0, W, H);
     fitBegin(c, w, h + 50);
     panel(c, x, y, w, h, '#fff7e6', 24);
-    rrPath(c, W / 2 - 16, y + 20, 11, 36, 4); fs(c, '#ef476f', 0); rrPath(c, W / 2 + 5, y + 20, 11, 36, 4); fs(c, '#ef476f', 0);
-    txt(c, 'Pause', W / 2, y + 80, 28, '#3d2c1f', 'center', null);
-    txt(c, 'Die Bonus-Uhr steht still.', W / 2, y + 112, 16, '#6b5a48', 'center', null);
+    rrPath(c, W / 2 - 14, y + 18, 10, 30, 4); fs(c, '#ef476f', 0); rrPath(c, W / 2 + 4, y + 18, 10, 30, 4); fs(c, '#ef476f', 0);
+    txt(c, 'Pause', W / 2, y + 70, 26, '#3d2c1f', 'center', null);
+    txt(c, 'Die Bonus-Uhr steht still.', W / 2, y + 98, 14, '#6b5a48', 'center', null);
+    // Einstellungen: große Schalter zum Antippen
+    const rows = [
+      ['all', allOn ? 'sound' : 'mute', 'Ton', allOn, '#118ab2'],
+      ['music', 'music', 'Musik', allOn && V.music > 0, '#9b5de5'],
+      ['voice', 'voice', 'Vorlesen', allOn && V.voice > 0, '#ef476f'],
+    ];
+    const n = rows.length + 1 + (full ? 1 : 0), gw = Math.min(76, (w - 24) / n), gx = W / 2 - (gw * n) / 2 + gw / 2, gy = y + 156;
+    rows.forEach(([k, ic, name, on, col], i) => {
+      const bx = gx + i * gw;
+      ell(c, bx, gy, 27, 27); fs(c, on ? '#fff' : '#e9ecef', 3, on ? col : '#adb5bd');
+      if (ic === 'sound' || ic === 'mute') icon(c, ic, bx, gy, 30, on ? col : '#868e96'); else VOL_ICON[ic](c, bx, gy, on ? col : '#adb5bd');
+      if (!on && k !== 'all') line(c, bx - 16, gy + 16, bx + 16, gy - 16, 4, '#c1121f', false);
+      txt(c, name, bx, gy + 42, 13, '#3d2c1f', 'center', null);
+      rrPath(c, bx - 20, gy + 54, 40, 18, 9); fs(c, on ? '#06d6a0' : '#ced4da', 0); txt(c, on ? 'AN' : 'AUS', bx, gy + 64, 10, '#fff', 'center', null);
+      UI.btn(bx - gw / 2, gy - 32, gw, 108, () => soundToggle(k));
+    });
+    { const bx = gx + rows.length * gw; roundBtn(c, bx, gy, 27, '#d8f5e3', 'sound', () => { Sfx.play('tap'); overlay = new VolumePanel(this); }, '#2b9348'); txt(c, 'Lautstärke', bx, gy + 42, 13, '#3d2c1f', 'center', null, gw - 2); }
+    if (full) { const bx = gx + (rows.length + 1) * gw; roundBtn(c, bx, gy, 27, '#fff', 'full', () => { Sfx.play('tap'); goFull(); }); txt(c, 'Vollbild', bx, gy + 42, 13, '#3d2c1f', 'center', null); }
     const pu = 1 + Math.sin(this.t * 5) * 0.05;
     const by = y + h - 62;   // Knöpfe + Beschriftung ganz im Kasten
+    line(c, x + 24, by - 52, x + w - 24, by - 52, 2, 'rgba(0,0,0,.08)', false);
     c.save(); c.translate(W / 2 + 64, by); c.scale(pu, pu); roundBtn(c, 0, 0, 30, '#06d6a0', 'play', null); c.restore();
     UI.btn(W / 2 + 28, by - 36, 72, 90, () => { Sfx.play('tap'); this.close(); });
     txt(c, 'Weiter', W / 2 + 64, by + 44, 14, '#2b9348', 'center', null);
     roundBtn(c, W / 2 - 64, by, 26, '#ced4da', 'stop', () => { if (overlay === this) overlay = null; Voice.stop(); this.o.onQuit(); });
     txt(c, 'Beenden', W / 2 - 64, by + 44, 14, '#6b5a48', 'center', null);
+    c.restore();
   }
 }
 class ConfirmDialog {
@@ -671,9 +711,9 @@ class ConfirmDialog {
 }
 // Lautstärke: alles + Musik getrennt (5 Stufen zum Antippen)
 class VolumePanel {   // Ton-Regler: Gesamt, Musik, Stimmen, Geräusche – zum Ziehen oder Antippen, beim Loslassen kommt eine Hörprobe
-  constructor() { this.t = 0; this.rows = []; this.drag = null; }
+  constructor(back) { this.t = 0; this.rows = []; this.drag = null; this.back = back || null; }   // back: Fenster, zu dem Schließen zurückführt (z. B. Pause)
   update(dt) { this.t += dt; }
-  close() { if (overlay === this) overlay = null; Save.write(); }
+  close() { if (overlay === this) overlay = this.back; Save.write(); }
   draw(c) {
     const a = ACC(); if (!a) { this.close(); return; }
     const V = VOL(), mute = a.sound === false;
@@ -1217,19 +1257,29 @@ class StageMap {
     this.cur = Math.max(0, this.order.indexOf(startArea(diff))); this.sel = this.cur; this.walk = null; this.card = 0;
   }
   enter() { FX.clear(); }
+  // Hochformat (Hauptformat): Weg läuft senkrecht von unten nach oben, gescrollt wird hoch/runter. Quer: Weg von links nach rechts.
+  get vert() { return H > W; }
   geo() {
-    const top = 78, bot = H - 150, mid = (top + bot) / 2, amp = Math.max(30, (bot - top) * 0.3), gap = clamp(W * 0.32, 220, 300);
-    const N = this.order.length, mapW = Math.max(W, 140 + gap * (N - 1) + 140);
-    const nodes = this.order.map((id, i) => ({ id, x: 140 + i * gap, y: mid + (i % 2 ? amp : -amp) * (i % 4 < 2 ? 1 : 0.6) }));
-    if (!this.pts || this.pts.mapW !== mapW || this.pts.H !== H) {
+    const N = this.order.length, vert = this.vert;
+    let top = 78, bot = H - 150, mapW, gap, nodes;
+    if (vert) {
+      gap = clamp(H * 0.24, 170, 230); mapW = Math.max(H, 300 + gap * (N - 1) + 190);   // mapW = Weglänge in Scroll-Richtung
+      const amp = Math.min(W * 0.24, 120);
+      nodes = this.order.map((id, i) => ({ id, x: W / 2 + (i % 2 ? amp : -amp), y: mapW - 300 - i * gap }));
+    } else {
+      const mid = (top + bot) / 2, amp = Math.max(30, (bot - top) * 0.3); gap = clamp(W * 0.32, 220, 300);
+      mapW = Math.max(W, 140 + gap * (N - 1) + 140);
+      nodes = this.order.map((id, i) => ({ id, x: 140 + i * gap, y: mid + (i % 2 ? amp : -amp) * (i % 4 < 2 ? 1 : 0.6) }));
+    }
+    if (!this.pts || this.pts.mapW !== mapW || this.pts.H !== H || this.pts.W !== W) {
       const pts = [], at = [];
       for (let i = 0; i < N - 1; i++) {
-        const a = nodes[i], b = nodes[i + 1], c1 = { x: a.x + gap * 0.5, y: a.y }, c2 = { x: b.x - gap * 0.5, y: b.y };
+        const a = nodes[i], b = nodes[i + 1], c1 = vert ? { x: a.x, y: a.y - gap * 0.5 } : { x: a.x + gap * 0.5, y: a.y }, c2 = vert ? { x: b.x, y: b.y + gap * 0.5 } : { x: b.x - gap * 0.5, y: b.y };
         at[i] = pts.length;
         for (let k = 0; k < 40; k++) { const u = k / 40, v = 1 - u; pts.push({ x: v * v * v * a.x + 3 * v * v * u * c1.x + 3 * v * u * u * c2.x + u * u * u * b.x, y: v * v * v * a.y + 3 * v * v * u * c1.y + 3 * v * u * u * c2.y + u * u * u * b.y }); }
       }
       at[N - 1] = pts.length; pts.push({ x: nodes[N - 1].x, y: nodes[N - 1].y });
-      this.pts = { list: pts, at, mapW, H };
+      this.pts = { list: pts, at, mapW, H, W }; if (this.ptsVert !== vert) { this.ptsVert = vert; this.camX = null; }
       if (this.pos === undefined) this.pos = at[this.cur];
     }
     return { nodes, mapW, top, bot };
@@ -1243,12 +1293,14 @@ class StageMap {
       if (Math.floor(this.pos / 8) !== Math.floor((this.pos - dir * step * 6) / 8)) Sfx.note(700 + rnd() * 200, 0.05, 'sine', 0.03);
       if (Math.abs(this.walk.to - this.pos) < 0.01) { this.pos = this.walk.to; this.cur = this.walk.node; this.walk = null; this.card = 0; Sfx.play('good'); const p = this.scr(P.list[Math.round(this.pos)]); FX.sparkle(p.x, p.y - 30, 14, '#ffd23f'); }
     }
-    const me = P.list[Math.round(this.pos)], want = clamp(me.x - W / 2, 0, G.mapW - W);
+    const me = P.list[Math.round(this.pos)], want = this.want(me, G);
     if (this.camX === null) this.camX = want;
     if (!this.drag) this.camX = lerp(this.camX, want + (this.panOff || 0), Math.min(1, dt * 4));
     if (!this.drag && this.panOff) this.panOff *= Math.pow(0.2, dt);
   }
-  scr(p) { return { x: p.x - this.camX, y: p.y }; }
+  view() { return this.vert ? H : W; }   // sichtbare Länge in Scroll-Richtung
+  want(me, G) { return this.vert ? clamp(me.y - H * 0.55, 0, G.mapW - H) : clamp(me.x - W / 2, 0, G.mapW - W); }
+  scr(p) { return this.vert ? { x: p.x, y: p.y - this.camX } : { x: p.x - this.camX, y: p.y }; }
   goTo(i) {
     if (this.walk) return;
     this.sel = i; this.panOff = 0;
@@ -1265,14 +1317,15 @@ class StageMap {
     // Himmel + Hügel mit Parallaxe
     const hw = typeof HALLOWEEN !== 'undefined' && HALLOWEEN, sky = c.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, hw ? '#2b1a4a' : '#8fd3f4'); sky.addColorStop(0.55, hw ? '#7b3f72' : '#d6f2fb'); sky.addColorStop(1, hw ? '#4f6b3a' : '#bfe3a5'); c.fillStyle = sky; c.fillRect(0, 0, W, H);
     ell(c, W - 90, 110, 34, 34); fs(c, hw ? '#fff3bf' : '#ffd166', 0); if (hw) { ell(c, W - 78, 102, 30, 30); fs(c, '#3a2350', 0); hwBats(c, t, 3); }   // Halloween: Nacht mit Mond
-    for (let i = 0; i < 6; i++) { const cx = ((i * 260 - this.camX * 0.2 + t * 12) % (W + 300) + W + 300) % (W + 300) - 150, cy = 90 + (i % 3) * 34; c.fillStyle = 'rgba(255,255,255,.85)'; ell(c, cx, cy, 46, 16); c.fill(); ell(c, cx + 26, cy - 10, 28, 16); c.fill(); }
-    [[0.35, '#a3d483', 0.55], [0.6, '#8cc46a', 0.7]].forEach(([sp, col, hy]) => { c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W + 20; x += 20) { const wx = x + this.camX * sp; c.lineTo(x, H * hy + Math.sin(wx / 160) * 26 + Math.sin(wx / 63) * 9); } c.lineTo(W, H); c.closePath(); c.fillStyle = col; c.fill(); });
-    c.fillStyle = '#7cb95a'; c.fillRect(0, G.bot - 10, W, H);
-    c.save(); c.translate(-this.camX, 0);
+    const vert = this.vert, px = vert ? 0 : this.camX;   // Parallaxe nur quer
+    for (let i = 0; i < 6; i++) { const cx = ((i * 260 - px * 0.2 + t * 12) % (W + 300) + W + 300) % (W + 300) - 150, cy = 90 + (i % 3) * 34; c.fillStyle = 'rgba(255,255,255,.85)'; ell(c, cx, cy, 46, 16); c.fill(); ell(c, cx + 26, cy - 10, 28, 16); c.fill(); }
+    [[0.35, '#a3d483', 0.55], [0.6, '#8cc46a', 0.7]].forEach(([sp, col, hy]) => { c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W + 20; x += 20) { const wx = x + px * sp; c.lineTo(x, H * hy + Math.sin(wx / 160) * 26 + Math.sin(wx / 63) * 9); } c.lineTo(W, H); c.closePath(); c.fillStyle = col; c.fill(); });
+    c.fillStyle = '#7cb95a'; c.fillRect(0, vert ? H * 0.45 : G.bot - 10, W, H);
+    c.save(); if (vert) c.translate(0, -this.camX); else c.translate(-this.camX, 0);
     // Deko entlang des Wegs
     for (let i = 0; i < G.mapW / 90; i += 2) {   // weniger Deko: nur jede zweite Stelle
-      const x = i * 90 + 30, yy = (i % 2 ? H * 0.64 : G.bot - 4) + ((i * 37) % 19);
-      if (x < this.camX - 80 || x > this.camX + W + 80) continue;
+      const x = vert ? (i % 4 ? W - 26 : 26) : i * 90 + 30, yy = vert ? i * 90 + 60 : (i % 2 ? H * 0.64 : G.bot - 4) + ((i * 37) % 19), along = vert ? yy : x;
+      if (along < this.camX - 80 || along > this.camX + this.view() + 80) continue;
       if (i % 3 === 0) cypress(c, x, yy, 70); else if (i % 3 === 1) { drawPotPalm(c, x, yy, 0.5, t + i); } else { ell(c, x, yy - 8, 18, 12); fs(c, '#52b788', 3); ell(c, x + 4, yy - 12, 5, 4); c.fillStyle = ['#ef476f', '#ffd166', '#fff'][i % 3]; c.fill(); }
     }
     // Weg: breiter Kiesweg + Punkte; schon gelaufener Teil leuchtet
@@ -1302,34 +1355,38 @@ class StageMap {
     const fp = Math.round(this.pos), me = P.list[fp], nxt = P.list[Math.min(P.list.length - 1, fp + 1)], hop = this.walk ? Math.abs(Math.sin(t * 12)) * 16 : 0;
     const dir = this.walk ? Math.sign(this.walk.to - this.pos) || 1 : 1;
     drawAnimal(c, kind, me.x, me.y - 14 - hop, 1.25, { t, moving: !!this.walk, dir, cap: hasCap(kind) });
-    if (this.walk && Math.floor(t * 10) % 2) { FX.puff && FX.puff(me.x - this.camX, me.y - 6, 1); }
+    if (this.walk && Math.floor(t * 10) % 2) { const sp2 = this.scr(me); FX.puff && FX.puff(sp2.x, sp2.y - 6, 1); }
     c.restore();
     // Kopfleiste
     topBar(c, () => setScene(new Menu()));
-    { c.font = `900 18px ${FONT}`; const tw = c.measureText(d.name).width + 28; rrPath(c, W / 2 - tw / 2, 14, tw, 32, 16); c.fillStyle = 'rgba(32,44,30,.75)'; c.fill(); txt(c, d.name, W / 2, 31, 18, '#fff', 'center', null); }
+    diffBadge(c, this.diff, W / 2, 30, 17);
     // Info-Karte zum gewählten Bereich
     const id = this.order[this.cur], open = OPEN_STAGES.includes(id), info = STAGE_INFO[id], sp = SP(this.diff, id);
-    const cw = Math.min(W - 120, 560), ch = 104, cx = 16 + (W - 120 - cw) / 2, k = ease.back(this.card), cy = H - ch - 12 + (1 - k) * 140;
+    const cw = vert ? W - 24 : Math.min(W - 120, 560), ch = 104, cx = vert ? 12 : 16 + (W - 120 - cw) / 2, k = ease.back(this.card), cy = H - ch - 12 + (1 - k) * 140;
+    const artW = vert ? ch * 0.95 : ch * 1.3;
     if (!this.walk) {
       panel(c, cx, cy, cw, ch, open ? '#fbf8f2' : '#e9e4d8', 20);
-      stageArt(c, id, cx + 8, cy + 8, ch * 1.3, ch - 16, t);
-      const tx = cx + ch * 1.3 + 20;
-      txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null);
-      { const sc = typeof STORY !== 'undefined' && STORY[id]; txt(c, sc ? sc.title + ' · ' + sc.name : info.sub, tx, cy + 52, 13, sc ? '#c9762f' : '#6b5a48', 'left', null, cw - ch * 1.3 - 120);   // Kapitel der Geschichte
-        if (sc && storySeen('in_' + id)) { roundBtn(c, cx + ch * 1.3 - 4, cy + 16, 15, '#fff3bf', 'book', () => storyReplay(id), '#c9a227'); } }
+      stageArt(c, id, cx + 8, cy + 8, artW, ch - 16, t);
+      const tx = cx + artW + 18, tw = cw - artW - 18 - (open ? 92 : 14);   // Platz für Text bis zum Start-Knopf
+      txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null, tw);
+      { const sc = typeof STORY !== 'undefined' && STORY[id]; txt(c, sc ? sc.title + ' · ' + sc.name : info.sub, tx, cy + 52, 13, sc ? '#c9762f' : '#6b5a48', 'left', null, tw);   // Kapitel der Geschichte
+        if (sc && storySeen('in_' + id)) { roundBtn(c, cx + artW - 4, cy + 16, 15, '#fff3bf', 'book', () => storyReplay(id), '#c9a227'); } }
       if (open) {
         const ids = STAGE_DEFS[id] ? STAGE_DEFS[id].npcs.map(n => n.id).concat(['gate']) : ALL_IDS, done = ids.filter(q => sp.run && sp.run.done && sp.run.done[q]).length;
-        for (let q = 0; q < ids.length; q++) { ell(c, tx + 6 + q * 15, cy + 78, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); } txt(c, done + ' von ' + ids.length + ' geschafft', tx + 10 + ids.length * 15, cy + 79, 12, '#6b5a48', 'left', null);
+        const dg = Math.min(15, (tw - 4) / ids.length);
+        for (let q = 0; q < ids.length; q++) { ell(c, tx + 6 + q * dg, cy + 74, 5.5, 5.5); fs(c, q < done ? '#06d6a0' : '#e9ecef', 2); }
+        if (tw > ids.length * 15 + 110) txt(c, done + ' von ' + ids.length + ' geschafft', tx + 10 + ids.length * 15, cy + 75, 12, '#6b5a48', 'left', null); else txt(c, done + ' von ' + ids.length + ' geschafft', tx, cy + 92, 12, '#6b5a48', 'left', null, tw);
         const pu = 1 + Math.sin(t * 6) * 0.07;
         c.save(); c.translate(cx + cw - 46, cy + ch / 2); c.scale(pu, pu); roundBtn(c, 0, 0, 28, '#06d6a0', 'play', null); c.restore();
         UI.btn(cx + cw - 90, cy, 90, ch, () => this.play());
       } else { const prev = this.order[this.order.indexOf(id) - 1], lab = prev ? 'Schaffe zuerst: ' + STAGE_INFO[prev].name : 'gesperrt'; c.font = `900 13px ${FONT}`; const lw = c.measureText(lab).width + 44; rrPath(c, tx, cy + 64, lw, 28, 14); fs(c, '#fff', 2); icon(c, 'lock', tx + 16, cy + 78, 18); txt(c, lab, tx + 30, cy + 79, 13, '#6c757d', 'left', null); }
     }
-    roundBtn(c, W - 46, H - 52, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
+    if (vert) roundBtn(c, W - 40, H - ch - 50, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });   // Hochformat: über der Karte
+    else roundBtn(c, W - 46, H - 52, 24, '#ffd166', 'hanger', () => { overlay = new Wardrobe(this.diff); });
   }
-  down(x, y) { this.drag = { x0: x, cam0: this.camX, moved: false }; }
-  move(x) { const d = this.drag; if (!d) return; if (Math.abs(x - d.x0) > 10) d.moved = true; if (d.moved) { const G = this.geo(); this.camX = clamp(d.cam0 - (x - d.x0), 0, G.mapW - W); } }
-  up() { const d = this.drag; this.drag = null; if (d && d.moved) { const me = this.pts.list[Math.round(this.pos)], G = this.geo(); this.panOff = this.camX - clamp(me.x - W / 2, 0, G.mapW - W); } }
+  down(x, y) { this.drag = { x0: this.vert ? y : x, cam0: this.camX, moved: false }; }
+  move(x, y) { const d = this.drag; if (!d) return; const v = this.vert ? y : x; if (Math.abs(v - d.x0) > 10) d.moved = true; if (d.moved) { const G = this.geo(); this.camX = clamp(d.cam0 - (v - d.x0), 0, G.mapW - this.view()); } }
+  up() { const d = this.drag; this.drag = null; if (d && d.moved) { const me = this.pts.list[Math.round(this.pos)], G = this.geo(); this.panOff = this.camX - this.want(me, G); } }
 }
 
 // ---------- Trailer: die Geschichte "Der neue Helfer" ohne Worte ----------
@@ -1627,14 +1684,14 @@ function drawRotate(c, t) {
   txt(c, 'Bitte dreh dein Handy', W / 2, H * 0.72, 24, '#fff', 'center', BRAND.ink);
   txt(c, 'ins Querformat', W / 2, H * 0.72 + 32, 24, '#fff', 'center', BRAND.ink);
 }
-// Auf Android: Vollbild + Querformat festhalten (iPhone erlaubt das nicht, dort hilft der Hinweis)
+// Auf Android: Vollbild + Hochformat festhalten (Hochkant ist das Hauptformat; iPhone erlaubt das Festhalten nicht)
 let triedLock = false;
 function tryLandscape() {
   if (triedLock || !TOUCH) return; triedLock = true;
   const el = document.documentElement, rq = el.requestFullscreen || el.webkitRequestFullscreen;
   try {
     const pr = rq ? rq.call(el, { navigationUI: 'hide' }) : null;
-    const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* egal */ } };
+    const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) { /* egal */ } };
     if (pr && pr.then) pr.then(lock).catch(() => {}); else lock();
   } catch (e) { /* egal */ }
 }

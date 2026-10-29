@@ -137,7 +137,7 @@ function toast(title, sub, ic = 'trophy') {
 function drawToasts(c, dt) {
   const q = TOASTS[0]; if (!q) return;
   q.t += dt * (TOASTS.length > 2 ? 2 : 1); if (q.t > 2.2) { TOASTS.shift(); return; }
-  const k = ease.back(clamp(q.t * 3, 0, 1)) * clamp((2.2 - q.t) * 3, 0, 1), w = Math.min(W - 30, 320), y = 8 + (k - 1) * 70;
+  const k = ease.back(clamp(q.t * 3, 0, 1)) * clamp((2.2 - q.t) * 3, 0, 1), w = Math.min(W - 30, 320), low = H > W && scene instanceof Play, y = low ? H - 170 - (k - 1) * 70 : 8 + (k - 1) * 70;   // Hochformat im Spiel: unten statt über den Knöpfen der oberen Leiste
   c.save(); c.globalAlpha = clamp(k, 0, 1);
   rrPath(c, W / 2 - w / 2, y, w, 44, 18); fs(c, '#fff7e6', 2.5); ell(c, W / 2 - w / 2 + 24, y + 22, 15, 15); fs(c, '#ffd166', 2); icon(c, q.ic, W / 2 - w / 2 + 24, y + 22, 20);
   txt(c, q.title, W / 2 - w / 2 + 46, y + 15, 13, BRAND.olive, 'left', null); txt(c, q.sub, W / 2 - w / 2 + 46, y + 31, 12, '#c9762f', 'left', null);
@@ -427,8 +427,9 @@ class Achievements {
     const has = A => tab === 'all' ? hasD(A, 'medium') || !!m.ach[A.id] : DF.every(d => hasD(A, d));   /* pro Stufe: Bronze (Leicht), Silber (Mittel), Gold (Schwer) in einer Karte */
     const LIST = ACHIEVEMENTS.filter(A => (tab === 'all') === GENERAL_ACH.has(A.id)).sort((a, b) => a.coins - b.coins || a.name.localeCompare(b.name));
     const nDone = tab === 'all' ? LIST.filter(has).length : LIST.reduce((n, A) => n + DF.filter(d => hasD(A, d)).length, 0), nAll = tab === 'all' ? LIST.length : LIST.length * 3;
-    icon(c, 'trophy', 104, 44, 40); txt(c, 'Erfolge ' + nDone + '/' + nAll, 130, 44, 20, '#fff', 'left', BRAND.olive);
-    coinChip(c, W - 170, 44);
+    const narrow = W < 520, lx = EMBED ? 34 : 104, cX = narrow ? W - 86 : W - 170;   // schmal (Hochformat): Taler kleiner und rechts, Titel darf nicht drunter laufen
+    icon(c, 'trophy', lx, 44, 40); txt(c, 'Erfolge ' + nDone + '/' + nAll, lx + 26, 44, 20, '#fff', 'left', BRAND.olive, cX - lx - 36);
+    coinChip(c, cX, 44, narrow);
     // Reiter: Leicht / Mittel / Schwer
     const tw = Math.min(150, (W - 40) / 2), tx0 = W / 2 - tw, ty = 74;
     [['lvl', 'Pro Stufe'], ['all', 'Allgemein']].forEach(([d, n], i) => { const x = tx0 + i * tw, sel = d === tab; rrPath(c, x + 3, ty, tw - 6, 30, 14); fs(c, sel ? '#ffd166' : 'rgba(255,255,255,.8)', 2.5); txt(c, n, x + tw / 2, ty + 15, 14, '#3d2c1f', 'center', null); UI.btn(x + 3, ty, tw - 6, 30, () => { this.tab = d; this.scroll = 0; }); });
@@ -445,9 +446,10 @@ class Achievements {
       const sd = tab === 'all' ? 'medium' : DF.find(d => !hasD(A, d)) || 'hard', hidden = A.secret && !done, st = m.st[A.stat && GENERAL_ACH.has(A.stat) ? A.stat : achKey(A.stat, sd)] || (sd === 'medium' ? m.st[A.stat] : 0) || 0;
       txt(c, hidden ? 'Geheimer Erfolg' : A.name, x + 64, y + 22, 15, done ? BRAND.olive : '#495057', 'left', null);
       const desc = hidden ? (A.area ? 'Ein Geheimnis im Bereich ' + A.area + ' …' : 'Entdecke es selbst …') : A.desc + (A.stat && !done ? ' (' + Math.min(A.need, st) + '/' + A.need + ')' : '');
-      wrapLines(c, desc, cw - (tab === 'all' ? 140 : 180), 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null));
+      const dw = cw - (tab === 'all' ? 140 : 184);
+      wrapLines(c, desc, dw, 12).slice(0, 2).forEach((l, k) => txt(c, l, x + 64, y + 40 + k * 14, 12, '#6b5a48', 'left', null, dw));
       if (tab === 'all') { icon(c, 'coin', x + cw - 50, y + ch / 2, 18); txt(c, String(A.coins), x + cw - 38, y + ch / 2 + 1, 14, '#8d5a3b', 'left', null); if (done) icon(c, 'check', x + cw - 14, y + 14, 16, '#06d6a0'); }
-      else DF.forEach((d, k) => { const on = hasD(A, d), mx = x + cw - 100 + k * 34, my = y + ch / 2; ell(c, mx, my, 14, 14); fs(c, on ? ['#cd7f32', '#c0c0c0', '#ffd700'][k] : '#e9ecef', 2.5, on ? '#6b4a1f' : ['#e0b08a', '#d0d0d0', '#f5d76e'][k]); txt(c, 'LMS'[k], mx, my + 1, 12, on ? '#fff' : '#adb5bd', 'center', on ? 'rgba(0,0,0,.35)' : null); });
+      else DF.forEach((d, k) => { const on = hasD(A, d), mx = x + cw - 100 + k * 34, my = y + ch / 2; ell(c, mx, my, 14, 14); fs(c, on ? ['#cd7f32', '#c0c0c0', '#ffd700'][k] : '#fff', 2.5, on ? '#6b4a1f' : DIFFS[k].col); txt(c, 'LMS'[k], mx, my + 1, 12, on ? '#fff' : DIFFS[k].col, 'center', on ? 'rgba(0,0,0,.35)' : null);   /* noch offen: Ring in Stufen-Farbe */ });
     });
     c.restore();
     if (maxScroll > 0) { const h = (H - top) * (H - top) / (H - top + maxScroll), y = top + (H - top - h) * (this.scroll / maxScroll); rrPath(c, W - 8, y, 5, h, 3); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); }

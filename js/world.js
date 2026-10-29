@@ -319,10 +319,13 @@ const STAGE_COL = { kueche: '#adb5bd', gastraum: '#d27d55', aussen: '#74c69d', s
     this.coachTop = 0; hud0.call(this, c);
     const name = STAGE_NAME[this.stage]; if (!name || this.helpOpen || overlay) return;   // nicht über Hilfe/Fenstern
     // über dem Hinweis-Band, damit sich nichts überdeckt
-    c.font = `900 16px ${FONT}`; const w = c.measureText(name).width + 54, x = W / 2 - w / 2, y = this.coachTop ? this.coachTop - 40 : H - 42;
-    rrPath(c, x, y, w, 32, 16); fs(c, 'rgba(255,255,255,.9)', 2.5); ell(c, x + 18, y + 16, 11, 11); fs(c, STAGE_COL[this.stage] || '#fff', 2);
+    // Bereichsname + Stufe (Farbe grün/orange/rot, Punkte) – man sieht immer, wo und wie schwer
+    const D = DIFF_OF(this.diff);
+    c.font = `900 16px ${FONT}`; const nw = c.measureText(name).width, dw = 30, w = nw + 54 + dw, x = W / 2 - w / 2, y = this.coachTop ? this.coachTop - 40 : H - 42;
+    rrPath(c, x, y, w, 32, 16); fs(c, 'rgba(255,255,255,.9)', 2.5, D.col); ell(c, x + 18, y + 16, 11, 11); fs(c, STAGE_COL[this.stage] || '#fff', 2);
     drawCollect(c, this.stage, x + 18, y + 16, 1.15, -0.5);
     txt(c, name, x + 34, y + 17, 16, '#35452F', 'left', null);
+    rrPath(c, x + w - dw - 8, y + 6, dw, 20, 10); fs(c, D.col, 0); diffDots(c, D, x + w - 8 - dw / 2, y + 16, 3);
   };
   if (Play.prototype.drawHud._src === undefined) Play.prototype.drawHud._src = hud0._src || hud0;
 }
