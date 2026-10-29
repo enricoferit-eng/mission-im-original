@@ -168,7 +168,7 @@ function accountChip(c, x, y, a, onTap) {
 class Menu {
   constructor(page) { this.t = 0; this.page = page != null ? page : 2; this.off = 0; this.pages = []; }
   enter() {
-    FX.clear(); ensureProfile(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
+    FX.clear(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
     if (a.token && !a.hasPass && !a.admin && !window.PASS_ASKED) { window.PASS_ASKED = true; setTimeout(() => { if (scene === this && !overlay) askSetPass({ later: 'Später', sub: 'Neu: Passwort statt Bilder-Code. Mindestens ' + PASS_MIN + ' Zeichen.' }); }, 900); }
     if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
     this.giftAuto = true;   // Tagesgeschenk: geht einmal am Tag von selbst auf (siehe draw)
@@ -418,12 +418,10 @@ function goFull() {
   const rq = fullApi(); if (!rq) { setScene(new InstallGuide(() => setScene(new Menu()))); return; }
   try { const pr = rq.call(document.documentElement, { navigationUI: 'hide' }); const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* egal */ } }; if (pr && pr.then) pr.then(lock).catch(() => {}); else lock(); } catch (e) { /* egal */ }
 }
-// Erster Start: sofort spielen – ein Spielstand auf diesem Gerät wird automatisch angelegt.
-// Ein Konto (Name + Geheim-Code, auf dem Server) kann man später über „Spielstand sichern“ machen.
-function ensureProfile() {
-  if (ACC() || Object.keys(Save.data.accounts).length) return;
+// Ohne Konto spielen: ein Spielstand nur auf diesem Gerät (Gast). Ein Konto auf dem Server kann man später über „Spielstand sichern“ machen.
+function playAsGuest() {
   createAccount(pick(NAME_A) + ' ' + pick(NAME_B), [0, 1, 2, 3].map(() => ri(0, 5)));
-  ACC().guest = true; Save.write();
+  ACC().guest = true; Save.write(); Sfx.play('win'); setScene(new Menu());
 }
 // ---------- Konten: jedes Kind hat sein eigenes (Fantasiename + Bilder-Code, keine E-Mail) ----------
 const nameInput = document.createElement('input');
@@ -550,15 +548,36 @@ class CodePad {
 
 // Konto-Kärtchen auf dem Gerät (zuletzt benutzte Konten)
 class Accounts {
-  constructor() { this.t = 0; }
+  constructor() { this.t = 0; this.withAcc = false; }
   enter() { FX.clear(); nameInput.style.display = 'none'; }
   update(dt) { this.t += dt; }
+  // noch kein Spielstand auf dem Gerät: erst fragen – ohne Konto (nur dieses Gerät) oder mit Konto
+  drawChoice(c) {
+    const low = H < 480, ls = clamp(Math.min(W / 420, H / 760), 0.55, 1.3);
+    logo(c, W / 2, low ? 70 * ls + 8 : 100 * ls, ls);
+    claimBand(c, 'Willkommen im Original!', W / 2, low ? 128 * ls + 8 : 172 * ls, 14);
+    const top = low ? 150 * ls + 10 : 205 * ls, side = W > 640 && low, bw = side ? Math.min(300, (W - 60) / 2) : Math.min(W - 40, 360), bh = side ? Math.min(150, H - top - 20) : Math.min(130, (H - top - 40) / 2);
+    const opt = (i, label, sub, col, ic, fn) => {
+      const x = side ? W / 2 + (i ? 10 : -10 - bw) : (W - bw) / 2, y = side ? top : top + i * (bh + 16), bob = i ? 0 : Math.sin(this.t * 3) * 2;
+      panel(c, x, y + bob, bw, bh, col, 24);
+      icon(c, ic, x + bw / 2, y + bob + bh * 0.3, Math.min(42, bh * 0.32));
+      txt(c, label, x + bw / 2, y + bob + bh * 0.62, Math.min(22, bh * 0.17), '#3d2c1f', 'center', null, bw - 20);
+      txt(c, sub, x + bw / 2, y + bob + bh * 0.82, 13, '#6c584c', 'center', null, bw - 20);
+      UI.btn(x, y, bw, bh, fn);
+      return [x, y, bw, bh];
+    };
+    const g = opt(0, 'Ohne Konto spielen', 'Sofort los – nur auf diesem Gerät', '#caffbf', 'play', playAsGuest);
+    opt(1, 'Mit Konto spielen', 'Anmelden oder neues Konto', '#bde0fe', 'lock', () => { this.withAcc = true; Sfx.play('tap'); });
+    drawHand(c, g[0] + g[2] - 30, g[1] + g[3] - 34 + Math.abs(Math.sin(this.t * 4)) * 10, 1.3);
+  }
   draw(c) {
     skyBg(c);
+    const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
+    if (!list.length && !this.withAcc) return this.drawChoice(c);
+    if (!list.length) roundBtn(c, 44, 44, 28, '#fff', 'back', () => { this.withAcc = false; }, '#ffd166');
     const ls = clamp(Math.min(W / 420, H / 760), 0.7, 1.3);
     logo(c, W / 2, 100 * ls, ls);
     claimBand(c, 'Willkommen im Original!', W / 2, 172 * ls, 14);
-    const list = Object.entries(Save.data.accounts).sort((a, b) => b[1].created - a[1].created);
     const cols = W > 600 ? 3 : 2, cw = Math.min(170, (W - 40) / cols - 12), ch = 150;
     const all = list.concat([['new', null], ['login', null]]);
     const x0 = W / 2 - (cols * (cw + 12) - 12) / 2, y0 = 205 * ls;
@@ -1324,7 +1343,7 @@ const STORY_SAY = [
 class Trailer {
   constructor() { this.t = 0; this.cuts = [0, 7, 15.5, 23.5, 33, 41]; this.said = -1; }
   enter() { FX.clear(); }
-  end() { Voice.stop(); Save.data.seenTrailer = true; Save.write(); ensureProfile(); setScene(ACC() ? new Menu() : new Accounts()); }
+  end() { Voice.stop(); Save.data.seenTrailer = true; Save.write(); setScene(ACC() ? new Menu() : new Accounts()); }
   scene() { let i = 0; while (i < this.cuts.length - 1 && this.t >= this.cuts[i + 1]) i++; return i; }
   update(dt) {
     dt *= 2; this.t += dt; const s1 = this.scene(), lt = this.t - this.cuts[s1], at = v => lt > v && lt - dt <= v;   // läuft doppelt so schnell: ~20 s
@@ -1692,8 +1711,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && Sav
 
 Save.load();
 resize();
-if (Save.data.seenTrailer) ensureProfile();
-const firstScene = () => { if (!Save.data.seenTrailer) { Save.data.seenTrailer = true; Save.write(); ensureProfile(); } return ACC() ? new Menu() : new Accounts(); };   // kein Film vorab: die Geschichte erzählt Olli in der Helfer-Schule (Film bleibt über den Knopf im Menü)
+const firstScene = () => { if (!Save.data.seenTrailer) { Save.data.seenTrailer = true; Save.write(); } return ACC() ? new Menu() : new Accounts(); };   // kein Film vorab: die Geschichte erzählt Olli in der Helfer-Schule (Film bleibt über den Knopf im Menü)
 try { history.pushState({ mio: 1 }, ''); window.addEventListener('popstate', () => { history.pushState({ mio: 1 }, ''); if (overlay && overlay.close) { overlay.close(); return; } if (overlay) { overlay = null; return; } if (scene instanceof Play) { if (scene.stop) scene.stop(); return; } if (!(scene instanceof Menu) && ACC()) setScene(new Menu()); }); } catch (e) { /* egal */ }
 // Tab im Hintergrund: laufende Aufgabe pausieren
 document.addEventListener('visibilitychange', () => { if (document.hidden && overlay instanceof GameOverlay && overlay.state === 'play') overlay.help = true; });
