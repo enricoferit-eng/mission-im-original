@@ -794,7 +794,8 @@ class Play {
     if (overlay && this.joy) this.joy = null;   // ein Fenster ging auf, während der Finger lag: den Finger vergessen, sonst zählen keine Tipps mehr
     if (!this.mp && !document.hidden) { const a = ACC(), day = new Date().toISOString().slice(0, 10); if (a.playDay !== day) { a.playDay = day; a.playSec = 0; } a.playSec = (a.playSec || 0) + dt;   // Eltern-Timer
       if (a.limitMin && a.playSec > a.limitMin * 60 && !this.timeUp && !(overlay instanceof GameOverlay)) { this.timeUp = true; Save.write(); overlay = new MsgDialog({ text: 'Die Spielzeit für heute ist vorbei. Dein Spielstand ist gespeichert – bis morgen!', onClose: () => setScene(new Menu()) }); } }
-    this.zoom = (W > H ? clamp(H / 560, 0.6, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6)) * (WORLD_W * WORLD_H > 2.5e6 ? 0.88 : 1) * (lpActive() ? LP.zoom : 1);   // Low-Poly: weiter weg, man sieht mehr vom Raum
+    this.zoom = (W > H ? clamp(H / 560, 0.6, 1.5) : clamp(Math.min(W / 560, H / 780), 0.5, 1.6)) * (WORLD_W * WORLD_H > 2.5e6 ? 0.88 : 1);
+    if (lpActive()) this.zoom = Math.max(Math.sqrt(W * H * LP.part / (WORLD_W * WORLD_H)), W / WORLD_W, H / WORLD_H);   // Low-Poly: Bildschirm zeigt etwa 1/part des Raums, nie über den Rand hinaus
     const p = this.p; p.t += dt;
     if (this.pending) { this.pending.t -= dt; if (this.pending.t <= 0) { const f = this.pending.fn; this.pending = null; f(); } }
     for (const k in this.shake) this.shake[k] = Math.max(0, this.shake[k] - dt);

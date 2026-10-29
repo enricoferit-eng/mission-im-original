@@ -6,7 +6,7 @@
 const LP = {
   on: !/[?&]lowpoly=0/.test(location.search),
   stages: { kueche: { map: 'assets/lowpoly/kueche/map.jpg?v=2', staff: { k_nina: 'nina', k_tom: 'tom', k_luca: 'luca', k_marco: 'marco', k_lea: 'lea' } } },
-  catH: 96, staffH: 118, zoom: 0.3,   // zoom: Kamera weiter raus als bei der alten Grafik
+  catH: 96, staffH: 118, part: 3,   // Kamera: man sieht etwa 1/3 des Raums, auf jedem Bildschirm gleich
     // Figurengröße passend zu den Möbeln im Bild
   img: {}, ready: false, runs: {},
   player: { face: 'front', flip: 1, dist: 0, lx: null, ly: null },
