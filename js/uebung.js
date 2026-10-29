@@ -126,8 +126,8 @@ class DiffPick {
       const x = land ? W / 2 + (i - 1) * (cw + gap) - cw / 2 : (W - cw) / 2, y = land ? 84 + (H - 100 - chh) / 2 : 130 + i * (chh + gap), k = ease.back(clamp(this.t * 3 - i * 0.25, 0, 1));
       c.save(); c.translate(x + cw / 2, y + chh / 2); c.scale(k, k); c.translate(-(x + cw / 2), -(y + chh / 2));
       panel(c, x, y, cw, chh, d.col, 24);
-      if (land) { txt(c, d.name, x + cw / 2, y + 34, 28, '#fff', 'center', d.dark); diffDots(c, d, x + cw / 2, y + 60, 5); drawAnimal(c, ANIMAL_OF[d.id], x + cw / 2, y + chh * 0.82, Math.min(2.2, chh / 120), { t: this.t + i }); txt(c, d.age + ' Jahre', x + cw / 2, y + chh - 18, 16, '#fff', 'center', d.dark); }
-      else { drawAnimal(c, ANIMAL_OF[d.id], x + chh * 0.5, y + chh * 0.86, Math.min(2, chh / 80), { t: this.t + i }); txt(c, d.name, x + chh, y + chh * 0.36, 28, '#fff', 'left', d.dark); diffDots(c, d, x + chh + 13, y + chh * 0.6, 5); txt(c, d.age + ' Jahre', x + chh, y + chh * 0.8, 16, '#fff', 'left', d.dark); }
+      if (land) { txt(c, d.name, x + cw / 2, y + 34, 28, '#fff', 'center', d.dark); diffDots(c, d, x + cw / 2, y + 60, 5); drawAnimal(c, DEFAULT_CHAR[d.id], x + cw / 2, y + chh * 0.82, Math.min(2.2, chh / 120), { t: this.t + i }); txt(c, d.age + ' Jahre', x + cw / 2, y + chh - 18, 16, '#fff', 'center', d.dark); }
+      else { drawAnimal(c, DEFAULT_CHAR[d.id], x + chh * 0.5, y + chh * 0.86, Math.min(2, chh / 80), { t: this.t + i }); txt(c, d.name, x + chh, y + chh * 0.36, 28, '#fff', 'left', d.dark); diffDots(c, d, x + chh + 13, y + chh * 0.6, 5); txt(c, d.age + ' Jahre', x + chh, y + chh * 0.8, 16, '#fff', 'left', d.dark); }
       c.restore();
       UI.btn(x, y, cw, chh, () => { Sfx.play('good'); Voice.stop(); overlay = null; this.done(d.id); });
     });

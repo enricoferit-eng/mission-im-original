@@ -16,7 +16,7 @@ SKIN_STAGES.forEach((stage, si) => ['easy', 'medium', 'hard'].forEach(diff => st
 })));
 const DEFAULT_LOOK = { cap: '#5aa13a', scarf: '#6bb544' }; // Im-Original-Grün
 // Die Figur sucht sich jedes Kind selbst aus (Konto); Standard je Stufe nur, solange noch nichts gewählt ist
-const DEFAULT_CHAR = { easy: 'cat', medium: 'dog', hard: 'lion' };
+const DEFAULT_CHAR = { easy: 'bear', medium: 'dog', hard: 'lion' };   // es gibt nur noch Löwe, Bär und Hund
 const ANIMAL_OF = {};
 ['easy', 'medium', 'hard'].forEach(d => Object.defineProperty(ANIMAL_OF, d, { get() { const a = typeof ACC === 'function' && ACC(); return (a && a.char) || DEFAULT_CHAR[d]; } }));
 let CUR_DIFF = 'medium';   // aktuelle Schwierigkeitsstufe (für Kappe + Skin der Figur)

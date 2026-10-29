@@ -303,8 +303,11 @@ function pushSigns(c, L, id, diff, t) {
 // wo man weiterspielt: der Bereich, in dem man zuletzt war (wenn frei), sonst der neueste freie
 function startArea(diff) {
   const a = ACC(), last = a && a.lastArea && a.lastArea[diff];
-  if (last && STAGE_ORDER.includes(last) && areaUnlocked(diff, last)) return last;   // (alte Spielstände: Geisterwald gibt es nicht mehr)
-  let best = STAGE_ORDER[0]; for (const id of STAGE_ORDER) if (areaUnlocked(diff, id)) best = id; return best;
+  // Wo geht es weiter? Im laufenden Bereich (noch nicht geschafft), sonst im ersten noch nicht geschafften –
+  // sind alle geschafft, wieder vorne (nicht immer im Chalet, User-Wunsch)
+  if (last && STAGE_ORDER.includes(last) && areaUnlocked(diff, last) && !areaCleared(diff, last)) return last;
+  for (const id of STAGE_ORDER) if (areaUnlocked(diff, id) && !areaCleared(diff, id)) return id;
+  return STAGE_ORDER[0];
 }
 { const c0 = Play.prototype.constructor; }
 Object.assign(Play.prototype, {

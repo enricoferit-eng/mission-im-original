@@ -97,7 +97,7 @@ class Cutscene {
     const line = this.lines[Math.min(this.i, this.lines.length - 1)], who = line[0], text = line[1];
     // Figuren: der Held (eigenes Tier) + die Besetzung; wer spricht, hüpft und ist vorne
     const cast = this.sc.cast, n = cast.length + 1, base = H - 14, gap0 = W / (n + 0.6), s = clamp(Math.min(H / 300, gap0 / 40), 1.3, 2.8), gap = Math.min(gap0, 170 * s / 2.2);   // schmal (Hochformat): Figuren kleiner statt übereinander
-    const kindA = (ACC() && ACC().char) || 'cat', all = [['hero']].concat(cast.map(id => [id]));
+    const kindA = (ACC() && ACC().char) || 'dog', all = [['hero']].concat(cast.map(id => [id]));
     all.forEach(([id], k) => {
       const x = W / 2 + (k - (n - 1) / 2) * gap, talk = id === who, hop = talk ? Math.abs(Math.sin(this.lt * 7)) * 8 : 0, fs2 = talk ? s * 1.08 : s;
       c.save(); if (!talk && who !== 'erzaehler') c.globalAlpha = 0.85;

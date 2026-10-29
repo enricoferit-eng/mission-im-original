@@ -1630,9 +1630,7 @@ class Play {
       icon(c, 'star', 0, 0, 25, ready ? '#fff' : '#adb5bd');
       c.restore();
       if (ready) txt(c, 'Hilfe', hx, hy + 33, 12, '#fff', 'center', BRAND.olive);
-      const hb = (META() && META().hint) || 0; if (!ready && hb > 0 && !this.mp) { ell(c, hx + 18, hy - 18, 10, 10); fs(c, '#118ab2', 2); txt(c, String(hb), hx + 18, hy - 18, 11, '#fff', 'center', null); }
-      if (ready || (hb > 0 && !this.mp)) UI.btn(hx - 32, hy - 32, 64, 70, () => {
-        if (!ready) { const mm = META(); if (!mm.hint) return; mm.hint--; }   // Such-Joker eingesetzt
+      if (ready) UI.btn(hx - 32, hy - 32, 64, 70, () => {   // (Such-Joker gibt es nicht mehr – nur der Hilfe-Stern, der sich von selbst lädt)
         let k = -1, bd = 1e9; hq.hidden.forEach((h, i) => { if (this.off(hq, i)) return; const d = dist(h.x, h.y, this.p.x, this.p.y); if (d < bd) { bd = d; k = i; } });
         if (k >= 0) { hq.hint = k; hq.helpT = 0; Save.write(); Sfx.play('good'); FX.sparkle(hx, hy, 16, '#ffd23f'); }
       });

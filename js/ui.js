@@ -252,7 +252,8 @@ class Menu {
     rrPath(c, x, -14, w, 60, 18); { const g = c.createLinearGradient(0, 0, 0, 46); g.addColorStop(0, '#7a9a4f'); g.addColorStop(1, '#35452F'); c.fillStyle = g; c.fill(); } c.lineWidth = 3.5; c.strokeStyle = '#ffd166'; c.stroke();
     txt(c, title, W / 2, 22, 22, '#fff', 'center', '#3d2c1f', w - 20);
   }
-  drawMore(c) {   // Seite „Mehr“ = Eltern-Modus: Stufe (mit Alter), Konto, Ton, Spielzeit
+  drawMore(c) {   // Seite „Mehr“: Mittel/Schwer wie vorher (Kacheln), Leicht = Eltern-Bereich
+    if (!this.easy()) return this.drawMoreTiles(c);
     menuBg(c, this.t); c.fillStyle = 'rgba(16,28,18,.45)'; c.fillRect(0, 0, W, H);
     const a = ACC(); if (!a) return;
     this.pageTitle(c, 'Eltern');
@@ -264,7 +265,7 @@ class Menu {
     DIFFS.forEach((d, i) => {
       const x = land ? x0 + i * (bw + 10) : x0, yy = land ? y : y + i * (bh + 8), on = d.id === cur;
       rrPath(c, x, yy, bw, bh, 20); fs(c, on ? d.col : 'rgba(255,255,255,.92)', 3, on ? d.dark : d.col);
-      drawAnimal(c, ANIMAL_OF[d.id], x + 30, yy + bh - 8, bh / 95, { noShadow: true, cap: hasCap(ANIMAL_OF[d.id]) });
+      drawAnimal(c, DEFAULT_CHAR[d.id], x + 30, yy + bh - 8, bh / 95, { noShadow: true, cap: hasCap(DEFAULT_CHAR[d.id]) });
       txt(c, d.name, x + 62, yy + bh / 2 - 9, 18, on ? '#fff' : d.dark, 'left', on ? d.dark : null, bw - 110);
       txt(c, 'für ' + d.age + ' Jahre', x + 62, yy + bh / 2 + 12, 13, on ? '#fff' : '#6b5a48', 'left', on ? d.dark : null, bw - 110);
       if (on) icon(c, 'check', x + bw - 24, yy + bh / 2, 22, '#fff');
@@ -278,6 +279,16 @@ class Menu {
     const n = T.length, tg = 10, tw = (cw - tg * (n - 1)) / n, th = Math.max(74, Math.min(104, H - y - 14));
     T.forEach(([ic, label, col, fn], i) => { const x = x0 + i * (tw + tg);
       rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(36, th * 0.4)); txt(c, label, x + tw / 2, y + th - 16, 14, '#3d2c1f', 'center', null, tw - 10);
+      (this.moreHit || (this.moreHit = {}))[label] = { x: x + tw / 2, y: y + th / 2 }; UI.btn(x, y, tw, th, () => { Sfx.play('tap'); fn(); }); });
+  }
+  drawMoreTiles(c) {   // „Mehr“ für Mittel/Schwer: große Kacheln (Mehrspieler, Anleitung und Film gibt es nicht mehr)
+    menuBg(c, this.t); c.fillStyle = 'rgba(16,28,18,.35)'; c.fillRect(0, 0, W, H);
+    const T = [['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
+      ['lock', 'Eltern', '#e9ecef', () => { overlay = new ParentPanel(); }]];
+    this.pageTitle(c, 'Mehr');
+    const cols = 2, tw = Math.min(190, (W - 50) / cols - 12), th = Math.min(110, (H - 90) / Math.ceil(T.length / cols) - 12), x0 = (W - cols * (tw + 12) + 12) / 2;
+    T.forEach(([ic, label, col, fn], i) => { const x = x0 + (i % cols) * (tw + 12), y = 70 + Math.floor(i / cols) * (th + 12);
+      rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(40, th * 0.42)); txt(c, label, x + tw / 2, y + th - 18, 15, '#3d2c1f', 'center', null, tw - 10);
       (this.moreHit || (this.moreHit = {}))[label] = { x: x + tw / 2, y: y + th / 2 }; UI.btn(x, y, tw, th, () => { Sfx.play('tap'); fn(); }); });
   }
   // Wischen: waagerecht = Seite wechseln, sonst geht der Finger an die Seite (Scrollen im Laden usw.)
@@ -306,16 +317,33 @@ class Menu {
     // Aufgeräumtes Menü (Hochformat zuerst): Logo, Stufe als kleines Schild, ein großer SPIELEN-Knopf. Keine Figur – sonst wird es eng.
     // Stufe, Konto, Ton, Spielzeit: unter „Mehr“ (Eltern-Modus). Leicht: gar keine Leiste, nur ein kleiner Eltern-Knopf.
     const land = W > H, diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium', easy = diff === 'easy'; CUR_DIFF = diff;
-    if (!easy) coinChip(c, 14, 32, W < 600);
-    if (easy) { roundBtn(c, W - 38, 36, 20, 'rgba(255,255,255,.85)', 'lock', () => { Sfx.play('tap'); overlay = new ParentGate(() => { this.page = 3; this.off = 0; }); }); txt(c, 'Eltern', W - 38, 66, 11, '#fff', 'center', BRAND.olive); }
+    if (!easy) {   // Mittel/Schwer wie vorher: Konto-Schild oben links (Tipp = Konto), Taler daneben bzw. darunter
+      accountChip.lastW = accountChip(c, 12, 12, a, () => { overlay = new AccountPanel(); });
+      if (!a.token) { const lx = 12 + (accountChip.lastW || 120) - 6, ly = 56; ell(c, lx, ly, 12, 12); fs(c, '#ffd166', 2.5); icon(c, 'lock', lx, ly, 14); }   // noch nicht gesichert: kleines Schloss
+      const x0 = 12 + (accountChip.lastW || 170) + 10; if (x0 + 110 > W - 10) coinChip(c, 12, 88, true); else coinChip(c, x0, 38, W < 600);
+    }
+    if (easy) { roundBtn(c, W - 38, 36, 20, 'rgba(255,255,255,.85)', 'lock', () => { Sfx.play('tap'); overlay = new ParentPanel({ onOk: () => { this.page = 3; this.off = 0; } }); /* Eltern-PIN, dann ins Eltern-Menü */ }); txt(c, 'Eltern', W - 38, 66, 11, '#fff', 'center', BRAND.olive); }
     const ls = land ? clamp(H / 470, 0.55, 1.1) : clamp(Math.min(W / 380, H / 720), 0.85, 1.45), LY = land ? H * 0.26 : H * 0.25;
     logo(c, W / 2, LY, ls);
-    diffBadge(c, diff, W / 2, LY + 78 * ls + 10, 14);
+    let below = LY + 78 * ls + 10;
+    if (easy) diffBadge(c, diff, W / 2, below, 14);   // Leicht: Stufe nur als Schild (umstellen im Eltern-Bereich)
+    else {   // Mittel/Schwer: Stufen-Schalter mit Alter direkt im Menü (wie vorher)
+      const swY = below + 14, swW = Math.min(W - 40, 420), segW = swW / 3, swX = (W - swW) / 2;
+      rrPath(c, swX, swY - 26, swW, 52, 24); fs(c, 'rgba(255,255,255,.88)', 3);
+      DIFFS.forEach((d, i) => {
+        const x = swX + i * segW, on = d.id === diff;
+        if (on) { rrPath(c, x + 3, swY - 23, segW - 6, 46, 21); fs(c, d.col, 3, d.dark); }
+        txt(c, d.name, x + segW / 2, swY - 8, on ? 17 : 15, on ? '#fff' : d.dark, 'center', on ? d.dark : null, segW - 10);
+        txt(c, d.age + ' Jahre', x + segW / 2, swY + 11, 13, on ? '#fff' : d.dark, 'center', on ? d.dark : null, segW - 10);
+        UI.btn(x, swY - 26, segW, 52, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('tap'); } });
+      });
+      below = swY + 14;
+    }
     const fresh = STAGE_ORDER.every(id => { const sp0 = SP(diff, id); return !sp0.clears && !sp0.run; });   // auf dieser Stufe noch nichts gespielt
     const area = fresh && !a.tut.uebung ? 'uebung' : startArea(diff);
     const sub = area === 'uebung' ? 'Helfer-Schule' : (STAGE_NAME[area] || '');
     const done = STAGE_ORDER.filter(id => SP(diff, id).clears > 0).length;
-    const bw = Math.min(W - 48, 360), bh = easy ? 116 : 100, bx = (W - bw) / 2, by = land ? Math.min(H - bh - 40, LY + 78 * ls + 44) : Math.max(LY + 78 * ls + 50, H * 0.6 - bh / 2);
+    const bw = Math.min(W - 48, 360), bh = easy ? 116 : 100, bx = (W - bw) / 2, by = land ? Math.min(H - bh - 40, below + 30) : Math.max(below + 40, H * 0.6 - bh / 2);
     { const pu = 1 + Math.sin(this.t * 3) * 0.025, cx = bx + bw / 2, cy = by + bh / 2;
       c.save(); c.translate(cx, cy); c.scale(pu, pu); c.translate(-cx, -cy);
       rrPath(c, bx, by + 6, bw, bh, bh / 2); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
@@ -770,8 +798,12 @@ function volSample(key) {
   } catch (e) { /* kein Audio */ }
 }
 // Eltern-Bereich: Spielzeit pro Tag + Datenschutz (mit kleiner Rechenaufgabe, damit Kinder nicht einfach umstellen)
+let PARENT_OK_AT = 0;   // Eltern-Code gerade eingegeben: 5 Minuten nicht nochmal fragen
+function parentOk() { return Date.now() - PARENT_OK_AT < 5 * 60 * 1000; }
 class ParentPanel {
-  constructor() { this.t = 0; const a = ACC(); this.mode = a && a.parentPin ? 'enter' : 'set1'; this.pin = ''; this.first = ''; this.err = ''; this.open = false; }
+  // o.onOk: nur als PIN-Abfrage benutzen (z. B. ins Eltern-Menü) – nach richtigem Code schließen und onOk aufrufen
+  constructor(o = {}) { this.o = o; this.t = 0; const a = ACC(); this.mode = a && a.parentPin ? 'enter' : 'set1'; this.pin = ''; this.first = ''; this.err = ''; this.open = parentOk(); if (this.open && o.onOk) setTimeout(() => this.unlock(), 0); }
+  unlock() { PARENT_OK_AT = Date.now(); this.open = true; if (this.o.onOk) { this.close(); this.o.onOk(); } }
   update(dt) { this.t += dt; }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
@@ -806,8 +838,8 @@ class ParentPanel {
     if (this.pin.length < 4) return;
     const a = ACC(), p = this.pin; this.pin = '';
     if (this.mode === 'set1') { this.first = p; this.mode = 'set2'; return; }
-    if (this.mode === 'set2') { if (p !== this.first) { this.err = 'Die Codes waren verschieden – nochmal.'; this.mode = 'set1'; Sfx.play('bad'); return; } a.parentPin = pinHash(p); Save.write(); this.open = true; Sfx.play('good'); toast('Eltern-Code gespeichert', 'Gut merken!', 'lock'); return; }
-    if (pinHash(p) === a.parentPin) { this.open = true; Sfx.play('good'); } else { this.err = 'Falscher Code.'; Sfx.play('bad'); buzz(80); }
+    if (this.mode === 'set2') { if (p !== this.first) { this.err = 'Die Codes waren verschieden – nochmal.'; this.mode = 'set1'; Sfx.play('bad'); return; } a.parentPin = pinHash(p); Save.write(); this.unlock(); Sfx.play('good'); toast('Eltern-Code gespeichert', 'Gut merken!', 'lock'); return; }
+    if (pinHash(p) === a.parentPin) { this.unlock(); Sfx.play('good'); } else { this.err = 'Falscher Code.'; Sfx.play('bad'); buzz(80); }
   }
   forgot() {   // gesicherte Konten: mit dem Konto-Passwort zurücksetzen; Gast-Konten: mit dem Bilder-Code
     const a = ACC(), reset = () => { a.parentPin = null; Save.write(); this.mode = 'set1'; this.pin = ''; this.err = ''; overlay = this; };
@@ -1029,7 +1061,7 @@ class CharSelect {
   draw(c) {
     skyBg(c);
     txt(c, 'Wähle deine Figur', W / 2, 44, Math.min(32, W / 14), '#fff', 'center', BRAND.olive);
-    const opts = (typeof ownedAnimals === 'function' ? ownedAnimals() : ['cat', 'dog', 'lion']).map(k => [k, ANIMAL_NAMES[k]]), a = ACC(), n = opts.length;
+    const opts = (typeof ownedAnimals === 'function' ? ownedAnimals() : BASE_ANIMALS).map(k => [k, ANIMAL_NAMES[k]]), a = ACC(), n = opts.length;
     const land = W > H * 0.9, cw = land ? Math.min(240, (W - 40) / n - 14) : Math.min(W - 40, 360), ch = land ? Math.min(H - 110, 300) : Math.min(190, (H - 120) / n - 12);
     opts.forEach(([k, name], i) => {
       const x = land ? W / 2 + (i - (n - 1) / 2) * (cw + 14) - cw / 2 : (W - cw) / 2, y = land ? 84 : 84 + i * (ch + 12);
@@ -1131,6 +1163,7 @@ function stageIcon(c, id, x, y, s) {
   c.restore();
 }
 
+const MAP_NODE_COL = { kueche: ['#fff4e6', '#ffc078'], gastraum: ['#ebfbee', '#8ce99a'], aussen: ['#e6fcf5', '#63e6be'], spielplatz: ['#fff9db', '#ffd43b'], parkplatz: ['#e7f5ff', '#74c0fc'], chalet: ['#f3f0ff', '#b197fc'] };
 // ---------- Das Gelände von Im Original als Karte (Stil der Geschichte) ----------
 // Bereiche liegen wie in echt um das Glashaus; der Helfer arbeitet sich vom Zentrum nach außen vor.
 const AREAS = {
@@ -1349,7 +1382,9 @@ class StageMap {
       if (here) { ell(c, 0, 0, R + 10 + Math.sin(t * 4) * 2, R + 10 + Math.sin(t * 4) * 2); c.fillStyle = 'rgba(255,214,10,.45)'; c.fill(); }
       ell(c, 0, 4, R + 5, R + 5); c.fillStyle = open ? '#8d5a3b' : '#6c757d'; c.fill();
       ell(c, 0, 0, R + 5, R + 5); fs(c, open ? (here ? '#ffd23f' : '#fff7e6') : '#dee2e6', 3, '#3d2c1f');
-      c.save(); ell(c, 0, 0, R - 2, R - 2); c.clip(); stageArt(c, n.id, -R * 1.25, -R, R * 2.5, R * 2, t); if (!open) { c.fillStyle = 'rgba(70,70,80,.55)'; c.fillRect(-R, -R, R * 2, R * 2); } c.restore();
+      { const col = MAP_NODE_COL[n.id] || ['#fff', '#eee'], gr = c.createRadialGradient(-R * 0.3, -R * 0.3, 4, 0, 0, R); gr.addColorStop(0, col[0]); gr.addColorStop(1, col[1]);   // klares Symbol auf Bereichsfarbe statt kleinem Bild
+        ell(c, 0, 0, R - 2, R - 2); c.fillStyle = open ? gr : '#ced4da'; c.fill();
+        c.save(); if (!open) c.globalAlpha = 0.45; stageIcon(c, n.id, 0, open ? 2 : -4, R * 1.35); c.restore(); }
       ell(c, 0, 0, R - 2, R - 2); c.lineWidth = 3; c.strokeStyle = 'rgba(61,44,31,.6)'; c.stroke();
       if (!open) { ell(c, 0, 0, 18, 18); fs(c, '#fff', 3); icon(c, 'lock', 0, 0, 22); }
       ell(c, -R + 2, -R + 6, 13, 13); fs(c, open ? BRAND.lime : '#adb5bd', 2.5, '#3d2c1f'); txt(c, String(i + 1), -R + 2, -R + 7, 13, '#fff', 'center', null);
@@ -1374,7 +1409,8 @@ class StageMap {
     const artW = vert ? ch * 0.95 : ch * 1.3;
     if (!this.walk) {
       panel(c, cx, cy, cw, ch, open ? '#fbf8f2' : '#e9e4d8', 20);
-      stageArt(c, id, cx + 8, cy + 8, artW, ch - 16, t);
+      { const col = MAP_NODE_COL[id] || ['#fff', '#eee'], r = (ch - 20) / 2, ax = cx + 8 + artW / 2, ay = cy + ch / 2, gr = c.createRadialGradient(ax - r * 0.3, ay - r * 0.3, 3, ax, ay, r); gr.addColorStop(0, col[0]); gr.addColorStop(1, col[1]);   // Symbol statt kleinem Bild
+        ell(c, ax, ay, r, r); c.fillStyle = open ? gr : '#ced4da'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#3d2c1f'; c.stroke(); c.save(); if (!open) c.globalAlpha = 0.45; stageIcon(c, id, ax, ay + 2, r * 1.3); c.restore(); }
       const tx = cx + artW + 18, tw = cw - artW - 18 - (open ? 92 : 14);   // Platz für Text bis zum Start-Knopf
       txt(c, info.name, tx, cy + 28, 22, open ? BRAND.olive : '#6c757d', 'left', null, tw);
       { const sc = typeof STORY !== 'undefined' && STORY[id]; txt(c, info.sub, tx, cy + 52, 13, '#6b5a48', 'left', null, tw);   // (Kapitel-Namen gehörten zum Film – der ist raus)   // Kapitel der Geschichte

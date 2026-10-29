@@ -8,7 +8,9 @@ function META(a = ACC()) {
   const m = a.meta;
   m.coins = m.coins || 0; m.ach = m.ach || {}; m.st = m.st || {}; m.skins = m.skins || []; m.animals = m.animals || []; m.bank = m.bank || 0; m.up = m.up || {};
   if (!m.upMig) upgradeMigrate(a, m);
-  if (m.skins.some(id => !SKINS[id])) m.skins = m.skins.filter(id => SKINS[id]);   // Halloween-Kostüme u. a. gibt es nicht mehr
+  if (m.skins.some(id => !SKINS[id])) m.skins = m.skins.filter(id => SKINS[id]);
+  if (m.animals.some(k => !BASE_ANIMALS.includes(k))) { for (const k of m.animals) { const o = OLD_ANIMALS.find(q => q[0] === k); if (o && !BASE_ANIMALS.includes(k)) m.coins += o[1]; } m.animals = []; }   // Figuren gibt es nicht mehr: Taler zurück
+  if (a.char && !BASE_ANIMALS.includes(a.char)) a.char = DEFAULT_CHAR[a.lastDiff] || 'dog';   // Halloween-Kostüme u. a. gibt es nicht mehr
   if (m.skins.some(id => REMOVED_SKINS[id])) { for (const id of m.skins) if (REMOVED_SKINS[id]) m.coins += REMOVED_SKINS[id]; m.skins = m.skins.filter(id => !REMOVED_SKINS[id]); }   // kurz verkaufte Skins der Vorversion: Taler zurück
   return m;
 }
@@ -76,8 +78,9 @@ function upgradeMigrate(a, m) {
     if (UPGRADES.some(u => u.k === ab)) m.up[ab] = Math.max(m.up[ab] || 0, Math.min(UP_MAX, lvl)); else coins += 40 * lvl; }
   if (coins) { m.coins += coins; m.upGift = coins; }
 }
-const BASE_ANIMALS = ['cat', 'dog', 'lion'];
-const SHOP_ANIMALS = [['bunny', 120], ['mouse', 120], ['bear', 150], ['panda', 150], ['fox', 150], ['raccoon', 180], ['koala', 180], ['wolf', 200], ['tiger', 250], ['frog', 120], ['pig', 140], ['cow', 160], ['monkey', 180], ['polar', 220], ['elefant', 260]];
+const BASE_ANIMALS = ['lion', 'bear', 'dog'];   // nur noch diese drei Figuren (User-Wunsch), alle gratis
+const SHOP_ANIMALS = [];
+const OLD_ANIMALS = [['bunny', 120], ['mouse', 120], ['bear', 150], ['panda', 150], ['fox', 150], ['raccoon', 180], ['koala', 180], ['wolf', 200], ['tiger', 250], ['frog', 120], ['pig', 140], ['cow', 160], ['monkey', 180], ['polar', 220], ['elefant', 260]];   // früher kaufbar – wer eine hatte, bekommt die Taler zurück (siehe META)
 const JOKER_PRICE = 30, JOKERS_PER_DAY = 3;
 function ownedAnimals() { const m = META(); return BASE_ANIMALS.concat(m ? m.animals : []); }
 
@@ -159,7 +162,6 @@ function dailyOffers() {
 // ---------- Laden: 3 Reiter (Joker · Kostüme · Figuren), im Hochformat aufgeräumt ----------
 // Joker gibt es NUR hier. Karten werden einmal in kleine Bilder gezeichnet (Zwischenspeicher) – so läuft das Scrollen flüssig.
 const JOKER_PACKS = [[1, 30], [3, 80], [10, 240]];   // Anzahl, Preis
-const HINT_PRICE = 20;
 const SHOP_CARD_CACHE = new Map();
 function cachedCard(key, w, h, draw) {   // zeichnet eine Karte einmal in ein eigenes Bild und merkt es sich
   const k = key + '|' + Math.round(w) + 'x' + Math.round(h) + '|' + DPR; let cv2 = SHOP_CARD_CACHE.get(k);
@@ -172,7 +174,7 @@ function cachedCard(key, w, h, draw) {   // zeichnet eine Karte einmal in ein ei
 }
 function blitCard(c, cv2, x, y) { const m = c.getTransform(); c.save(); c.setTransform(1, 0, 0, 1, m.e + (x - 12) * m.a, m.f + (y - 12) * m.d); c.drawImage(cv2, 0, 0); c.restore(); }
 class Shop {
-  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'joker'; this.msg = ''; this.msgT = 0; this.sc = 0; this.vel = 0; }
+  constructor(back) { this.back = back || (() => setScene(new Menu())); this.t = 0; this.tab = 'skins'; this.msg = ''; this.msgT = 0; this.sc = 0; this.vel = 0; }
   enter() { FX.clear(); }
   update(dt) {
     this.t += dt; this.msgT = Math.max(0, this.msgT - dt);
@@ -194,15 +196,16 @@ class Shop {
     m.coins -= price; fn(m); Save.write(); Sfx.play('win'); FX.confetti(W / 2, H * 0.4, 40);
   }
   draw(c) {
+    if (this.tab !== 'skins' && this.tab !== 'tiere') this.tab = 'skins';
     themeBg(c, 'shop');
     const m = META(); if (!m) return;
     const narrow = W < 600, hx = EMBED ? 20 : 74; if (!EMBED) roundBtn(c, 44, 44, 28, '#fff', 'back', this.back, '#ffd166');
     icon(c, 'shop', hx + 22, 40, 36); txt(c, 'Laden', hx + 46, 40, 22, '#fff', 'left', BRAND.olive);
     { c.font = `900 15px ${FONT}`; const cw0 = c.measureText(String(m.coins)).width + 46; coinChip(c, W - 14 - cw0, 40, narrow); }
     // eine Reiterleiste, immer in einer Reihe
-    const gift = giftReady(), tabs = [['joker', 'Joker'], ['skins', 'Kostüme'], ['tiere', 'Figuren']], tw = Math.min(150, (W - 32) / 3), tH = 40, tY = 72;
+    const gift = false, tabs = [['skins', 'Kostüme'], ['tiere', 'Figuren & Joker']], tw = Math.min(190, (W - 32) / 2), tH = 40, tY = 72;   // Joker ohne eigenen Reiter (nicht so aufdringlich)
     tabs.forEach(([id, name], i) => {
-      const x = W / 2 + (i - 1) * tw - tw / 2 + 3, on = this.tab === id;
+      const x = W / 2 + (i - (tabs.length - 1) / 2) * tw - tw / 2 + 3, on = this.tab === id;
       rrPath(c, x, tY, tw - 6, tH, 18); fs(c, on ? '#ffd166' : 'rgba(255,255,255,.92)', 3); txt(c, name, x + (tw - 6) / 2, tY + tH / 2 + 1, 16, '#3d2c1f', 'center', null, tw - 16);
       if (id === 'joker' && gift) { ell(c, x + tw - 12, tY + 2, 10, 10); fs(c, '#ef476f', 2, '#fff'); txt(c, '!', x + tw - 12, tY + 3, 12, '#fff', 'center', null); }
       UI.btn(x, tY, tw - 6, tH, () => { if (this.tab !== id) { this.tab = id; this.sc = 0; this.vel = 0; Sfx.play('tap'); } });
@@ -213,7 +216,7 @@ class Shop {
     c.save(); c.beginPath(); c.rect(0, top - 6, W, view + 6); c.clip(); c.translate(0, -this.sc);
     const Y = y => y - this.sc;   // Bildschirm-Lage (für Tipp-Flächen)
     let contentH = 0;
-    if (this.tab === 'joker') {
+    if (this.tab === 'joker_alt') {   // (alte Joker-Seite mit Paketen – nicht mehr erreichbar)
       const cw = Math.min(W - 32, 560), x0 = (W - cw) / 2; let y = top;
       if (gift) {   // Tagesgeschenk: ein Balken ganz oben
         const gl = 0.5 + 0.5 * Math.sin(this.t * 4);
@@ -241,15 +244,10 @@ class Shop {
         hit(x, Y(yy), pw, ph, () => this.buy(price, mm => { mm.bank += cnt; this.say(cnt === 1 ? 'Neuer Joker!' : cnt + ' neue Joker!'); }));
       });
       y += land ? ph + 14 : n * (ph + 10) + 4;
-      // Such-Joker
-      rrPath(c, x0, y, cw, 64, 20); fs(c, '#e7f5ff', 3);
-      icon(c, 'search', x0 + 38, y + 32, 34); txt(c, 'Such-Joker', x0 + 72, y + 22, 16, '#3d2c1f', 'left', null, cw - 190); txt(c, 'Zeigt ein Versteck · du hast ' + (m.hint || 0), x0 + 72, y + 44, 12, '#2b9348', 'left', null, cw - 190);
-      { const bw = 96, bx = x0 + cw - bw - 14, by = y + 15; rrPath(c, bx, by, bw, 34, 17); fs(c, '#ffd166', 2.5); icon(c, 'coin', bx + 22, by + 17, 17); txt(c, String(HINT_PRICE), bx + 60, by + 18, 16, '#3d2c1f', 'center', null); }
-      hit(x0, Y(y), cw, 64, () => this.buy(HINT_PRICE, mm => { mm.hint = (mm.hint || 0) + 1; this.say('Neuer Such-Joker!'); }));
-      contentH = y + 76 - top;
+      contentH = y + 10 - top;
     } else {
       // Kostüme oder Figuren: Raster mit festen Kartengrößen, scrollbar
-      const isSkin = this.tab === 'skins', kind = ACC().char || 'cat';
+      const isSkin = this.tab === 'skins', kind = ACC().char || 'dog';
       const list = isSkin ? (this.skinList || (this.skinList = SHOP_SKINS.slice().sort((a, b) => ({ common: 0, rare: 1, legend: 2 })[a[2]] - ({ common: 0, rare: 1, legend: 2 })[b[2]] || a[3] - b[3] || a[1].localeCompare(b[1]))))
         : BASE_ANIMALS.map(k => [k, 0]).concat(SHOP_ANIMALS);
       const cols = W > H ? (W > 900 ? 6 : 5) : 3, gap = 12, cw = Math.min(150, (W - 28 - gap * (cols - 1)) / cols), ch = Math.round(cw * (isSkin ? 1.25 : 1.2)), x0 = (W - (cw * cols + gap * (cols - 1))) / 2;
@@ -274,6 +272,17 @@ class Shop {
         }
       });
       contentH = Math.ceil(list.length / cols) * (ch + gap) + 10;
+      if (!isSkin) {   // ruhig darunter: eine einzelne Joker-Karte (Joker gibt es nur hier)
+        const jw = Math.min(W - 28, 520), jx = (W - jw) / 2, jy = top + contentH + 18;
+        txt(c, 'Joker', jx + 4, jy - 4, 15, '#fff', 'left', BRAND.olive);
+        rrPath(c, jx, jy + 8, jw, 70, 20); fs(c, 'rgba(255,255,255,.92)', 2.5);
+        icon(c, 'joker', jx + 36, jy + 43, 34);
+        txt(c, 'Du hast ' + m.bank + ' Joker', jx + 66, jy + 32, 15, '#3d2c1f', 'left', null, jw - 190);
+        txt(c, 'Schafft eine Aufgabe, wenn du feststeckst.', jx + 66, jy + 54, 12, '#6b5a48', 'left', null, jw - 190);
+        const bw = 92, bx = jx + jw - bw - 12, by = jy + 26; rrPath(c, bx, by, bw, 34, 17); fs(c, '#fff3bf', 2, '#c9a227'); icon(c, 'coin', bx + 22, by + 17, 16); txt(c, '+1 · ' + JOKER_PRICE, bx + 58, by + 18, 13, '#3d2c1f', 'center', null);
+        hit(jx, Y(jy + 8), jw, 70, () => this.buy(JOKER_PRICE, mm => { mm.bank += 1; this.say('Neuer Joker!'); }));
+        contentH += 110;
+      }
     }
     c.restore();
     this.maxS = Math.max(0, contentH - view);
@@ -322,7 +331,7 @@ class SkinInfo {
     fitBegin(c, w, h);
     panel(c, x, y, w, h, '#fff7e6', 26);
     roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
-    drawAnimal(c, (ACC() && ACC().char) || 'cat', x + 80, y + 170, 2.2, { look: sk, cap: true, t: this.t });
+    drawAnimal(c, (ACC() && ACC().char) || 'dog', x + 80, y + 170, 2.2, { look: sk, cap: true, t: this.t });
     const R = RARITY[sk.rarity || 'common'];
     txt(c, sk.name || 'Skin', x + 150, y + 50, 19, BRAND.olive, 'left', null);
     rrPath(c, x + 150, y + 66, 110, 22, 11); c.fillStyle = R.col; c.fill(); txt(c, R.name, x + 205, y + 77, 12, '#3d2c1f', 'center', null);
