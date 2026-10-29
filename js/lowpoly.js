@@ -5,7 +5,7 @@
 // wieder über eine Figur, steht aber nicht im Einsatz: Bei großen Figuren schneidet es sie neben Wänden halb ab.
 const LP = {
   on: !/[?&]lowpoly=0/.test(location.search),
-  stages: { kueche: { map: 'assets/lowpoly/kueche/map.jpg', staff: { k_nina: 'nina', k_tom: 'tom', k_luca: 'luca', k_marco: 'marco', k_lea: 'lea' } } },
+  stages: { kueche: { map: 'assets/lowpoly/kueche/map.jpg?v=2', staff: { k_nina: 'nina', k_tom: 'tom', k_luca: 'luca', k_marco: 'marco', k_lea: 'lea' } } },
   catH: 96, staffH: 118,   // Figurengröße passend zu den Möbeln im Bild
   img: {}, ready: false, runs: {},
   player: { face: 'front', flip: 1, dist: 0, lx: null, ly: null },
