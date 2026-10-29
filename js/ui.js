@@ -448,7 +448,7 @@ function openPrivacy() { Sfx.play('tap'); let w = null; try { w = window.open('d
 function privacyPill(c, x, y) { rrPath(c, x - 50, y - 11, 100, 22, 11); fs(c, 'rgba(255,255,255,.75)', 2); icon(c, 'lock', x - 37, y, 12); txt(c, 'Datenschutz', x + 7, y + 1, 11, '#3d2c1f', 'center', null); UI.btn(x - 52, y - 15, 104, 30, openPrivacy); }
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
 // Enricos Admin-Konto: funktioniert auch ohne Server (im Spiel steht nur ein Prüfwert, nicht der Code)
-const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }];
+const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }, { h: 'dd07a1ac25ae3f5e45c4d2d9ae41d0d39dc8ed00c9d3990ec6ba2a1a2b0e3d4b', id: 'admin2', name: 'Chef', admin: true }];   // admin2: zweiter Admin-Login-Code (alles frei)
 const ENRICO_HASH = '3dac95a62bad66804a8c231d440c5189590390ea045c750a5325e656112c3ba3';
 LOCAL_LOGINS[0].h = ENRICO_HASH;
 async function enricoLogin(v) {
