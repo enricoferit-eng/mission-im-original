@@ -405,3 +405,16 @@ function lpTeilePatch() {
   ['red', 'blue', 'green', 'yellow', 'white', 'orange'].forEach(n => lpSpr('teile/auto_' + n)); ['karte_vorne', 'karte_hinten', 'topf'].forEach(n => lpSpr('teile/' + n));
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpTeilePatch); else setTimeout(lpTeilePatch, 0);
+
+// Gesperrter Nachbarbereich: gemalte Karte blass hinter dem Nebel (statt grauer Fläche)
+function lpFogPatch() {
+  if (typeof drawFog !== 'function') return;
+  const fog0 = drawFog;
+  drawFog = function (c, ox, oy, id, t) {
+    const im = LP.on && LP.img['map_' + id];
+    if (!im || !im.complete || !im.naturalWidth) return fog0.apply(this, arguments);
+    c.drawImage(im, ox, oy, areaW(id), areaH(id));
+    c.save(); c.beginPath(); c.rect(ox, oy, areaW(id), areaH(id)); c.clip(); c.globalAlpha = 0.74; fog0.apply(this, arguments); c.restore();   // Wolken bleiben im Bereich
+  };
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpFogPatch); else setTimeout(lpFogPatch, 0);
