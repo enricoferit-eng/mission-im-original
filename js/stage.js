@@ -1171,11 +1171,14 @@ class Play {
     // Belohnung: statt eines Skins gibt es 300 Taler extra (Skins kauft man im Laden)
     const skin = DP(this.diff).equip, newSkin = false, bonus = clearBonus(this.diff, this.stage, sp.clears > 0); addCoins(bonus, sp.clears ? 'Bereich nochmal geschafft!' : 'Bonus für den Bereich!'); if (this.stage === 'parkplatz' && !sp.clears) setTimeout(() => toast('Bonus-Bereich offen!', 'Das Chalet wartet hinter dem Parkplatz', 'star'), 3500); if (!this.mp && ACC() && !ACC().token) setTimeout(() => toast('Spielstand sichern?', 'Tippe im Menü oben links auf deinen Namen', 'lock'), 2500);
     const usedJoker = (this.st.jokersUsed || 0) > 0;
+    // Finale: letzter Bereich geschafft – große Glückwunsch-Seite mit Extra-Geschenk (500 Taler + 3 Joker)
+    let finale = 0;
+    if (!this.mp && this.stage === STAGE_ORDER[STAGE_ORDER.length - 1]) { finale = 3; addCoins(500, 'Alle Bereiche geschafft!'); const m = META(); if (m) m.bank = (m.bank || 0) + finale; }
     sp.clears++; sp.run = null;
     Save.write();
     stat('clears'); if (this.diff === 'hard') achieve('profi'); if (!usedJoker) achieve('ohnejoker');
     { const m = META(); if (totalSkins() + (m ? m.skins.length : 0) >= 10) achieve('skins10'); }
-    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, bonus, diff: this.diff }, again => {
+    const after = () => { overlay = new ClearOverlay({ kind, newPiece, skin, newSkin, bonus: bonus + (finale ? 500 : 0), finale, diff: this.diff }, again => {
       if (SG.finalExit && !again) { setScene(SG.solo ? new Menu() : new StageMap(this.diff)); return; }
       setScene(new Play(this.diff, SG.finalExit ? { stage: this.stage } : { stage: this.stage, enter: { x: this.p.x, y: this.p.y, dir: this.p.dir } }));
     }); };

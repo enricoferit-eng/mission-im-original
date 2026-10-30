@@ -9,7 +9,7 @@
 // Jeder Bereich liegt an seiner echten Stelle (linke obere Ecke in Welt-Koordinaten) und hat seine eigene Größe.
 // Lage wie auf dem Luftbild (Gebäude-Achse waagerecht): oben Küche + Glashaus, darunter Terrasse, links unten Spielplatz,
 // darunter Kreisel + Parkplatz, rechts unten das Chalet mit dem großen Haus. Dazwischen und rundherum: Gelände.
-const WORLD_XY = { kueche: [1000, 0], gastraum: [2400, 0], aussen: [2100, 1000], spielplatz: [1100, 1200], parkplatz: [0, 2600], chalet: [2900, 1800] };
+const WORLD_XY = { kueche: [1000, 0], gastraum: [2400, 0], aussen: [2100, 1000], spielplatz: [1100, 900], parkplatz: [0, 2300], chalet: [2900, 1800] };   // Bereiche stoßen direkt aneinander (keine leeren Wiesen dazwischen)
 const areaW = id => (STAGE_DEFS[id] && STAGE_DEFS[id].w) || 1000, areaH = id => (STAGE_DEFS[id] && STAGE_DEFS[id].h) || 1400;
 const offOf = (from, to) => [WORLD_XY[to][0] - WORLD_XY[from][0], WORLD_XY[to][1] - WORLD_XY[from][1]];
 function worldBox() { const ids = Object.keys(WORLD_XY); return { x0: Math.min(...ids.map(k => WORLD_XY[k][0])) - TERRAIN_PAD, y0: Math.min(...ids.map(k => WORLD_XY[k][1])) - TERRAIN_PAD, x1: Math.max(...ids.map(k => WORLD_XY[k][0] + areaW(k))) + TERRAIN_PAD, y1: Math.max(...ids.map(k => WORLD_XY[k][1] + areaH(k))) + TERRAIN_PAD }; }
@@ -22,7 +22,7 @@ const LINKS = [
   { a: 'gastraum', side: 'bottom', b: 'aussen', r: [650, 780], gate: true },
   { a: 'aussen', side: 'left', b: 'spielplatz', r: [520, 640], gate: true },
   { a: 'spielplatz', side: 'bottom', b: 'parkplatz', r: [450, 570], gate: true },
-  { a: 'parkplatz', side: 'right', b: 'chalet', r: [500, 620], bar: 'fence' },
+  { a: 'parkplatz', side: 'right', b: 'chalet', r: [800, 920], gate: true },   // Schranke des Parkplatzs führt ins Chalet (letzter Bereich)
   { a: 'aussen', side: 'bottom', b: 'chalet', r: [1400, 1480], bar: 'garden' },
 ];
 const OPP = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };

@@ -1592,12 +1592,14 @@ class ClearOverlay {
     c.restore();
     for (let s = 0; s < 3; s++) { const kk = ease.back(clamp(t * 2 - 0.4 - s * 0.2, 0, 1)); c.save(); c.translate(cx + (s - 1) * 56, cy - 122 - (s === 1 ? 14 : 0)); c.scale(kk, kk); icon(c, 'star', 0, 0, s === 1 ? 54 : 44); c.restore(); }
     drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);
-    if (t > 1.2) { claimBand(c, 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, cy + 196, 16); }
+    if (t > 1.2) { claimBand(c, o.finale ? 'Alle Bereiche geschafft – du bist ein echter Original-Held!' : 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, cy + 196, 16); }
+    if (o.finale) { const k2 = ease.back(clamp(t * 1.5, 0, 1)); c.save(); c.translate(cx, Math.max(30, cy - 250)); c.scale(k2, k2); txt(c, 'Herzlichen Glückwunsch!', 0, 0, 34, '#ffd23f', 'center', BRAND.ink); c.restore(); }
     const ry = cy + 128, kk = ease.back(clamp(t * 2 - 1, 0, 1));
     c.save(); c.translate(cx, ry); c.scale(kk, kk);
     panel(c, -150, -34, 300, 76, '#fff7e6', 20);
     if (o.newPiece) { ell(c, -110, 4, 26, 26); fs(c, '#ffd166', 3); drawOutfitIcon(c, 'kappe', -110, 4, 34); }
     icon(c, 'coin', o.newPiece ? -30 : -70, 4, 40); txt(c, '+' + (o.bonus || 300) + ' Taler', o.newPiece ? 50 : 20, 5, 26, '#c9762f', 'center', null);
+    if (o.finale) { panel(c, -150, 50, 300, 54, '#fff7e6', 18); icon(c, 'joker', -70, 77, 34); txt(c, '+' + o.finale + ' Joker geschenkt', 30, 78, 20, '#118ab2', 'center', null); }
     c.restore();
     if (t > 0.7) {
       roundBtn(c, cx - 60, HH - 80, 34, '#06d6a0', 'retry', () => this.close(true));

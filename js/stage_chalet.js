@@ -297,7 +297,7 @@ function drawWoodGate(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.chalet = {
-  id: 'chalet', w: CW, h: CH, bg: '#dbe4ee', start: { x: 70, y: 1360 + CY2 }, gate: { x: 500, y: CH - 8, ix: 500, iy: CH - 80 },
+  id: 'chalet', w: CW, h: CH, bg: '#dbe4ee', finalExit: true, start: { x: 70, y: 1360 + CY2 }, gate: { x: 500, y: CH - 8, ix: 500, iy: CH - 80 },
   npcs: [
     { id: 'c_gerda', pos: [[SXI(285), 463], [SXI(728), 472], [340, 760]] },
     { id: 'c_felix', pos: [[260, 1200], [1250, 1300], [237, 1375]] },
@@ -314,7 +314,7 @@ STAGE_DEFS.chalet = {
     opened: 'Das Holztor ist offen!',
     lock: 'Das Holztor geht erst auf, wenn du allen fünf Gästen geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau unter die Tische, zum Christbaum, in den Holzstapel und hinter die Tannen!',
-    gateAsk: 'Das Holztor ist eingefroren! Bring mir diese Sachen, dann ist der Weg zum Spielplatz frei.',
+    gateAsk: 'Das Holztor ist eingefroren! Bring mir diese Sachen, dann hast du es geschafft und es geht ab nach Hause!',
     search: 'Schau hinter Tannen und unter Tische – dann tippe auf die Lupe!' },
   pools: {
     easy: ['schneemann', 'geschenke', 'fondue', 'holzhacken', 'kaminfeuer', 'schneeball', 'eisrutsch', 'eisstock', 'memory', 'limo_mix', 'stack', 'trace', 'lights', 'count_easy', 'cups', 'findall', 'shadow', 'maze_easy', 'connect', 'color', 'sort', 'size_row', 'pop'],

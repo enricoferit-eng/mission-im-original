@@ -79,7 +79,7 @@ function drawGroundParkplatz(g, R) {
   // Pfützen
   for (const [x, y, w] of PUDDLES) { ell(g, x, y, w, w * 0.42); g.fillStyle = 'rgba(70,100,130,.45)'; g.fill(); ell(g, x - w * 0.2, y - w * 0.1, w * 0.4, w * 0.12); g.fillStyle = 'rgba(200,225,245,.5)'; g.fill(); }
 }
-const PK_IN = 1610, PK_CH = 560, PK_GATE = 2300;   // Weg vom Spielplatz (oben), Durchgang zum Chalet (rechts), Schranke (unten)
+const PK_IN = 1610, PK_CH = 860, PK_GATE = 2300;   // Weg vom Spielplatz (oben), Durchgang + Schranke zum Chalet (rechts)
 const car = (id, x, cy, a, col) => ({ id, t: 'auto', x, y: cy + 58, cy, a, col, r: 34, x0: x - 34 - Math.abs(a) * 40, y0: cy - 60, w: 68 + Math.abs(a) * 80, h: 120, bb: [x - 60, cy - 70, 120, 140] });
 const PDECOR = [
   // am Rand vom Kreisverkehr + in den Reihen geparkt (wie auf dem Bild)
@@ -133,7 +133,6 @@ const PDRAW = {
 };
 function buildGridParkplatz() {
   cellsIn(55, 40, PW - 55, PH - 90, i => (G0[i] = 1));
-  cellsIn(PK_GATE - 60, PH - 100, PK_GATE + 60, PH - 55, i => (G0[i] = 1));   // Ausfahrt
   cellsCircle(RB.x, RB.y, RB.ri + 10, i => (G0[i] = 0));              // Insel
   // Pfostenreihen: zwischen benachbarten Pfosten dicht (nur die Lücke in der Mitte ist frei)
   for (let k = 1; k < PPOSTS.length; k++) { const [x1, y1] = PPOSTS[k - 1], [x2, y2] = PPOSTS[k]; if (dist(x1, y1, x2, y2) > 40) continue; for (let u = 0; u <= 1; u += 0.1) { const i = cellIdx(lerp(x1, x2, u), lerp(y1, y2, u) - 6); if (i >= 0) G0[i] = 0; } }
@@ -182,7 +181,7 @@ function drawBarrier(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.parkplatz = {
-  id: 'parkplatz', w: PW, h: PH, bg: '#40916c', finalExit: true, start: { x: PK_IN, y: 60 }, gate: { x: PK_GATE, y: PH - 8, ix: PK_GATE, iy: PH - 80 },
+  id: 'parkplatz', w: PW, h: PH, bg: '#40916c', start: { x: PK_IN, y: 60 }, gate: { x: PW - 26, y: PK_CH + 64, ix: PW - 100, iy: PK_CH, side: 'right' },
   npcs: [
     { id: 'p_schmidt', pos: [[1300, 380], [800, 880], [1800, 1150]] },
     { id: 'p_julia', pos: [[500, 900], [2000, 300], [1250, 1150]] },
@@ -195,11 +194,11 @@ STAGE_DEFS.parkplatz = {
   junk: ['cap', 'pebble', 'zettel'], items: PARK_ITEMS, cover: drawCardboard,
   drawGate: drawBarrier, gateName: 'Die Schranke', dialogGate: 0.4, gateFace: (c, x, y, s, t) => drawBarrier(c, x + 8, y, s * 0.3, 0, true, t),
   words: { one: 'Person', the: 'die Person', a: 'eine Person', many: 'Leute', dat: 'Leuten', back: 'zur Person', each: 'Jede Person',
-    hide: 'hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen', junk: 'ein Kronkorken oder ein Zettel', gate: 'an der Schranke zur Straße', gateTap: 'Lauf zur Schranke und tippe sie an!',
+    hide: 'hinter Autos, Anhänger und Transporter, an der Insel im Kreisverkehr und in den Büschen', junk: 'ein Kronkorken oder ein Zettel', gate: 'an der Schranke zum Chalet', gateTap: 'Lauf zur Schranke und tippe sie an!',
     opened: 'Die Schranke ist offen!',
     lock: 'Die Schranke geht erst auf, wenn du allen fünf Leuten geholfen hast.',
     progress: 'Dir fehlen noch ein paar Sachen, oben siehst du welche. Schau hinter die Autos, zur Insel im Kreisverkehr und in die Büsche!',
-    gateAsk: 'Die Schranke klemmt! Bring mir diese Sachen, dann geht sie auf und es geht ab nach Hause.',
+    gateAsk: 'Die Schranke klemmt! Bring mir diese Sachen, dann geht sie auf und es geht weiter zum Chalet.',
     search: 'Schau hinter Autos und in Büsche – dann tippe auf die Lupe!' },
   pools: {
     easy: ['parkschein', 'autowasch', 'einparken', 'pumpen', 'bus', 'stau', 'memory', 'connect', 'shadow', 'trace', 'maze_easy', 'count_easy', 'findall', 'sort', 'size_row', 'cups', 'stack', 'color', 'pop', 'dots_easy'],

@@ -7,12 +7,12 @@ const LP = {
   on: !/[?&]lowpoly=0/.test(location.search),
   stages: {
     kueche: { map: 'assets/lowpoly/kueche/map.jpg?v=2', staff: { k_nina: 'nina', k_tom: 'tom', k_luca: 'luca', k_marco: 'marco', k_lea: 'lea' } },
-    gastraum: { map: 'assets/lowpoly/gastraum/map.jpg?v=1', staff: {} },
+    gastraum: { map: 'assets/lowpoly/gastraum/map.jpg?v=2', staff: {} },
     aussen: { map: 'assets/lowpoly/aussen/map.jpg?v=1', staff: {} },
-    parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=1', staff: {} },
+    parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=2', staff: {} },
     uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=1', staff: {} },
     chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=1', staff: {} },
-    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=2', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
+    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=3', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   zoomK: 0.72,   // Zoom in allen Bereichen gleich (Küche als Maß)
   playerArt: false,   // gemalte Spielfigur erst, wenn Löwe/Bär/Hund + Skins fertig sind (bis dahin alte Figur)
@@ -246,3 +246,12 @@ function lpPatch() {
       lpLock(c, x + 26, (y0 + y1) / 2 - 50, 18, t); }; }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpPatch); else setTimeout(lpPatch, 0);
+
+// ---------- Gelände rund um die Bereiche (Wiesen, Straßen, Garten) als gemaltes Bild ----------
+// Ersetzt das gezeichnete Gelände unter allem (und auf der Weltkarte), sobald es geladen ist.
+(function lpTerrain() {
+  if (!LP.on) return;
+  const im = new Image();
+  im.onload = () => { if (typeof worldBox === 'function') TERRAIN = { cv: im, B: worldBox() }; };
+  im.src = 'assets/lowpoly/welt/gelaende.jpg?v=1';
+})();
