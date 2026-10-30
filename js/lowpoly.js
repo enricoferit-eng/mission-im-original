@@ -294,6 +294,7 @@ function lpAnimalWrap(orig) {
     const dir = id && have.has(id) ? id : sk && sk.uniform && have.has('u_' + sk.uniform) ? 'u_' + sk.uniform : 'basis';
     const base = 'spieler/' + kind + '/' + dir + '/', t = o.t || 0;
     const im = (o.moving && lpSpr(base + 'side_' + (Math.floor(t * 10) % 6))) || lpSpr(base + 'stand_front') || lpSpr('spieler/' + kind + '/basis/stand_front');
+    if (dir !== 'basis' && !lpSpr(base + 'stand_front')) LP_MISS = true;   // Kostüm-Bild lädt noch: Karte nicht mit der Grundfigur merken
     if (!im) { LP_MISS = true; return orig.apply(this, arguments); }
     const B = lpMeasure('animal_' + kind, (g, gx, gy) => orig(g, kind, gx, gy, 1, { noShadow: true, look: DEFAULT_LOOK, noOutfit: true }));
     const h = B.h * s * 1.2, w = im.naturalWidth * h / im.naturalHeight, flip = o.moving && (o.dir || 1) < 0 ? -1 : 1;
