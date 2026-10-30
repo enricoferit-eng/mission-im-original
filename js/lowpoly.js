@@ -246,6 +246,7 @@ function lpPatch() {
   if (typeof drawGate === 'function') drawGate = lpGateWrap(drawGate, 'spielplatz');
   if (typeof drawGardenGate === 'function') drawGardenGate = lpGateWrap(drawGardenGate, 'aussen');
   if (typeof drawPigeon === 'function') drawPigeon = lpPigeonWrap(drawPigeon);
+  if (typeof drawAnimal === 'function') drawAnimal = lpAnimalWrap(drawAnimal);
   if (typeof drawPerson === 'function') drawPerson = lpPersonWrap(drawPerson, 'p');
   if (typeof drawCritter === 'function') drawCritter = lpPersonWrap(drawCritter, 'c');
   if (typeof drawLockedDoors === 'function') { const o = drawLockedDoors; drawLockedDoors = function (c, x, y, w, t) { const im = lpSpr('tore/glastuer'); if (!im) return o(c, x, y, w, t); const h = 118; c.drawImage(im, x - w / 2 - 6, y - h, w + 12, h); lpLock(c, x, y - 60, 18, t); }; }
@@ -268,11 +269,35 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 
 // ---------- Skins der Spielfigur: welcher Ordner mit gemalten Bildern gehört zu welchem Skin ----------
 // LP_SKIN_HAVE wird beim Hinzufügen neuer Bögen aktualisiert (tier -> vorhandene Ordner).
-const LP_SKIN_HAVE = {"bear":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_dino","sk_drache","sk_einhorn","sk_feuer","sk_gaertner","sk_held","sk_hexe","sk_koch","sk_koenig","sk_matrose","sk_ninja","sk_pirat","sk_ritter","sk_schlaf","sk_sport","sk_surfer","sk_wikinger","sk_zauberer","u_eis","u_koch","u_latz","u_pulli","u_schuerze","u_weste"],"dog":["sk_biene","sk_surfer"],"lion":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_dino","sk_drache","sk_einhorn","sk_feuer","sk_gaertner","sk_held","sk_hexe","sk_koch","sk_koenig","sk_matrose","sk_ninja","sk_pirat","sk_ritter","sk_schlaf","sk_sport","sk_surfer","sk_wikinger","sk_zauberer","u_eis","u_koch","u_latz","u_pulli","u_schuerze","u_weste"]};   // @@SKINLISTE@@
+const LP_SKIN_HAVE = {"bear":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_dino","sk_drache","sk_einhorn","sk_feuer","sk_gaertner","sk_held","sk_hexe","sk_koch","sk_koenig","sk_matrose","sk_ninja","sk_pirat","sk_ritter","sk_schlaf","sk_sport","sk_surfer","sk_wikinger","sk_zauberer","u_eis","u_koch","u_latz","u_pulli","u_schuerze","u_weste"],"dog":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_dino","sk_drache","sk_einhorn","sk_feuer","sk_gaertner","sk_held","sk_hexe","sk_koch","sk_koenig","sk_matrose","sk_ninja","sk_pirat","sk_ritter","sk_schlaf","sk_sport","sk_surfer","sk_wikinger","sk_zauberer","u_eis","u_koch","u_latz","u_pulli","u_schuerze","u_weste"],"lion":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_dino","sk_drache","sk_einhorn","sk_feuer","sk_gaertner","sk_held","sk_hexe","sk_koch","sk_koenig","sk_matrose","sk_ninja","sk_pirat","sk_ritter","sk_schlaf","sk_sport","sk_surfer","sk_wikinger","sk_zauberer","u_eis","u_koch","u_latz","u_pulli","u_schuerze","u_weste"]};   // @@SKINLISTE@@
 function lpSkinDir(id) {
   const sk = typeof SKINS !== 'undefined' && SKINS[id]; if (!sk) return null;
   const kind = typeof scene !== 'undefined' && scene && scene.kind, have = new Set(LP_SKIN_HAVE[kind] || []);
   if (have.has(id)) return id;
   if (sk.uniform && have.has('u_' + sk.uniform)) return 'u_' + sk.uniform;
   return null;
+}
+
+// Spielfigur überall (Laden, Garderobe, Menü, Minispiele, Film): gemalte Figur statt Zeichnung.
+// Welcher Skin? look ist meist SKINS[id] (gleiches Objekt) -> Ordner; ohne look der angezogene Skin.
+let LP_LOOK2ID = null;
+function lpAnimalWrap(orig) {
+  return function (c, kind, x, y, s, o = {}) {
+    if (!LP.playerArt || !LP_KINDS.has(kind)) return orig.apply(this, arguments);
+    if (!LP_LOOK2ID) { LP_LOOK2ID = new Map(); for (const id in SKINS) LP_LOOK2ID.set(SKINS[id], id); }
+    let id = null;
+    if (o.look) id = LP_LOOK2ID.get(o.look) || null;
+    else if (typeof ACC === 'function' && ACC()) id = DP(CUR_DIFF).equip || null;
+    const have = new Set(LP_SKIN_HAVE[kind] || []), sk = id && SKINS[id];
+    const dir = id && have.has(id) ? id : sk && sk.uniform && have.has('u_' + sk.uniform) ? 'u_' + sk.uniform : 'basis';
+    const base = 'spieler/' + kind + '/' + dir + '/', t = o.t || 0;
+    const im = (o.moving && lpSpr(base + 'side_' + (Math.floor(t * 10) % 6))) || lpSpr(base + 'stand_front') || lpSpr('spieler/' + kind + '/basis/stand_front');
+    if (!im) return orig.apply(this, arguments);
+    const B = lpMeasure('animal_' + kind, (g, gx, gy) => orig(g, kind, gx, gy, 1, { noShadow: true, look: DEFAULT_LOOK, noOutfit: true }));
+    const h = B.h * s * 1.2, w = im.naturalWidth * h / im.naturalHeight, flip = o.moving && (o.dir || 1) < 0 ? -1 : 1;
+    c.save(); c.translate(x, y);
+    if (!o.noShadow) { c.fillStyle = 'rgba(40,25,10,.25)'; ell(c, 0, -1, w * 0.36, 5 * s); c.fill(); }
+    const bob = o.moving ? 0 : Math.sin(t * 2.2) * 0.8 * s;
+    c.translate(0, -bob); if (o.tilt) c.rotate(o.tilt); c.scale(flip, 1); c.drawImage(im, -w / 2, -h, w, h); c.restore();
+  };
 }
