@@ -646,7 +646,7 @@ class Accounts {
         drawCritter(c, AVATARS[a.avatar % 6], x + cw / 2, y + 82, 1.1, this.t + i, { noShadow: true });
         txt(c, a.name, x + cw / 2, y + 112, 17, '#3d2c1f', 'center', null);
         icon(c, 'hanger', x + cw / 2 - 22, y + 134, 16); txt(c, String(ownedSkins(a)), x + cw / 2 + 8, y + 135, 14, '#8d5a3b', 'center', null);
-        if (a.admin) UI.btn(x, y, cw, ch, () => { if (a.device) { Save.data.current = id; Save.write(false); Sfx.play('win'); setScene(new Menu()); } else setScene(new LoginScene('admin')); });
+        if (a.admin) UI.btn(x, y, cw, ch, () => { Save.data.current = id; Save.write(false); Sfx.play('win'); setScene(new Menu()); });
         else UI.btn(x, y, cw, ch, () => { Save.data.current = id; Save.write(); Sfx.play('win'); Net.refresh(); setScene(new Menu()); });   // Gerät ist gemerkt: kein Code nötig
         roundBtn(c, x + cw - 18, y + 18, 15, '#fff', 'trash', () => askDelete(id, a));
       } else if (id === 'new') {
@@ -895,10 +895,7 @@ class AccountPanel {
     ell(c, W / 2, y + 62, 42, 42); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 100, 1.35, this.t, { noShadow: true });
     txt(c, a.name, W / 2, y + 132, 22, '#3d2c1f', 'center', null);
     { const st = Net.status(a); c.font = `900 13px ${FONT}`; const sw = c.measureText(st.text).width + 40; rrPath(c, W / 2 - sw / 2, y + 148, sw, 26, 13); fs(c, '#fff', 2, st.col); ell(c, W / 2 - sw / 2 + 14, y + 161, 7, 7); c.fillStyle = st.col; c.fill(); txt(c, st.text, W / 2 - sw / 2 + 26, y + 162, 13, '#3d2c1f', 'left', null); }   /* online/offline deutlich */
-    if (a.admin) {
-      rrPath(c, W / 2 - 130, y + 195, 260, 60, 20); fs(c, '#ffd166', 3.5); txt(c, 'Admin: Statistik & Test', W / 2, y + 225, 18, '#3d2c1f', 'center', null);
-      UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); overlay = new AdminPanel(); });
-    } else if (!a.token) {
+    if (a.admin) { /* Admin: alles freigeschaltet – Statistik gibt es auf stats.html */ } else if (!a.token) {
       const pu = 1 + Math.sin(this.t * 5) * 0.04;
       c.save(); c.translate(W / 2, y + 225); c.scale(pu, pu); rrPath(c, -130, -30, 260, 60, 20); fs(c, '#06d6a0', 3.5); txt(c, 'Spielstand sichern', 0, -6, 19, '#fff', 'center', BRAND.ink); txt(c, 'du bekommst einen Login-Code', 0, 15, 12, '#fff', 'center', null); c.restore();
       UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); setScene(new NewAccount({ migrate: Save.data.current })); });
@@ -919,66 +916,12 @@ class AccountPanel {
   down() {} move() {} up() {}
 }
 
-// ---------- Admin im Spiel: Statistik (vom Server) + Test-Werkzeuge ----------
-let ADMIN_STATS = null;
-class AdminPanel {
-  constructor() { this.t = 0; this.busy = false; this.msg = ''; if (!ADMIN_STATS) this.load(); }
-  async load() {
-    const a = Save.data.accounts.admin; if (!a || !a.device) { this.msg = 'Bitte einmal neu als Admin anmelden.'; return; }
-    this.busy = true; const r = await Net.call({ action: 'admin', device: a.device }); this.busy = false;
-    if (r && r.status === 200) { ADMIN_STATS = r.data; this.msg = ''; }
-    else if (r && r.status === 401) { delete a.device; Save.write(false); this.msg = 'Passwort wurde geändert – bitte neu anmelden.'; }
-    else this.msg = 'Gerade keine Verbindung. Versuch es gleich nochmal.';
-  }
-  update(dt) { this.t += dt; }
-  close() { if (overlay === this) overlay = null; }
-  draw(c) {
-    c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
-    const w = Math.min(W - 24, 640), h = 400, x = (W - w) / 2, y = (H - h) / 2;
-    fitBegin(c, w, h);
-    panel(c, x, y, w, h, '#fff7e6', 26);
-    roundBtn(c, x + w - 30, y + 30, 22, '#ced4da', 'cross', () => this.close());
-    txt(c, 'Admin', x + 26, y + 32, 22, BRAND.olive, 'left', null);
-    const S = ADMIN_STATS;
-    if (S) {
-      const box = (i, label, v) => { const bw = (w - 60) / 5, bx = x + 20 + i * (bw + 5); rrPath(c, bx, y + 58, bw, 64, 14); fs(c, '#fff', 2.5); txt(c, String(v), bx + bw / 2, y + 82, 24, '#118ab2', 'center', null); txt(c, label, bx + bw / 2, y + 108, 11, '#6b5a48', 'center', null); };
-      box(0, 'Konten', S.accounts); box(1, 'neu (7 Tage)', S.new7); box(2, 'aktiv (7 Tage)', S.active7); box(3, 'aktiv (30 Tage)', S.active30); box(4, 'Skins gesamt', S.skins);
-      const cols = ['Stufe', 'Spieler', 'geschafft', 'Bereiche', 'Aufträge', 'Skins'], cx = [x + 24, x + w * 0.36, x + w * 0.5, x + w * 0.64, x + w * 0.77, x + w * 0.9];
-      cols.forEach((t2, i) => txt(c, t2, cx[i], y + 146, 13, '#8d5a3b', i ? 'center' : 'left', null));
-      [['easy', 'Leicht'], ['medium', 'Mittel'], ['hard', 'Schwer']].forEach(([k, label], r) => {
-        const p = S.perDiff[k], yy = y + 172 + r * 28; [label, p.players, p.playersCleared, p.stageClears, p.questsDone, p.skins].forEach((v, i) => txt(c, String(v), cx[i], yy, 15, '#3d2c1f', i ? 'center' : 'left', null));
-      });
-      txt(c, 'Stand: ' + new Date(S.generated).toLocaleString('de-DE'), x + 24, y + 262, 12, '#8d5a3b', 'left', null);
-    } else txt(c, this.busy ? 'Lade Statistik …' : (this.msg || 'Statistik nicht geladen.'), W / 2, y + 120, 15, '#6b5a48', 'center', null);
-    if (this.msg && S) txt(c, this.msg, W / 2, y + 282, 13, '#c1121f', 'center', null);
-    // Test-Werkzeuge
-    const bt = (i, label, col, fn) => { const bw = (w - 60) / 3, bx = x + 20 + i * (bw + 10), by = y + h - 92; rrPath(c, bx, by, bw, 52, 16); fs(c, col, 3); txt(c, label, bx + bw / 2, by + 27, Math.min(15, bw / 12.5), '#3d2c1f', 'center', null); UI.btn(bx, by, bw, 52, fn); };
-    bt(0, this.busy ? 'lädt …' : 'Statistik neu laden', '#bde0fe', () => { if (!this.busy) this.load(); });
-    bt(1, 'Alle Skins freischalten', '#caffbf', () => { ['easy', 'medium', 'hard'].forEach(d => { const sp = SP(d, 'spielplatz'); sp.skins = stageSkins('spielplatz', d).slice(); }); Save.write(); Sfx.play('win'); this.msg = 'Alle 18 Spielplatz-Skins freigeschaltet.'; });
-    bt(2, 'Durchgänge zurücksetzen', '#ffd6a5', () => { ['easy', 'medium', 'hard'].forEach(d => { SP(d, 'spielplatz').run = null; }); Save.write(); Sfx.play('good'); this.msg = 'Alle Durchgänge stehen wieder am Anfang.'; });
-    txt(c, 'Als Admin hast du im Spiel unbegrenzt Joker zum Testen.', W / 2, y + h - 22, 12, '#6b5a48', 'center', null);
-    c.restore();
-  }
-  down() {} move() {} up() {}
-}
-
 // Anmelden mit bestehendem Konto: Name + Geheim-Code ODER Login-Code
 class LoginScene {
   constructor(mode) { this.t = 0; this.mode = 'code'; this.err = ''; this.busy = false; this.start = mode || 'code'; this.alt = false; }   // Anmelden nur noch mit Login-Code (Name + Passwort gibt es nicht mehr)
   enter() { FX.clear(); nameInput.value = ''; passInput.value = ''; if (this.start) this.setMode(this.start); }
   update(dt) { this.t += dt; }
   leave(to) { nameInput.style.display = 'none'; nameInput.blur(); passInput.style.display = 'none'; passInput.blur(); setScene(to); }
-  async adminLogin() {
-    const user = nameInput.value.trim(), pass = passInput.value; nameInput.blur(); passInput.blur(); this.busy = true;
-    const r = await Net.call({ action: 'admin', user, pass }); this.busy = false;
-    if (r && r.status === 200) {
-      ADMIN_STATS = r.data;
-      if (!Save.data.accounts.admin) Save.data.accounts.admin = { name: 'Admin', admin: true, code: [0, 0, 0, 0], login: 'ADMIN', avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
-      Save.data.accounts.admin.device = r.data.device;   // Gerät merken (kein Passwort gespeichert)
-      Save.data.current = 'admin'; Save.write(false); Sfx.play('win'); passInput.value = ''; this.leave(new Menu()); setTimeout(() => { overlay = new AdminPanel(); }, 50); return;
-    }
-    this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : 'Benutzer oder Passwort stimmt nicht.'; Sfx.play('bad');
-  }
   setMode(m) { this.mode = m; this.err = ''; nameInput.value = ''; passInput.value = ''; passInput.type = 'password'; nameInput.placeholder = m === 'code' ? (this.alt ? 'z. B. K7P2-9QXA' : '6 Ziffern') : 'Dein Fantasiename'; nameInput.maxLength = m === 'code' ? (this.alt ? 9 : 6) : 14; nameInput.inputMode = m === 'code' && !this.alt ? 'numeric' : 'text'; }
   async done(r) {
     this.busy = false;
@@ -1004,19 +947,6 @@ class LoginScene {
       const btn = (yy, label, col, fn) => { rrPath(c, x + 24, yy, w - 48, 58, 18); fs(c, col, 3); txt(c, label, W / 2, yy + 30, 18, '#3d2c1f', 'center', null); UI.btn(x + 24, yy, w - 48, 58, fn); };
       btn(y + 124, 'Mit Name + Passwort', '#caffbf', () => this.setMode('name'));
       btn(y + 196, 'Mit Login-Code', '#bde0fe', () => this.setMode('code'));
-      rrPath(c, W / 2 - 50, y + 262, 100, 26, 13); fs(c, '#e9ecef', 2); txt(c, 'Admin', W / 2, y + 276, 13, '#495057', 'center', null); UI.btn(W / 2 - 60, y + 256, 120, 40, () => this.setMode('admin'));
-      return;
-    }
-    if (this.mode === 'admin') {
-      panel(c, x, y, w, 330, '#fff7e6', 26);
-      icon(c, 'lock', W / 2, y + 34, 34); txt(c, 'Admin-Anmeldung', W / 2, y + 70, 18, '#3d2c1f', 'center', null);
-      const show = this.busy || overlay ? 'none' : 'block';
-      Object.assign(nameInput.style, { display: show, left: (x + 24) + 'px', top: (y + 92) + 'px', width: (w - 48) + 'px', height: '52px' }); nameInput.placeholder = 'Benutzer'; nameInput.maxLength = 32;
-      Object.assign(passInput.style, { display: show, left: (x + 24) + 'px', top: (y + 154) + 'px', width: (w - 48) + 'px', height: '52px', font: nameInput.style.font, textAlign: 'center', border: nameInput.style.border, borderRadius: '16px', padding: '8px', background: '#fff', color: '#2b1d14', outline: 'none', zIndex: 5, boxSizing: 'border-box', position: 'fixed' });
-      if (this.err) txt(c, this.err, W / 2, y + 226, 15, '#c1121f', 'center', null);
-      const ok = nameInput.value.trim() && passInput.value && !this.busy;
-      if (this.busy) for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 276, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
-      else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 276, 32, '#06d6a0', 'check', ok ? () => this.adminLogin() : null); c.restore(); }
       return;
     }
     passInput.style.display = 'none';
@@ -1026,10 +956,9 @@ class LoginScene {
     nameInput.value = this.alt ? nameInput.value.toUpperCase() : nameInput.value.replace(/\D/g, '').slice(0, 6);   // neu: nur Ziffern
     if (this.err) { const L = wrapLines(c, this.err, w - 48, 15); L.forEach((l, i) => txt(c, l, W / 2, y + 150 + i * 20, 15, '#c1121f', 'center', null)); }
     const ok = (this.alt ? nameInput.value.replace(/[^A-Z0-9]/gi, '').length >= 8 : /^\d{6}$/.test(nameInput.value)) && !this.busy;
-    if (!this.busy) {   // klein darunter: alte Codes mit Buchstaben, Admin
+    if (!this.busy) {   // klein darunter: alte Codes mit Buchstaben
       txt(c, this.alt ? 'Neuer Code nur mit Ziffern' : 'Alter Code mit Buchstaben?', x + 24, y + 284, 12, '#118ab2', 'left', null);
       UI.btn(x + 14, y + 268, 190, 32, () => { this.alt = !this.alt; this.setMode('code'); Sfx.play('tap'); });
-      txt(c, 'Admin', x + w - 24, y + 284, 12, '#868e96', 'right', null); UI.btn(x + w - 80, y + 268, 70, 32, () => this.setMode('admin'));
     }
     if (this.busy) for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 240, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
     else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 240, 32, '#06d6a0', 'check', ok ? () => {
@@ -1812,7 +1741,7 @@ const Tele = {
 document.addEventListener('visibilitychange', () => { if (document.hidden) Tele.send(true); });
 
 // Diese Fenster decken das Spiel ab: Hintergrund einfrieren spart viel Rechenzeit
-[GameOverlay, QuestDialog, Wardrobe, ClearOverlay, WheelOverlay, CodePad, AccountPanel, AdminPanel, ConfirmDialog, MsgDialog].forEach(K => { K.prototype.freezeBg = true; });
+[GameOverlay, QuestDialog, Wardrobe, ClearOverlay, WheelOverlay, CodePad, AccountPanel, ConfirmDialog, MsgDialog].forEach(K => { K.prototype.freezeBg = true; });
 
 Save.load();
 resize();
