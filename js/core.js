@@ -71,7 +71,8 @@ const Net = {
     const a = ACC(); if (!a || !a.token) return;
     clearTimeout(this.tm); this.st = 'saving';
     const sent = Date.now();
-    const r = await this.call({ action: 'save', login: a.login, token: a.token, avatar: a.avatar, data: this.dataOf(a) }, keep);
+    let r = await this.call({ action: 'save', login: a.login, token: a.token, avatar: a.avatar, data: this.dataOf(a) }, keep);
+    if (r && r.status === 401 && await this.renew(a)) r = await this.call({ action: 'save', login: a.login, token: a.token, avatar: a.avatar, data: this.dataOf(a) }, keep);   // Schlüssel veraltet (Server-Umzug): neu holen, nochmal speichern
     if (r && r.status === 200) { this.moved(a, r.data); a.synced = sent; this.st = 'ok'; Save.write(false); } else this.st = 'off';
   },
   // Beim Betreten eines Kontos: neuesten Stand vom Server holen (oder eigenen ungespeicherten Stand hochladen)
@@ -81,6 +82,12 @@ const Net = {
     const r = await this.call({ action: 'login', login: a.login });
     if (r && r.status === 200 && ACC() === a) { this.moved(a, r.data); Object.assign(a, accFromServer(r.data), { synced: Date.now(), changed: 0 }); this.st = 'ok'; Save.write(false); }
     else if (!r) this.st = 'off';
+  },
+  // Neuen Schlüssel über den Login-Code holen (z. B. nach dem Server-Umzug) – der Spielstand auf dem Gerät bleibt
+  async renew(a) {
+    const r = await this.call({ action: 'login', login: a.login });
+    if (!r || r.status !== 200 || !r.data.token) return false;
+    this.moved(a, r.data); a.token = r.data.token; Save.write(false); return true;
   },
   // Altes Konto (8 Zeichen) hat vom Server einen 6-stelligen Zahlen-Code bekommen: übernehmen und einmal zeigen
   moved(a, d) {
