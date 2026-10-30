@@ -242,7 +242,7 @@ let SG = null;
 STAGE_DEFS.spielplatz = {
   id: 'spielplatz', house: HOUSE, stairs: STAIRS, slide: SLIDE, swing: SWING, start: START, gate: GATE,
   npcs: NPC_DEFS, decor: DECOR, spots: SPOTS, grid: buildGridSpielplatz, ground: drawGroundSpielplatz,
-  feat: { swing: true, slide: true, house: true, racer: true, pigeons: true, waiter: false, dig: true }, junk: ['twig', 'leaf', 'pebble', 'cap'],
+  feat: { swing: true, slide: true, house: true, racer: false, pigeons: true, waiter: false, dig: true }, junk: ['twig', 'leaf', 'pebble', 'cap'],
   words: { one: 'Kind', the: 'das Kind', a: 'ein Kind', many: 'Kinder', dat: 'Kindern', back: 'zum Kind', each: 'Jedes Kind',
     hide: 'hinter Steinen und Büschen oder gucken aus dem Boden', junk: 'ein Stöckchen', gate: 'am Tor zum Parkplatz', gateTap: 'Lauf zum Tor und tippe es an!',
     lock: 'Das Tor zum Parkplatz geht erst auf, wenn du allen fünf Kindern geholfen hast.',
@@ -378,7 +378,7 @@ class Play {
     this.gateA = this.st.done.gate ? 1 : 0;
     this.idleT = 0; this.coachSaid = {};
     if (!this.st.secret) this.st.secret = {};
-    this.slides = []; this.secretPop = null;
+    this.slides = [];
     { // Leo: steht weit weg von der Rutsche und macht Dehnübungen
       const C = [[130, 1230], [150, 1120], [110, 980], [860, 1250], [180, 1300]], hp = C.find(([x, y]) => canStand(0, x, y) && !this.npcs.some(n => dist(n.x, n.y, x, y) < 80)) || C[0];
       // Ziel = Landepunkt am Ende der Rutsche; Leo läuft zum nächsten begehbaren Punkt daneben
@@ -522,15 +522,6 @@ class Play {
     else { M.stop(); addCoins(c, 'Platz ' + place); const wn = M.mode === '2v2' ? M.otherName : (((M.others || []).find(O => O.prog && O.prog.fin) || {}).name || M.otherName); overlay = new MatchResult({ title: M.mode === '2v2' ? wn + ' waren schneller' : 'Platz ' + place + ' von ' + n, sub: (M.mode === '2v2' ? '' : wn + ' war am schnellsten. ') + 'Du hast ' + mine + ' ' + (mine === 1 ? 'Auftrag' : 'Aufträge') + ' geschafft. Fordere gleich eine Revanche!', coins: c }); }
   }
   enter() { FX.clear(); }
-  // ---- Geheime Joker ----
-  secretJoker(key) {
-    return false;   // Geheimnisse/Erfolge samt Belohnung gibt es nicht mehr (User-Wunsch)
-    if (this.st.secret[key]) return false;
-    this.st.secret[key] = true; if (!this.mp) { const m = META(); if (m) m.coins += SECRET_COINS; } Save.write();   // Geheimnis = Taler (Joker gibt es nur im Laden)
-    this.secretPop = { t: 0, why: SECRET_NAMES[key] || '' }; FX.confetti(W / 2, H * 0.3, 70); Sfx.play('win'); buzz([40, 40, 80]);
-    if (!this.mp) achieve('g_' + key);
-    return true;
-  }
   // Wettlauf mit Leo: zuerst unten an der Rutsche
   startRace() {
     const R = this.racer; if (R.state === 'run') return;
@@ -564,7 +555,7 @@ class Play {
         const won = meIn, mine = R.t; R.state = 'done'; R.t = 0;
         const fmt = v => v.toFixed(1).replace('.', ',') + ' s', times = (won ? 'Deine Zeit: ' + fmt(mine) : 'Leo: ' + fmt(R.leoTime)) + (won ? ' – Leo: ' + fmt(R.leoTime) : '');
         Voice.say(won ? LEO_SAY.win : LEO_SAY.lose, true, 'leo');
-        if (won) { this.banner = { text: times, t: 0 }; if (!this.secretJoker('race')) Sfx.play('win'); }
+        if (won) { this.banner = { text: times, t: 0 }; Sfx.play('win'); }
         else { this.banner = { text: 'Leo war schneller! ' + times, t: 0 }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
       }
       return false;
@@ -717,8 +708,6 @@ class Play {
         const a = ACC(), best = (a && a.swingBest) || 0, rec = J.m > best;
         if (rec && a) { a.swingBest = J.m; Save.write(); FX.confetti(s2.x, s2.y - 40, 50); Sfx.play('win'); } else Sfx.play('good');
         this.swingPop = { t: 0, text: 'Weite: ' + J.m.toFixed(1).replace('.', ',') + ' m', rec };
-        if (J.m >= SECRET_JUMP) this.secretJoker('swing');
-        if (J.m >= 6 && !this.mp) achieve('schaukel6');
         this.swinging = null;
       }
       return;
@@ -816,7 +805,6 @@ class Play {
           if (after <= 0) { this.bonusWarn = { t: 0, text: 'Bonus verpasst', miss: true }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
         }
       } }
-    if (this.secretPop) { this.secretPop.t += dt; if (this.secretPop.t > 2.8) this.secretPop = null; }
     if (this.swingPop) { this.swingPop.t += dt; if (this.swingPop.t > 2.4) this.swingPop = null; }
     if (this.bonusIntro) { this.bonusIntro.t += dt; if (this.bonusIntro.t > 2.4) this.bonusIntro = null; }
     if (this.bonusWarn) { this.bonusWarn.t += dt; if (this.bonusWarn.t > 1.8) this.bonusWarn = null; }
@@ -859,7 +847,7 @@ class Play {
       p.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); p.slideZ = HOUSE.fz * (1 - (p.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)); p.dir = 1; p.moving = false;
       if (p.slide.t >= 1) {
         p.slide = null; p.level = 0; p.x = SLIDE.x1 + 12; p.slideZ = 0; const s = this.w2s(p.x, p.y); FX.puff(s.x, s.y, 10); Sfx.play('good'); buzz(30);
-        this.slides = this.slides.filter(t => this.t - t < 40); this.slides.push(this.t); if (this.slides.length >= 3) this.secretJoker('slide');
+        this.slides = this.slides.filter(t => this.t - t < 40); this.slides.push(this.t);
         if (this.racer.state === 'run' && this.racer.cpMe) this.racer.meDone = true;   // ins Ziel gerutscht
       }
       return;
@@ -907,7 +895,6 @@ class Play {
       if (dist(b.x, b.y, p.x, p.y) < 70 && p.level === 0) {
         let tries = 0; do { b.tx = 120 + rnd() * 760; b.ty = 760 + rnd() * 380; tries++; } while (!canStand(0, b.tx, b.ty) && tries < 20);
         b.fly = 1.4; b.dir = b.tx > b.x ? 1 : -1; Sfx.play('pop'); b.scared = this.t;
-        if (this.pigeons.every(q => q.scared !== undefined && this.t - q.scared < 4)) this.secretJoker('pigeons');
         continue;
       }
       b.wait -= dt;
@@ -964,7 +951,6 @@ class Play {
     }
     { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
     if (this.coop && this.role === 0 && this.st.active && this.st.active.coop && !this.st.active.coop.roof) { const L2 = this.coop.ladder; out.push({ k: 'ladder', x: L2.x, y: L2.y + 20, l: 0, r: 52, sx: L2.x, sy: L2.y - 60 }); }
-    if (SG.feat.swing) { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
     if (SG.feat.slide) out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
   }
@@ -1636,7 +1622,6 @@ class Play {
         rrPath(c, W / 2 - gw / 2, H - 94, gw, 28, 14); c.fillStyle = R.cpMe ? 'rgba(6,214,160,.9)' : 'rgba(255,183,3,.92)'; c.fill(); txt(c, goal, W / 2, H - 80, 14, '#fff', 'center', BRAND.ink);
       }
     }
-    if (this.secretPop) { const q = this.secretPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.8 - q.t, 0, 1); c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.3 - q.t * 10); c.scale(k * 1.3, k * 1.3); icon(c, 'coin', -110, 0, 46); txt(c, 'Geheimnis! +' + SECRET_COINS + ' Taler', 20, 0, 24, '#ffd23f', 'center', OL); if (q.why) txt(c, q.why, 0, 34, 17, '#fff', 'center', OL); c.restore(); }
     if (!this.swinging && this.racer.state !== 'run' && this.racer.state !== 'ready') this.drawCoach(c);
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
@@ -1718,7 +1703,7 @@ class Play {
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
 const HELP_STAR = false;   // Hilfe-Stern neben der Lupe entfernt (User-Wunsch: weniger Knöpfe)
-const JOKERS_PER_RUN = 0, LEAVES_PER_RUN = 0, SECRET_COINS = 25;   // Joker gibt es nur noch im Laden (Bank); Geheimnisse bringen Taler
+const JOKERS_PER_RUN = 0, LEAVES_PER_RUN = 0;   // Joker gibt es nur noch im Laden (Bank)
 // Sammel-Sachen je Bereich (statt immer nur Blätter)
 const COLLECT_NAME = { spielplatz: 'Original-Blätter', kueche: 'Kochmützen', gastraum: 'Kaffeebohnen', aussen: 'Sonnenblumen', parkplatz: 'Sterne', chalet: 'Schneeflocken' };
 function drawCollect(c, stage, x, y, s, rot) {
@@ -1752,8 +1737,6 @@ function gameSec(g, diff) {   // GAME_SEC[g] ist eine Zahl (für Mittel und Schw
   if (diff === 'easy') return v ? Math.max(GAME_SEC_DEF.easy, v * 0.6) : GAME_SEC_DEF.easy;
   return v || (G.challenge ? GAME_SEC_DEF.challenge : GAME_SEC_DEF.puzzle);   // Schwer: schwerere Aufgaben, aber ältere Kinder – etwa gleich lang
 }
-// Geheime Joker (werden nirgends erklärt – man muss sie selbst entdecken), je Durchgang einmal
-const SECRET_JUMP = 4;   // Meter beim Schaukel-Weitsprung (ca. 6 gute Schwünge, dann abspringen)
 const LEO_SAY = {
   start: 'Wetten, ich bin schneller als du? Erst zur gelben Fahne, dann rauf aufs Spielhaus und die Rutsche runter ins Ziel! Die Zeit läuft, sobald du losläufst.',
   win: 'Wow, du bist ja echt schnell!',

@@ -97,12 +97,6 @@ const ACHIEVEMENTS = [
   { id: 'sterne25', name: 'Sternen-Sammler', desc: 'Schaffe 25 Aufgaben mit drei Tempo-Sternen.', coins: 40, stat: 'stars3', need: 25 },
   { id: 'combo5', name: 'Combo-König', desc: 'Schaffe eine Combo x5.', coins: 20 },
   { id: 'blaetter', name: 'Blätter-Sammler', desc: 'Finde alle 8 Sammel-Sachen in einem Bereich (Blätter, Kochmützen, Sterne …).', coins: 20 },
-  { id: 'g_swing', name: 'Weitspringer', desc: 'Geheimnis: Spring von der Schaukel über 4 Meter weit.', coins: 20, secret: true },
-  { id: 'g_race', name: 'Schneller als Leo', desc: 'Geheimnis: Gewinne den Wettlauf gegen Leo.', coins: 20, secret: true },
-  { id: 'g_pigeons', name: 'Tauben-Schreck', desc: 'Geheimnis: Scheuch alle drei Tauben schnell hintereinander auf.', coins: 20, secret: true },
-  { id: 'g_slide', name: 'Rutschen-Profi', desc: 'Geheimnis: Rutsch dreimal kurz hintereinander.', coins: 20, secret: true },
-  { id: 'geheim', name: 'Alle Geheimnisse', desc: 'Finde alle vier Geheimnisse auf dem Spielplatz.', coins: 60 },
-  { id: 'schaukel6', name: 'Überflieger', desc: 'Spring von der Schaukel über 6 Meter weit.', coins: 30 },
   { id: 'skins10', name: 'Modeprofi', desc: 'Sammle 10 Skins.', coins: 30 },
   { id: 'freund', name: 'Freundschaft', desc: 'Füge einen Freund hinzu.', coins: 15 },
   { id: 'duell1', name: 'Herausforderer', desc: 'Spiele ein Duell.', coins: 15, stat: 'duels', need: 1 },
@@ -111,7 +105,6 @@ const ACHIEVEMENTS = [
   { id: 'team1', name: 'Teamwork', desc: 'Schafft einen großen Auftrag zusammen.', coins: 25, stat: 'teams', need: 1 },
   { id: 'einkauf', name: 'Shopping-Tour', desc: 'Kauf etwas im Laden.', coins: 10 },
 ];
-const SECRET_NAMES = { swing: 'Weitsprung von der Schaukel', race: 'Wettlauf gegen Leo gewonnen', pigeons: 'Alle Tauben aufgescheucht', slide: 'Dreimal schnell gerutscht', leaves: 'Alle Original-Blätter gefunden', bonus: 'Kind schnell geholfen' };
 // Erfolge zählen je Schwierigkeitsstufe getrennt (Schlüssel 'id@stufe')
 const GENERAL_ACH = new Set(['profi', 'skins10', 'freund', 'duell1', 'sieg1', 'sieg10', 'team1', 'einkauf', 'entdecker', 'welt', 'duels', 'wins', 'teams']);
 const achKey = (id, d = CUR_DIFF || 'medium') => (GENERAL_ACH.has(id) ? id : id + '@' + d);
