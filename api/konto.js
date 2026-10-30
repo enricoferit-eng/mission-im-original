@@ -14,7 +14,10 @@ const accFile = login => 'accounts/' + login + '.json';
 const tokenOf = login => crypto.createHmac('sha256', SECRET).update('konto:' + login).digest('hex');
 const sameStr = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
 const cleanLogin = l => String(l || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-const fmtLogin = l => l.slice(0, 4) + '-' + l.slice(4, 8);
+const fmtLogin = l => (/^\d{6}$/.test(l) ? l : l.slice(0, 4) + '-' + l.slice(4, 8));   // neu: 6 Ziffern; alte Konten: 8 Zeichen mit Strich
+// Fehlversuche beim Anmelden per Login-Code: je Gerät/IP gezählt – zu viele = 30 Minuten Pause (6 Ziffern sind sonst zu leicht durchzuprobieren)
+const CODE_FAILS = 15, CODE_LOCK_MS = 30 * 60 * 1000;
+const ipFile = ip => 'ipfail/' + crypto.createHash('sha256').update(SECRET + ':' + ip).digest('hex').slice(0, 32) + '.json';
 // Namen-Filter: keine Schimpfwörter (auch mit Ziffern statt Buchstaben oder Leerzeichen dazwischen)
 const BAD = ['arsch', 'fick', 'fuck', 'scheiss', 'scheiß', 'shit', 'hure', 'nutte', 'wichs', 'fotze', 'schlampe', 'bitch', 'hurensohn', 'penis', 'vagina', 'nazi', 'hitler', 'idiot', 'spast', 'behindert', 'schwuchtel', 'kacke', 'pisse', 'titten', 'sex', 'porno', 'dick', 'cock', 'pussy', 'kanake', 'neger', 'nigga', 'nigger', 'missgeburt', 'opfer', 'depp', 'trottel', 'blöd'];
 const nameBad = n => { const t = String(n).toLowerCase().replace(/0/g, 'o').replace(/1|!/g, 'i').replace(/3/g, 'e').replace(/4|@/g, 'a').replace(/5|\$/g, 's').replace(/7/g, 't').replace(/[^a-zäöüß]/g, ''); return BAD.some(w => t.includes(w)); };
@@ -64,23 +67,31 @@ async function register(b) {
   const name = String(b.name || '').trim().slice(0, 14), nk = nameKey(name);
   if (nk.length < 2) return [400, { error: 'name_short' }];
   if (nameBad(name)) return [400, { error: 'name_bad' }];
-  if (b.pass !== undefined ? !validPass(b.pass) : !validCode(b.code)) return [400, { error: b.pass !== undefined ? 'pass' : 'code' }];   // Bilder-Code nur noch für alte, zwischengespeicherte Spiel-Versionen
-  if (await readJSON(nameFile(nk))) return [409, { error: 'name_taken' }];
+  const codeOnly = !!b.codeOnly;   // neu: Konto nur mit 6-stelligem Login-Code (kein Passwort, Name muss nicht einmalig sein)
+  if (!codeOnly && (b.pass !== undefined ? !validPass(b.pass) : !validCode(b.code))) return [400, { error: b.pass !== undefined ? 'pass' : 'code' }];   // Passwort/Bilder-Code nur noch für alte Spiel-Versionen
+  if (!codeOnly && (await readJSON(nameFile(nk)))) return [409, { error: 'name_taken' }];
   let login = '';
-  for (let i = 0; i < 10; i++) {
-    login = Array.from(crypto.randomBytes(8), x => CODE_CHARS[x % CODE_CHARS.length]).join('');
+  for (let i = 0; i < 20; i++) {
+    login = codeOnly ? String(crypto.randomInt(100000, 1000000)) : Array.from(crypto.randomBytes(8), x => CODE_CHARS[x % CODE_CHARS.length]).join('');
     if (!(await readJSON(accFile(login)))) break;
+    if (i === 19) return [503, { error: 'busy' }];
   }
-  const acc = { name, nk, ...(b.pass !== undefined ? { pw: hashPass(b.pass) } : { code: b.code }), avatar: Number(b.avatar) % 6 || 0, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 };
+  const acc = { name, nk, ...(codeOnly ? { codeOnly: true } : b.pass !== undefined ? { pw: hashPass(b.pass) } : { code: b.code }), avatar: Number(b.avatar) % 6 || 0, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 };
   await writeJSON(accFile(login), acc);
-  await writeJSON(nameFile(nk), { login });
+  if (!codeOnly) await writeJSON(nameFile(nk), { login });
   return [200, publicAcc(login, acc)];
 }
 
 async function login(b) {
   if (b.login) {
-    const l = cleanLogin(b.login), acc = l.length === 8 && (await readJSON(accFile(l)));
-    if (!acc) return [404, { error: 'not_found' }];
+    const now = Date.now(), f = ipFile(b._ip || '-'), st = (await readJSON(f)) || { n: 0, until: 0, at: now };
+    if (st.until > now) return [429, { error: 'locked', wait: Math.ceil((st.until - now) / 60000) }];
+    const l = cleanLogin(b.login), acc = (l.length === 8 || /^\d{6}$/.test(l)) && (await readJSON(accFile(l)));
+    if (!acc) {
+      if (now - st.at > 3600000) { st.n = 0; st.at = now; }   // Zähler gilt eine Stunde
+      st.n++; if (st.n >= CODE_FAILS) { st.n = 0; st.until = now + CODE_LOCK_MS; } await writeJSON(f, st);
+      return [404, { error: 'not_found' }];
+    }
     return [200, publicAcc(l, acc)];
   }
   const nk = nameKey(b.name), idx = nk && (await readJSON(nameFile(nk)));

@@ -181,7 +181,6 @@ class Menu {
   constructor(page) { this.t = 0; this.page = page != null ? page : 2; this.off = 0; this.pages = []; }
   enter() {
     FX.clear(); const a = ACC(); if (!a) { setScene(new Accounts()); return; }
-    if (a.token && !a.hasPass && !a.admin && !window.PASS_ASKED) { window.PASS_ASKED = true; setTimeout(() => { if (scene === this && !overlay) askSetPass({ later: 'Später', sub: 'Neu: Passwort statt Bilder-Code. Mindestens ' + PASS_MIN + ' Zeichen.' }); }, 900); }
     if (!a.soundV2) { a.sound = true; a.soundV2 = true; Save.write(); }
     this.giftAuto = true;   // Tagesgeschenk: geht einmal am Tag von selbst auf (siehe draw)
     if (!a.char) { setScene(new CharSelect(() => setScene(new Menu()))); return; }
@@ -285,10 +284,11 @@ class Menu {
   }
   drawMoreTiles(c) {   // „Mehr“ für Mittel/Schwer: große Kacheln (Mehrspieler, Anleitung und Film gibt es nicht mehr)
     menuBg(c, this.t); c.fillStyle = 'rgba(16,28,18,.35)'; c.fillRect(0, 0, W, H);
-    const T = [['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
+    const a = ACC(), T = [['friends', a && a.token ? 'Konto' : 'Konto sichern', '#caffbf', () => { overlay = new AccountPanel(); }],
+      ['sound', 'Ton', '#d0ebff', () => { overlay = new VolumePanel(); }],
       ['lock', 'Eltern', '#e9ecef', () => { overlay = new ParentPanel(); }]];
     this.pageTitle(c, 'Mehr');
-    const cols = 2, tw = Math.min(190, (W - 50) / cols - 12), th = Math.min(110, (H - 90) / Math.ceil(T.length / cols) - 12), x0 = (W - cols * (tw + 12) + 12) / 2;
+    const cols = W > H ? 3 : 2, tw = Math.min(190, (W - 50) / cols - 12), th = Math.min(110, (H - 90) / Math.ceil(T.length / cols) - 12), x0 = (W - cols * (tw + 12) + 12) / 2;
     T.forEach(([ic, label, col, fn], i) => { const x = x0 + (i % cols) * (tw + 12), y = 70 + Math.floor(i / cols) * (th + 12);
       rrPath(c, x, y, tw, th, 18); fs(c, col, 3); icon(c, ic, x + tw / 2, y + th * 0.4, Math.min(40, th * 0.42)); txt(c, label, x + tw / 2, y + th - 18, 15, '#3d2c1f', 'center', null, tw - 10);
       (this.moreHit || (this.moreHit = {}))[label] = { x: x + tw / 2, y: y + th / 2 }; UI.btn(x, y, tw, th, () => { Sfx.play('tap'); fn(); }); });
@@ -319,18 +319,14 @@ class Menu {
     // Aufgeräumtes Menü (Hochformat zuerst): Logo, Stufe als kleines Schild, ein großer SPIELEN-Knopf. Keine Figur – sonst wird es eng.
     // Stufe, Konto, Ton, Spielzeit: unter „Mehr“ (Eltern-Modus). Leicht: gar keine Leiste, nur ein kleiner Eltern-Knopf.
     const land = W > H, diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium', easy = diff === 'easy'; CUR_DIFF = diff;
-    if (!easy) {   // Mittel/Schwer wie vorher: Konto-Schild oben links (Tipp = Konto), Taler daneben bzw. darunter
-      accountChip.lastW = accountChip(c, 12, 12, a, () => { overlay = new AccountPanel(); });
-      if (!a.token) { const lx = 12 + (accountChip.lastW || 120) - 6, ly = 56; ell(c, lx, ly, 12, 12); fs(c, '#ffd166', 2.5); icon(c, 'lock', lx, ly, 14); }   // noch nicht gesichert: kleines Schloss
-      const x0 = 12 + (accountChip.lastW || 170) + 10; if (x0 + 110 > W - 10) coinChip(c, 12, 88, true); else coinChip(c, x0, 38, W < 600);
-    }
+    if (!easy) coinChip(c, 14, 92, W < 600);   // Taler links unter der Stufen-Auswahl (Konto steckt unter „Mehr“)
     if (easy) { roundBtn(c, W - 38, 36, 20, 'rgba(255,255,255,.85)', 'lock', () => { Sfx.play('tap'); overlay = new ParentPanel({ onOk: () => { this.page = 3; this.off = 0; } }); /* Eltern-PIN, dann ins Eltern-Menü */ }); txt(c, 'Eltern', W - 38, 66, 11, '#fff', 'center', BRAND.olive); }
     const ls = land ? clamp(H / 470, 0.55, 1.1) : clamp(Math.min(W / 380, H / 720), 0.85, 1.45), LY = land ? H * 0.26 : H * 0.25;
     logo(c, W / 2, LY, ls);
     let below = LY + 78 * ls + 10;
     if (easy) diffBadge(c, diff, W / 2, below, 14);   // Leicht: Stufe nur als Schild (umstellen im Eltern-Bereich)
-    else {   // Mittel/Schwer: nur die aktuelle Stufe in der Mitte – antippen klappt Leicht · Mittel · Schwer auf (gleitet heraus)
-      const swY = below + 14, segW = Math.min((W - 32) / 3, 140), ph = 46, k = ease.out(clamp(this.dK || 0, 0, 1));
+    else {   // Mittel/Schwer: oben (wo früher der Name stand) nur die aktuelle Stufe – antippen klappt Leicht · Mittel · Schwer auf (gleitet heraus)
+      const swY = 40, segW = Math.min((W - 32) / 3, 140), ph = 46, k = ease.out(clamp(this.dK || 0, 0, 1));
       const slot = i => W / 2 + (i - 1) * (segW + 6);
       const order = DIFFS.map((d, i) => [d, i]).sort((A, B) => (A[0].id === diff) - (B[0].id === diff));   // aktuelle zuletzt (oben)
       order.forEach(([d, i]) => {
@@ -346,7 +342,6 @@ class Menu {
         if (!this.dOpen) { if (cur) UI.btn(x - pw / 2, swY - ph / 2, pw, ph, () => { this.dOpen = true; Sfx.play('tap'); }); }
         else if (k > 0.6) UI.btn(x - pw / 2, swY - ph / 2, pw, ph, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('good'); } else Sfx.play('tap'); this.dOpen = false; });
       });
-      below = swY + 14;
     }
     const fresh = STAGE_ORDER.every(id => { const sp0 = SP(diff, id); return !sp0.clears && !sp0.run; });   // auf dieser Stufe noch nichts gespielt
     const area = fresh && !a.tut.uebung ? 'uebung' : startArea(diff);
@@ -492,16 +487,16 @@ function openPrivacy() { Sfx.play('tap'); let w = null; try { w = window.open('d
 function privacyPill(c, x, y) { rrPath(c, x - 50, y - 11, 100, 22, 11); fs(c, 'rgba(255,255,255,.75)', 2); icon(c, 'lock', x - 37, y, 12); txt(c, 'Datenschutz', x + 7, y + 1, 11, '#3d2c1f', 'center', null); UI.btn(x - 52, y - 15, 104, 30, openPrivacy); }
 function isAdmin(a = ACC()) { return !!(a && a.admin); }
 // Enricos Admin-Konto: funktioniert auch ohne Server (im Spiel steht nur ein Prüfwert, nicht der Code)
-const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }, { h: 'dd07a1ac25ae3f5e45c4d2d9ae41d0d39dc8ed00c9d3990ec6ba2a1a2b0e3d4b', id: 'admin2', name: 'Chef', admin: true }];   // admin2: zweiter Admin-Login-Code (alles frei)
+const LOCAL_LOGINS = [{ h: null, id: 'enrico', name: 'Enrico', admin: true }, { h: '5c7febdf6d1b35694c2d096a713c65ad297a4af3147b6b353a72185160f8b03b', id: 'test', name: 'Test', admin: false }, { h: 'dd07a1ac25ae3f5e45c4d2d9ae41d0d39dc8ed00c9d3990ec6ba2a1a2b0e3d4b', id: 'admin2', name: 'Chef', admin: true }, { h: 'd12e0f5c35c0a458c2a7af81ff2d6aefaad3412aebbf9755ff455d4c48befc49', id: 'admin2', name: 'Chef', admin: true }];   // Chef auch mit 6 Ziffern   // admin2: zweiter Admin-Login-Code (alles frei)
 const ENRICO_HASH = '3dac95a62bad66804a8c231d440c5189590390ea045c750a5325e656112c3ba3';
 LOCAL_LOGINS[0].h = ENRICO_HASH;
 async function enricoLogin(v) {
   try {
-    const code = String(v).toUpperCase().replace(/[^A-Z0-9]/g, ''); if (code.length !== 8) return false;
+    const code = String(v).toUpperCase().replace(/[^A-Z0-9]/g, ''); if (code.length !== 8 && !/^\d{6}$/.test(code)) return false;
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('mio-enrico-admin-v1:' + code));
     const hex = Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
     const L = LOCAL_LOGINS.find(o => o.h === hex); if (!L) return false;
-    const id = L.id; if (!Save.data.accounts[id]) Save.data.accounts[id] = { name: L.name, code: [0, 1, 2, 3], login: code.slice(0, 4) + '-' + code.slice(4), avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true, symbol: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
+    const id = L.id; if (!Save.data.accounts[id]) Save.data.accounts[id] = { name: L.name, code: [0, 1, 2, 3], login: code.length === 6 ? code : code.slice(0, 4) + '-' + code.slice(4), avatar: 5, created: Date.now(), sound: true, soundV2: true, char: 'lion', tut: { guide: true, coach: true, symbol: true }, recent: [], recentEasy: [], diff: { easy: {}, medium: {}, hard: {} } };
     if (L.admin) Object.assign(Save.data.accounts[id], { admin: true, gameAdmin: true }); Save.data.current = id; Save.write(false); return true;
   } catch (e) { return false; }
 }
@@ -900,20 +895,11 @@ class AccountPanel {
       UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); overlay = new AdminPanel(); });
     } else if (!a.token) {
       const pu = 1 + Math.sin(this.t * 5) * 0.04;
-      c.save(); c.translate(W / 2, y + 225); c.scale(pu, pu); rrPath(c, -130, -30, 260, 60, 20); fs(c, '#06d6a0', 3.5); txt(c, 'Spielstand sichern', 0, -6, 19, '#fff', 'center', BRAND.ink); txt(c, 'mit Namen + Passwort', 0, 15, 12, '#fff', 'center', null); c.restore();
+      c.save(); c.translate(W / 2, y + 225); c.scale(pu, pu); rrPath(c, -130, -30, 260, 60, 20); fs(c, '#06d6a0', 3.5); txt(c, 'Spielstand sichern', 0, -6, 19, '#fff', 'center', BRAND.ink); txt(c, 'du bekommst einen Login-Code', 0, 15, 12, '#fff', 'center', null); c.restore();
       UI.btn(W / 2 - 130, y + 195, 260, 60, () => { this.close(); setScene(new NewAccount({ migrate: Save.data.current })); });
     } else {
-      txt(c, 'Dein Login-Code (nur falls du den Namen vergisst):', W / 2, y + 196, 12, '#8d5a3b', 'center', null);
-      const L = String(a.login || '–').replace('-', ''); [L.slice(0, 4), L.slice(4)].forEach((part, k) => { const bx = W / 2 - 112 + k * 116; rrPath(c, bx, y + 210, 108, 44, 12); fs(c, k ? '#ffe5ec' : '#e7f5ff', 3); txt(c, part, bx + 54, y + 233, 24, k ? '#c9184a' : '#118ab2', 'center', null); });   /* in zwei Hälften: leichter zu merken */
-    }
-    if (a.token && !a.admin) {   // gesicherte Konten: Passwort statt Bilder-Code
-      txt(c, a.hasPass ? 'Angemeldet wird mit Name + Passwort.' : 'Noch kein Passwort – bitte eins festlegen!', W / 2, y + 282, 12, a.hasPass ? '#8d5a3b' : '#c1121f', 'center', null);
-      rrPath(c, W / 2 - 110, y + 296, 220, 52, 14); fs(c, a.hasPass ? '#e9ecef' : '#ffd166', 3); txt(c, a.hasPass ? 'Passwort ändern' : 'Passwort festlegen', W / 2, y + 322, 16, '#3d2c1f', 'center', null);
-      UI.btn(W / 2 - 110, y + 296, 220, 52, () => { this.close(); askSetPass(); });
-    } else if (Array.isArray(a.code) && a.code.length === 4) {
-    txt(c, 'Dein Geheim-Code (zum Anmelden mit deinem Namen):', W / 2, y + 282, 12, '#8d5a3b', 'center', null);
-    if (this.showCode) a.code.forEach((k, i) => { const cx = W / 2 + (i - 1.5) * 64; rrPath(c, cx - 28, y + 296, 56, 56, 14); fs(c, '#fff', 3); drawSym(c, k, cx, y + 324, 21); });
-    else { rrPath(c, W / 2 - 110, y + 296, 220, 52, 12); fs(c, '#e9ecef', 3); txt(c, 'antippen zum Zeigen', W / 2, y + 322, 15, '#495057', 'center', null); UI.btn(W / 2 - 110, y + 296, 220, 52, () => { this.showCode = true; }); }
+      txt(c, 'Dein Login-Code (damit meldest du dich an):', W / 2, y + 196, 12, '#8d5a3b', 'center', null);
+      const L = String(a.login || '–').replace('-', ''); rrPath(c, W / 2 - 112, y + 210, 224, 48, 14); fs(c, '#e7f5ff', 3); txt(c, /^\d{6}$/.test(L) ? L.slice(0, 3) + ' ' + L.slice(3) : a.login || '–', W / 2, y + 235, 26, '#118ab2', 'center', null);
     }
     const by = y + h - 92;
     rrPath(c, W / 2 - 110, by - 26, 220, 52, 18); fs(c, '#ffd166', 3); txt(c, 'Abmelden', W / 2, by, 17, '#3d2c1f', 'center', null);
@@ -970,7 +956,7 @@ class AdminPanel {
 
 // Anmelden mit bestehendem Konto: Name + Geheim-Code ODER Login-Code
 class LoginScene {
-  constructor(mode) { this.t = 0; this.mode = 'choose'; this.err = ''; this.busy = false; this.start = mode; }
+  constructor(mode) { this.t = 0; this.mode = 'code'; this.err = ''; this.busy = false; this.start = mode || 'code'; this.alt = false; }   // Anmelden nur noch mit Login-Code (Name + Passwort gibt es nicht mehr)
   enter() { FX.clear(); nameInput.value = ''; passInput.value = ''; if (this.start) this.setMode(this.start); }
   update(dt) { this.t += dt; }
   leave(to) { nameInput.style.display = 'none'; nameInput.blur(); passInput.style.display = 'none'; passInput.blur(); setScene(to); }
@@ -985,10 +971,10 @@ class LoginScene {
     }
     this.err = !r ? 'Gerade keine Verbindung. Versuch es gleich nochmal.' : 'Benutzer oder Passwort stimmt nicht.'; Sfx.play('bad');
   }
-  setMode(m) { this.mode = m; this.err = ''; nameInput.value = ''; passInput.value = ''; passInput.type = 'password'; nameInput.placeholder = m === 'code' ? 'z. B. K7P2-9QXA' : 'Dein Fantasiename'; nameInput.maxLength = m === 'code' ? 9 : 14; }
+  setMode(m) { this.mode = m; this.err = ''; nameInput.value = ''; passInput.value = ''; passInput.type = 'password'; nameInput.placeholder = m === 'code' ? (this.alt ? 'z. B. K7P2-9QXA' : '6 Ziffern') : 'Dein Fantasiename'; nameInput.maxLength = m === 'code' ? (this.alt ? 9 : 6) : 14; nameInput.inputMode = m === 'code' && !this.alt ? 'numeric' : 'text'; }
   async done(r) {
     this.busy = false;
-    if (r && r.status === 200) { adoptAccount(r.data); Sfx.play('win'); this.leave(new Menu()); if (!r.data.hasPass && !r.data.admin) setTimeout(() => askSetPass({ sub: 'Neu: Passwort statt Bilder-Code. Mindestens ' + PASS_MIN + ' Zeichen.' }), 400); return; }
+    if (r && r.status === 200) { adoptAccount(r.data); Sfx.play('win'); this.leave(new Menu()); return; }
     if (r && r.data && r.data.error === 'need_code') {   // altes Konto: einmal noch mit dem Bilder-Code
       const v = this.loginName; Sfx.play('tap'); passInput.style.display = 'none';
       overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r2 => this.done(r2)); } });
@@ -1000,7 +986,7 @@ class LoginScene {
   }
   draw(c) {
     skyBg(c);
-    roundBtn(c, 44, 44, 28, '#fff', 'back', () => (this.mode === 'choose' ? this.leave(new Accounts()) : (passInput.style.display = 'none', this.setMode('choose'))), '#ffd166');
+    roundBtn(c, 44, 44, 28, '#fff', 'back', () => (this.mode === 'code' ? this.leave(new Accounts()) : (passInput.style.display = 'none', this.setMode('code'))), '#ffd166');
     const w = Math.min(W - 28, 420), x = (W - w) / 2, y = H < 560 ? 12 : 110;
     if (this.mode === 'choose') {
       nameInput.style.display = 'none';
@@ -1025,39 +1011,22 @@ class LoginScene {
       else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 276, 32, '#06d6a0', 'check', ok ? () => this.adminLogin() : null); c.restore(); }
       return;
     }
-    if (this.mode === 'name') {
-      panel(c, x, y, w, 320, '#fff7e6', 26);
-      txt(c, 'Name und Passwort', W / 2, y + 36, 18, '#3d2c1f', 'center', null);
-      const show = !(this.busy || overlay);
-      Object.assign(nameInput.style, { display: show ? 'block' : 'none', left: (x + 24) + 'px', top: (y + 58) + 'px', width: (w - 48) + 'px', height: '54px' }); nameInput.placeholder = 'Dein Fantasiename';
-      placePass(x + 24, y + 122, w - 100, show, 'Passwort'); eyeBtn(c, x + w - 46, y + 149);
-      if (this.err) wrapLines(c, this.err, w - 48, 14).forEach((l, i) => txt(c, l, W / 2, y + 200 + i * 18, 14, '#c1121f', 'center', null));
-      const v = nameInput.value.trim(), ok = v.length >= 2 && (passInput.value.length >= 1 || v.toLowerCase() === 'admin') && !this.busy;
-      if (this.busy) for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 266, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
-      else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 266, 30, '#06d6a0', 'check', ok ? () => {
-        nameInput.blur(); passInput.blur();
-        if (v.toLowerCase() === 'admin') { this.setMode('admin'); nameInput.value = 'admin'; return; }   // Admin meldet sich über die Admin-Anmeldung an
-        this.busy = true; this.loginName = v; this.err = ''; Net.call({ action: 'login', name: v, pass: passInput.value }).then(r => { passInput.value = ''; this.done(r); });
-      } : null); c.restore(); }
-      if (!this.busy) {   // alte Konten haben noch einen Bilder-Code: damit einmal anmelden, dann Passwort festlegen
-        txt(c, 'Noch einen Bilder-Code?', x + 24, y + 302, 12, '#118ab2', 'left', null);
-        UI.btn(x + 14, y + 288, 170, 30, () => { if (v.length < 2) { this.err = 'Gib zuerst deinen Namen ein.'; Sfx.play('bad'); return; } this.loginName = v; nameInput.blur(); passInput.style.display = 'none'; overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r => this.done(r)); } }); });
-      }
-      return;
-    }
     passInput.style.display = 'none';
     panel(c, x, y, w, 300, '#fff7e6', 26);
-    txt(c, this.mode === 'code' ? 'Gib deinen Login-Code ein' : 'Wie heißt dein Konto?', W / 2, y + 44, 18, '#3d2c1f', 'center', null);
+    txt(c, 'Gib deinen Login-Code ein', W / 2, y + 44, 18, '#3d2c1f', 'center', null);
     Object.assign(nameInput.style, { display: this.busy || overlay ? 'none' : 'block', left: (x + 24) + 'px', top: (y + 70) + 'px', width: (w - 48) + 'px', height: '56px' });
-    if (this.mode === 'code') nameInput.value = nameInput.value.toUpperCase();
+    nameInput.value = this.alt ? nameInput.value.toUpperCase() : nameInput.value.replace(/\D/g, '').slice(0, 6);   // neu: nur Ziffern
     if (this.err) { const L = wrapLines(c, this.err, w - 48, 15); L.forEach((l, i) => txt(c, l, W / 2, y + 150 + i * 20, 15, '#c1121f', 'center', null)); }
-    const ok = nameInput.value.trim().length >= (this.mode === 'code' ? 8 : 2) && !this.busy;
+    const ok = (this.alt ? nameInput.value.replace(/[^A-Z0-9]/gi, '').length >= 8 : /^\d{6}$/.test(nameInput.value)) && !this.busy;
+    if (!this.busy) {   // klein darunter: alte Codes mit Buchstaben, Admin
+      txt(c, this.alt ? 'Neuer Code nur mit Ziffern' : 'Alter Code mit Buchstaben?', x + 24, y + 284, 12, '#118ab2', 'left', null);
+      UI.btn(x + 14, y + 268, 190, 32, () => { this.alt = !this.alt; this.setMode('code'); Sfx.play('tap'); });
+      txt(c, 'Admin', x + w - 24, y + 284, 12, '#868e96', 'right', null); UI.btn(x + w - 80, y + 268, 70, 32, () => this.setMode('admin'));
+    }
     if (this.busy) for (let i = 0; i < 3; i++) { ell(c, W / 2 + (i - 1) * 22, y + 240, 7, 7); c.fillStyle = `rgba(17,138,178,${0.3 + 0.7 * Math.max(0, Math.sin(this.t * 6 - i))})`; c.fill(); }
     else { c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 240, 32, '#06d6a0', 'check', ok ? () => {
       const v = nameInput.value.trim(); nameInput.blur();
-      if (this.mode === 'code') { this.busy = true; enricoLogin(v).then(ok => { if (ok) { this.busy = false; Sfx.play('win'); setScene(new Menu()); return; } Net.call({ action: 'login', login: v }).then(r => this.done(r)); }); }
-      else if (v.toLowerCase() === 'admin') { this.setMode('admin'); nameInput.value = 'admin'; }   // Admin hat keinen Bilder-Code, sondern ein Passwort
-      else overlay = new CodePad({ acc: { name: v, avatar: 0 }, onDone: code => { this.busy = true; Net.call({ action: 'login', name: v, code }).then(r => this.done(r)); } });
+      this.busy = true; enricoLogin(v).then(ok => { if (ok) { this.busy = false; Sfx.play('win'); setScene(new Menu()); return; } Net.call({ action: 'login', login: v }).then(r => this.done(r)); });
     } : null); c.restore(); }
   }
 }
@@ -1090,7 +1059,7 @@ class NewAccount {
   leave(to) { nameInput.style.display = 'none'; nameInput.blur(); setScene(to); }
   async register(pass) {
     this.step = 'wait';
-    const r = await Net.call({ action: 'register', name: this.name, pass, avatar: this.avatar });
+    const r = await Net.call({ action: 'register', name: this.name, codeOnly: true, avatar: this.avatar });
     if (r && r.status === 200) {
       const old = this.migrate && Save.data.accounts[this.migrate];
       adoptAccount(r.data);
@@ -1131,7 +1100,7 @@ class NewAccount {
       const ok = nameInput.value.trim().length >= 2;
       c.save(); if (!ok) c.globalAlpha = 0.4; roundBtn(c, W / 2, y + 300, 32, '#06d6a0', 'check', ok ? () => {
         this.name = nameInput.value.trim().slice(0, 14); if (nameBad(this.name)) { this.err = 'Dieser Name geht leider nicht. Denk dir einen netten Fantasienamen aus!'; Sfx.play('bad'); return; } nameInput.style.display = 'none'; nameInput.blur(); this.err = '';
-        this.step = 'pass'; passInput.value = ''; passInput.type = 'password';
+        this.register();   // kein Passwort mehr: man bekommt einen 6-stelligen Login-Code
       } : null); c.restore();
     } else if (this.step === 'pass') {
       panel(c, x, y, w, 330, '#fff7e6', 26);
@@ -1152,10 +1121,10 @@ class NewAccount {
       panel(c, x, y, w, 380, '#fff7e6', 26);
       ell(c, W / 2, y + 64, 44, 44); fs(c, '#d8f3dc', 3); drawCritter(c, AVATARS[a.avatar % 6], W / 2, y + 104, 1.4, this.t, { noShadow: true, wave: true });
       txt(c, a.name, W / 2, y + 140, 24, '#3d2c1f', 'center', null);
-      wrapLines(c, a.localOnly ? 'Dein Konto ist angelegt.' : 'Merk dir dein Passwort gut – damit meldest du dich mit deinem Namen an.', w - 60, 15).forEach((l, i) => txt(c, l, W / 2, y + 186 + i * 20, 15, '#8d5a3b', 'center', null));
+      wrapLines(c, a.localOnly ? 'Dein Konto ist angelegt.' : 'Schreib dir den Code auf oder sag ihn deinen Eltern – damit spielst du auf jedem Gerät weiter.', w - 60, 15).forEach((l, i) => txt(c, l, W / 2, y + 186 + i * 20, 15, '#8d5a3b', 'center', null));
       if (a.localOnly) wrapLines(c, 'Dein Konto ist auf diesem Gerät gespeichert. Der Server ist gerade nicht erreichbar – später kannst du es sichern.', w - 60, 13).forEach((l, i) => txt(c, l, W / 2, y + 276 + i * 18, 13, '#8d5a3b', 'center', null));
-      else { txt(c, 'Dein Login-Code (für andere Geräte):', W / 2, y + 272, 14, '#8d5a3b', 'center', null);
-      rrPath(c, W / 2 - 110, y + 286, 220, 40, 12); fs(c, '#fff', 3); txt(c, a.login, W / 2, y + 307, 22, '#118ab2', 'center', null); }
+      else { txt(c, 'Dein Login-Code:', W / 2, y + 266, 14, '#8d5a3b', 'center', null);
+      const L = String(a.login || '').replace('-', ''); rrPath(c, W / 2 - 120, y + 280, 240, 54, 14); fs(c, '#fff', 3); txt(c, /^\d{6}$/.test(L) ? L.slice(0, 3) + ' ' + L.slice(3) : a.login, W / 2, y + 308, 32, '#118ab2', 'center', null); }
       roundBtn(c, H < 560 ? x + w + 40 : W / 2, H < 560 ? y + 190 : y + 380, 34, '#06d6a0', 'play', () => { if (this.next) { nameInput.style.display = 'none'; nameInput.blur(); this.next(); } else this.leave(new Menu()); });
     }
   }
