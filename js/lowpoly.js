@@ -25,7 +25,7 @@ const LP = {
   const list = names.map(n => [n, `assets/lowpoly/figuren/${n}.png`]);
   for (const id in LP.stages) list.push(['map_' + id, LP.stages[id].map]);
   list.push(['dach', 'assets/lowpoly/spielplatz/dach.png?v=1']);
-  list.push(['sitz', 'assets/lowpoly/spielplatz/sitz.png?v=1']);
+  list.push(['sitz', 'assets/lowpoly/spielplatz/sitz.png?v=2']);
   let left = list.length;
   for (const [k, src] of list) {
     const im = new Image();

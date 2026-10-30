@@ -1350,7 +1350,14 @@ class Play {
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, sx, sy, 20, 6); c.fill();
     if (!lpActive()) line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
     if (rider) { const a = this.npcAnim[rider.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, sy - zz + 4 - j, 1.0, this.t, { staff: true, ph: a.ph, noShadow: true, wave: a.wave > 0 || this.npcState(rider.id) === 'ready' }); }
-    if (lpActive() && LP.img.sitz) { c.drawImage(LP.img.sitz, sx - 22, bY + 2, 44, sy - zz + 8 - bY); return; }   // Low-Poly-Sitz mit Ketten (gestreckt auf die Kettenlänge)
+    if (lpActive() && LP.img.sitz) {   // Low-Poly-Sitz in fester Größe, Ketten als Glieder vom Balken bis zu den Haken
+      const im = LP.img.sitz, w = 48, h = w * im.naturalHeight / im.naturalWidth, top = sy - zz - h * 0.45;
+      for (const d of [-1, 1]) { const x1 = sx + d * w * 0.38, y1 = top + h * 0.12, x0 = sx + d * 15, y0 = bY + 4;
+        c.save(); c.lineCap = 'round'; c.setLineDash([2.6, 2.2]);
+        c.strokeStyle = '#5c636b'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+        c.strokeStyle = '#dfe3e8'; c.lineWidth = 1.6; c.lineDashOffset = 1.2; c.stroke(); c.restore(); }
+      c.drawImage(im, sx - w / 2, top, w, h); return;
+    }
     rrPath(c, sx - 19, sy - zz - 4, 38, 9, 3); fs(c, '#343a40', 3);
     line(c, sx + 14, bY + 4, sx + 15, sy - zz, 2, '#ced4da');
   }
