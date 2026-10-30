@@ -336,7 +336,7 @@ STAGE_DEFS.aussen = {
       draw(c, L, vis, t) {
         if (vis(K.x, K.y)) L.push({ y: K.y, f: () => { drawPerson(c, 'a_ober', K.x, K.y, 1.05, t * 2, { ph: 2 }); c.save(); c.translate(K.x + 18, K.y - 46); ell(c, 0, 0, 20, 6); fs(c, '#adb5bd', 2.5); drawGlass(c, -8, -2, 0.3, 0.7, '#ff9f1c'); drawGlass(c, 8, -2, 0.3, 0.6, '#e63946'); c.restore(); } });
         flies.forEach((f, i) => { if (!vis(f.x, f.y)) return; L.push({ y: f.y + 40, f: () => { const fl = Math.abs(Math.sin(t * 14 + i)); c.save(); c.translate(f.x, f.y - 40); for (const sd of [-1, 1]) { ell(c, sd * 6 * fl, -3, 6 * fl + 1, 5, sd * 0.4); fs(c, ['#ffd166', '#fff', '#74c0fc'][i], 1.2); } line(c, 0, -6, 0, 4, 1.5, OL, false); c.restore(); } }); });
-        L.push({ y: 99998, f: () => {
+        if (!(typeof lpActive === 'function' && lpFor('aussen'))) L.push({ y: 99998, f: () => {   // Low-Poly: Terrasse ist im Bild, kein altes Dach drüber
           const H = PAV.H, y0 = PAV.y0 - H, y1 = PAV.y1 - H;
           c.save(); c.globalAlpha = fade;
           PAV.secs.forEach(([a2, b2, col], i) => {

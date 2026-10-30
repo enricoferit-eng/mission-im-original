@@ -298,8 +298,16 @@ function pushSigns(c, L, id, diff, t) {
     { const P = typeof scene !== 'undefined' && scene && scene.stage === id && scene.npcs;   // steht dort jemand (mit „!“ über dem Kopf)? Dann rückt das Schild zur Seite
       if (P) for (let k = 0; k < 3; k++) { const hit = P.find(n => Math.abs(n.x - x) < 75 && n.y - y > -40 && n.y - y < 140); if (!hit) break; let nx = x <= hit.x ? hit.x - 110 : hit.x + 110; if (nx < 90 || nx > WORLD_W - 90) nx = x <= hit.x ? hit.x + 110 : hit.x - 110; x = clamp(nx, 90, WORLD_W - 90); } }
     L.push({ y, f: () => {
-      c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 2, 16, 5); c.fill(); line(c, x, y, x, y - 70, 5, '#8d5a3b');
       c.font = `900 15px ${FONT}`; const w = Math.max(96, c.measureText(arrow + ' ' + name).width + 26);
+      const sim = typeof lpSpr === 'function' && lpSpr(open ? 'tore/schild_hell' : 'tore/schild_grau');
+      if (sim) {   // gemaltes Holzschild: Brett oben (ca. 62 % der Bildhöhe), Text darauf
+        const iw = w + 34, ih = iw * sim.naturalHeight / sim.naturalWidth, top = y - ih;
+        c.fillStyle = 'rgba(40,25,10,.22)'; ell(c, x, y, 18, 5); c.fill(); c.drawImage(sim, x - iw / 2, top, iw, ih);
+        txt(c, arrow + ' ' + name, x, top + ih * 0.33, 15, open ? '#35452F' : '#f1f3f5', 'center', null);
+        if (!open) lpLock(c, x + iw / 2 - 6, top + 8, 13, t);
+        return;
+      }
+      c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, x, y + 2, 16, 5); c.fill(); line(c, x, y, x, y - 70, 5, '#8d5a3b');
       rrPath(c, x - w / 2, y - 100, w, 34, 8); fs(c, open ? '#fbf8f2' : '#dee2e6', 3);
       txt(c, arrow + ' ' + name, x, y - 83, 15, open ? '#35452F' : '#868e96', 'center', null);
       if (!open) { ell(c, x + w / 2, y - 100, 13, 13); fs(c, '#fff', 2.5); icon(c, 'lock', x + w / 2, y - 100, 16); }
