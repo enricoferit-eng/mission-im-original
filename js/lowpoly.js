@@ -33,12 +33,16 @@ const LP = {
     im.onload = im.onerror = () => {
       if (--left) return;
       LP.ready = list.every(([n]) => LP.img[n].naturalWidth > 0);
-      if (LP.ready) { GROUND = null; for (const id in LP.stages) delete GROUND_CACHE[id]; }   // Boden mit dem Bild neu aufbauen
+      if (LP.ready) {   // Boden mit dem Bild neu aufbauen – auch die Nachbar-Bereiche, die man am Rand sieht
+        GROUND = null; for (const id in LP.stages) delete GROUND_CACHE[id];
+        if (typeof scene !== 'undefined' && scene && scene.stage && !scene.mp && typeof worldPrepare === 'function') worldPrepare(scene.stage, scene.diff);
+      }
     };
     im.src = src; LP.img[k] = im;
   }
 })();
 function lpActive() { return LP.ready && typeof SG !== 'undefined' && !!LP.stages[SG.id]; }
+function lpFor(id) { return LP.ready && !!LP.stages[id]; }   // für Nachbar-Bereiche (SG ist dann ein anderer Bereich)
 function lpGround(g) { g.drawImage(LP.img['map_' + SG.id], 0, 0, WORLD_W, WORLD_H); }
 // Für jede gesperrte Rasterzelle: untere Kante ihrer senkrechten Reihe (in Welt-Pixeln)
 function lpRuns() {
@@ -80,8 +84,8 @@ function lpDrawPlayer(c, p, x, y, tilt) {
   const im = p.moving ? LP.img[`katze_${P.face}_${Math.floor(P.dist / 11) % 6}`] : LP.img.katze_steht;
   lpSprite(c, im, x, y, LP.catH, p.moving && P.face === 'side' ? P.flip : 1, p.moving ? 0 : Math.sin(p.t * 2.2) * 0.6, tilt || 0);
 }
-function lpDrawStaff(c, n, x, y, t, wave) {
-  const key = LP.stages[SG.id].staff[n.id]; if (!key) return false;
+function lpDrawStaff(c, n, x, y, t, wave, sid = SG.id) {
+  const key = LP.stages[sid] && LP.stages[sid].staff[n.id]; if (!key) return false;
   // ohne Vorne/hinten: Mitarbeiter stehen oft direkt neben Möbeln und würden sonst halb abgeschnitten
   lpSprite(c, LP.img[key], x, y, LP.staffH, 1, wave ? Math.abs(Math.sin(t * 6)) * 4 : Math.abs(Math.sin(t * 1.6 + x)) * 1.2);
   return true;

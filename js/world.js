@@ -188,14 +188,15 @@ Object.assign(Play.prototype, {
     for (const N of this.nb || []) {
       if (N.fog || !this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       const { ox, oy, D } = N, tr = f => () => { c.save(); c.translate(ox, oy); f(); c.restore(); };
-      for (const d of D.decor) {
+      const lpN = typeof lpFor === 'function' && lpFor(N.id);   // Low-Poly: Möbel/Deko sind schon im Bodenbild
+      for (const d of (lpN ? [] : D.decor)) {
         const bb = BB_CACHE[N.id + '_d_' + d.id] || decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3] + 100)) continue;
         const fn = decorStatic(N.id, D, d); if (fn) L.push({ y: d.y + (d.zy || 0) + (d.t === 'bench' ? 10 : 0) + oy, f: tr(() => fn(c, t)) });
       }
-      if (N.id === 'spielplatz') pushPlaygroundProps(c, L, ox, oy, inView);
+      if (N.id === 'spielplatz') pushPlaygroundProps(c, L, ox, oy, inView, lpN);
       const G = D.gate, cl = areaCleared(this.diff, N.id);
       if (G && inView(G.x - 120 + ox, G.y - 220 + oy, 240, 260)) L.push({ y: G.y + oy, f: tr(() => (D.drawGate || drawGate)(c, G.x, G.y, 1, cl ? 1 : 0, !cl, t)) });
-      for (const n of N.npcs) if (inView(n.x - 40 + ox, n.y - 120 + oy, 80, 130)) L.push({ y: n.y + oy, f: tr(() => drawCritter(c, n.id, n.x, n.y, 1.12, t, { staff: true, ph: n.x })) });
+      for (const n of N.npcs) if (inView(n.x - 40 + ox, n.y - 120 + oy, 80, 130)) L.push({ y: n.y + oy, f: tr(() => { if (!(lpN && lpDrawStaff(c, n, n.x, n.y, t, false, N.id))) drawCritter(c, n.id, n.x, n.y, 1.12, t, { staff: true, ph: n.x }); }) });
       pushLinkBarriers(c, L, N.id, ox, oy, this.diff, t);
     }
     for (const E of this.nbExtras || []) {
@@ -226,11 +227,16 @@ function decorStatic(sid, D, d) {
   return (c, t) => { if (d.anim && D.decorDraw && D.decorDraw[d.t]) D.decorDraw[d.t](c, d, t, 0); else { const B = measureBB(k, d.x, d.y, raw); drawSprite(c, sprite(k, B[0], B[1], B[2], B[3], raw)); } };
 }
 // Spielhaus, Rutsche, Schaukel des Spielplatzes als Nachbar (ohne Bewegung)
-function pushPlaygroundProps(c, L, ox, oy, inView) {
+function pushPlaygroundProps(c, L, ox, oy, inView, lp) {
   const D = STAGE_DEFS.spielplatz;
   if (!inView(D.house.x - 120 + ox, D.house.y - 260 + oy, D.house.w + 400, 500) && !inView(D.swing.x0 + ox, D.swing.y - 200 + oy, 500, 300)) return;
   const fake = Object.assign(Object.create(Play.prototype), { npcs: [], swinging: null, t: 0, kind: 'dog', npcAnim: {}, seatOff: () => 0, peeksUp: [], p: { x: -999, y: -999, level: 0 }, onStairs: () => false });
   const swap = f => () => { const keep = [HOUSE, STAIRS, SLIDE, SWING]; HOUSE = D.house; STAIRS = D.stairs; SLIDE = D.slide; SWING = D.swing; c.save(); c.translate(ox, oy); try { f(); } finally { c.restore(); [HOUSE, STAIRS, SLIDE, SWING] = keep; } };
+  if (lp) {   // Low-Poly: Gerüst, Rutsche, Häuschen sind im Bodenbild – nur Schaukelsitze und Dach dazu
+    D.swing.seats.forEach((sx, k) => L.push({ y: D.swing.y + 1 + oy, f: swap(() => Play.prototype.drawSeatLp.call(fake, c, sx, 0, k)) }));
+    L.push({ y: 99990 + oy, f: () => { const r = LP.stages.spielplatz.roof; c.drawImage(LP.img.dach, r[0] + ox, r[1] + oy, r[2], r[3]); } });
+    return;
+  }
   L.push({ y: D.swing.y + oy, f: swap(() => Play.prototype.drawSwingFrameRaw.call(fake, c)) });
   D.swing.seats.forEach((sx, k) => L.push({ y: D.swing.y + 1 + oy, f: swap(() => Play.prototype.drawSeat.call(fake, c, sx, 0, k)) }));
   L.push({ y: D.slide.y1 + oy, f: swap(() => Play.prototype.drawSlide.call(fake, c)) });
