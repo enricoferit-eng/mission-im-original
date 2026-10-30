@@ -11,7 +11,7 @@ const LP = {
     aussen: { map: 'assets/lowpoly/aussen/map.jpg?v=1', staff: {} },
     parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=2', staff: {} },
     uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=1', staff: {} },
-    chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=1', staff: {} },
+    chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=2', staff: {} },
     spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=3', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   zoomK: 0.72,   // Zoom in allen Bereichen gleich (Küche als Maß)

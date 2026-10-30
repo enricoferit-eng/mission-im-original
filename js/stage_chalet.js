@@ -267,6 +267,28 @@ CSPOTS.push(furnSpot(CDECOR, 'tanne5', 'right', { px: 1218, py: 1110, sx: 1250, 
 const CHALET_INNEN = new Set(['tafel1', 'tafel2', 'tafel3', 'baum', 'holzkorb', 'garderobe', 'fass', 'schaukelstuhl', 'kiste']);
 for (const d of CDECOR) if (!CHALET_INNEN.has(d.id)) { d.y += CY2; if (d.y0 != null) d.y0 += CY2; if (d.bb) d.bb[1] += CY2; }
 for (const q of CSPOTS) if (!CHALET_INNEN.has(q.decor)) { q.y += CY2; q.py += CY2; if (q.cut) q.cut += CY2; }
+// mehr Tische und Deko (User: zu viel leere Fläche) – schon in fertigen Koordinaten
+CDECOR.push(
+  { id: 'tafel4', t: 'huettentafel', x: 660, y: 1010, x0: 530, y0: 940, w: 260, h: 50, bb: [500, 860, 320, 170] },
+  { id: 'fass2', t: 'kaesefass', x: 190, y: 800, r: 22, bb: [150, 730, 80, 76] },
+  { id: 'fass3', t: 'kaesefass', x: 1150, y: 800, r: 22, bb: [1110, 730, 80, 76] },
+  { id: 'holzkorb2', t: 'holzkorb', x: 1020, y: 1000, r: 22, bb: [980, 950, 80, 62] },
+  { id: 'tanne7', t: 'tanne', x: 1480, y: 1720, r: 30, bb: [1400, 1500, 160, 230] },
+  { id: 'tanne8', t: 'tanne', x: 1540, y: 1300, r: 30, bb: [1460, 1080, 160, 230] },
+  { id: 'tanne9', t: 'tanne', x: 1000, y: 1700, r: 30, bb: [920, 1480, 160, 230] },
+  { id: 'laterne4', t: 'laternenpfahl', x: 1170, y: 1420, r: 10, bb: [1150, 1300, 40, 126], anim: true },
+  { id: 'schneemann2', t: 'schneemann', x: 1330, y: 1640, r: 26, bb: [1280, 1510, 100, 140] },
+  { id: 'schlitten2', t: 'schlitten', x: 860, y: 1580, r: 26, bb: [810, 1540, 100, 50] },
+  { id: 'holzstapel2', t: 'holzstapel', x: 1400, y: 1180, x0: 1310, y0: 1140, w: 180, h: 40, bb: [1300, 1080, 200, 110] },
+  { id: 'schneehaufen3', t: 'schneehaufen', x: 120, y: 1700, r: 30, bb: [70, 1660, 100, 46] },
+);
+CSPOTS.push(
+  furnSpot(CDECOR, 'tafel4', 'top', { px: 700, py: 952, sx: 700, sy: 880 }),
+  furnSpot(CDECOR, 'fass3', 'right', { px: 1168, py: 782, sx: 1150, sy: 845 }),
+  furnSpot(CDECOR, 'tanne8', 'left', { px: 1518, py: 1270, sx: 1490, sy: 1310 }),
+  furnSpot(CDECOR, 'schneemann2', 'left', { px: 1312, py: 1606, sx: 1285, sy: 1652 }),
+  furnSpot(CDECOR, 'holzstapel2', 'top', { px: 1372, py: 1118, sx: 1372, sy: 1222 }),
+);
 // innen: rot karierte Wolldecke, draußen: Schneehaufen
 function drawChaletCover(c, x, y, w, seed = 0) {
   if (y < HUT.y1 && x > HUT.x0 && x < HUT.x1) {
@@ -301,8 +323,8 @@ STAGE_DEFS.chalet = {
   npcs: [
     { id: 'c_gerda', pos: [[SXI(285), 463], [SXI(728), 472], [340, 760]] },
     { id: 'c_felix', pos: [[260, 1200], [1250, 1300], [237, 1375]] },
-    { id: 'c_berger', pos: [[SXI(500), 950], [SXI(760), 760], [1300, 160]] },
-    { id: 'c_toni', pos: [[1190, 760], [1450, 1050], [640, 940]] },
+    { id: 'c_berger', pos: [[900, 880], [SXI(760), 760], [1300, 160]] },
+    { id: 'c_toni', pos: [[1190, 760], [1450, 1050], [420, 1000]] },
     { id: 'c_anna', pos: [[380, 1080], [700, 1400], [1460, 1090]] },
   ],
   decor: CDECOR, spots: CSPOTS, grid: buildGridChalet, ground: drawGroundChalet, decorDraw: CDRAW,
