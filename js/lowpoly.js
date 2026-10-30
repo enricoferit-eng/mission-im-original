@@ -110,3 +110,59 @@ function lpDrawItem(c, kind, id, x, y, size, sil) {
   g.globalCompositeOperation = 'source-in'; g.fillStyle = '#2a2340'; g.fillRect(0, 0, S, S);
   c.drawImage(cv, x - box / 2, y - box / 2, box, box); return true;
 }
+
+// ---------- Minispiel-Hintergründe (Low-Poly-Bausteine aus assets/lowpoly/bg) ----------
+// Oben (Wand/Himmel) und unten (Boden/Tisch) werden getrennt eingesetzt, damit jede Trennlinie (counter, floor, horizon)
+// weiter stimmt. Solange ein Bild lädt, zeichnet die alte Funktion.
+const LP_BG = {};
+function lpBgImg(name) {
+  if (!LP.on) return null;
+  let im = LP_BG[name]; if (!im) { im = LP_BG[name] = new Image(); im.src = 'assets/lowpoly/bg/' + name + '.jpg?v=1'; }
+  return im.complete && im.naturalWidth ? im : null;
+}
+// Bild füllt das Rechteck ohne Verzerren (zugeschnitten); ay: 0 = oben ausrichten, 1 = unten
+function lpCover(c, im, x, y, w, h, ay = 0.5, ox = 0) {
+  if (h <= 0 || w <= 0) return;
+  const s = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / s, sh = h / s;
+  let sx = (im.naturalWidth - sw) / 2 + ox / s; sx = ((sx % (im.naturalWidth - sw + 1)) + (im.naturalWidth - sw + 1)) % (im.naturalWidth - sw + 1);
+  c.drawImage(im, sx, (im.naturalHeight - sh) * ay, sw, sh, x, y, w, h);
+}
+function lpSplit(c, top, bottom, line) {   // oben bis `line`, darunter Boden, dazwischen eine weiche Kante
+  const a = lpBgImg(top), b = lpBgImg(bottom); if (!a || !b) return false;
+  lpCover(c, a, 0, 0, GAME_W, line, 1); lpCover(c, b, 0, line, GAME_W, GAME_H - line, 0);
+  const g = c.createLinearGradient(0, line, 0, line + 14); g.addColorStop(0, 'rgba(40,25,10,.28)'); g.addColorStop(1, 'rgba(40,25,10,0)');
+  c.fillStyle = g; c.fillRect(0, line, GAME_W, 14);
+  return true;
+}
+{
+  const area = () => { const a = typeof AREA === 'function' ? AREA() : 'spielplatz'; return a === 'uebung' ? 'spielplatz' : a; };
+  const full = name => c => { const im = lpBgImg(name); if (!im) return false; lpCover(c, im, 0, 0, GAME_W, GAME_H); return true; };
+  const easy0 = bgEasy, wood0 = bgWood, sky0 = bgSky, kit0 = kitchenBg, ter0 = terraceBg, glass0 = glassBg, chal0 = chaletBg, snow0 = snowBg, asph0 = asphaltBg, chips0 = chipsBand;
+  const EASY = { spielplatz: 'easy_spielplatz', kueche: 'easy_kueche', gastraum: 'easy_gastraum', aussen: 'easy_aussen', chalet: 'easy_chalet', parkplatz: 'easy_parkplatz' };
+  const WOOD = { kueche: 'wood_kueche', chalet: 'wood_chalet', parkplatz: 'wood_parkplatz', aussen: 'wood_aussen' };
+  const SKY = { spielplatz: 'top_spielplatz', kueche: 'top_kueche', gastraum: 'top_gastraum', aussen: 'top_aussen', chalet: 'top_winterabend', parkplatz: 'top_parkplatz' };
+  bgEasy = function (c, col) {   // eigene Farbe eines Spiels bleibt als leichter Farbton über dem Low-Poly-Hintergrund
+    if (!full(EASY[area()] || 'easy_spielplatz')(c)) return easy0(c, col);
+    if (col && col !== '#fff4d6') { c.save(); c.globalAlpha = 0.35; c.fillStyle = col; c.fillRect(0, 0, GAME_W, GAME_H); c.restore(); }
+  };
+  bgWood = function (c) { if (!full(WOOD[area()] || 'wood_default')(c)) wood0(c); };
+  bgSky = function (c, ground = 400) { const im = lpBgImg(SKY[area()] || 'top_himmel'); if (!im) return sky0(c, ground); lpCover(c, im, 0, 0, GAME_W, ground, 1); };
+  kitchenBg = function (c, counter = 330) {
+    if (!lpSplit(c, 'easy_kueche', 'wood_kueche', counter)) return kit0(c, counter);
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, counter + 3); c.lineTo(GAME_W, counter + 3); c.stroke();
+  };
+  terraceBg = function (c, floor = 300, t = 0, wind = 0) { if (!lpSplit(c, 'top_terrasse', 'floor_kies', floor)) ter0(c, floor, t, wind); };
+  glassBg = function (c, floor = 330, t = 0) { if (!lpSplit(c, 'top_glashaus', 'floor_terrakotta', floor)) glass0(c, floor, t); };
+  chaletBg = function (c, floor = 330, t = 0, snow = true) { if (!lpSplit(c, 'top_chalet', 'floor_dielen', floor)) chal0(c, floor, t, snow); };
+  snowBg = function (c, t = 0, horizon = 160) {
+    if (!lpSplit(c, 'top_wald', 'floor_schnee', horizon)) return snow0(c, t, horizon);
+    for (let k = 0; k < 30; k++) { ell(c, (k * 53 + Math.sin(t + k) * 10) % 400, (k * 31 + t * 30) % GAME_H, 2, 2); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); }   // Schneefall bleibt
+  };
+  asphaltBg = function (c, t = 0) { if (!full('floor_asphalt')(c)) asph0(c, t); };
+  chipsBand = function (c, y0, y1, off = 0) {   // Spielplatz: Hackschnitzel-Streifen, läuft mit der Strecke mit
+    if (area() !== 'spielplatz') return chips0(c, y0, y1, off);
+    const im = lpBgImg('easy_spielplatz2'); if (!im) return chips0(c, y0, y1, off);
+    const h = y1 - y0, tw = im.naturalWidth * h / im.naturalHeight, o = ((off % tw) + tw) % tw;
+    for (let x = -o; x < GAME_W; x += tw) c.drawImage(im, x, y0, tw + 1, h);
+  };
+}
