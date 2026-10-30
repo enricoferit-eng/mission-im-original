@@ -267,7 +267,6 @@ async function lobby_poll(b) {
 
 }
 // Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig
-const adminDeviceToken = (U, P) => crypto.createHmac('sha256', SECRET).update('admin-geraet:' + U + ':' + crypto.createHash('sha256').update(P).digest('hex')).digest('hex');
 // ---------- Statistik: anonyme Geräte-Meldungen (keine Namen, keine persönlichen Daten) ----------
 // Jedes Gerät hat eine zufällige Kennung (16 Hex-Zeichen). Das Spiel meldet ca. jede Minute aktiver Spielzeit: Sekunden, Stufe, Konto ja/nein, Fortschritt.
 const STATS_KEY_HASH = '16c5fcf23b3489ccebf9a1a050f771ad10788eb2a2f2b19a64f97ae376fe0ba0';   // SHA-256 des Statistik-Schlüssels (der Schlüssel selbst steht nirgends im Code)
@@ -327,60 +326,12 @@ async function upgrade_all(b) {
   for (const l of old) { const acc = await readJSON(accFile(l)); if (acc) { await upgrade(l, acc); done++; } }
   return [200, { upgraded: done }];
 }
-async function admin(b) {
-  const U = ENV('ADMIN_USER'), P = ENV('ADMIN_PASS');
-  if (!U || !P) return [401, { error: 'auth' }];
-  const byPass = sameStr(String(b.user || ''), U) && sameStr(String(b.pass || ''), P);
-  const byDevice = !!b.device && sameStr(String(b.device), adminDeviceToken(U, P));
-  if (!byPass && !byDevice) return [401, { error: 'auth' }];
-  if (b.promote) {   // Konto zum Admin machen (wird angelegt, falls es den Namen noch nicht gibt)
-    const name = String(b.promote).trim().slice(0, 14), nk = nameKey(name); if (nk.length < 2) return [400, { error: 'name_short' }];
-    let idx = await readJSON(nameFile(nk)), login, acc;
-    if (idx) { login = idx.login; acc = await readJSON(accFile(login)); }
-    if (!acc) { login = await freeNum6(); acc = { name, nk, code: [0, 1, 2, 3], avatar: 5, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 }; await writeJSON(nameFile(nk), { login }); }
-    [login, acc] = await upgrade(login, acc);
-    acc.admin = true; await writeJSON(accFile(login), acc);
-    return [200, { login: fmtLogin(login), name: acc.name, code: acc.code }];
-  }
-  const files = (await listJSON('accounts/')).map(pathname => ({ pathname }));
-  const now = Date.now(), DAY = 86400000;
-  const st = { accounts: 0, new7: 0, active7: 0, active30: 0, skins: 0, perDiff: {}, gameTimes: {}, bonus: { easy: [0, 0, 0], medium: [0, 0, 0], hard: [0, 0, 0] }, generated: now };
-  for (const d of ['easy', 'medium', 'hard']) st.perDiff[d] = { players: 0, stageClears: 0, playersCleared: 0, questsDone: 0, skins: 0 };
-  const accs = await Promise.all(files.map(f => readJSON(f.pathname).catch(() => null)));
-  for (const acc of accs) {
-    if (!acc) continue;
-    st.accounts++;
-    if (now - acc.created < 7 * DAY) st.new7++;
-    if (now - (acc.updated || acc.created) < 7 * DAY) st.active7++;
-    if (now - (acc.updated || acc.created) < 30 * DAY) st.active30++;
-    const diff = (acc.data && acc.data.diff) || {};
-    if (acc.data && acc.data.gt && typeof acc.data.gt === 'object') for (const k in acc.data.gt) { const e = acc.data.gt[k]; if (!Array.isArray(e) || !(e[0] > 0)) continue; const T = st.gameTimes[k] || (st.gameTimes[k] = [0, 0, 0]); T[0] += e[0]; T[1] += Number(e[1]) || 0; T[2]++; }   // Anzahl, Sekunden, Kinder
-    if (acc.data && acc.data.bt && typeof acc.data.bt === 'object') for (const d in acc.data.bt) { const e = acc.data.bt[d], B = st.bonus[d]; if (!B || !Array.isArray(e)) continue; B[0] += Number(e[0]) || 0; B[1] += Number(e[1]) || 0; B[2] += Number(e[2]) || 0; }   // Aufträge, Summe Zeitanteil, mit Joker
-    for (const d of ['easy', 'medium', 'hard']) {
-      const stages = (diff[d] && diff[d].stages) || {}, P2 = st.perDiff[d];
-      let played = false, cleared = false;
-      for (const k in stages) {
-        const s = stages[k] || {};
-        const clears = s.clears || 0, done = s.run && s.run.done ? Object.keys(s.run.done).length : 0, sk = (s.skins || []).length;
-        if (clears || done || sk) played = true;
-        if (clears) cleared = true;
-        P2.stageClears += clears; P2.questsDone += done + clears * 6; P2.skins += sk; st.skins += sk;
-      }
-      if (played) P2.players++;
-      if (cleared) P2.playersCleared++;
-    }
-  }
-  st.mp = (await readJSON('stats/mp.json')) || { lobbies: 0, matches: 0 };
-  st.device = adminDeviceToken(U, P);
-  return [200, st];
-}
-
 // Eine Anfrage bearbeiten: body = JSON vom Spiel, ip = Absender (nur gehasht für die Fehlversuch-Sperre) → [Status, Antwort]
 export async function handle(body, ip) {
   if (!SECRET || !SB_URL || !SB_KEY) return [500, { error: 'config' }];
   const b = body && typeof body === 'object' ? body : {};
   b._ip = crypto.createHash('sha256').update(SECRET + String(ip || '').split(',')[0].trim()).digest('hex').slice(0, 16);
-  const fn = { ping, stats, upgrade_all, register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
+  const fn = { ping, stats, upgrade_all, register, login, save, set_pass, delete: remove, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return [400, { error: 'action' }];
   try { return await fn(b); }
   catch (e) { console.error(e); return [500, { error: 'server' }]; }
