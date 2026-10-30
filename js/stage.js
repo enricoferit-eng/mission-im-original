@@ -239,6 +239,14 @@ function furnSpot(D, decorId, how, o = {}) {
   return { id: 's_' + decorId + '_' + how + (o.tag || ''), x: Math.round(sx), y: Math.round(sy), reach: o.reach || 96, decor: decorId, px: Math.round(px), py: Math.round(py), rot, sz: o.sz || (how === 'on' ? 0.78 : 0.95), front: true, cut: o.cut };   // immer vor dem Möbel zeichnen, damit es nie verdeckt ist
 }
 let SG = null;
+// Sitzplätze zum Hinsetzen (Stühle, Bänke, Hocker …) – passend zu den Möbeln im Low-Poly-Bodenbild
+const SEATS = {
+  spielplatz: [[672, 1000], [712, 1000]],
+  gastraum: [[206, 240], [300, 240], [394, 240], [480, 246], [221, 536], [270, 536], [675, 536], [724, 536], [1012, 282], [1084, 284], [1084, 488], [1136, 488],
+    [1005, 679], [1054, 679], [1279, 686], [1328, 686], [930, 896], [998, 896], [1065, 896], [1136, 896], [1204, 896], [1271, 896]],
+  aussen: [[270, 279], [324, 279], [493, 279], [545, 279], [716, 279], [765, 279], [270, 428], [324, 428], [493, 428], [545, 428], [716, 428], [765, 428], [725, 672], [795, 672]],
+  chalet: [[360, 660], [450, 660], [530, 660], [900, 660], [980, 660], [1060, 660], [630, 849], [705, 849], [780, 849], [288, 1444], [684, 1204]],
+};
 STAGE_DEFS.spielplatz = {
   id: 'spielplatz', house: HOUSE, stairs: STAIRS, slide: SLIDE, swing: SWING, start: START, gate: GATE,
   npcs: NPC_DEFS, decor: DECOR, spots: SPOTS, grid: buildGridSpielplatz, ground: drawGroundSpielplatz,
@@ -374,7 +382,7 @@ class Play {
     else if (!canStand(0, this.p.x, this.p.y)) { const pt = nearestFree(0, this.p.x, this.p.y); if (pt >= 0) { this.p.x = (pt % GW) * CELL + 12.5; this.p.y = Math.floor(pt / GW) * CELL + 12.5; } }   // Start nie in einem Möbel
     if (opt.cam) { this.camX = opt.cam.x; this.camY = opt.cam.y; }
     this.entered = !!opt.enter;
-    this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null;
+    this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null; this.sitting = null;
     this.gateA = this.st.done.gate ? 1 : 0;
     this.idleT = 0; this.coachSaid = {};
     if (!this.st.secret) this.st.secret = {};
@@ -668,6 +676,17 @@ class Play {
   s2w(sx, sy) { return { x: (sx - W / 2) / this.zoom + this.camX, y: (sy - H / 2) / this.zoom + this.camY }; }
   seatOff(k) { if (this.swinging && this.swinging.k === k) return this.swinging.off; return k === this.freeSeat() ? (lpActive() ? 12 : 6) * Math.sin(this.t * 1.6 + k * 2.1) : 30 * Math.sin(this.t * 1.6 + k * 2.1); }   // Low-Poly: leere Schaukel pendelt etwas sichtbarer
   freeSeat() { return 1 - this.st.layout.seat; }
+  // ---- Hinsetzen: Stuhl/Bank antippen, Tippen oder Wischen = wieder aufstehen ----
+  sitDown(T) {
+    const p = this.p;
+    this.sitting = { x: T.x, y: T.y, bx: p.x, by: p.y };
+    p.path = null; p.target = null; p.moving = false; p.x = T.x; p.y = T.y;
+    Sfx.play('tap'); buzz(15);
+  }
+  standUp() {
+    const S = this.sitting; if (!S) return;
+    this.sitting = null; this.p.x = S.bx; this.p.y = S.by;
+  }
   // ---- Schaukeln (Extra): im richtigen Moment tippen = Schwung holen, dann weit abspringen ----
   startSwing() {
     if (this.swinging || this.p.slide) return;
@@ -705,9 +724,7 @@ class Play {
       S.amp = Math.max(0, S.amp - dt * 0.6); S.ph += dt * 2.7; S.off = S.amp * 72 * Math.sin(S.ph);
       if (k >= 1) {
         this.swingZ = 0; const s2 = this.w2s(p.x, p.y); FX.puff(s2.x, s2.y, 14); buzz(40);
-        const a = ACC(), best = (a && a.swingBest) || 0, rec = J.m > best;
-        if (rec && a) { a.swingBest = J.m; Save.write(); FX.confetti(s2.x, s2.y - 40, 50); Sfx.play('win'); } else Sfx.play('good');
-        this.swingPop = { t: 0, text: 'Weite: ' + J.m.toFixed(1).replace('.', ',') + ' m', rec };
+        Sfx.play('good');
         this.swinging = null;
       }
       return;
@@ -718,18 +735,11 @@ class Play {
   }
   drawSwingHud(c) {
     const S = this.swinging;
-    if (this.swingPop) {
-      const q = this.swingPop, k = ease.back(clamp(q.t * 3, 0, 1)), a = clamp(2.4 - q.t, 0, 1);
-      c.save(); c.globalAlpha = a; c.translate(W / 2, H * 0.34 - q.t * 8); c.scale(k * 1.2, k * 1.2);
-      txt(c, q.text, 0, 0, 30, '#fff', 'center', OL); if (q.rec) txt(c, 'Neuer Rekord!', 0, 34, 20, '#ffd23f', 'center', OL); c.restore();
-    }
     if (!S || S.jump) return;
     // Höhenmesser + Takt-Ring + Knöpfe
-    const hx = 40, hy = H - 250, hh = 150, edge = Math.abs(Math.sin(S.ph)), m = (S.amp * 2.6).toFixed(1).replace('.', ',');
+    const hx = 40, hy = H - 250, hh = 150, edge = Math.abs(Math.sin(S.ph));
     rrPath(c, hx - 16, hy, 32, hh, 14); c.fillStyle = 'rgba(30,20,10,.6)'; c.fill();
     rrPath(c, hx - 10, hy + hh - 6 - (hh - 12) * S.amp, 20, (hh - 12) * S.amp, 8); c.fillStyle = S.amp > 0.75 ? '#ef476f' : S.amp > 0.4 ? '#ffd166' : '#06d6a0'; c.fill();
-    txt(c, m + ' m', hx, hy - 14, 15, '#fff', 'center', BRAND.ink);
-    const a = ACC(); if (a && a.swingBest) txt(c, 'Rekord ' + a.swingBest.toFixed(1).replace('.', ',') + ' m', hx + 30, hy + hh + 16, 12, '#fff', 'center', BRAND.ink);
     const sp = this.w2s(SWING.seats[S.k], SWING.y + S.off, 40), ready = edge > 0.82 && Math.floor(S.ph / Math.PI) !== S.lastHalf;
     ell(c, sp.x, sp.y, 40 + S.flash * 30, 40 + S.flash * 30); c.lineWidth = ready ? 6 : 3; c.strokeStyle = ready ? 'rgba(6,214,160,.95)' : 'rgba(255,255,255,.45)'; c.stroke();
     const bx = W - 70, by = H - 120, pu = S.amp > 0.3 ? 1 + Math.sin(this.t * 6) * 0.06 : 1;
@@ -805,7 +815,6 @@ class Play {
           if (after <= 0) { this.bonusWarn = { t: 0, text: 'Bonus verpasst', miss: true }; Sfx.note(330, 0.35, 'triangle', 0.06, 0.6); }
         }
       } }
-    if (this.swingPop) { this.swingPop.t += dt; if (this.swingPop.t > 2.4) this.swingPop = null; }
     if (this.bonusIntro) { this.bonusIntro.t += dt; if (this.bonusIntro.t > 2.4) this.bonusIntro = null; }
     if (this.bonusWarn) { this.bonusWarn.t += dt; if (this.bonusWarn.t > 1.8) this.bonusWarn = null; }
     if (this.bonusPop) { this.bonusPop.t += dt; if (this.bonusPop.t > 2.6) this.bonusPop = null; }
@@ -817,6 +826,7 @@ class Play {
       const raceHold = this.updateRace(dt) || !!this.climb;
       if (raceHold) { if (!this.climb) this.p.moving = false; }
       else if (this.swinging) this.updateSwing(dt);
+      else if (this.sitting) { const j = this.joy; if (j && j.moved) this.standUp(); else { this.p.x = this.sitting.x; this.p.y = this.sitting.y; this.p.moving = false; } }
       else if (this.searching) this.updateSearch(dt); else { this.updatePlayer(dt); this.updateLeaves(); if (this.checkCross && this.checkCross()) return; }
       // Hilfe-Uhr: läuft nur, solange gesucht wird
       const hq = this.st.active;
@@ -951,6 +961,8 @@ class Play {
     }
     { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
     if (this.coop && this.role === 0 && this.st.active && this.st.active.coop && !this.st.active.coop.roof) { const L2 = this.coop.ladder; out.push({ k: 'ladder', x: L2.x, y: L2.y + 20, l: 0, r: 52, sx: L2.x, sy: L2.y - 60 }); }
+    if (SG.feat.swing) { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
+    if (lpActive() && !this.searching) (SEATS[SG.id] || []).forEach(([x, y]) => out.push({ k: 'seat', x, y, l: 0, r: 80, sx: x, sy: y - 14 }));
     if (SG.feat.slide) out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
   }
@@ -963,6 +975,7 @@ class Play {
   tap(sx, sy) {
     if (this.exiting) return;
     if (this.swinging) { this.pump(); return; }
+    if (this.sitting) this.standUp();   // Aufstehen – der Tipp zählt gleich als Laufen
     const w = this.s2w(sx, sy);
     if (this.tapOutside && this.tapOutside(w)) return;
     if (this.guest && this.guest.on && dist(w.x, w.y, this.guest.x, this.guest.y - 40) < 40) { this.banner = { text: 'Hallo! Ich bin nur zu Besuch und brauche nichts.', t: 0 }; Sfx.play('tap'); return; }   // Gast ohne Auftrag
@@ -990,6 +1003,7 @@ class Play {
   }
   interact(T) {
     if (T.k === 'swing') { this.startSwing(); return; }
+    if (T.k === 'seat') { this.sitDown(T); return; }
     if (T.k === 'racer') { this.startRace(); return; }
     if (T.k === 'ladder') {
       const o = this.mp && this.mp.other, fresh = o && Date.now() - this.mp.lastOther < 3500;
