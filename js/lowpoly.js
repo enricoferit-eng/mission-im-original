@@ -213,6 +213,14 @@ function lpGateWrap(orig, name) {
     if (!a || !b) return orig.call(this, c, x, y, s, open, locked, t, ...rest);
     const B = lpMeasure('gate_' + name, (g, gx, gy) => orig(g, gx, gy, 1, 0, false, 0)), k = B.w * s / a.naturalWidth, im = (open || 0) > 0.5 ? b : a;
     const w = im.naturalWidth * k, h = im.naturalHeight * k, left = x + B.x0 * s, bottom = y + (B.y0 + B.h) * s;
+    const side = s >= 0.9 && typeof WORLD_W !== 'undefined' && (x < 140 || x > WORLD_W - 140) ? (x < 140 ? -1 : 1) : 0;   // Tor in einer Seitenwand: von der Seite gesehen (schmal), nicht quer im Raum
+    if (side) {
+      const cx = x + (B.x0 + B.w / 2) * s, sw = w * 0.34;
+      c.save(); c.fillStyle = 'rgba(40,25,10,.22)'; ell(c, cx, bottom - 2 * s, sw * 0.7, 6 * s); c.fill();
+      c.translate(cx, bottom); c.transform(1, side * -0.35, 0, 1, 0, 0); c.drawImage(im, -sw / 2, -h, sw, h); c.restore();
+      if (locked) lpLock(c, cx, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
+      return;
+    }
     c.save(); c.fillStyle = 'rgba(40,25,10,.22)'; ell(c, x + (B.x0 + B.w / 2) * s, bottom - 2 * s, B.w * 0.5 * s, 7 * s); c.fill(); c.restore();
     c.drawImage(im, left, bottom - h, w, h);
     if (locked) lpLock(c, x + (B.x0 + B.w / 2) * s, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
