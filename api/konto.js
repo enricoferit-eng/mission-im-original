@@ -261,6 +261,58 @@ async function lobby_poll(b) {
 }
 // Geräte-Schlüssel für den Admin: hängt am Passwort – wird das Passwort in Vercel geändert, sind alle gemerkten Geräte ungültig
 const adminDeviceToken = (U, P) => crypto.createHmac('sha256', SECRET).update('admin-geraet:' + U + ':' + crypto.createHash('sha256').update(P).digest('hex')).digest('hex');
+// ---------- Statistik: anonyme Geräte-Meldungen (keine Namen, keine persönlichen Daten) ----------
+// Jedes Gerät hat eine zufällige Kennung (16 Hex-Zeichen). Das Spiel meldet ca. jede Minute aktiver Spielzeit: Sekunden, Stufe, Konto ja/nein, Fortschritt.
+const STATS_KEY_HASH = '16c5fcf23b3489ccebf9a1a050f771ad10788eb2a2f2b19a64f97ae376fe0ba0';   // SHA-256 des Statistik-Schlüssels (der Schlüssel selbst steht nirgends im Code)
+const berlinDay = (t = Date.now()) => new Date(t).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });   // JJJJ-MM-TT
+const teleFile = dev => 'tele/' + dev + '.json';
+async function ping(b) {
+  const dev = String(b.dev || ''); if (!/^[a-f0-9]{16}$/.test(dev)) return [400, { error: 'dev' }];
+  const now = Date.now(), day = berlinDay(now), sec = clamp0(Math.round(Number(b.sec) || 0), 0, 150);
+  const T = (await readJSON(teleFile(dev))) || { first: now, last: 0, days: {}, sessions: 0 };
+  if (now - (T.last || 0) > 30 * 60 * 1000) T.sessions = (T.sessions || 0) + 1;   // neue Sitzung nach 30 Min Pause
+  T.days[day] = (T.days[day] || 0) + sec; T.last = now;
+  const keys = Object.keys(T.days); if (keys.length > 400) keys.sort().slice(0, keys.length - 400).forEach(k => delete T.days[k]);
+  T.diff = ['easy', 'medium', 'hard'].includes(b.diff) ? b.diff : T.diff; T.acc = !!b.acc; T.cleared = clamp0(Number(b.cleared) || 0, 0, 18); T.maxArea = clamp0(Number(b.maxArea) || 0, 0, 6);
+  T.ueb = !!b.ueb || !!T.ueb; T.ver = String(b.ver || '').slice(0, 20); T.portrait = !!b.portrait;
+  await writeJSON(teleFile(dev), T);
+  return [200, { ok: true }];
+}
+function clamp0(v, a, z) { return Math.max(a, Math.min(z, v)); }
+async function readAll(prefix) {   // alle Einträge unter einem Pfad (Supabase: seitenweise in einem Rutsch)
+  if (SB) { const out = []; for (let off = 0; ; off += 1000) { const rows = await sb('GET', '?select=path,val&path=like.' + encodeURIComponent(prefix + '*') + '&order=path&limit=1000&offset=' + off); out.push(...rows.map(r => r.val)); if (rows.length < 1000) break; } return out; }
+  const paths = await listJSON(prefix); return (await Promise.all(paths.map(p => readJSON(p).catch(() => null)))).filter(Boolean);
+}
+async function stats(b) {
+  if (!b.key || !sameStr(crypto.createHash('sha256').update(String(b.key)).digest('hex'), STATS_KEY_HASH)) return [401, { error: 'auth' }];
+  const all = await readAll('tele/'), now = Date.now(), DAY = 86400000, today = berlinDay(now);
+  const dayList = n => Array.from({ length: n }, (_, i) => berlinDay(now - (n - 1 - i) * DAY));
+  const last30 = dayList(30), dayIdx = d => Math.round((Date.parse(d) - Date.parse(today)) / DAY);
+  const S = { generated: now, devices: all.length, accountsServer: (await listJSON('accounts/')).length, withAccount: 0, guests: 0,
+    active: { d1: 0, d7: 0, d30: 0 }, perDay: last30.map(d => ({ day: d, active: 0, neu: 0, minutes: 0 })),
+    totalHours: 0, sessions: 0, returning: 0, ret: { d1: [0, 0], d7: [0, 0], d30: [0, 0] }, diff: { easy: 0, medium: 0, hard: 0 }, ueb: 0, areas: [0, 0, 0, 0, 0, 0, 0], portrait: 0, ver: {}, daysPlayed: [0, 0, 0, 0, 0, 0] };
+  for (const T of all) {
+    const days = Object.keys(T.days || {}).sort(), secs = days.reduce((a, d) => a + (T.days[d] || 0), 0), first = berlinDay(T.first || now);
+    S.totalHours += secs / 3600; S.sessions += T.sessions || 0;
+    if (T.acc) S.withAccount++; else S.guests++;
+    if (T.diff) S.diff[T.diff]++; if (T.ueb) S.ueb++; if (T.portrait) S.portrait++; S.areas[clamp0(T.maxArea || 0, 0, 6)]++;
+    if (T.ver) S.ver[T.ver] = (S.ver[T.ver] || 0) + 1;
+    const lastAgo = now - (T.last || 0); if (lastAgo < DAY) S.active.d1++; if (lastAgo < 7 * DAY) S.active.d7++; if (lastAgo < 30 * DAY) S.active.d30++;
+    if (days.length >= 2) S.returning++;
+    S.daysPlayed[Math.min(5, days.length)]++;
+    for (const d of days) { const i = last30.indexOf(d); if (i >= 0) { S.perDay[i].active++; S.perDay[i].minutes += (T.days[d] || 0) / 60; } }
+    { const i = last30.indexOf(first); if (i >= 0) S.perDay[i].neu++; }
+    // Rückkehr: wer vor mind. N Tagen angefangen hat – hat am Tag N (D1) bzw. irgendwann ab Tag N (D7, D30) wieder gespielt?
+    const age = -dayIdx(first);
+    const off = d => Math.round((Date.parse(d) - Date.parse(first)) / DAY);
+    if (age >= 1) { S.ret.d1[1]++; if (days.some(d => off(d) === 1)) S.ret.d1[0]++; }
+    if (age >= 7) { S.ret.d7[1]++; if (days.some(d => off(d) >= 7)) S.ret.d7[0]++; }
+    if (age >= 30) { S.ret.d30[1]++; if (days.some(d => off(d) >= 30)) S.ret.d30[0]++; }
+  }
+  S.perDay.forEach(p => (p.minutes = Math.round(p.minutes)));
+  S.totalHours = Math.round(S.totalHours * 10) / 10;
+  return [200, S];
+}
 async function admin(b) {
   const U = process.env.ADMIN_USER || '', P = process.env.ADMIN_PASS || '';
   if (!U || !P) return [401, { error: 'auth' }];
@@ -320,7 +372,7 @@ module.exports = async (req, res) => {
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
   b._ip = crypto.createHash('sha256').update(SECRET + String(req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip']) || '').split(',')[0].trim()).digest('hex').slice(0, 16);   // nur als Hash, für die Fehlversuch-Sperre
-  const fn = { register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
+  const fn = { ping, stats, register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return res.status(400).json({ error: 'action' });
   try { const [status, out] = await fn(b); res.status(status).json(out); }
   catch (e) { console.error(e); res.status(500).json({ error: 'server' }); }

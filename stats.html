@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Spieler-Statistik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+  /* Statistik für den Betreiber: öffnet nur mit dem Statistik-Schlüssel. Daten = anonyme Geräte-Meldungen aus dem Spiel. */
+  :root {
+    --ground: #f4efe3; --card: #fffdf7; --ink: #2b1d14; --muted: #7a6a5a; --line: #e3d9c6; --bar: #4f7a2b; --bar2: #a9c97f; --accent: #2d6a4f; --on-accent: #fff;
+    --display: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; --body: 'Nunito', system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ground: #1c1a16; --card: #26231e; --ink: #f1ebe0; --muted: #b3a795; --line: #3a352d; --bar: #9cc56b; --bar2: #55703a; --accent: #8fd1a8; --on-accent: #12261b; }
+  }
+  :root[data-theme="dark"] { --ground: #1c1a16; --card: #26231e; --ink: #f1ebe0; --muted: #b3a795; --line: #3a352d; --bar: #9cc56b; --bar2: #55703a; --accent: #8fd1a8; --on-accent: #12261b; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); padding: 20px 16px 48px; }
+  .wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 18px; }
+  h1 { font: 700 26px var(--display); margin: 0; }
+  h2 { font: 700 18px var(--display); margin: 0 0 10px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+  form { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 10px; max-width: 420px; }
+  input { font: 600 16px var(--body); padding: 10px 12px; border: 2px solid var(--line); border-radius: 12px; background: var(--ground); color: var(--ink); width: 100%; }
+  button { font: 700 16px var(--display); background: var(--accent); color: var(--on-accent); border: 0; border-radius: 12px; padding: 11px; cursor: pointer; }
+  .err { color: #c1121f; font-weight: 700; min-height: 1.2em; margin: 0; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .tile { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+  .tile b { display: block; font: 700 28px var(--display); font-variant-numeric: tabular-nums; }
+  .tile span { color: var(--muted); font-size: 13px; }
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 16px; }
+  .bars { display: flex; align-items: flex-end; gap: 2px; height: 140px; border-bottom: 1px solid var(--line); position: relative; }
+  .bars div { flex: 1; background: var(--bar); border-radius: 4px 4px 0 0; min-height: 1px; position: relative; }
+  .bars div:hover, .bars div:focus { background: var(--bar2); outline: none; }
+  .axis { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .rows { display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: 130px 1fr 92px; align-items: center; gap: 10px; font-size: 14px; }
+  .row .track { background: var(--ground); border-radius: 6px; height: 14px; overflow: hidden; }
+  .row .fill { background: var(--bar); height: 100%; border-radius: 0 4px 4px 0; }
+  .row em { white-space: nowrap; font-style: normal; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  #tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--ground); font-size: 12px; padding: 5px 8px; border-radius: 8px; display: none; white-space: nowrap; z-index: 5; }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .ghost { background: transparent; color: var(--muted); border: 2px solid var(--line); padding: 7px 12px; font-size: 14px; }
+  @media (max-width: 480px) { .row { grid-template-columns: 92px 1fr 84px; font-size: 13px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>Spieler-Statistik</h1><p class="sub">Mission: Im Original · anonyme Geräte (keine Namen, keine persönlichen Daten)</p></div>
+    <button class="ghost" id="out" hidden>Schlüssel vergessen</button>
+  </div>
+  <form id="f">
+    <label for="k"><b>Statistik-Schlüssel</b></label>
+    <input id="k" type="password" autocomplete="current-password" placeholder="mio-…">
+    <button>Anzeigen</button>
+    <p class="err" id="e"></p>
+  </form>
+  <div id="out1" hidden></div>
+</div>
+<div id="tip"></div>
+<script>
+const API = 'https://mission-im-original.vercel.app/api/konto';
+const $ = s => document.querySelector(s), pct = (a, b) => (b ? Math.round(a / b * 100) + ' %' : '–'), n = v => Number(v || 0).toLocaleString('de-DE');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function getKey() { try { return localStorage.getItem('mioStatsKey') || ''; } catch (e) { return ''; } }
+function setKey(k) { try { if (k) localStorage.setItem('mioStatsKey', k); else localStorage.removeItem('mioStatsKey'); } catch (e) {} }
+async function load(key) {
+  $('#e').textContent = 'Lädt …';
+  let r; try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'stats', key }) }); } catch (e) { $('#e').textContent = 'Keine Verbindung zum Server.'; return; }
+  if (r.status === 401) { $('#e').textContent = 'Der Schlüssel stimmt nicht.'; setKey(''); return; }
+  if (!r.ok) { $('#e').textContent = 'Server-Fehler (' + r.status + ').'; return; }
+  const S = await r.json(); setKey(key); $('#e').textContent = ''; $('#f').hidden = true; $('#out').hidden = false; render(S);
+}
+function bars(list, val, label, unit) {
+  const max = Math.max(1, ...list.map(val));
+  return '<div class="bars">' + list.map(p => '<div tabindex="0" style="height:' + (val(p) / max * 100) + '%" data-tip="' + esc(label(p) + ': ' + n(val(p)) + ' ' + unit) + '"></div>').join('') + '</div>'
+    + '<div class="axis"><span>' + esc(label(list[0])) + '</span><span>' + esc(label(list[list.length - 1])) + '</span></div>';
+}
+function rows(items, total) {
+  const max = Math.max(1, ...items.map(i => i[1]));
+  return '<div class="rows">' + items.map(([name, v]) => '<div class="row"><span>' + esc(name) + '</span><div class="track"><div class="fill" style="width:' + (v / max * 100) + '%"></div></div><em>' + n(v) + (total ? ' · ' + pct(v, total) : '') + '</em></div>').join('') + '</div>';
+}
+function render(S) {
+  const D = S.devices, dm = d => d.slice(8, 10) + '.' + d.slice(5, 7) + '.';
+  const avgMin = D ? Math.round(S.totalHours * 60 / D) : 0, sessMin = S.sessions ? Math.round(S.totalHours * 60 / S.sessions) : 0;
+  const tiles = [
+    [n(D), 'Spieler gesamt (Geräte)'], [n(S.active.d1), 'aktiv heute (24 h)'], [n(S.active.d7), 'aktiv 7 Tage'], [n(S.active.d30), 'aktiv 30 Tage'],
+    [n(S.totalHours) + ' h', 'Spielzeit gesamt'], [avgMin + ' min', 'Spielzeit pro Spieler'], [sessMin + ' min', 'pro Sitzung'], [n(S.sessions), 'Sitzungen'],
+    [pct(S.returning, D), 'Wiederkehr-Quote (≥ 2 Tage gespielt)'], [n(S.returning), 'wiederkehrende Spieler'],
+    [pct(S.ret.d1[0], S.ret.d1[1]), 'kommt am Tag 1 wieder'], [pct(S.ret.d7[0], S.ret.d7[1]), 'kommt nach 7+ Tagen wieder'], [pct(S.ret.d30[0], S.ret.d30[1]), 'kommt nach 30+ Tagen wieder'],
+    [n(S.withAccount), 'mit Konto'], [n(S.guests), 'ohne Konto'], [n(S.accountsServer), 'Konten auf dem Server'],
+  ];
+  const ver = Object.entries(S.ver || {}).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  $('#out1').hidden = false;
+  $('#out1').innerHTML = '<p class="sub">Stand: ' + new Date(S.generated).toLocaleString('de-DE') + '</p>'
+    + '<div class="tiles">' + tiles.map(([b, s]) => '<div class="tile"><b>' + b + '</b><span>' + esc(s) + '</span></div>').join('') + '</div>'
+    + '<div class="card"><h2>Aktive Spieler pro Tag (30 Tage)</h2>' + bars(S.perDay, p => p.active, p => dm(p.day), 'Spieler') + '</div>'
+    + '<div class="card"><h2>Neue Spieler pro Tag</h2>' + bars(S.perDay, p => p.neu, p => dm(p.day), 'neu') + '</div>'
+    + '<div class="card"><h2>Spielzeit pro Tag (Minuten, alle zusammen)</h2>' + bars(S.perDay, p => p.minutes, p => dm(p.day), 'min') + '</div>'
+    + '<div class="two">'
+    + '<div class="card"><h2>An wie vielen Tagen gespielt</h2>' + rows([['1 Tag', S.daysPlayed[1]], ['2 Tage', S.daysPlayed[2]], ['3 Tage', S.daysPlayed[3]], ['4 Tage', S.daysPlayed[4]], ['5+ Tage', S.daysPlayed[5]]], D) + '</div>'
+    + '<div class="card"><h2>Stufe</h2>' + rows([['Leicht (6–8)', S.diff.easy], ['Mittel (9–11)', S.diff.medium], ['Schwer (12–14)', S.diff.hard]], D) + '</div>'
+    + '<div class="card"><h2>Wie weit sie kommen (Bereiche geschafft)</h2>' + rows(S.areas.map((v, i) => [i + (i === 1 ? ' Bereich' : ' Bereiche'), v]), D) + '</div>'
+    + '<div class="card"><h2>Sonstiges</h2>' + rows([['Helfer-Schule fertig', S.ueb], ['spielt hochkant', S.portrait]], D) + (ver.length ? '<h2 style="margin-top:14px">Spiel-Versionen</h2>' + rows(ver, D) : '') + '</div>'
+    + '</div>';
+}
+document.addEventListener('mousemove', e => { const t = e.target.closest && e.target.closest('[data-tip]'), tip = $('#tip'); if (!t) { tip.style.display = 'none'; return; } tip.textContent = t.dataset.tip; tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - tip.offsetWidth - 8, e.clientX + 12) + 'px'; tip.style.top = (e.clientY - 34) + 'px'; });
+document.addEventListener('focusin', e => { const t = e.target.closest && e.target.closest('[data-tip]'), tip = $('#tip'); if (!t) return; const r = t.getBoundingClientRect(); tip.textContent = t.dataset.tip; tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - tip.offsetWidth - 8, r.left) + 'px'; tip.style.top = (r.top - 34) + 'px'; });
+document.addEventListener('touchstart', e => { const t = e.target.closest && e.target.closest('[data-tip]'), tip = $('#tip'); if (!t) { tip.style.display = 'none'; return; } const r = t.getBoundingClientRect(); tip.textContent = t.dataset.tip; tip.style.display = 'block'; tip.style.left = Math.max(8, Math.min(innerWidth - tip.offsetWidth - 8, r.left - 40)) + 'px'; tip.style.top = (r.top - 34) + 'px'; }, { passive: true });
+$('#f').addEventListener('submit', e => { e.preventDefault(); const k = $('#k').value.trim(); if (k) load(k); });
+$('#out').addEventListener('click', () => { setKey(''); location.reload(); });
+{ const k = new URLSearchParams(location.hash.slice(1)).get('key') || getKey(); if (k) { $('#k').value = k; load(k); } }
+</script>
+</body>
+</html>

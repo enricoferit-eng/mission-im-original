@@ -1,4 +1,6 @@
 'use strict';
+// Spiel nicht im Vordergrund (anderer Tab, andere App, Bildschirm aus): dann gibt es keinen Ton
+const APP_HIDDEN = () => document.hidden || document.visibilityState === 'hidden' || window.__appBlur === true;
 // ---------- Grundlagen: Mathe, Zufall, Speicher, Sound, Zeichen-Helfer, UI, Effekte ----------
 const TAU = Math.PI * 2;
 const FONT = "ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif";
@@ -158,7 +160,7 @@ const Voice = {
   },
   clean(t) { return t.replace(/\s*[–—]\s*/g, ', ').replace(/→/g, ' ').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); },
   say(text, force, who = 'erzaehler') {
-    if (!text || !this.on()) return;
+    if (!text || !this.on() || APP_HIDDEN()) return;
     if (!force && text === this.last) return;
     this.last = text; const gen = ++this.gen;
     if (this.src) { try { this.src.stop(); } catch (e) { /* egal */ } this.src = null; }
@@ -200,10 +202,10 @@ const Sfx = {
   ctx() {
     if (!this.ac) { this.ac = new (window.AudioContext || window.webkitAudioContext)();   // Kanäle: Musik, Stimmen, Geräusche (Standard) – alle laufen über den Gesamt-Regler
       try { const out = this.ac.destination, m = this.ac.createGain(), mu = this.ac.createGain(), vo = this.ac.createGain(), fx = this.ac.createGain(); m.connect(out); mu.connect(m); vo.connect(m); fx.connect(m); Object.defineProperty(this.ac, 'destination', { value: fx }); this.master = m; this.musicBus = mu; this.voiceBus = vo; this.sfxBus = fx; applyVolume(true); } catch (e) { /* alter Browser: ohne Regler */ } }
-    if (this.ac.state === 'suspended') this.ac.resume(); return this.ac; },
+    if (this.ac.state === 'suspended' && !APP_HIDDEN()) this.ac.resume(); return this.ac; },   // im Hintergrund nie wieder aufwecken (sonst läuft der Ton weiter)
   // einzelner Ton (für Combos, Countdown, Ticken)
   note(freq, dur = 0.12, type = 'triangle', vol = 0.08, slide = 1) {
-    if (!this.on()) return;
+    if (!this.on() || APP_HIDDEN()) return;
     try {
       const c = this.ctx(), t = c.currentTime, o = c.createOscillator(), g = c.createGain();
       o.type = type; o.frequency.setValueAtTime(freq, t); if (slide !== 1) o.frequency.exponentialRampToValueAtTime(freq * slide, t + dur);

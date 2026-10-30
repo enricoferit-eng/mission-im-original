@@ -190,8 +190,6 @@ class Menu {
   barH() { return this.easy() ? 0 : MENU_BAR_H(); }
   update(dt) {
     this.t += dt;
-    this.dK = (this.dK || 0) + ((this.dOpen ? 1 : 0) - (this.dK || 0)) * Math.min(1, dt * 9);   // Stufen-Auswahl auf-/zuklappen
-    if (this.page !== 2) this.dOpen = false;
     if (this.easy() && (this.page === 0 || this.page === 1)) { this.page = 2; this.off = 0; }
     if (!this.sw) this.off = Math.abs(this.off) < 0.002 ? 0 : this.off * Math.pow(0.0005, dt);   // nach dem Wischen sanft einrasten
     const P = this.pageObj(this.page); if (P && P.update) P.update(dt);
@@ -319,30 +317,17 @@ class Menu {
     // Aufgeräumtes Menü (Hochformat zuerst): Logo, Stufe als kleines Schild, ein großer SPIELEN-Knopf. Keine Figur – sonst wird es eng.
     // Stufe, Konto, Ton, Spielzeit: unter „Mehr“ (Eltern-Modus). Leicht: gar keine Leiste, nur ein kleiner Eltern-Knopf.
     const land = W > H, diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium', easy = diff === 'easy'; CUR_DIFF = diff;
-    if (!easy) coinChip(c, 14, 92, W < 600);   // Taler links unter der Stufen-Auswahl (Konto steckt unter „Mehr“)
+    if (!easy) {   // Konto-Schild oben links (Tipp = Konto-Fenster mit Stufen-Wahl), Taler daneben bzw. darunter
+      accountChip.lastW = accountChip(c, 12, 12, a, () => { overlay = new AccountPanel(); });
+      if (!a.token) { const lx = 12 + (accountChip.lastW || 120) - 6, ly = 56; ell(c, lx, ly, 12, 12); fs(c, '#ffd166', 2.5); icon(c, 'lock', lx, ly, 14); }   // noch nicht gesichert: kleines Schloss
+      const x0 = 12 + (accountChip.lastW || 170) + 10; if (x0 + 110 > W - 10) coinChip(c, 12, 88, true); else coinChip(c, x0, 38, W < 600);
+    }
     if (easy) { roundBtn(c, W - 38, 36, 20, 'rgba(255,255,255,.85)', 'lock', () => { Sfx.play('tap'); overlay = new ParentPanel({ onOk: () => { this.page = 3; this.off = 0; } }); /* Eltern-PIN, dann ins Eltern-Menü */ }); txt(c, 'Eltern', W - 38, 66, 11, '#fff', 'center', BRAND.olive); }
     const ls = land ? clamp(H / 470, 0.55, 1.1) : clamp(Math.min(W / 380, H / 720), 0.85, 1.45), LY = land ? H * 0.26 : H * 0.25;
     logo(c, W / 2, LY, ls);
     let below = LY + 78 * ls + 10;
     if (easy) diffBadge(c, diff, W / 2, below, 14);   // Leicht: Stufe nur als Schild (umstellen im Eltern-Bereich)
-    else {   // Mittel/Schwer: oben (wo früher der Name stand) nur die aktuelle Stufe – antippen klappt Leicht · Mittel · Schwer auf (gleitet heraus)
-      const swY = 40, segW = Math.min((W - 32) / 3, 140), ph = 46, k = ease.out(clamp(this.dK || 0, 0, 1));
-      const slot = i => W / 2 + (i - 1) * (segW + 6);
-      const order = DIFFS.map((d, i) => [d, i]).sort((A, B) => (A[0].id === diff) - (B[0].id === diff));   // aktuelle zuletzt (oben)
-      order.forEach(([d, i]) => {
-        const cur = d.id === diff, x = lerp(W / 2, slot(i), k), al = cur ? 1 : k, sc = cur ? 1 : 0.7 + 0.3 * k, pw = segW - 6;
-        if (al <= 0.02) return;
-        c.save(); c.globalAlpha = al; c.translate(x, swY); c.scale(sc, sc);
-        rrPath(c, -pw / 2, -ph / 2 + 4, pw, ph, 21); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
-        rrPath(c, -pw / 2, -ph / 2, pw, ph, 21); fs(c, cur ? d.col : '#fff', 3, cur ? d.dark : d.col);
-        txt(c, d.name, cur && k < 0.5 ? -7 : 0, -8, cur ? 17 : 15, cur ? '#fff' : d.dark, 'center', cur ? d.dark : null, pw - (cur && k < 0.5 ? 30 : 12));
-        txt(c, d.age + ' Jahre', cur && k < 0.5 ? -7 : 0, 11, 12, cur ? '#fff' : '#6b5a48', 'center', cur ? d.dark : null, pw - (cur && k < 0.5 ? 30 : 12));
-        if (cur && k < 0.5) { c.globalAlpha = 1 - k * 2; polyPath(c, [[pw / 2 - 24, -3], [pw / 2 - 14, -3], [pw / 2 - 19, 4]]); c.fillStyle = '#fff'; c.fill(); }   // kleiner Pfeil: zum Aufklappen
-        c.restore();
-        if (!this.dOpen) { if (cur) UI.btn(x - pw / 2, swY - ph / 2, pw, ph, () => { this.dOpen = true; Sfx.play('tap'); }); }
-        else if (k > 0.6) UI.btn(x - pw / 2, swY - ph / 2, pw, ph, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('good'); } else Sfx.play('tap'); this.dOpen = false; });
-      });
-    }
+    else { diffBadge(c, diff, W / 2, below, 14); UI.btn(W / 2 - 80, below - 16, 160, 32, () => { Sfx.play('tap'); overlay = new AccountPanel(); }); }   // Stufe als Schild – umstellen im Konto-Fenster
     const fresh = STAGE_ORDER.every(id => { const sp0 = SP(diff, id); return !sp0.clears && !sp0.run; });   // auf dieser Stufe noch nichts gespielt
     const area = fresh && !a.tut.uebung ? 'uebung' : startArea(diff);
     const sub = area === 'uebung' ? 'Helfer-Schule' : (STAGE_NAME[area] || '');
@@ -363,6 +348,26 @@ class Menu {
     // (unten steht jetzt die Reiterleiste – siehe drawBar)
   }
 }
+// Aufklappbare Stufen-Wahl: zu = nur die aktuelle Stufe; antippen = Leicht · Mittel · Schwer gleiten heraus; Auswahl fährt zurück in die Mitte
+function diffPicker(c, owner, cx, cy, maxW) {
+  const a = ACC(); if (!a) return; const diff = DIFFS.find(d => d.id === a.lastDiff) ? a.lastDiff : 'medium';
+  const segW = Math.min((maxW - 12) / 3, 140), ph = 46, k = ease.out(clamp(owner.dK || 0, 0, 1)), slot = i => cx + (i - 1) * (segW + 6);
+  DIFFS.map((d, i) => [d, i]).sort((A, B) => (A[0].id === diff) - (B[0].id === diff)).forEach(([d, i]) => {   // aktuelle zuletzt (oben)
+    const cur = d.id === diff, x = lerp(cx, slot(i), k), al = cur ? 1 : k, sc = cur ? 1 : 0.7 + 0.3 * k, pw = segW - 6;
+    if (al <= 0.02) return;
+    c.save(); c.globalAlpha *= al; c.translate(x, cy); c.scale(sc, sc);
+    rrPath(c, -pw / 2, -ph / 2 + 4, pw, ph, 21); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
+    rrPath(c, -pw / 2, -ph / 2, pw, ph, 21); fs(c, cur ? d.col : '#fff', 3, cur ? d.dark : d.col);
+    const arrow = cur && k < 0.5, tx = arrow ? -7 : 0;
+    txt(c, d.name, tx, -8, cur ? 17 : 15, cur ? '#fff' : d.dark, 'center', cur ? d.dark : null, pw - (arrow ? 30 : 12));
+    txt(c, d.age + ' Jahre', tx, 11, 12, cur ? '#fff' : '#6b5a48', 'center', cur ? d.dark : null, pw - (arrow ? 30 : 12));
+    if (arrow) { c.globalAlpha = 1 - k * 2; polyPath(c, [[pw / 2 - 24, -3], [pw / 2 - 14, -3], [pw / 2 - 19, 4]]); c.fillStyle = '#fff'; c.fill(); }
+    c.restore();
+    if (!owner.dOpen) { if (cur) UI.btn(x - pw / 2, cy - ph / 2, pw, ph, () => { owner.dOpen = true; Sfx.play('tap'); }); }
+    else if (k > 0.6) UI.btn(x - pw / 2, cy - ph / 2, pw, ph, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('good'); } else Sfx.play('tap'); owner.dOpen = false; });
+  });
+}
+function diffPickerTick(owner, dt) { owner.dK = (owner.dK || 0) + ((owner.dOpen ? 1 : 0) - (owner.dK || 0)) * Math.min(1, dt * 9); }
 // Eltern-Tor (Leicht-Modus): Knopf 2 Sekunden gedrückt halten – kleine Kinder tippen nur kurz
 class ParentGate {
   constructor(ok) { this.ok = ok; this.t = 0; this.hold = 0; this.down0 = false; }
@@ -877,7 +882,7 @@ class MsgDialog {
 // Konto-Seite: Login-Code anzeigen, Geheim-Code anzeigen, abmelden, löschen
 class AccountPanel {
   constructor() { this.t = 0; this.showCode = false; }
-  update(dt) { this.t += dt; }
+  update(dt) { this.t += dt; diffPickerTick(this, dt); }
   close() { if (overlay === this) overlay = null; }
   draw(c) {
     const a = ACC(); if (!a) { this.close(); return; }
@@ -901,6 +906,9 @@ class AccountPanel {
       txt(c, 'Dein Login-Code (damit meldest du dich an):', W / 2, y + 196, 12, '#8d5a3b', 'center', null);
       const L = String(a.login || '–').replace('-', ''); rrPath(c, W / 2 - 112, y + 210, 224, 48, 14); fs(c, '#e7f5ff', 3); txt(c, /^\d{6}$/.test(L) ? L.slice(0, 3) + ' ' + L.slice(3) : a.login || '–', W / 2, y + 235, 26, '#118ab2', 'center', null);
     }
+    // Schwierigkeit (früher stand hier „Passwort ändern“): aufklappbar wie im Menü
+    txt(c, 'Schwierigkeit', W / 2, y + 286, 12, '#8d5a3b', 'center', null);
+    diffPicker(c, this, W / 2, y + 322, w - 24);
     const by = y + h - 92;
     rrPath(c, W / 2 - 110, by - 26, 220, 52, 18); fs(c, '#ffd166', 3); txt(c, 'Abmelden', W / 2, by, 17, '#3d2c1f', 'center', null);
     UI.btn(W / 2 - 110, by - 26, 220, 52, () => { Net.syncNow(); Save.data.current = null; Save.write(); this.close(); setScene(new Accounts()); });
@@ -1721,6 +1729,7 @@ let lastInput = 0;
 function frame(now) {
   if (!(scene instanceof Play) && !overlay && !TAPS.length && now - lastInput > 1500 && document.visibilityState === 'visible') { frame.odd = !frame.odd; if (frame.odd) { requestAnimationFrame(frame); return; } }   // Menüs: nur 30 Bilder/s, schont den Akku
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  try { Tele.tick(dt, now); } catch (e) { /* Statistik darf nie stören */ }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); UI.next = [];
   if (Music.on && !(overlay instanceof GameOverlay)) Music.stop();
   syncVolume();
@@ -1783,6 +1792,24 @@ cv.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('resize', resize); if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);   // Browser-Leiste ein/aus
 document.addEventListener('fullscreenchange', () => setTimeout(resize, 50)); document.addEventListener('webkitfullscreenchange', () => setTimeout(resize, 50));
 document.addEventListener('visibilitychange', () => { if (document.hidden && Save.data) { Save.write(); Net.syncNow(true); } });
+// ---------- Statistik: anonyme Spielzeit-Meldung (zufällige Geräte-Kennung, keine Namen) – ca. jede Minute aktiver Spielzeit ----------
+const Tele = {
+  sec: 0,
+  dev() { if (!Save.data) return null; if (!/^[a-f0-9]{16}$/.test(Save.data.dev || '')) { const r = new Uint8Array(8); crypto.getRandomValues(r); Save.data.dev = Array.from(r, x => x.toString(16).padStart(2, '0')).join(''); Save.write(false); } return Save.data.dev; },
+  tick(dt, now) {   // zählt nur, wenn das Spiel sichtbar ist und in der letzten Minute jemand getippt hat
+    if (APP_HIDDEN() || now - lastInput > 60000) return;
+    this.sec += dt; if (this.sec >= 60) this.send();
+  },
+  send(keep) {
+    if (location.protocol === 'file:' || /^(localhost|127\.)/.test(location.hostname) || navigator.webdriver) { this.sec = 0; return; }   // Tests/Entwicklung zählen nicht mit
+    const a = ACC(), dev = this.dev(), sec = Math.round(this.sec); if (!dev || sec < 3 || (a && a.admin)) { if (a && a.admin) this.sec = 0; return; }
+    this.sec = 0;
+    let cleared = 0, maxArea = 0; if (a) ['easy', 'medium', 'hard'].forEach(d => { const n = STAGE_ORDER.filter(id => SP(d, id).clears > 0).length; cleared += n; maxArea = Math.max(maxArea, n); });
+    const ver = ((document.querySelector('script[src*="ui.js"]') || {}).src || '').split('v=')[1] || '';
+    Net.call({ action: 'ping', dev, sec, diff: a && a.lastDiff, acc: !!(a && a.token), cleared, maxArea, ueb: !!(a && a.tut && a.tut.uebung), ver, portrait: H > W }, keep).catch(() => {});
+  },
+};
+document.addEventListener('visibilitychange', () => { if (document.hidden) Tele.send(true); });
 
 // Diese Fenster decken das Spiel ab: Hintergrund einfrieren spart viel Rechenzeit
 [GameOverlay, QuestDialog, Wardrobe, ClearOverlay, WheelOverlay, CodePad, AccountPanel, AdminPanel, ConfirmDialog, MsgDialog].forEach(K => { K.prototype.freezeBg = true; });
