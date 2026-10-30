@@ -1320,7 +1320,7 @@ class Play {
     else if (onSt || p.level === 0) L.push({ y: p.y, f: drawPlayer });
     if (this.pushNb) this.pushNb(c, L, t);
     L.sort((a, b) => a.y - b.y).forEach(d => d.f());
-    if (SG.feat.house) { const up = q && q.hidden.some((h, i) => h.l && !this.off(q, i)) && dist(p.x, p.y, HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2) < 420; this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : up ? 0.5 : 1); }   // liegt oben im Haus etwas: Dach in der Nähe halb durchsichtig
+    if (SG.feat.house) { const up = ((q && q.hidden.some((h, i) => h.l && !this.off(q, i))) || this.npcs.some(n => n.l)) && dist(p.x, p.y, HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2) < 420;   /* jemand oben im Haus: Dach halb durchsichtig */ this.drawRoof(c, pz > 2 || behind || p.slide ? 0.22 : up ? 0.5 : 1); }   // liegt oben im Haus etwas: Dach in der Nähe halb durchsichtig
     if (SG.overlay) SG.overlay(c, this, t);   // z. B. Deckenlampen über allem
     if (this.coop) { const q = this.st.active, C = this.coop; if (q && q.coop && !q.coop.roof) { const b = Math.sin(t * 3) * 4, rx = C.ladder.x - C.side * 34, ry = C.ladder.y - 150 + b; ell(c, rx, ry, 26, 26); c.fillStyle = 'rgba(255,240,150,.45)'; c.fill(); drawItem(c, q.coopItems.roof, rx, ry, 42); }
       if (this.climb) drawAnimal(c, this.kind, this.p.x, this.p.y - (this.swingZ || 0), 1.12, { t: this.t, moving: this.p.moving, dir: -this.coop.side, cap: hasCap(this.kind) }); }
