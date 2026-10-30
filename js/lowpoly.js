@@ -268,7 +268,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 
 // ---------- Skins der Spielfigur: welcher Ordner mit gemalten Bildern gehört zu welchem Skin ----------
 // LP_SKIN_HAVE wird beim Hinzufügen neuer Bögen aktualisiert (tier -> vorhandene Ordner).
-const LP_SKIN_HAVE = {"bear":[],"dog":[],"lion":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_feuer","sk_gaertner","sk_held","sk_koch","sk_matrose","sk_ninja","sk_pirat","sk_schlaf","sk_sport","sk_surfer","sk_wikinger"]};   // @@SKINLISTE@@
+const LP_SKIN_HAVE = {"bear":["sk_bau","sk_biene","sk_detektiv","sk_gaertner","sk_koch","sk_matrose","sk_sport","sk_surfer"],"dog":[],"lion":["sk_astro","sk_bau","sk_biene","sk_cowboy","sk_detektiv","sk_dino","sk_drache","sk_einhorn","sk_feuer","sk_gaertner","sk_held","sk_hexe","sk_koch","sk_koenig","sk_matrose","sk_ninja","sk_pirat","sk_ritter","sk_schlaf","sk_sport","sk_surfer","sk_wikinger","sk_zauberer","u_eis","u_koch","u_latz","u_pulli","u_schuerze","u_weste"]};   // @@SKINLISTE@@
 function lpSkinDir(id) {
   const sk = typeof SKINS !== 'undefined' && SKINS[id]; if (!sk) return null;
   const kind = typeof scene !== 'undefined' && scene && scene.kind, have = new Set(LP_SKIN_HAVE[kind] || []);
