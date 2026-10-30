@@ -151,7 +151,8 @@ class GameOverlay {
       txt(c, msg, x + r + 20, y, Math.min(15, 15 * (W - x - r - 40) / c.measureText(msg).width), '#fff', 'left', null); c.globalAlpha = 1;
     }
   }
-  starsOn() { if (this.opts.diff === 'easy') return false; if (!this.timed && !this.starTip && typeof ACC === 'function' && ACC() && !ACC().tut.stars && this.cd <= 0) { this.starTip = true; ACC().tut.stars = true; toast('Sterne', 'Je schneller du bist, desto mehr Sterne', 'star'); } return !this.timed; }
+  starsOn() { return false;   // Tempo-Sterne + Zündschnur entfernt (brachten nach dem Wegfall der Erfolge nichts mehr)
+    if (this.opts.diff === 'easy') return false; if (!this.timed && !this.starTip && typeof ACC === 'function' && ACC() && !ACC().tut.stars && this.cd <= 0) { this.starTip = true; ACC().tut.stars = true; toast('Sterne', 'Je schneller du bist, desto mehr Sterne', 'star'); } return !this.timed; }
   good(x, y) {
     if (this.state !== 'play') return;
     this.combo = this.t - this.lastGood < 2.6 ? this.combo + 1 : 1; this.lastGood = this.t;

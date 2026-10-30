@@ -72,15 +72,21 @@ const Net = {
     clearTimeout(this.tm); this.st = 'saving';
     const sent = Date.now();
     const r = await this.call({ action: 'save', login: a.login, token: a.token, avatar: a.avatar, data: this.dataOf(a) }, keep);
-    if (r && r.status === 200) { a.synced = sent; this.st = 'ok'; Save.write(false); } else this.st = 'off';
+    if (r && r.status === 200) { this.moved(a, r.data); a.synced = sent; this.st = 'ok'; Save.write(false); } else this.st = 'off';
   },
   // Beim Betreten eines Kontos: neuesten Stand vom Server holen (oder eigenen ungespeicherten Stand hochladen)
   async refresh() {
     const a = ACC(); if (!a || !a.token) return;
     if ((a.changed || 0) > (a.synced || 0)) { this.syncNow(); return; }
     const r = await this.call({ action: 'login', login: a.login });
-    if (r && r.status === 200 && ACC() === a) { Object.assign(a, accFromServer(r.data), { synced: Date.now(), changed: 0 }); this.st = 'ok'; Save.write(false); }
+    if (r && r.status === 200 && ACC() === a) { this.moved(a, r.data); Object.assign(a, accFromServer(r.data), { synced: Date.now(), changed: 0 }); this.st = 'ok'; Save.write(false); }
     else if (!r) this.st = 'off';
+  },
+  // Altes Konto (8 Zeichen) hat vom Server einen 6-stelligen Zahlen-Code bekommen: übernehmen und einmal zeigen
+  moved(a, d) {
+    if (!d || !d.login || d.login === a.login) return;
+    a.login = d.login; if (d.token) a.token = d.token;
+    if (typeof toast === 'function') toast('Neuer Login-Code', d.login.replace(/^(\d{3})(\d{3})$/, '$1 $2'), 'lock');
   },
   status(a) {
     if (!a || !a.token) return { col: '#adb5bd', text: 'nur auf diesem Gerät' };

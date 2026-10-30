@@ -63,6 +63,25 @@ function publicAcc(login, acc) {
   return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, hasPass: !!acc.pw, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };   // Bilder-Code/Passwort gehen nie zurück
 }
 
+// Alte Konten (8 Zeichen) bekommen einen 6-stelligen Zahlen-Code: Konto zieht um, der alte Code leitet weiter (moved/…), damit nichts verloren geht
+const movedFile = l => 'moved/' + l + '.json';
+const isNum6 = l => /^\d{6}$/.test(l);
+async function freeNum6() { for (let i = 0; i < 30; i++) { const l = String(crypto.randomInt(100000, 1000000)); if (!(await readJSON(accFile(l))) && !(await readJSON(movedFile(l)))) return l; } throw new Error('busy'); }
+async function upgrade(l, acc) {   // gibt [Login, Konto] zurück – bei alten Konten mit neuem 6-stelligem Code
+  if (isNum6(l)) return [l, acc];
+  const n = await freeNum6(), moved = { ...acc, oldLogin: l, updated: Date.now() };
+  await writeJSON(accFile(n), moved);
+  await writeJSON(movedFile(l), { login: n, at: Date.now() });
+  if (acc.nk) { const idx = await readJSON(nameFile(acc.nk)); if (idx && idx.login === l) await writeJSON(nameFile(acc.nk), { login: n }); }
+  await delJSON([accFile(l)]);
+  return [n, moved];
+}
+async function resolve(l) {   // Konto zu einem Login-Code – alte Codes werden auf den neuen umgeleitet
+  let acc = await readJSON(accFile(l));
+  if (!acc && l.length === 8) { const m = await readJSON(movedFile(l)); if (m) { l = m.login; acc = await readJSON(accFile(l)); } }
+  return acc ? [l, acc] : [l, null];
+}
+
 async function register(b) {
   const name = String(b.name || '').trim().slice(0, 14), nk = nameKey(name);
   if (nk.length < 2) return [400, { error: 'name_short' }];
@@ -86,12 +105,14 @@ async function login(b) {
   if (b.login) {
     const now = Date.now(), f = ipFile(b._ip || '-'), st = (await readJSON(f)) || { n: 0, until: 0, at: now };
     if (st.until > now) return [429, { error: 'locked', wait: Math.ceil((st.until - now) / 60000) }];
-    const l = cleanLogin(b.login), acc = (l.length === 8 || /^\d{6}$/.test(l)) && (await readJSON(accFile(l)));
+    let l = cleanLogin(b.login), acc = null;
+    if (l.length === 8 || isNum6(l)) [l, acc] = await resolve(l);
     if (!acc) {
       if (now - st.at > 3600000) { st.n = 0; st.at = now; }   // Zähler gilt eine Stunde
       st.n++; if (st.n >= CODE_FAILS) { st.n = 0; st.until = now + CODE_LOCK_MS; } await writeJSON(f, st);
       return [404, { error: 'not_found' }];
     }
+    [l, acc] = await upgrade(l, acc);
     return [200, publicAcc(l, acc)];
   }
   const nk = nameKey(b.name), idx = nk && (await readJSON(nameFile(nk)));
@@ -108,14 +129,16 @@ async function login(b) {
     return [401, { error: acc.pw ? 'wrong_pass' : 'wrong_code' }];
   }
   if (F[ip] && F[ip].n) { delete F[ip]; await writeJSON(accFile(idx.login), acc); }
-  return [200, publicAcc(idx.login, acc)];
+  const [nl, nacc] = await upgrade(idx.login, acc);
+  return [200, publicAcc(nl, nacc)];
 }
 
 async function authed(b) {
-  const l = cleanLogin(b.login);
-  if (l.length !== 8 || !b.token || !sameStr(b.token, tokenOf(l))) return null;
-  const acc = await readJSON(accFile(l));
-  return acc ? { l, acc } : null;
+  const l0 = cleanLogin(b.login);
+  if ((l0.length !== 8 && !isNum6(l0)) || !b.token || !sameStr(b.token, tokenOf(l0))) return null;
+  let [l, acc] = await resolve(l0); if (!acc) return null;
+  [l, acc] = await upgrade(l, acc);
+  return { l, acc, moved: l !== l0 };   // moved: Spiel bekommt neuen Code + Schlüssel zurück
 }
 
 async function save(b) {
@@ -125,7 +148,7 @@ async function save(b) {
   a.acc.data = data; a.acc.updated = Date.now();
   if (Number.isInteger(b.avatar)) a.acc.avatar = b.avatar % 6;
   await writeJSON(accFile(a.l), a.acc);
-  return [200, { ok: true, updated: a.acc.updated }];
+  return [200, { ok: true, updated: a.acc.updated, ...(a.moved ? { login: fmtLogin(a.l), token: tokenOf(a.l) } : {}) }];
 }
 
 async function set_pass(b) {   // Passwort festlegen oder ändern (angemeldet); ersetzt den Bilder-Code
@@ -140,7 +163,7 @@ async function set_pass(b) {   // Passwort festlegen oder ändern (angemeldet); 
 async function remove(b) {
   const a = await authed(b); if (!a) return [401, { error: 'auth' }];
   if (a.acc.pw && !passOk(a.acc, b.pass)) return [403, { error: 'wrong_pass' }];   // Löschen nur mit Passwort
-  await delJSON([accFile(a.l), nameFile(a.acc.nk), fcodeFile(fcodeOf(a.l)), reqFile(a.l)]);
+  await delJSON([accFile(a.l), nameFile(a.acc.nk), fcodeFile(fcodeOf(a.l)), reqFile(a.l), ...(a.acc.oldLogin ? [movedFile(a.acc.oldLogin)] : [])]);
   return [200, { ok: true }];
 }
 
@@ -313,6 +336,13 @@ async function stats(b) {
   S.totalHours = Math.round(S.totalHours * 10) / 10;
   return [200, S];
 }
+async function upgrade_all(b) {
+  if (!b.key || !sameStr(crypto.createHash('sha256').update(String(b.key)).digest('hex'), STATS_KEY_HASH)) return [401, { error: 'auth' }];
+  const old = (await listJSON('accounts/')).map(p => p.replace(/^accounts\//, '').replace(/\.json$/, '')).filter(l => !isNum6(l));
+  let done = 0;
+  for (const l of old) { const acc = await readJSON(accFile(l)); if (acc) { await upgrade(l, acc); done++; } }
+  return [200, { upgraded: done }];
+}
 async function admin(b) {
   const U = process.env.ADMIN_USER || '', P = process.env.ADMIN_PASS || '';
   if (!U || !P) return [401, { error: 'auth' }];
@@ -323,7 +353,8 @@ async function admin(b) {
     const name = String(b.promote).trim().slice(0, 14), nk = nameKey(name); if (nk.length < 2) return [400, { error: 'name_short' }];
     let idx = await readJSON(nameFile(nk)), login, acc;
     if (idx) { login = idx.login; acc = await readJSON(accFile(login)); }
-    if (!acc) { login = Array.from(crypto.randomBytes(8), x => CODE_CHARS[x % CODE_CHARS.length]).join(''); acc = { name, nk, code: [0, 1, 2, 3], avatar: 5, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 }; await writeJSON(nameFile(nk), { login }); }
+    if (!acc) { login = await freeNum6(); acc = { name, nk, code: [0, 1, 2, 3], avatar: 5, created: Date.now(), updated: Date.now(), data: {}, fails: 0, lockUntil: 0 }; await writeJSON(nameFile(nk), { login }); }
+    [login, acc] = await upgrade(login, acc);
     acc.admin = true; await writeJSON(accFile(login), acc);
     return [200, { login: fmtLogin(login), name: acc.name, code: acc.code }];
   }
@@ -372,7 +403,7 @@ module.exports = async (req, res) => {
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
   b._ip = crypto.createHash('sha256').update(SECRET + String(req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip']) || '').split(',')[0].trim()).digest('hex').slice(0, 16);   // nur als Hash, für die Fehlversuch-Sperre
-  const fn = { ping, stats, register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
+  const fn = { ping, stats, upgrade_all, register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
   if (!fn) return res.status(400).json({ error: 'action' });
   try { const [status, out] = await fn(b); res.status(status).json(out); }
   catch (e) { console.error(e); res.status(500).json({ error: 'server' }); }

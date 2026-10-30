@@ -524,6 +524,7 @@ class Play {
   enter() { FX.clear(); }
   // ---- Geheime Joker ----
   secretJoker(key) {
+    return false;   // Geheimnisse/Erfolge samt Belohnung gibt es nicht mehr (User-Wunsch)
     if (this.st.secret[key]) return false;
     this.st.secret[key] = true; if (!this.mp) { const m = META(); if (m) m.coins += SECRET_COINS; } Save.write();   // Geheimnis = Taler (Joker gibt es nur im Laden)
     this.secretPop = { t: 0, why: SECRET_NAMES[key] || '' }; FX.confetti(W / 2, H * 0.3, 70); Sfx.play('win'); buzz([40, 40, 80]);
@@ -1531,7 +1532,7 @@ class Play {
     }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
     const narrow = W < 640, rowY = narrow ? 92 : 46;
-    if (!(this.mp && this.mp.mode === 'team')) { const ids = this.activeIds ? this.activeIds.concat(this.mp.opts.boss ? ['gate'] : []) : ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
+    if (this.mp && this.mp.mode !== 'team') { const ids = this.activeIds ? this.activeIds.concat(this.mp.opts.boss ? ['gate'] : []) : ALL_IDS, fw = 25, px = narrow ? 14 : 254, pw = ids.length * fw + 14;
       rrPath(c, px, rowY - 20, pw, 40, 20); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
       ids.forEach((id, i) => {
         const x = px + 7 + fw * (i + 0.5), done = this.st.done[id], jd = this.justDone && this.justDone.id === id ? this.justDone.t : -1;
@@ -1620,7 +1621,7 @@ class Play {
     this.drawSwingHud(c);
     // Hilfe-Knopf: füllt sich in 2,5 Minuten Suchzeit, dann zeigt er ein fehlendes Teil
     const hq = this.st.active;
-    if (this.canSearch() && hq && !this.swinging) {
+    if (HELP_STAR && this.canSearch() && hq && !this.swinging) {
       const HELP = ABIL_VAL.glueck[ability('glueck')], f = clamp((hq.helpT || 0) / HELP, 0, 1), ready = f >= 1, hx = W - 112, hy = H - 74;   // klein und dezent; leuchtet erst, wenn die Hilfe bereit ist
       const pu = ready ? 1 + Math.sin(this.t * 6) * 0.08 : 1;
       c.save(); c.translate(hx, hy); c.scale(pu, pu); if (!ready) c.globalAlpha = 0.75;
@@ -1696,6 +1697,7 @@ class Play {
 
 // ---------- Auftrags-Dialog (ohne Text, nur Bilder) ----------
 // Namen + Sätze der Tiere (Text für die Älteren; Leicht bleibt bei Bildern)
+const HELP_STAR = false;   // Hilfe-Stern neben der Lupe entfernt (User-Wunsch: weniger Knöpfe)
 const JOKERS_PER_RUN = 0, LEAVES_PER_RUN = 0, SECRET_COINS = 25;   // Joker gibt es nur noch im Laden (Bank); Geheimnisse bringen Taler
 // Sammel-Sachen je Bereich (statt immer nur Blätter)
 const COLLECT_NAME = { spielplatz: 'Original-Blätter', kueche: 'Kochmützen', gastraum: 'Kaffeebohnen', aussen: 'Sonnenblumen', parkplatz: 'Sterne', chalet: 'Schneeflocken' };

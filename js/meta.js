@@ -116,11 +116,7 @@ const SECRET_NAMES = { swing: 'Weitsprung von der Schaukel', race: 'Wettlauf geg
 const GENERAL_ACH = new Set(['profi', 'skins10', 'freund', 'duell1', 'sieg1', 'sieg10', 'team1', 'einkauf', 'entdecker', 'welt', 'duels', 'wins', 'teams']);
 const achKey = (id, d = CUR_DIFF || 'medium') => (GENERAL_ACH.has(id) ? id : id + '@' + d);
 function achieve() {}   // Erfolge gibt es nicht mehr (User-Wunsch) – Aufrufe im Spiel bleiben harmlos
-function stat(key, inc = 1) {
-  const m = META(); if (!m) return;
-  const sk = achKey(key); m.st[sk] = (m.st[sk] || 0) + inc; Save.write();
-  ACHIEVEMENTS.forEach(A => { if (A.stat === key && m.st[sk] >= A.need) achieve(A.id); });
-}
+function stat() {}   // Erfolgs-Zähler gibt es nicht mehr
 function addCoins(n, why) { const m = META(); if (!m) return; m.coins += n; Save.write(); toast(why, '+' + n + ' Taler', 'coin'); }
 
 // ---- Einblendungen oben (Erfolge, Taler) ----

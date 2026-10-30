@@ -1823,7 +1823,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && ove
 // Start erst, wenn alle Skripte (auch meta.js usw.) geladen sind
 function boot() { const mit = (/[?&]mit=([A-Za-z]{4})/.exec(location.search) || [])[1];   // Einladungslink: direkt dem Mehrspieler-Spiel beitreten
   if (mit && ACC() && ACC().token && Save.data.seenTrailer) { try { history.replaceState(null, '', location.pathname); } catch (e) {} const ms = new MultiScene(); setScene(ms); ms.join(mit.toUpperCase()); }
-  else setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene()); }
+  else setScene(needsInstallGuide() ? new InstallGuide(() => setScene(firstScene())) : firstScene());
+  if (ACC() && ACC().token) Net.refresh(); }   // neuesten Stand holen (alte Konten bekommen dabei ihren 6-stelligen Code)
 class BootError {   // falls beim Start etwas schiefgeht: Meldung statt leerem grünem Bildschirm
   constructor(e) { this.msg = String((e && e.message) || e); }
   draw(c) { c.fillStyle = '#3a4a32'; c.fillRect(0, 0, W, H); txt(c, 'Hoppla, das Spiel konnte nicht starten.', W / 2, H / 2 - 50, 20, '#fff', 'center', null); txt(c, this.msg.slice(0, 90), W / 2, H / 2 - 18, 12, '#ffd166', 'center', null);
