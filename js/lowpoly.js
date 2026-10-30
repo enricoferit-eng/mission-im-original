@@ -15,7 +15,7 @@ const LP = {
     spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=3', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   zoomK: 0.72,   // Zoom in allen Bereichen gleich (Küche als Maß)
-  playerArt: false,   // gemalte Spielfigur erst, wenn Löwe/Bär/Hund + Skins fertig sind (bis dahin alte Figur)
+  playerArt: true,   // gemalte Spielfigur (Löwe/Bär/Hund); andere Tiere zeichnen weiter die alte Figur
   catH: 96, staffH: 118, part: 2,   // Kamera: man sieht etwa 1/2 des Raums, auf jedem Bildschirm gleich
     // Figurengröße passend zu den Möbeln im Bild
   img: {}, ready: false, runs: {},
@@ -75,15 +75,25 @@ function lpSprite(c, im, x, y, h, flip = 1, bob = 0, tilt = 0) {
   c.translate(0, -bob); c.rotate(tilt); c.scale(flip, 1); c.drawImage(im, -w / 2, -h, w, h); c.restore();
 }
 // Spielfigur: Richtung aus der Bewegung, alle 11 px Weg ein neues Laufbild (6 Bilder = ein Schritt)
-function lpDrawPlayer(c, p, x, y, tilt) {
+// Ordner der gemalten Figur: spieler/<tier>/<skin oder basis>; null = keine Bilder (alte Zeichnung)
+const LP_KINDS = new Set(['lion', 'bear', 'dog']);
+function lpPlayerSet(kind) {
+  if (!LP_KINDS.has(kind)) return null;
+  const sk = typeof ACC === 'function' && ACC() ? DP(CUR_DIFF).equip : null, dir = (sk && typeof lpSkinDir === 'function' && lpSkinDir(sk)) || 'basis';
+  const base = 'spieler/' + kind + '/' + dir + '/';
+  return lpSpr(base + 'stand_front') ? base : lpSpr('spieler/' + kind + '/basis/stand_front') ? 'spieler/' + kind + '/basis/' : null;
+}
+function lpDrawPlayer(c, p, x, y, tilt, kind) {
+  const set = lpPlayerSet(kind); if (!set) return false;
   const P = LP.player, dx = P.lx == null ? 0 : p.x - P.lx, dy = P.ly == null ? 0 : p.y - P.ly; P.lx = p.x; P.ly = p.y;
   const d = Math.hypot(dx, dy);
   if (p.moving && d > 0.05) {
     if (Math.abs(dx) > Math.abs(dy) * 0.8) { P.face = 'side'; P.flip = dx < 0 ? -1 : 1; } else P.face = dy < 0 ? 'back' : 'front';
     P.dist += d;
   }
-  const im = p.moving ? LP.img[`katze_${P.face}_${Math.floor(P.dist / 11) % 6}`] : LP.img.katze_steht;
+  const im = (p.moving && lpSpr(`${set}${P.face}_${Math.floor(P.dist / 11) % 6}`)) || lpSpr(set + 'stand_front');
   lpSprite(c, im, x, y, LP.catH, p.moving && P.face === 'side' ? P.flip : 1, p.moving ? 0 : Math.sin(p.t * 2.2) * 0.6, tilt || 0);
+  return true;
 }
 function lpDrawStaff(c, n, x, y, t, wave, sid = SG.id) {
   const key = LP.stages[sid] && LP.stages[sid].staff[n.id]; if (!key) return false;
