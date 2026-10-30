@@ -12,6 +12,7 @@ const LP = {
     parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=1', staff: {} },
     uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=1', staff: {} },
     chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=1', staff: {} },
+    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=2', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   catH: 96, staffH: 118, part: 2,   // Kamera: man sieht etwa 1/2 des Raums, auf jedem Bildschirm gleich
     // Figurengröße passend zu den Möbeln im Bild
@@ -23,6 +24,8 @@ const LP = {
   const names = ['katze_steht', ...['side', 'front', 'back'].flatMap(d => [0, 1, 2, 3, 4, 5].map(i => `katze_${d}_${i}`)), 'nina', 'tom', 'luca', 'marco', 'lea'];
   const list = names.map(n => [n, `assets/lowpoly/figuren/${n}.png`]);
   for (const id in LP.stages) list.push(['map_' + id, LP.stages[id].map]);
+  list.push(['dach', 'assets/lowpoly/spielplatz/dach.png?v=1']);
+  list.push(['sitz', 'assets/lowpoly/spielplatz/sitz.png?v=1']);
   let left = list.length;
   for (const [k, src] of list) {
     const im = new Image();
@@ -80,5 +83,10 @@ function lpDrawStaff(c, n, x, y, t, wave) {
   const key = LP.stages[SG.id].staff[n.id]; if (!key) return false;
   // ohne Vorne/hinten: Mitarbeiter stehen oft direkt neben Möbeln und würden sonst halb abgeschnitten
   lpSprite(c, LP.img[key], x, y, LP.staffH, 1, wave ? Math.abs(Math.sin(t * 6)) * 4 : Math.abs(Math.sin(t * 1.6 + x)) * 1.2);
+  return true;
+}
+function lpRoof(c, alpha) {
+  const r = LP.stages[SG.id].roof; if (!r) return false;
+  c.save(); c.globalAlpha = alpha; c.drawImage(LP.img.dach, r[0], r[1], r[2], r[3]); c.restore();
   return true;
 }

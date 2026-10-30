@@ -1335,7 +1335,7 @@ class Play {
     if (lpActive() && lpDrawStaff(c, n, n.x, n.y - zz - j, this.t, a.wave > 0 || this.npcState(n.id) === 'ready')) return;
     drawCritter(c, n.id, n.x, n.y - zz - j, 1.12, this.t, { staff: true, ph: a.ph, wave: a.wave > 0 || this.npcState(n.id) === 'ready' });
   }
-  drawSwingFrame(c) { drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
+  drawSwingFrame(c) { if (lpActive()) return; drawSprite(c, sprite('swingframe', 120, 460, 450, 180, g => this.drawSwingFrameRaw(g))); }
   drawSwingFrameRaw(c) {
     const bY = SWING.y - SWING.top;
     line(c, SWING.x0 - 22, SWING.y - 18, SWING.x0, bY, 11, '#7a4f2a'); line(c, SWING.x0 + 20, SWING.y + 22, SWING.x0, bY, 11, '#8d5a3b');
@@ -1348,12 +1348,13 @@ class Play {
     const rider = this.npcs.find(n => n.swing === k);
     if (this.swinging && !this.swinging.jump && this.swinging.k === k) drawAnimal(c, this.kind, sx, sy - zz + 6, 1.0, { t: this.t, dir: 1, cap: hasCap(this.kind), noShadow: true, tilt: Math.cos(this.swinging.ph) * this.swinging.amp * 0.35 });
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, sx, sy, 20, 6); c.fill();
-    line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
+    if (!lpActive()) line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
     if (rider) { const a = this.npcAnim[rider.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, sy - zz + 4 - j, 1.0, this.t, { staff: true, ph: a.ph, noShadow: true, wave: a.wave > 0 || this.npcState(rider.id) === 'ready' }); }
+    if (lpActive() && LP.img.sitz) { c.drawImage(LP.img.sitz, sx - 22, bY + 2, 44, sy - zz + 8 - bY); return; }   // Low-Poly-Sitz mit Ketten (gestreckt auf die Kettenlänge)
     rrPath(c, sx - 19, sy - zz - 4, 38, 9, 3); fs(c, '#343a40', 3);
     line(c, sx + 14, bY + 4, sx + 15, sy - zz, 2, '#ced4da');
   }
-  drawSlide(c) { drawSprite(c, sprite('slide', 735, 522, 200, 142, g => this.drawSlideRaw(g))); }
+  drawSlide(c) { if (lpActive()) return; drawSprite(c, sprite('slide', 735, 522, 200, 142, g => this.drawSlideRaw(g))); }
   drawSlideRaw(c) {
     const { x0, x1, y0, y1 } = SLIDE, fz = HOUSE.fz;
     line(c, x1 - 30, y1 + 2, x1 - 30, y1 - 14, 6, '#adb5bd');
@@ -1363,7 +1364,7 @@ class Play {
     line(c, x0, y0 - fz - 6, x1, y0 - 6, 5, '#dee2e6'); line(c, x0, y1 - fz - 2, x1, y1 - 2, 5, '#dee2e6');
   }
   drawStairs(c) {
-    drawSprite(c, sprite('stairs', 605, 600, 90, 240, g => this.drawStairsRaw(g)));
+    if (!lpActive()) drawSprite(c, sprite('stairs', 605, 600, 90, 240, g => this.drawStairsRaw(g)));
     const p = this.p, { x, y, w, h } = STAIRS;   // Treppe deutlich zeigen: hier geht es nach oben ins Spielhaus
     if (p.level === 0 && !this.mp && dist(p.x, p.y, x + w / 2, y + h) < 280) { const b = Math.abs(Math.sin(this.t * 3)) * 8, ax = x + w / 2, ay = y + h + 26 - b; c.save(); c.globalAlpha = 0.9; polyPath(c, [[ax, ay - 22], [ax + 16, ay], [ax + 6, ay], [ax + 6, ay + 14], [ax - 6, ay + 14], [ax - 6, ay], [ax - 16, ay]]); fs(c, '#ffd23f', 2.5); c.restore(); }
   }
@@ -1375,14 +1376,15 @@ class Play {
   }
   drawHouse(c, ghost, drawPlayer) {
     const p = this.p;
-    drawSprite(c, sprite('houseBack', 530, 338, 240, 372, g => this.houseBack(g)), ghost ? 0.5 : 1);
+    const lp = lpActive();   // Low-Poly: Häuschen ist im Bodenbild
+    if (!lp) drawSprite(c, sprite('houseBack', 530, 338, 240, 372, g => this.houseBack(g)), ghost ? 0.5 : 1);
     // Was oben im Haus ist
     const up = [];
     for (const n of this.npcs) if (n.l) up.push({ y: n.y, f: () => this.drawNpc(c, n) });
     for (const pk of this.peeksUp || []) up.push(pk);
     if (p.level === 1 && !this.onStairs() && !p.slide) up.push({ y: p.y, f: drawPlayer });
     up.sort((a, b) => a.y - b.y).forEach(d => d.f());
-    drawSprite(c, sprite('houseFront', 530, 548, 240, 162, g => this.houseFront(g)), ghost ? 0.5 : 1);
+    if (!lp) drawSprite(c, sprite('houseFront', 530, 548, 240, 162, g => this.houseFront(g)), ghost ? 0.5 : 1);
   }
   houseBack(c) {
     const { x, y, w, h, fz } = HOUSE;
@@ -1413,7 +1415,7 @@ class Play {
     }
     line(c, x - 2, y + h, x - 2, y + h - 140, 10, '#8d5a3b'); line(c, x + w + 2, y + h, x + w + 2, y + h - 140, 10, '#8d5a3b');
   }
-  drawRoof(c, alpha) { drawSprite(c, sprite('roof', 505, 370, 310, 200, g => this.drawRoofRaw(g, 1)), alpha); }
+  drawRoof(c, alpha) { if (lpActive() && lpRoof(c, alpha)) return; drawSprite(c, sprite('roof', 505, 370, 310, 200, g => this.drawRoofRaw(g, 1)), alpha); }
   drawRoofRaw(c, alpha) {
     const { x, y, w, h } = HOUSE, eF = y + h - 140, ridge = y + h / 2 - 195, eB = y - 140;
     c.save(); c.globalAlpha = alpha;
