@@ -640,10 +640,11 @@ function memoryMake(env, easy) {
         const sx = Math.abs(Math.cos(d.f * Math.PI)), front = d.f > 0.5, ix = deck.indexOf(d);
         const bob = d.done ? 0 : Math.sin(T * 2.4 + ix * 0.7) * 3 * GAME_MOTION, lift = Math.sin(d.arc * Math.PI) * 26;
         c.save(); c.translate(d.x, d.y + bob - lift); c.rotate(d.done ? 0 : Math.sin(T * 1.7 + ix) * 0.035 * GAME_MOTION + (d.arc ? Math.sin(d.arc * TAU) * 0.2 : 0)); c.scale(Math.max(0.04, sx) * (1 + lift / 200), 1 + lift / 200);
-        rrPath(c, -cw / 2, -ch / 2, cw, ch, 14); fs(c, front ? '#fffdf7' : easy ? '#6bb544' : '#2d6a4f', 4);
+        const lpc = typeof lpCard === 'function' && lpCard(c, front, cw, ch);   // gemalte Karte, sonst gezeichnet
+        if (!lpc) { rrPath(c, -cw / 2, -ch / 2, cw, ch, 14); fs(c, front ? '#fffdf7' : easy ? '#6bb544' : '#2d6a4f', 4); }
         const s = Math.min(cw, ch) * 0.75;
         if (front) drawAny(c, faces[d.k], 0, 0, s * 1.05);
-        else { rrPath(c, -cw / 2 + 8, -ch / 2 + 8, cw - 16, ch - 16, 8); fs(c, null, 3, 'rgba(255,255,255,.4)'); icon(c, 'question', 0, 2, s * 0.6); }
+        else if (!lpc) { rrPath(c, -cw / 2 + 8, -ch / 2 + 8, cw - 16, ch - 16, 8); fs(c, null, 3, 'rgba(255,255,255,.4)'); icon(c, 'question', 0, 2, s * 0.6); }
         c.restore();
       });
     },

@@ -980,10 +980,11 @@ class Play {
     if (this.tapOutside && this.tapOutside(w)) return;
     if (this.guest && this.guest.on && dist(w.x, w.y, this.guest.x, this.guest.y - 40) < 40) { this.banner = { text: 'Hallo! Ich bin nur zu Besuch und brauche nichts.', t: 0 }; Sfx.play('tap'); return; }   // Gast ohne Auftrag
     let best = null, bd = 44;
-    for (const T of this.interactables()) {
-      const d = dist(w.x, w.y, T.sx, T.sy) * (T.k === 'spot' ? 1.15 : 1);
-      if (d < bd) { bd = d; best = T; }
-    }
+    const IT = this.interactables();
+    for (const pass of [0, 1]) { if (best) break;   // Stühle nur, wenn sonst nichts in der Nähe ist (Gegenstand auf dem Tisch geht vor)
+      for (const T of IT) { if ((T.k === 'seat') !== !!pass) continue;
+        const d = dist(w.x, w.y, T.sx, T.sy) * (T.k === 'spot' ? 1.15 : 1);
+        if (d < bd) { bd = d; best = T; } } }
     const p = this.p;
     if (best) {
       if (best.k === 'slide' && p.level === 1 && dist(p.x, p.y, best.x, best.y) < 60) { p.path = [{ x: SLIDE.x0 + 12, y: clamp(p.y, SLIDE.y0 + 8, SLIDE.y1 - 8), l: 1 }]; return; }

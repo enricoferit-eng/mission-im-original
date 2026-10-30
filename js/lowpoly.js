@@ -247,6 +247,8 @@ function lpPatch() {
   if (typeof drawGardenGate === 'function') drawGardenGate = lpGateWrap(drawGardenGate, 'aussen');
   if (typeof drawPigeon === 'function') drawPigeon = lpPigeonWrap(drawPigeon);
   if (typeof drawAnimal === 'function') drawAnimal = lpAnimalWrap(drawAnimal);
+  if (typeof cachedCard === 'function') { const cc0 = cachedCard;   // Laden-Karten erst merken, wenn die gemalte Figur geladen ist
+    cachedCard = function (key, w, h, draw) { LP_MISS = false; const r = cc0(key, w, h, draw); if (LP_MISS) { SHOP_CARD_CACHE.clear(); LP_MISS = false; } return r; }; }
   if (typeof drawPerson === 'function') drawPerson = lpPersonWrap(drawPerson, 'p');
   if (typeof drawCritter === 'function') drawCritter = lpPersonWrap(drawCritter, 'c');
   if (typeof drawLockedDoors === 'function') { const o = drawLockedDoors; drawLockedDoors = function (c, x, y, w, t) { const im = lpSpr('tore/glastuer'); if (!im) return o(c, x, y, w, t); const h = 118; c.drawImage(im, x - w / 2 - 6, y - h, w + 12, h); lpLock(c, x, y - 60, 18, t); }; }
@@ -280,7 +282,7 @@ function lpSkinDir(id) {
 
 // Spielfigur überall (Laden, Garderobe, Menü, Minispiele, Film): gemalte Figur statt Zeichnung.
 // Welcher Skin? look ist meist SKINS[id] (gleiches Objekt) -> Ordner; ohne look der angezogene Skin.
-let LP_LOOK2ID = null;
+let LP_LOOK2ID = null, LP_MISS = false;
 function lpAnimalWrap(orig) {
   return function (c, kind, x, y, s, o = {}) {
     if (!LP.playerArt || !LP_KINDS.has(kind)) return orig.apply(this, arguments);
@@ -292,7 +294,7 @@ function lpAnimalWrap(orig) {
     const dir = id && have.has(id) ? id : sk && sk.uniform && have.has('u_' + sk.uniform) ? 'u_' + sk.uniform : 'basis';
     const base = 'spieler/' + kind + '/' + dir + '/', t = o.t || 0;
     const im = (o.moving && lpSpr(base + 'side_' + (Math.floor(t * 10) % 6))) || lpSpr(base + 'stand_front') || lpSpr('spieler/' + kind + '/basis/stand_front');
-    if (!im) return orig.apply(this, arguments);
+    if (!im) { LP_MISS = true; return orig.apply(this, arguments); }
     const B = lpMeasure('animal_' + kind, (g, gx, gy) => orig(g, kind, gx, gy, 1, { noShadow: true, look: DEFAULT_LOOK, noOutfit: true }));
     const h = B.h * s * 1.2, w = im.naturalWidth * h / im.naturalHeight, flip = o.moving && (o.dir || 1) < 0 ? -1 : 1;
     c.save(); c.translate(x, y);
@@ -301,3 +303,105 @@ function lpAnimalWrap(orig) {
     c.translate(0, -bob); if (o.tilt) c.rotate(o.tilt); c.scale(flip, 1); c.drawImage(im, -w / 2, -h, w, h); c.restore();
   };
 }
+
+// ---------- Menü-Hintergründe (assets/lowpoly/menu): Hauptmenü, Konten, Laden, Garderobe, Pokale, Park ----------
+const LP_MENU = {};
+function lpMenuImg(name) {
+  if (!LP.on) return null;
+  let im = LP_MENU[name]; if (!im) { im = LP_MENU[name] = new Image(); im.src = 'assets/lowpoly/menu/' + name + '.jpg?v=1'; }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function lpMenuCover(c, name, ay = 0.5) {
+  const im = lpMenuImg(name); if (!im) return false;
+  c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); lpCover(c, im, 0, 0, W, H, ay); c.restore(); return true;
+}
+function lpMenuPatch() {
+  if (typeof menuBg !== 'function') return;
+  const menu0 = menuBg, sky0 = skyBg, theme0 = themeBg;
+  ['menu', 'sky', 'shop', 'dress', 'trophy', 'park'].forEach(lpMenuImg);   // früh laden, damit kein alter Hintergrund aufblitzt
+  menuBg = function (c, t) {
+    if (!lpMenuCover(c, 'menu', 0.55)) return menu0(c, t);
+  };
+  skyBg = function (c) { if (!lpMenuCover(c, 'sky', 0.6)) sky0(c); };
+  themeBg = function (c, kind) { if (!lpMenuCover(c, kind, 0.5)) theme0(c, kind); };
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpMenuPatch); else setTimeout(lpMenuPatch, 0);
+
+// ---------- Knöpfe (assets/lowpoly/ui): runde Knöpfe in 6 Farben, große Pillen-Knöpfe grün/gelb ----------
+const LP_RUND = { white: [242, 242, 242], yellow: [240, 185, 74], green: [166, 207, 74], blue: [140, 200, 234], grey: [203, 200, 200], red: [238, 107, 85] };
+const LP_RUND_PICK = new Map();
+function lpRundFor(bg) {   // nächste gemalte Farbe zur Code-Farbe
+  if (typeof bg !== 'string' || bg[0] !== '#') return null;
+  let k = LP_RUND_PICK.get(bg);
+  if (!k) {
+    let h = bg.slice(1); if (h.length === 3) h = h.split('').map(q => q + q).join('');
+    const v = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)), sat = Math.max(...v) - Math.min(...v);
+    let best = 1e9; for (const n in LP_RUND) { if (sat < 30 && n !== 'white' && n !== 'grey') continue;
+      const d = LP_RUND[n].reduce((s, q, i) => s + (q - v[i]) ** 2, 0); if (d < best) { best = d; k = n; } }
+    LP_RUND_PICK.set(bg, k);
+  }
+  return lpSpr('ui/rund_' + k);
+}
+function lpRund(c, x, y, r, bg = '#fff') {   // runder gemalter Knopf (ohne Symbol); false, solange das Bild lädt
+  const im = lpRundFor(bg); if (!im) return false;
+  c.save(); c.fillStyle = 'rgba(0,0,0,.28)'; ell(c, x, y + 4, r, r); c.fill(); c.drawImage(im, x - r * 1.04, y - r * 1.04, r * 2.08, r * 2.08); c.restore(); return true;
+}
+function lpPill(c, x, y, w, h, kind = 'green') {   // Pillen-Knopf, Enden fest, Mitte gestreckt
+  const im = lpSpr('ui/pill_' + kind); if (!im) return false;
+  const iw = im.naturalWidth, ih = im.naturalHeight, cap = ih / 2, dc = Math.min(h / 2, w / 2);
+  c.save(); c.fillStyle = 'rgba(0,0,0,.25)'; rrPath(c, x, y + 6, w, h, h / 2); c.fill();
+  c.drawImage(im, 0, 0, cap, ih, x, y, dc, h);
+  c.drawImage(im, cap, 0, iw - cap * 2, ih, x + dc, y, w - dc * 2, h);
+  c.drawImage(im, iw - cap, 0, cap, ih, x + w - dc, y, dc, h);
+  c.restore(); return true;
+}
+function lpBtnPatch() {
+  if (typeof roundBtn !== 'function') return;
+  const rb0 = roundBtn;
+  roundBtn = function (c, x, y, r, bg, ic, fn, icCol) {
+    if (!LP.on || !lpRund(c, x, y, r, bg)) return rb0.apply(this, arguments);
+    icon(c, ic, x, y, r * 1.15, icCol);
+    if (fn) UI.btn(x - r - 6, y - r - 6, r * 2 + 12, r * 2 + 12, fn);
+  };
+  ['white', 'yellow', 'green', 'blue', 'grey', 'red'].forEach(n => lpSpr('ui/rund_' + n)); lpSpr('ui/pill_green'); lpSpr('ui/pill_yellow');
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpBtnPatch); else setTimeout(lpBtnPatch, 0);
+
+// ---------- Minispiel-Teile (assets/lowpoly/teile): Autos von oben, Memory-Karten, Kochtopf ----------
+const LP_AUTO = { red: [190, 80, 60], blue: [90, 115, 150], green: [130, 175, 90], yellow: [215, 175, 70], white: [235, 228, 215], orange: [215, 125, 80] };
+const LP_AUTO_PICK = new Map();
+function lpAutoFor(col) {
+  if (typeof col !== 'string' || col[0] !== '#') col = '#e63946';
+  let k = LP_AUTO_PICK.get(col);
+  if (!k) { let h = col.slice(1); if (h.length === 3) h = h.split('').map(q => q + q).join('');
+    const v = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); let best = 1e9;
+    for (const n in LP_AUTO) { const d = LP_AUTO[n].reduce((s, q, i) => s + (q - v[i]) ** 2, 0); if (d < best) { best = d; k = n; } }
+    LP_AUTO_PICK.set(col, k); }
+  return lpSpr('teile/auto_' + k);
+}
+function lpCard(c, front, cw, ch) {   // Memory-Karte (Mitte 0,0); false, solange das Bild lädt
+  const im = lpSpr(front ? 'teile/karte_vorne' : 'teile/karte_hinten'); if (!im) return false;
+  c.drawImage(im, -cw / 2 - 3, -ch / 2 - 3, cw + 6, ch + 6); return true;
+}
+function lpTeilePatch() {
+  if (typeof drawCar === 'function') { const car0 = drawCar;
+    drawCar = function (c, x, y, a, col, s = 1, o = {}) {
+      const im = LP.on && lpAutoFor(col); if (!im) return car0.apply(this, arguments);
+      const h = 100, w = h * im.naturalWidth / im.naturalHeight;
+      c.save(); c.translate(x, y); c.rotate(a); c.scale(s, s);
+      c.drawImage(im, -w / 2, -h / 2, w, h);
+      if (o.lights) { c.fillStyle = 'rgba(255,243,191,.55)'; ell(c, -15, -50, 7, 4); c.fill(); ell(c, 15, -50, 7, 4); c.fill(); }
+      if (o.brake) { c.fillStyle = 'rgba(255,60,60,.8)'; ell(c, -15, 47, 7, 3.5); c.fill(); ell(c, 15, 47, 7, 3.5); c.fill(); }
+      if (o.mine) { ell(c, 0, 6, 11, 11); fs(c, '#fff', 2); leaf(c, 0, 6, 0.6, BRAND.lime); }
+      c.restore();
+    }; }
+  if (typeof pot === 'function') { const pot0 = pot;
+    pot = function (c, x, y, r, col) {
+      const im = LP.on && lpSpr('teile/topf'); if (!im) return pot0.apply(this, arguments);
+      const w = r * 2 + 30, h = w * im.naturalHeight / im.naturalWidth, top = y - r * 0.2 - h * 0.27;
+      c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, x, top + h * 0.95, r * 1.05, r * 0.3); c.fill();
+      c.drawImage(im, x - w / 2, top, w, h);
+    }; }
+  ['red', 'blue', 'green', 'yellow', 'white', 'orange'].forEach(n => lpSpr('teile/auto_' + n)); ['karte_vorne', 'karte_hinten', 'topf'].forEach(n => lpSpr('teile/' + n));
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpTeilePatch); else setTimeout(lpTeilePatch, 0);

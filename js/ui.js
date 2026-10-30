@@ -238,7 +238,7 @@ class Menu {
         rrPath(c, tx + 6, ty + 5, tw - 12, 10, 5); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill(); c.restore();
       }
       const isz = 30 + k * 12, iy = y0 + bh / 2 - k * (bh * 0.22) - 2;
-      c.save(); c.translate(cx, iy); ell(c, 0, 2, isz * 0.62, isz * 0.62); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill(); ell(c, 0, 0, isz * 0.6, isz * 0.6); fs(c, '#fffbe6', 2.5, '#3d2c1f');
+      c.save(); c.translate(cx, iy); if (!(typeof lpRund === 'function' && lpRund(c, 0, 0, isz * 0.62, '#fff'))) { ell(c, 0, 2, isz * 0.62, isz * 0.62); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill(); ell(c, 0, 0, isz * 0.6, isz * 0.6); fs(c, '#fffbe6', 2.5, '#3d2c1f'); }
       if (ic === 'play') icon(c, 'play', 2, 0, isz * 0.8, BRAND.olive); else icon(c, ic, 0, 0, isz * 0.82); c.restore();
       if (k > 0.45) { c.save(); c.globalAlpha = clamp((k - 0.45) * 2, 0, 1); txt(c, label, cx, y0 + bh - 12, 15, '#fff', 'center', '#3d2c1f', w - 8); c.restore(); }
       (this.tabHit || (this.tabHit = []))[i] = { x: cx, y: y0 + bh / 2 };
@@ -335,9 +335,10 @@ class Menu {
     const bw = Math.min(W - 48, 360), bh = easy ? 116 : 100, bx = (W - bw) / 2, by = land ? Math.min(H - bh - 40, below + 30) : Math.max(below + 40, H * 0.6 - bh / 2);
     { const pu = 1 + Math.sin(this.t * 3) * 0.025, cx = bx + bw / 2, cy = by + bh / 2;
       c.save(); c.translate(cx, cy); c.scale(pu, pu); c.translate(-cx, -cy);
-      rrPath(c, bx, by + 6, bw, bh, bh / 2); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
-      rrPath(c, bx, by, bw, bh, bh / 2); { const g = c.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, '#b5e550'); g.addColorStop(1, BRAND.lime); fs(c, g, 4); }
-      ell(c, bx + bh / 2 + 6, cy, bh * 0.32, bh * 0.32); fs(c, '#fff', 3); icon(c, 'play', bx + bh / 2 + 9, cy, bh * 0.36, BRAND.olive);
+      if (!(typeof lpPill === 'function' && lpPill(c, bx, by, bw, bh, 'green'))) {   // gemalter Knopf, sonst gezeichnet
+        rrPath(c, bx, by + 6, bw, bh, bh / 2); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill();
+        rrPath(c, bx, by, bw, bh, bh / 2); { const g = c.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, '#b5e550'); g.addColorStop(1, BRAND.lime); fs(c, g, 4); } }
+      if (!(typeof lpRund === 'function' && lpRund(c, bx + bh / 2 + 6, cy, bh * 0.32))) { ell(c, bx + bh / 2 + 6, cy, bh * 0.32, bh * 0.32); fs(c, '#fff', 3); } icon(c, 'play', bx + bh / 2 + 9, cy, bh * 0.36, BRAND.olive);
       txt(c, 'SPIELEN', bx + bh + 18, cy - (sub ? 11 : 0), Math.min(36, bh * 0.38), '#fff', 'left', OL, bw - bh - 30);
       if (sub) txt(c, sub, bx + bh + 18, cy + 21, 15, BRAND.olive, 'left', null, bw - bh - 30);
       c.restore(); }
@@ -1577,7 +1578,8 @@ class ClearOverlay {
   close(again) { if (overlay === this) overlay = null; this.done(again); }
   draw(c) {
     const o = this.o, t = this.t;
-    c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H);
+    if (o.finale && typeof lpMenuCover === 'function' && lpMenuCover(c, 'park')) { c.fillStyle = 'rgba(16,28,18,.4)'; c.fillRect(0, 0, W, H); }   // Finale: festlicher Park
+    else { c.fillStyle = 'rgba(16,28,18,.75)'; c.fillRect(0, 0, W, H); }
     // im flachen Querformat: auf eine virtuelle Höhe von 700 skalieren
     const HH = Math.max(H, 700), sk = H / HH;
     c.save(); c.translate(W / 2, 0); c.scale(sk, sk); c.translate(-W / 2, 0);
@@ -1591,15 +1593,15 @@ class ClearOverlay {
     drawAnimal(c, o.kind, 0, 60, 2.7, { t, cap: true, look: SKINS[o.skin] || DEFAULT_LOOK });
     c.restore();
     for (let s = 0; s < 3; s++) { const kk = ease.back(clamp(t * 2 - 0.4 - s * 0.2, 0, 1)); c.save(); c.translate(cx + (s - 1) * 56, cy - 122 - (s === 1 ? 14 : 0)); c.scale(kk, kk); icon(c, 'star', 0, 0, s === 1 ? 54 : 44); c.restore(); }
-    drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);
-    if (t > 1.2) { claimBand(c, o.finale ? 'Alle Bereiche geschafft – du bist ein echter Original-Held!' : 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, cy + 196, 16); }
-    if (o.finale) { const k2 = ease.back(clamp(t * 1.5, 0, 1)); c.save(); c.translate(cx, Math.max(30, cy - 250)); c.scale(k2, k2); txt(c, 'Herzlichen Glückwunsch!', 0, 0, 34, '#ffd23f', 'center', BRAND.ink); c.restore(); }
+    if (!o.finale) drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);   // Finale: Glückwunsch-Titel statt Logo
+    if (t > 1.2) { claimBand(c, o.finale ? 'Alle Bereiche geschafft – du bist ein echter Original-Held!' : 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, o.finale ? cy + 262 : cy + 196, Math.max(16, 14 / sk)); }
+    if (o.finale) { const k2 = ease.back(clamp(t * 1.5, 0, 1)); c.save(); c.translate(cx, Math.max(40, cy - 196)); c.scale(k2, k2); txt(c, 'Herzlichen Glückwunsch!', 0, 0, 34, '#ffd23f', 'center', BRAND.ink); c.restore(); }
     const ry = cy + 128, kk = ease.back(clamp(t * 2 - 1, 0, 1));
     c.save(); c.translate(cx, ry); c.scale(kk, kk);
     panel(c, -150, -34, 300, 76, '#fff7e6', 20);
     if (o.newPiece) { ell(c, -110, 4, 26, 26); fs(c, '#ffd166', 3); drawOutfitIcon(c, 'kappe', -110, 4, 34); }
     icon(c, 'coin', o.newPiece ? -30 : -70, 4, 40); txt(c, '+' + (o.bonus || 300) + ' Taler', o.newPiece ? 50 : 20, 5, 26, '#c9762f', 'center', null);
-    if (o.finale) { panel(c, -150, 50, 300, 54, '#fff7e6', 18); icon(c, 'joker', -70, 77, 34); txt(c, '+' + o.finale + ' Joker geschenkt', 30, 78, 20, '#118ab2', 'center', null); }
+    if (o.finale) { panel(c, -150, 50, 300, 54, '#fff7e6', 18); icon(c, 'joker', -112, 77, 34); txt(c, '+' + o.finale + ' Joker geschenkt', 22, 78, 20, '#118ab2', 'center', null); }
     c.restore();
     if (t > 0.7) {
       roundBtn(c, cx - 60, HH - 80, 34, '#06d6a0', 'retry', () => this.close(true));
