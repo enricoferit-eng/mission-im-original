@@ -191,6 +191,8 @@ class Menu {
   barH() { return this.easy() ? 0 : MENU_BAR_H(); }
   update(dt) {
     this.t += dt;
+    this.dK = (this.dK || 0) + ((this.dOpen ? 1 : 0) - (this.dK || 0)) * Math.min(1, dt * 9);   // Stufen-Auswahl auf-/zuklappen
+    if (this.page !== 2) this.dOpen = false;
     if (this.easy() && (this.page === 0 || this.page === 1)) { this.page = 2; this.off = 0; }
     if (!this.sw) this.off = Math.abs(this.off) < 0.002 ? 0 : this.off * Math.pow(0.0005, dt);   // nach dem Wischen sanft einrasten
     const P = this.pageObj(this.page); if (P && P.update) P.update(dt);
@@ -327,15 +329,22 @@ class Menu {
     logo(c, W / 2, LY, ls);
     let below = LY + 78 * ls + 10;
     if (easy) diffBadge(c, diff, W / 2, below, 14);   // Leicht: Stufe nur als Schild (umstellen im Eltern-Bereich)
-    else {   // Mittel/Schwer: Stufen-Schalter mit Alter direkt im Menü (wie vorher)
-      const swY = below + 14, swW = Math.min(W - 40, 420), segW = swW / 3, swX = (W - swW) / 2;
-      rrPath(c, swX, swY - 26, swW, 52, 24); fs(c, 'rgba(255,255,255,.88)', 3);
-      DIFFS.forEach((d, i) => {
-        const x = swX + i * segW, on = d.id === diff;
-        if (on) { rrPath(c, x + 3, swY - 23, segW - 6, 46, 21); fs(c, d.col, 3, d.dark); }
-        txt(c, d.name, x + segW / 2, swY - 8, on ? 17 : 15, on ? '#fff' : d.dark, 'center', on ? d.dark : null, segW - 10);
-        txt(c, d.age + ' Jahre', x + segW / 2, swY + 11, 13, on ? '#fff' : d.dark, 'center', on ? d.dark : null, segW - 10);
-        UI.btn(x, swY - 26, segW, 52, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('tap'); } });
+    else {   // Mittel/Schwer: nur die aktuelle Stufe in der Mitte – antippen klappt Leicht · Mittel · Schwer auf (gleitet heraus)
+      const swY = below + 14, segW = Math.min((W - 32) / 3, 140), ph = 46, k = ease.out(clamp(this.dK || 0, 0, 1));
+      const slot = i => W / 2 + (i - 1) * (segW + 6);
+      const order = DIFFS.map((d, i) => [d, i]).sort((A, B) => (A[0].id === diff) - (B[0].id === diff));   // aktuelle zuletzt (oben)
+      order.forEach(([d, i]) => {
+        const cur = d.id === diff, x = lerp(W / 2, slot(i), k), al = cur ? 1 : k, sc = cur ? 1 : 0.7 + 0.3 * k, pw = segW - 6;
+        if (al <= 0.02) return;
+        c.save(); c.globalAlpha = al; c.translate(x, swY); c.scale(sc, sc);
+        rrPath(c, -pw / 2, -ph / 2 + 4, pw, ph, 21); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
+        rrPath(c, -pw / 2, -ph / 2, pw, ph, 21); fs(c, cur ? d.col : '#fff', 3, cur ? d.dark : d.col);
+        txt(c, d.name, cur && k < 0.5 ? -7 : 0, -8, cur ? 17 : 15, cur ? '#fff' : d.dark, 'center', cur ? d.dark : null, pw - (cur && k < 0.5 ? 30 : 12));
+        txt(c, d.age + ' Jahre', cur && k < 0.5 ? -7 : 0, 11, 12, cur ? '#fff' : '#6b5a48', 'center', cur ? d.dark : null, pw - (cur && k < 0.5 ? 30 : 12));
+        if (cur && k < 0.5) { c.globalAlpha = 1 - k * 2; polyPath(c, [[pw / 2 - 24, -3], [pw / 2 - 14, -3], [pw / 2 - 19, 4]]); c.fillStyle = '#fff'; c.fill(); }   // kleiner Pfeil: zum Aufklappen
+        c.restore();
+        if (!this.dOpen) { if (cur) UI.btn(x - pw / 2, swY - ph / 2, pw, ph, () => { this.dOpen = true; Sfx.play('tap'); }); }
+        else if (k > 0.6) UI.btn(x - pw / 2, swY - ph / 2, pw, ph, () => { if (a.lastDiff !== d.id) { a.lastDiff = d.id; Save.write(); Sfx.play('good'); } else Sfx.play('tap'); this.dOpen = false; });
       });
       below = swY + 14;
     }
