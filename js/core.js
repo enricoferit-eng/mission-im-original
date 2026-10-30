@@ -55,7 +55,7 @@ const Save = {
   },
 };
 // ---------- Server-Anbindung: Konten zentral speichern, auf jedem Gerät anmelden ----------
-const API_URL = 'https://mission-im-original.vercel.app/api/konto';
+const API_URL = 'https://cpxhibwpnkwgxpzcyzir.supabase.co/functions/v1/konto';
 const Net = {
   st: 'idle', tm: null,
   async call(body, keep) {

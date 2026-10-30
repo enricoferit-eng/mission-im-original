@@ -1,0 +1,5 @@
+# Supabase-Einstellungen für die Edge Function (Spiel ruft sie ohne Anmeldung auf – Schutz macht der Code selbst)
+project_id = "cpxhibwpnkwgxpzcyzir"
+
+[functions.konto]
+verify_jwt = false

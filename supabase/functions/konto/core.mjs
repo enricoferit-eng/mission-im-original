@@ -1,10 +1,9 @@
-// Konten-Server für "Mission: Im Original"
-// Speichert Konten privat in Vercel Blob (Region Frankfurt). Keine E-Mail, keine echten Personendaten.
-const { put, get, del, list } = require('@vercel/blob');
-const crypto = require('crypto');
+// Konten-Server für "Mission: Im Original" – läuft als Supabase Edge Function (index.ts), lokal testbar mit Node
+// Speichert Konten in der Supabase-Tabelle "kv". Keine E-Mail, keine echten Personendaten.
+import crypto from 'node:crypto';
 
-const SECRET = process.env.TOKEN_SECRET || '';
-const PRIV = { access: 'private' };
+const ENV = k => (globalThis.Deno ? globalThis.Deno.env.get(k) : globalThis.process && process.env[k]) || '';
+const SECRET = ENV('TOKEN_SECRET');
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const MAX_FAILS = 5, LOCK_MS = 10 * 60 * 1000;
 
@@ -28,36 +27,20 @@ const validPass = p => typeof p === 'string' && p.length >= PASS_MIN && p.length
 const hashPass = p => { const s = crypto.randomBytes(16).toString('hex'); return { s, h: crypto.scryptSync(p, s, 32).toString('hex') }; };
 const passOk = (acc, p) => !!(acc.pw && typeof p === 'string' && p.length <= 64 && sameStr(crypto.scryptSync(p, acc.pw.s, 32).toString('hex'), acc.pw.h));
 
-// Speicher: Supabase (Tabelle "kv"), wenn eingerichtet – sonst Vercel Blob
-const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
-const SB = !!(SB_URL && SB_KEY);
+// Speicher: Supabase-Tabelle "kv" (in der Edge Function setzt Supabase URL + Service-Schlüssel selbst)
+const SB_URL = ENV('SUPABASE_URL').replace(/\/$/, ''), SB_KEY = ENV('SUPABASE_SERVICE_ROLE_KEY') || ENV('SUPABASE_SERVICE_KEY');
 const sbH = extra => ({ apikey: SB_KEY, ...(SB_KEY.startsWith('sb_') ? {} : { Authorization: 'Bearer ' + SB_KEY }), 'Content-Type': 'application/json', ...extra });   // neue Schlüssel (sb_secret_…) nur im apikey-Kopf
 async function sb(method, q, body, extra) {
   const r = await fetch(SB_URL + '/rest/v1/kv' + q, { method, headers: sbH(extra), body: body ? JSON.stringify(body) : undefined });
   if (!r.ok) throw new Error('supabase ' + r.status + ' ' + (await r.text()).slice(0, 200));
   const txt = await r.text(); return txt ? JSON.parse(txt) : null;
 }
-async function readJSON(path) {
-  if (SB) { const rows = await sb('GET', '?select=val&path=eq.' + encodeURIComponent(path)); return rows && rows[0] ? rows[0].val : null; }
-  try {
-    const r = await get(path, { ...PRIV, useCache: false });
-    if (!r || r.statusCode !== 200) return null;
-    return JSON.parse(await new Response(r.stream).text());
-  } catch (e) { if (e && e.name === 'BlobNotFoundError') return null; throw e; }
-}
-async function writeJSON(path, obj) {
-  if (SB) { await sb('POST', '', { path, val: obj, updated: new Date().toISOString() }, { Prefer: 'resolution=merge-duplicates,return=minimal' }); return; }
-  await put(path, JSON.stringify(obj), { ...PRIV, allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json', cacheControlMaxAge: 60 });
-}
-async function delJSON(paths) {
-  if (SB) { await sb('DELETE', '?path=in.(' + paths.map(p => '"' + p + '"').join(',') + ')', null, { Prefer: 'return=minimal' }); return; }
-  await del(paths);
-}
-async function listJSON(prefix) {   // alle Pfade mit diesem Anfang
-  if (SB) { const rows = await sb('GET', '?select=path&path=like.' + encodeURIComponent(prefix + '*')); return rows.map(r => r.path); }
-  const files = []; let cursor;
-  do { const r = await list({ prefix, cursor, limit: 1000 }); files.push(...r.blobs); cursor = r.hasMore ? r.cursor : undefined; } while (cursor);
-  return files.map(f => f.pathname);
+async function readJSON(path) { const rows = await sb('GET', '?select=val&path=eq.' + encodeURIComponent(path)); return rows && rows[0] ? rows[0].val : null; }
+async function writeJSON(path, obj) { await sb('POST', '', { path, val: obj, updated: new Date().toISOString() }, { Prefer: 'resolution=merge-duplicates,return=minimal' }); }
+async function delJSON(paths) { await sb('DELETE', '?path=in.(' + paths.map(p => '"' + p + '"').join(',') + ')', null, { Prefer: 'return=minimal' }); }
+async function listJSON(prefix) {   // alle Pfade mit diesem Anfang (seitenweise, Supabase gibt höchstens 1000 auf einmal)
+  const out = []; for (let off = 0; ; off += 1000) { const rows = await sb('GET', '?select=path&path=like.' + encodeURIComponent(prefix + '*') + '&order=path&limit=1000&offset=' + off); out.push(...rows.map(r => r.path)); if (rows.length < 1000) break; }
+  return out;
 }
 function publicAcc(login, acc) {
   return { login: fmtLogin(login), token: tokenOf(login), name: acc.name, hasPass: !!acc.pw, avatar: acc.avatar, created: acc.created, data: acc.data || {}, admin: !!acc.admin };   // Bilder-Code/Passwort gehen nie zurück
@@ -302,9 +285,9 @@ async function ping(b) {
   return [200, { ok: true }];
 }
 function clamp0(v, a, z) { return Math.max(a, Math.min(z, v)); }
-async function readAll(prefix) {   // alle Einträge unter einem Pfad (Supabase: seitenweise in einem Rutsch)
-  if (SB) { const out = []; for (let off = 0; ; off += 1000) { const rows = await sb('GET', '?select=path,val&path=like.' + encodeURIComponent(prefix + '*') + '&order=path&limit=1000&offset=' + off); out.push(...rows.map(r => r.val)); if (rows.length < 1000) break; } return out; }
-  const paths = await listJSON(prefix); return (await Promise.all(paths.map(p => readJSON(p).catch(() => null)))).filter(Boolean);
+async function readAll(prefix) {   // alle Einträge unter einem Pfad (seitenweise in einem Rutsch)
+  const out = []; for (let off = 0; ; off += 1000) { const rows = await sb('GET', '?select=path,val&path=like.' + encodeURIComponent(prefix + '*') + '&order=path&limit=1000&offset=' + off); out.push(...rows.map(r => r.val)); if (rows.length < 1000) break; }
+  return out;
 }
 async function stats(b) {
   if (!b.key || !sameStr(crypto.createHash('sha256').update(String(b.key)).digest('hex'), STATS_KEY_HASH)) return [401, { error: 'auth' }];
@@ -344,7 +327,7 @@ async function upgrade_all(b) {
   return [200, { upgraded: done }];
 }
 async function admin(b) {
-  const U = process.env.ADMIN_USER || '', P = process.env.ADMIN_PASS || '';
+  const U = ENV('ADMIN_USER'), P = ENV('ADMIN_PASS');
   if (!U || !P) return [401, { error: 'auth' }];
   const byPass = sameStr(String(b.user || ''), U) && sameStr(String(b.pass || ''), P);
   const byDevice = !!b.device && sameStr(String(b.device), adminDeviceToken(U, P));
@@ -391,20 +374,13 @@ async function admin(b) {
   return [200, st];
 }
 
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'no-store');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
-  if (!SECRET) return res.status(500).json({ error: 'config' });
-  let b = req.body;
-  if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
-  b = b || {};
-  b._ip = crypto.createHash('sha256').update(SECRET + String(req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip']) || '').split(',')[0].trim()).digest('hex').slice(0, 16);   // nur als Hash, für die Fehlversuch-Sperre
+// Eine Anfrage bearbeiten: body = JSON vom Spiel, ip = Absender (nur gehasht für die Fehlversuch-Sperre) → [Status, Antwort]
+export async function handle(body, ip) {
+  if (!SECRET || !SB_URL || !SB_KEY) return [500, { error: 'config' }];
+  const b = body && typeof body === 'object' ? body : {};
+  b._ip = crypto.createHash('sha256').update(SECRET + String(ip || '').split(',')[0].trim()).digest('hex').slice(0, 16);
   const fn = { ping, stats, upgrade_all, register, login, save, set_pass, delete: remove, admin, friend_add, friend_request, friend_answer, friends, friend_remove, lobby_new, lobby_join, lobby_poll }[b.action];
-  if (!fn) return res.status(400).json({ error: 'action' });
-  try { const [status, out] = await fn(b); res.status(status).json(out); }
-  catch (e) { console.error(e); res.status(500).json({ error: 'server' }); }
-};
+  if (!fn) return [400, { error: 'action' }];
+  try { return await fn(b); }
+  catch (e) { console.error(e); return [500, { error: 'server' }]; }
+}

@@ -65,7 +65,7 @@
 </div>
 <div id="tip"></div>
 <script>
-const API = 'https://mission-im-original.vercel.app/api/konto';
+const API = 'https://cpxhibwpnkwgxpzcyzir.supabase.co/functions/v1/konto';
 const $ = s => document.querySelector(s), pct = (a, b) => (b ? Math.round(a / b * 100) + ' %' : '–'), n = v => Number(v || 0).toLocaleString('de-DE');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function getKey() { try { return localStorage.getItem('mioStatsKey') || ''; } catch (e) { return ''; } }
