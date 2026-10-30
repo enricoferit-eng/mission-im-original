@@ -41,9 +41,10 @@ const CHALET_ITEMS = ['handschuhe', 'muetze', 'schal', 'fonduegabel', 'laterne',
 
 // Hütte: Innenraum x 110–890, y 150–640; Blockwände ringsum, Tür unten in der Mitte
 // Neue Größe wie auf dem Luftbild: oben ein Schneeweg von der Terrasse, links die Hütte, rechts das große Haus, unten der Garten.
-const CW = 1600, CH = 1600, CY = 200;   // CY: alles von früher rückt um 200 nach unten (oben ist jetzt der Weg)
-const HUT0 = { x0: 110, x1: 890, y0: 150, y1: 640, door0: 455, door1: 545 }, HUT = Object.assign({}, HUT0, { y0: HUT0.y0 + CY, y1: HUT0.y1 + CY });
-const BIGHOUSE = { x0: 1060, y0: 300, x1: 1560, y1: 900 };
+const CW = 1600, CH = 1800, CY = 200, CY2 = 200;   // CY2: Hütte ist 200 tiefer geworden, alles davor rückt nach unten   // CY: alles von früher rückt um 200 nach unten (oben ist jetzt der Weg)
+// Hütte größer, eher quadratisch (User: dunkles Haus rechts weg, Chalet größer, aber wie ein Haus); SXI rechnet alte Innen-x-Werte auf die neue Breite um
+const HUT0 = { x0: 110, x1: 1210, y0: 150, y1: 640 + CY2, door0: 455, door1: 545 }, HUT = Object.assign({}, HUT0, { y0: HUT0.y0 + CY, y1: HUT0.y1 + CY });
+const SXI = x => Math.round(110 + (x - 110) * (1210 - 110) / (890 - 110)), KAMIN_DX = SXI(500) - 500;
 function snowGround(g, x, y, w, h, R) {
   g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
   g.fillStyle = '#f1f5f9'; g.fillRect(x, y, w, h);
@@ -62,23 +63,21 @@ function drawGroundChalet(g, R) {
   // oben: Schnee-Hecke zur Terrasse mit Lücke fürs Gartentor, darunter ein getretener Weg quer
   for (let x = 0; x < WORLD_W; x += 26) { if (Math.abs(x - 640) < 60) continue; ell(g, x, 12, 22, 20); fs(g, x % 52 ? '#2d6a4f' : '#40916c', 2); ell(g, x, 2, 16, 7); g.fillStyle = '#fff'; g.fill(); }
   g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(640, -10); g.lineTo(640, 120); g.quadraticCurveTo(640, 150, 680, 150); g.lineTo(1580, 150); g.stroke(); g.restore();
-  drawBigHouse(g);
   // rechts unten: Garten neben dem großen Haus
-  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 50; g.beginPath(); g.moveTo(1010, 160); g.lineTo(1010, 1000); g.quadraticCurveTo(1010, 1100, 1300, 1150); g.stroke(); g.restore();
   g.save(); g.translate(0, CY);   // ab hier alles wie früher, nur 200 tiefer
   const HUT = HUT0;
   // Weg von der Terrasse oben rechts herunter (festgetretener Schnee)
-  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(955, -10); g.lineTo(955, 690); g.quadraticCurveTo(940, 760, 700, 800); g.stroke(); g.restore();
-  for (let y = 10; y < 690; y += 28) { ell(g, 948 + (y % 56 ? 12 : 0), y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }
+  g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(1310, -10); g.lineTo(1310, 900); g.quadraticCurveTo(1300, 1000, 700, 1000); g.stroke(); g.restore();
+  for (let y = 10; y < 890; y += 28) { ell(g, 1303 + (y % 56 ? 12 : 0), y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }
   g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 64; g.beginPath(); g.moveTo(-10, 1160); g.quadraticCurveTo(250, 1150, 480, 1000); g.stroke(); g.restore();   // vom Parkplatz (links)
   // Hütte: Holzdielen innen
   planks(g, HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0, ['#b07d4b', '#a0673a', '#bb8a57'], 28);
   g.fillStyle = 'rgba(255,190,90,.08)'; g.fillRect(HUT.x0, HUT.y0, HUT.x1 - HUT.x0, HUT.y1 - HUT.y0);
   // Teppich vor dem Kamin
-  rrPath(g, 400, 230, 200, 90, 20); fs(g, '#9d0208', 3); rrPath(g, 412, 240, 176, 70, 14); fs(g, null, 2, 'rgba(255,255,255,.5)'); for (let k = 0; k < 5; k++) { ell(g, 440 + k * 30, 275, 6, 6); g.fillStyle = 'rgba(255,255,255,.35)'; g.fill(); }
+  g.save(); g.translate(KAMIN_DX, 0); rrPath(g, 400, 230, 200, 90, 20); fs(g, '#9d0208', 3); rrPath(g, 412, 240, 176, 70, 14); fs(g, null, 2, 'rgba(255,255,255,.5)'); g.restore(); for (let k = 0; k < 5; k++) { ell(g, 440 + KAMIN_DX + k * 30, 275, 6, 6); g.fillStyle = 'rgba(255,255,255,.35)'; g.fill(); }
   // Rückwand innen (Blockbohlen) mit Fenstern, Kamin, Geweih
   logWall(g, HUT.x0 - 30, 40, HUT.x1 - HUT.x0 + 60, 112);
-  for (const wx of [200, 720]) {
+  for (const wx of [SXI(200), SXI(720)]) {
     rrPath(g, wx - 52, 56, 104, 76, 4); fs(g, '#5c3d2e', 3); rrPath(g, wx - 46, 62, 92, 64, 2); g.fillStyle = '#1d3557'; g.fill();
     for (let k = 0; k < 4; k++) { polyPath(g, [[wx - 40 + k * 24, 126], [wx - 30 + k * 24, 82 + (k % 2) * 8], [wx - 20 + k * 24, 126]]); g.fillStyle = '#2d6a4f'; g.fill(); }
     g.fillStyle = '#e7f5ff'; g.fillRect(wx - 46, 118, 92, 8); line(g, wx, 62, wx, 126, 4, '#5c3d2e', false); line(g, wx - 46, 94, wx + 46, 94, 4, '#5c3d2e', false);
@@ -87,23 +86,26 @@ function drawGroundChalet(g, R) {
     for (const sd of [-1, 1]) { const cx = wx + sd * 50; polyPath(g, [[cx - 14, 54], [cx + 14, 54], [cx + 10 * sd + 4, 134], [cx - 10 * sd - 4, 134]]); fs(g, '#f8f1e7', 2); for (let k = 0; k < 6; k++) { ell(g, cx - 5 + (k % 2) * 10, 66 + k * 11, 2.5, 2.5); g.fillStyle = '#c1121f'; g.fill(); } }
   }
   // Durchgang mit grauen Vorhängen, roten Raffbändern und Kranz (Foto)
-  { const dx = 330; rrPath(g, dx - 40, 50, 80, 102, 3); g.fillStyle = '#3d2c1f'; g.fill();
+  { const dx = SXI(330); rrPath(g, dx - 40, 50, 80, 102, 3); g.fillStyle = '#3d2c1f'; g.fill();
     for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(dx + sd * 40, 50); g.lineTo(dx + sd * 6, 50); g.quadraticCurveTo(dx + sd * 30, 100, dx + sd * 22, 150); g.lineTo(dx + sd * 40, 150); g.closePath(); fs(g, '#adb5bd', 2); ell(g, dx + sd * 30, 104, 5, 4); g.fillStyle = '#c1121f'; g.fill(); }
     ell(g, dx, 40, 15, 15); g.lineWidth = 7; g.strokeStyle = '#2d6a4f'; g.stroke(); ell(g, dx, 54, 4, 4); g.fillStyle = '#c1121f'; g.fill(); rrPath(g, dx - 16, 12, 32, 10, 2); fs(g, '#2b9348', 1.5); }
   // Kamin aus Naturstein (Mitte)
+  g.save(); g.translate(KAMIN_DX, 0);
   rrPath(g, 430, 20, 140, 136, 8); fs(g, '#adb5bd', 3);
   for (let k = 0; k < 14; k++) { rrPath(g, 436 + (k % 4) * 33 + (Math.floor(k / 4) % 2) * 12, 26 + Math.floor(k / 4) * 32, 30, 28, 8); fs(g, ['#ced4da', '#adb5bd', '#dee2e6'][k % 3], 1.5); }
   rrPath(g, 456, 82, 88, 74, 30); fs(g, '#212529', 3); rrPath(g, 420, 72, 160, 12, 4); fs(g, '#6f4e37', 2.5);
   // Geweih über dem Kamin + Herzen
   for (const sd of [-1, 1]) { line(g, 500, 10, 500 + sd * 30, -2, 4, '#e9d8a6'); line(g, 500 + sd * 18, 4, 500 + sd * 26, 16, 3, '#e9d8a6'); line(g, 500 + sd * 30, -2, 500 + sd * 44, 6, 3, '#e9d8a6'); }
-  for (const hx of [330, 640, 800]) { heartPath(g, hx, 70, 9); fs(g, '#c1121f', 2); line(g, hx, 50, hx, 62, 1.5, '#c1121f', false); }
+  g.restore();
+  for (const hx of [SXI(330), SXI(640), SXI(800)]) { heartPath(g, hx, 70, 9); fs(g, '#c1121f', 2); line(g, hx, 50, hx, 62, 1.5, '#c1121f', false); }
   // Seitenwände (Blockbohlen, senkrecht gesehen)
   logWall(g, HUT.x0 - 30, HUT.y0, 30, HUT.y1 - HUT.y0 + 30, false); logWall(g, HUT.x1, HUT.y0, 30, HUT.y1 - HUT.y0 + 30, false);
   // Vorderwand mit Tür (Holzdeck davor)
   logWall(g, HUT.x0 - 30, HUT.y1, HUT.door0 - HUT.x0 + 30, 26); logWall(g, HUT.door1, HUT.y1, HUT.x1 - HUT.door1 + 30, 26);
+  g.save(); g.translate(0, CY2);   // ab hier: vor der Hütte
   rrPath(g, 300, 666, 400, 40, 4); fs(g, '#c08b55', 2.5); for (let x = 310; x < 700; x += 26) line(g, x, 668, x, 704, 1.5, 'rgba(90,60,30,.35)', false);
-  g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(HUT.x0 - 30, HUT.y1 + 26, HUT.x1 - HUT.x0 + 60, 5);
-  g.fillStyle = '#b07d4b'; g.fillRect(HUT.door0, HUT.y1, HUT.door1 - HUT.door0, 30);
+  g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(HUT.x0 - 30, HUT.y1 - CY2 + 26, HUT.x1 - HUT.x0 + 60, 5);
+  g.fillStyle = '#b07d4b'; g.fillRect(HUT.door0, HUT.y1 - CY2, HUT.door1 - HUT.door0, 30);
   // getretener Weg im Schnee zum Tor + zum Teich
   g.save(); g.lineCap = 'round'; g.strokeStyle = 'rgba(190,205,220,.6)'; g.lineWidth = 70; g.beginPath(); g.moveTo(500, 700); g.quadraticCurveTo(470, 1000, 500, 1360); g.stroke(); g.lineWidth = 40; g.beginPath(); g.moveTo(500, 900); g.quadraticCurveTo(650, 960, 720, 1060); g.stroke(); g.restore();
   for (let k = 0; k < 24; k++) { const y = 720 + k * 26, x = 488 + Math.sin(k * 0.6) * 14 + (k % 2) * 16; ell(g, x, y, 5, 7); g.fillStyle = 'rgba(120,140,160,.3)'; g.fill(); }
@@ -120,11 +122,13 @@ function drawGroundChalet(g, R) {
   for (let x = 10; x < WORLD_W; x += 40) if (Math.abs(x - 500) > 70) { rrPath(g, x - 5, 1338, 10, 50, 3); fs(g, '#8d5a3b', 2); ell(g, x, 1338, 7, 4); g.fillStyle = '#fff'; g.fill(); }
   g.fillStyle = '#6f4e37'; g.fillRect(0, 1350, 430, 6); g.fillRect(570, 1350, WORLD_W - 570, 6); g.fillRect(0, 1370, 430, 6); g.fillRect(570, 1370, WORLD_W - 570, 6);
   g.restore();
+  g.restore();
 }
 const CDECOR = [
   // innen
-  { id: 'tafel1', t: 'huettentafel', x: 300, y: 450, x0: 170, y0: 380, w: 260, h: 50, bb: [140, 300, 320, 170] },
-  { id: 'tafel2', t: 'huettentafel', x: 700, y: 450, x0: 570, y0: 380, w: 260, h: 50, bb: [540, 300, 320, 170] },
+  { id: 'tafel1', t: 'huettentafel', x: 378, y: 450, x0: 248, y0: 380, w: 260, h: 50, bb: [218, 300, 320, 170] },
+  { id: 'tafel2', t: 'huettentafel', x: 942, y: 450, x0: 812, y0: 380, w: 260, h: 50, bb: [782, 300, 320, 170] },
+  { id: 'tafel3', t: 'huettentafel', x: 660, y: 640, x0: 530, y0: 570, w: 260, h: 50, bb: [500, 490, 320, 170] },
   { id: 'baum', t: 'christbaum', x: 830, y: 260, r: 34, bb: [760, 60, 140, 216] },
   { id: 'holzkorb', t: 'holzkorb', x: 380, y: 200, r: 22, bb: [340, 150, 80, 62] },
   { id: 'garderobe', t: 'garderobe', x: 160, y: 250, r: 24, bb: [110, 110, 100, 150] },
@@ -147,21 +151,7 @@ const CDECOR = [
   { id: 'wagenrad', t: 'wagenrad', x: 620, y: 1290, r: 22, bb: [570, 1220, 100, 76] },
   { id: 'schneehaufen', t: 'schneehaufen', x: 180, y: 920, r: 30, bb: [130, 880, 100, 46] },
 ];
-// das große dunkle Haus rechts (gehört zum Chalet, wie auf dem Luftbild): Dach von oben, vorne Holzwand mit Fenstern und Tür
-function drawBigHouse(g) {
-  const B = BIGHOUSE, fy = B.y1 - 130;
-  g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(B.x0 + 14, B.y0 + 14, B.x1 - B.x0, B.y1 - B.y0);
-  rrPath(g, B.x0, B.y0, B.x1 - B.x0, fy - B.y0, 6); fs(g, '#4a4e55', 3);
-  for (let y = B.y0 + 18; y < fy; y += 22) line(g, B.x0 + 4, y, B.x1 - 4, y, 1.5, 'rgba(255,255,255,.08)', false);
-  line(g, B.x0, (B.y0 + fy) / 2, B.x1, (B.y0 + fy) / 2, 5, '#343a40');
-  for (let x = B.x0 + 10; x < B.x1; x += 30) { ell(g, x, B.y0 + 6, 16, 7); g.fillStyle = '#fff'; g.fill(); ell(g, x + 12, fy - 4, 15, 6); g.fill(); }   // Schnee am Dachrand
-  rrPath(g, B.x0 + 70, B.y0 + 60, 50, 70, 4); fs(g, '#adb5bd', 2.5); for (let k = 0; k < 3; k++) { ell(g, B.x0 + 95, B.y0 + 40 - k * 16, 10 + k * 4, 8 + k * 3); g.fillStyle = 'rgba(220,225,230,.5)'; g.fill(); }   // Kamin
-  rrPath(g, B.x0, fy, B.x1 - B.x0, 130, 4); fs(g, '#6f4e37', 3);
-  for (let y = fy + 16; y < B.y1; y += 16) line(g, B.x0 + 3, y, B.x1 - 3, y, 1.5, 'rgba(40,20,5,.35)', false);
-  for (const wx of [B.x0 + 80, B.x0 + 190, B.x1 - 80]) { rrPath(g, wx - 34, fy + 26, 68, 56, 4); fs(g, '#5c3d2e', 3); rrPath(g, wx - 28, fy + 32, 56, 44, 2); g.fillStyle = '#ffe8a3'; g.fill(); line(g, wx, fy + 32, wx, fy + 76, 3, '#5c3d2e', false); }
-  { const wx = B.x1 - 175; rrPath(g, wx - 34, fy + 26, 68, 56, 4); fs(g, '#5c3d2e', 3); rrPath(g, wx - 28, fy + 32, 56, 44, 2); g.fillStyle = '#ffe8a3'; g.fill(); }   // Fenster statt Tür (Haus ist nicht begehbar)
-  ell(g, B.x1 - 175, fy + 12, 14, 14); g.lineWidth = 6; g.strokeStyle = '#2d6a4f'; g.stroke();   // Kranz
-}
+for (const d of CDECOR) if (['baum', 'holzkorb', 'garderobe', 'fass', 'schaukelstuhl', 'kiste'].includes(d.id)) { const nx = SXI(d.x); if (d.bb) d.bb[0] += nx - d.x; d.x = nx; if (d.id === 'schaukelstuhl' || d.id === 'kiste') { d.y += CY2; d.bb[1] += CY2; } }   // die beiden standen an der Vorderwand
 const CDRAW = {
   huettentafel(c, d) {
     // lange Holztafel (Foto): Holzbänke mit roten Sitzkissen, weißer Läufer, grüne Servietten, Windlichter, Fondue-Topf, Weihnachtsstern
@@ -234,24 +224,24 @@ function buildGridChalet() {
   cellsIn(HUT.x0 - 34, HUT.y0 - 130, HUT.x1 + 34, HUT.y1 + 30, i => (G0[i] = 0));         // Hütte (Wände)
   cellsIn(HUT.x0 + 8, HUT.y0 + 18, HUT.x1 - 8, HUT.y1 - 6, i => (G0[i] = 1));             // innen
   cellsIn(HUT.door0 + 6, HUT.y1 - 10, HUT.door1 - 6, HUT.y1 + 40, i => (G0[i] = 1));      // Tür
-  cellsIn(BIGHOUSE.x0 - 4, BIGHOUSE.y0 - 4, BIGHOUSE.x1 + 4, BIGHOUSE.y1 + 6, i => (G0[i] = 0));   // großes Haus
-  cellsIn(455, CH - 80, 545, CH - 55, i => (G0[i] = 1));
-  cellsIn(440, 150 + CY, 560, 240 + CY, i => (G0[i] = 0));                                // Kamin-Vorplatz
-  for (let i = 0; i < GW * GH; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120 - CY) / 80) ** 2 < 1) G0[i] = 1; }   // zugefrorener Teich: begehbar – man rutscht darauf
+  cellsIn(455, CH - 80, 545, CH - 55, i => (G0[i] = 1));   // Lücke im Zaun zum Tor
+  cellsIn(440 + KAMIN_DX, 150 + CY, 560 + KAMIN_DX, 240 + CY, i => (G0[i] = 0));                                // Kamin-Vorplatz
+  for (let i = 0; i < GW * GH; i++) { const x = (i % GW) * CELL + 12.5, y = Math.floor(i / GW) * CELL + 12.5; if (((x - 760) / 150) ** 2 + ((y - 1120 - CY - CY2) / 80) ** 2 < 1) G0[i] = 1; }   // zugefrorener Teich: begehbar – man rutscht darauf
   for (const d of CDECOR) {
     if (d.w) cellsIn(d.x0 - 4, d.y0 - (d.t === 'huettentafel' ? 34 : 4), d.x0 + d.w + 4, d.y0 + d.h + 26, i => (G0[i] = 0));
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(8, d.r - 6), i => (G0[i] = 0));
   }
 }
 const CSPOTS = [
-  furnSpot(CDECOR, 'tafel1', 'top', { px: 230, py: 462, sx: 230, sy: 500 }),
-  furnSpot(CDECOR, 'tafel2', 'top', { px: 770, py: 462, sx: 770, sy: 500 }),
-  furnSpot(CDECOR, 'baum', 'top', { px: 812, py: 240, sx: 790, sy: 305 }),
-  furnSpot(CDECOR, 'holzkorb', 'top', { px: 386, py: 168, sx: 380, sy: 245 }),
-  furnSpot(CDECOR, 'garderobe', 'left', { px: 140, py: 212, sx: 205, sy: 285 }),
-  furnSpot(CDECOR, 'fass', 'right', { px: 638, py: 192, sx: 655, sy: 255 }),
-  furnSpot(CDECOR, 'schaukelstuhl', 'top', { px: 196, py: 556, cut: 566, front: true, sx: 232, sy: 600 }),
-  furnSpot(CDECOR, 'kiste', 'top', { px: 832, py: 562, sx: 780, sy: 615 }),
+  furnSpot(CDECOR, 'tafel1', 'top', { px: SXI(230), py: 462, sx: SXI(230), sy: 500 }),
+  furnSpot(CDECOR, 'tafel3', 'top', { px: 700, py: 652, sx: 700, sy: 690 }),
+  furnSpot(CDECOR, 'tafel2', 'top', { px: SXI(770), py: 462, sx: SXI(770), sy: 500 }),
+  furnSpot(CDECOR, 'baum', 'top', { px: SXI(812), py: 240, sx: SXI(790), sy: 305 }),
+  furnSpot(CDECOR, 'holzkorb', 'top', { px: SXI(386), py: 168, sx: SXI(380), sy: 245 }),
+  furnSpot(CDECOR, 'garderobe', 'left', { px: SXI(140), py: 212, sx: SXI(205), sy: 285 }),
+  furnSpot(CDECOR, 'fass', 'right', { px: SXI(638), py: 192, sx: SXI(655), sy: 255 }),
+  furnSpot(CDECOR, 'schaukelstuhl', 'top', { px: SXI(196), py: 556 + CY2, cut: 566 + CY2, front: true, sx: SXI(232), sy: 600 + CY2 }),
+  furnSpot(CDECOR, 'kiste', 'top', { px: SXI(832), py: 562 + CY2, sx: SXI(780), sy: 615 + CY2 }),
   furnSpot(CDECOR, 'tanne1', 'right', { px: 112, py: 790, sx: 140, sy: 830 }),
   furnSpot(CDECOR, 'tanne2', 'left', { px: 908, py: 760, sx: 880, sy: 800 }),
   furnSpot(CDECOR, 'tanne3', 'right', { px: 142, py: 1210, sx: 170, sy: 1250 }),
@@ -273,6 +263,10 @@ CDECOR.push(
   { id: 'schneehaufen2', t: 'schneehaufen', x: 1380, y: 1000, r: 30, bb: [1330, 960, 100, 46] },
 );
 CSPOTS.push(furnSpot(CDECOR, 'tanne5', 'right', { px: 1218, py: 1110, sx: 1250, sy: 1160 }), furnSpot(CDECOR, 'schneehaufen2', 'top', { px: 1390, py: 976, cut: 986, front: true, sx: 1380, sy: 1040 }));
+// alles vor der Hütte rückt um CY2 nach unten (die Hütte ist tiefer geworden)
+const CHALET_INNEN = new Set(['tafel1', 'tafel2', 'tafel3', 'baum', 'holzkorb', 'garderobe', 'fass', 'schaukelstuhl', 'kiste']);
+for (const d of CDECOR) if (!CHALET_INNEN.has(d.id)) { d.y += CY2; if (d.y0 != null) d.y0 += CY2; if (d.bb) d.bb[1] += CY2; }
+for (const q of CSPOTS) if (!CHALET_INNEN.has(q.decor)) { q.y += CY2; q.py += CY2; if (q.cut) q.cut += CY2; }
 // innen: rot karierte Wolldecke, draußen: Schneehaufen
 function drawChaletCover(c, x, y, w, seed = 0) {
   if (y < HUT.y1 && x > HUT.x0 && x < HUT.x1) {
@@ -303,13 +297,13 @@ function drawWoodGate(c, x, y, s, open, locked, t) {
   c.restore();
 }
 STAGE_DEFS.chalet = {
-  id: 'chalet', w: CW, h: CH, bg: '#dbe4ee', start: { x: 70, y: 1360 }, gate: { x: 500, y: CH - 8, ix: 500, iy: CH - 80 },
+  id: 'chalet', w: CW, h: CH, bg: '#dbe4ee', start: { x: 70, y: 1360 + CY2 }, gate: { x: 500, y: CH - 8, ix: 500, iy: CH - 80 },
   npcs: [
-    { id: 'c_gerda', pos: [[285, 463], [728, 472], [240, 760]] },
+    { id: 'c_gerda', pos: [[SXI(285), 463], [SXI(728), 472], [340, 760]] },
     { id: 'c_felix', pos: [[260, 1200], [1250, 1300], [237, 1375]] },
-    { id: 'c_berger', pos: [[500, 720], [760, 760], [1300, 160]] },
-    { id: 'c_toni', pos: [[1000, 600], [1450, 1050], [640, 940]] },
-    { id: 'c_anna', pos: [[380, 1080], [600, 1420], [1095, 1023]] },
+    { id: 'c_berger', pos: [[SXI(500), 950], [SXI(760), 760], [1300, 160]] },
+    { id: 'c_toni', pos: [[1190, 760], [1450, 1050], [640, 940]] },
+    { id: 'c_anna', pos: [[380, 1080], [700, 1400], [1460, 1090]] },
   ],
   decor: CDECOR, spots: CSPOTS, grid: buildGridChalet, ground: drawGroundChalet, decorDraw: CDRAW,
   feat: { swing: false, slide: false, house: false, racer: false, pigeons: false, waiter: false, dig: false },
@@ -335,7 +329,7 @@ STAGE_DEFS.chalet = {
     const ice = { vx: 0, vy: 0, lx: null, ly: null, on: false };
     return {
       update(dt) {
-        { const p = play.p, onIce = ((p.x - 760) / 150) ** 2 + ((p.y - 1120 - CY) / 80) ** 2 < 1;   // Gag: auf dem zugefrorenen Teich rutscht man weiter
+        { const p = play.p, onIce = ((p.x - 760) / 150) ** 2 + ((p.y - 1120 - CY - CY2) / 80) ** 2 < 1;   // Gag: auf dem zugefrorenen Teich rutscht man weiter
           if (ice.lx !== null && dt > 0) { const vx = (p.x - ice.lx) / dt, vy = (p.y - ice.ly) / dt; if (p.moving) { ice.vx = vx; ice.vy = vy; } }
           if (onIce && !ice.on) { ice.on = true; Sfx.play('jump'); if (!ice.said) { ice.said = true; play.banner = { text: 'Huiii, ist das glatt!', t: 0 }; } }
           if (!onIce) { ice.on = false; ice.vx = ice.vy = 0; }
@@ -343,22 +337,25 @@ STAGE_DEFS.chalet = {
           ice.lx = p.x; ice.ly = p.y; } flakes.forEach(f => { f.y += f.v * dt; f.ph += dt; f.x += Math.sin(f.ph) * 12 * dt; if (f.y > CH - CY) { f.y = -CY - 10; f.x = Math.random() * CW; } }); },
       draw(c, L0, vis0, t) {
         const L = { push: o => L0.push({ y: o.y + CY, f: () => { c.save(); c.translate(0, CY); o.f(); c.restore(); } }) }, vis = (x, y) => vis0(x, y + CY);
-        L.push({ y: 151, f: () => { for (let k = 0; k < 6; k++) { const fx = 470 + k * 12, h = 26 + Math.sin(t * 9 + k * 1.7) * 9; c.beginPath(); c.moveTo(fx - 10, 150); c.quadraticCurveTo(fx - 6, 150 - h * 0.6, fx + Math.sin(t * 7 + k) * 4, 150 - h); c.quadraticCurveTo(fx + 8, 150 - h * 0.6, fx + 10, 150); c.closePath(); c.fillStyle = k % 2 ? '#f77f00' : '#ffd166'; c.fill(); } ell(c, 500, 150, 60, 14); c.fillStyle = `rgba(255,140,40,${0.25 + 0.1 * Math.sin(t * 5)})`; c.fill(); } });
+        const lp = lpActive();
+        if (!lp) L.push({ y: 151, f: () => { for (let k = 0; k < 6; k++) { const fx = 470 + KAMIN_DX + k * 12, h = 26 + Math.sin(t * 9 + k * 1.7) * 9; c.beginPath(); c.moveTo(fx - 10, 150); c.quadraticCurveTo(fx - 6, 150 - h * 0.6, fx + Math.sin(t * 7 + k) * 4, 150 - h); c.quadraticCurveTo(fx + 8, 150 - h * 0.6, fx + 10, 150); c.closePath(); c.fillStyle = k % 2 ? '#f77f00' : '#ffd166'; c.fill(); } ell(c, 500, 150, 60, 14); c.fillStyle = `rgba(255,140,40,${0.25 + 0.1 * Math.sin(t * 5)})`; c.fill(); } });
         const sx = 260 + Math.sin(t * 0.3) * 24;
-        if (vis(sx, 225)) L.push({ y: 225, f: () => { drawPerson(c, 'c_sepp', sx, 225, 1.05, t, {}); c.save(); c.translate(sx + 22, 220); line(c, 0, -24, -8 + Math.sin(t * 4) * 6, -6, 3, '#8d5a3b'); c.restore(); } });
-        L.push({ y: 99996, f: () => {
+        if (!lp && vis(sx, 225)) L.push({ y: 225, f: () => { drawPerson(c, 'c_sepp', sx, 225, 1.05, t, {}); c.save(); c.translate(sx + 22, 220); line(c, 0, -24, -8 + Math.sin(t * 4) * 6, -6, 3, '#8d5a3b'); c.restore(); } });
+        if (!lp) L.push({ y: 99996, f: () => {
           // Tannengirlanden mit Lichtern an den Balken + hängende Laternen über den Tafeln (Foto)
           for (const gy of [175, 330]) { if (!vis(500, gy + 80)) continue; c.beginPath(); c.moveTo(HUT0.x0, gy); for (let x = HUT0.x0; x <= HUT0.x1; x += 30) c.lineTo(x, gy + Math.sin(x * 0.05) * 4); c.lineWidth = 9; c.strokeStyle = '#2d6a4f'; c.stroke(); c.lineWidth = 4; c.strokeStyle = '#40916c'; c.stroke();
             for (let x = HUT0.x0 + 10; x < HUT0.x1; x += 26) { ell(c, x, gy + Math.sin(x * 0.05) * 4 + 3, 2.6, 2.6); c.fillStyle = `rgba(255,220,120,${0.7 + 0.3 * Math.sin(t * 3 + x)})`; c.fill(); } }
-          for (const [lx, ly] of [[300, 300], [700, 300], [300, 430], [700, 430]]) { if (!vis(lx, ly + 60)) continue; line(c, lx, ly - 140, lx, ly - 100, 1.5, '#3d2c1f', false); rrPath(c, lx - 9, ly - 100, 18, 26, 3); fs(c, '#343a40', 2); rrPath(c, lx - 6, ly - 96, 12, 18, 2); c.fillStyle = `rgba(255,214,110,${0.85 + 0.15 * Math.sin(t * 5 + lx)})`; c.fill(); ell(c, lx, ly - 86, 26, 26); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
+          for (const [lx, ly] of [[SXI(300), 300], [SXI(700), 300], [SXI(300), 430], [SXI(700), 430]]) { if (!vis(lx, ly + 60)) continue; line(c, lx, ly - 140, lx, ly - 100, 1.5, '#3d2c1f', false); rrPath(c, lx - 9, ly - 100, 18, 26, 3); fs(c, '#343a40', 2); rrPath(c, lx - 6, ly - 96, 12, 18, 2); c.fillStyle = `rgba(255,214,110,${0.85 + 0.15 * Math.sin(t * 5 + lx)})`; c.fill(); ell(c, lx, ly - 86, 26, 26); c.fillStyle = 'rgba(255,200,90,.12)'; c.fill(); }
         } });
         L.push({ y: 99997, f: () => {
           c.save(); c.fillStyle = 'rgba(255,255,255,.7)';
           flakes.forEach(f => { if (f.y < HUT0.y1 + 30 && f.y > HUT0.y0 - 120 && f.x > HUT0.x0 - 30 && f.x < HUT0.x1 + 30) return; if (!vis(f.x, f.y)) return; ell(c, f.x, f.y, f.s, f.s); c.fill(); });
-          for (let k = 0; k < 4; k++) { const p = ((t * 0.25 + k / 4) % 1); ell(c, 500 + Math.sin(p * 6 + k) * 14, 10 - p * 120, 10 + p * 18, 8 + p * 14); c.fillStyle = `rgba(220,225,230,${0.5 * (1 - p)})`; c.fill(); }
+          for (let k = 0; k < 4; k++) { const p = ((t * 0.25 + k / 4) % 1); ell(c, 500 + KAMIN_DX + Math.sin(p * 6 + k) * 14, 10 - p * 120, 10 + p * 18, 8 + p * 14); c.fillStyle = `rgba(220,225,230,${0.5 * (1 - p)})`; c.fill(); }
           c.restore();
         } });
       },
     };
   },
 };
+STAGE_DEFS.chalet.npcs.forEach(n => n.pos.forEach(pt => { if (pt[1] > 840 && !(pt[0] > HUT.x0 && pt[0] < HUT.x1 && pt[1] < HUT.y1)) pt[1] += CY2; }));   // vor der Hütte: CY2 tiefer (Plätze in der größeren Hütte bleiben)
+
