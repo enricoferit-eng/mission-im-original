@@ -83,10 +83,17 @@ function buildGridSpielplatz() {
 const SOFT_DECOR = /tisch|palm|olive|baum|tanne|busch|lampe|laterne|pfosten|treppe|pylon|poller|cypress/;
 function solidDecor() {
   if (!SG || SG.id === 'spielplatz' || !DECOR) return;
+  const MW = typeof LP_WALK !== 'undefined' && typeof LP !== 'undefined' && LP.on && LP.stages[SG.id] && LP_WALK[SG.id];
+  if (MW) {   // gemalte Karte: begehbar ist, was auf dem Bild Boden ist (Laufmaske aus js/lpwalk.js)
+    const R = MW.rows.split('|');
+    for (let y = 0; y < MW.gh; y++) for (let x = 0; x < MW.gw; x++) if (R[y][x] === '0') G0[cellIdx(x * CELL + 12.5, y * CELL + 12.5)] = 0;
+    return;
+  }
   for (const d of DECOR) {
     if (!d.bb || SOFT_DECOR.test(d.t)) continue;
     // gesperrt wird nur der Bereich HINTER dem Möbel (zwischen Oberkante des Bildes und der Standfläche) – dort würde man verdeckt
-    const [bx, by, bw] = d.bb, foot = d.w ? d.y0 : d.y - (d.r || 20);
+    const [bx, by, bw, bh] = d.bb, foot = d.w ? d.y0 : d.y - (d.r || 20);
+    if (typeof LP !== 'undefined' && LP.on && LP.stages[SG.id]) { cellsIn(bx + 8, by + 8, bx + bw - 8, by + bh - 4, i => { G0[i] = 0; }); continue; }   // gemalte Draufsicht: ganzes Möbel samt Stühlen ist fest
     if (foot - by > 30) cellsIn(bx + 10, by + 6, bx + bw - 10, foot, i => { G0[i] = 0; });
   }
 }
@@ -383,7 +390,7 @@ class Play {
     if (opt.cam) { this.camX = opt.cam.x; this.camY = opt.cam.y; }
     this.entered = !!opt.enter;
     this.joy = null; this.pending = null; this.toast = null; this.t = 0; this.searching = null; this.exiting = null; this.sitting = null;
-    this.gateA = this.st.done.gate ? 1 : 0;
+    this.gateA = this.gateOpenNow() ? 1 : 0;
     this.idleT = 0; this.coachSaid = {};
     if (!this.st.secret) this.st.secret = {};
     this.slides = [];
@@ -801,7 +808,7 @@ class Play {
     for (const id in this.npcAnim) { const a = this.npcAnim[id]; a.wave = Math.max(0, a.wave - dt); a.jump = Math.max(0, a.jump - dt); }
     if (this.toast) { this.toast.t += dt; if (this.toast.t > 2.2) this.toast = null; }
     if (this.banner) { this.banner.t += dt; if (this.banner.t > 3.2) this.banner = null; }
-    this.gateA = lerp(this.gateA, this.st.done.gate ? 1 : 0, Math.min(1, dt * 3));
+    this.gateA = lerp(this.gateA, this.gateOpenNow() ? 1 : 0, Math.min(1, dt * 3));
     const hase = this.npcs.find(n => n.swing !== undefined);
     if (hase) { const off = this.seatOff(hase.swing); hase.y = SWING.y + off; hase.z = 24 + Math.abs(off) * 0.35; }
     { const bq = this.bonusQuest();
@@ -853,7 +860,7 @@ class Play {
   updatePlayer(dt) {
     const p = this.p, spd = ABIL_VAL.turbo[ability('turbo')];
     if (p.slide) {
-      p.slide.t += dt / 0.8; const e = Math.min(1, p.slide.t * p.slide.t);
+      p.slide.t += dt / 1.15; const e = Math.min(1, p.slide.t * p.slide.t);
       p.x = lerp(SLIDE.x0 + 8, SLIDE.x1 + 10, e); p.slideZ = HOUSE.fz * (1 - (p.x - SLIDE.x0) / (SLIDE.x1 - SLIDE.x0)); p.dir = 1; p.moving = false;
       if (p.slide.t >= 1) {
         p.slide = null; p.level = 0; p.x = SLIDE.x1 + 12; p.slideZ = 0; const s = this.w2s(p.x, p.y); FX.puff(s.x, s.y, 10); Sfx.play('good'); buzz(30);
@@ -917,6 +924,7 @@ class Play {
     }
   }
   // ---- Suchen ----
+  gateOpenNow() { return !!(this.st.done.gate || (typeof areaCleared === 'function' && !this.mp && areaCleared(this.diff, this.stage))); }   // einmal geschafft = Tor bleibt für immer offen
   canSearch() { const q = this.st.active; return (this.diff !== 'easy' || !!(q && q.team)) && !!q && q.got.some((g, i) => !this.off(q, i)); }
   startSearch() {
     if (this.searching || !this.canSearch() || this.p.slide) return;
@@ -1259,6 +1267,7 @@ class Play {
     const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
     const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
     const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
+    if (lpActive()) for (const d of DECOR) if (lpKeep(SG.id, d) && vis(d.x, d.y)) L.push({ y: d.y, f: () => SG.decorDraw[d.t](c, d, t, 0) });   // z. B. Autos auf dem Parkplatz: als gemalte Sprites, nicht im Bild
     for (const d of (lpActive() ? [] : DECOR)) {   // Low-Poly: Möbel sind im Bodenbild
       { const B = BB_CACHE[SG.id + '_d_' + d.id] || d.bb; if (B ? (B[0] > vx1 || B[0] + B[2] < vx0 || B[1] > vy1 + 100 || B[1] + B[3] < vy0 - 200) : !vis(d.x, d.y)) continue; }   // hohe/lange Möbel: ganze Fläche zählt
       const sh = this.shake[d.id] || 0, k = SG.id + '_d_' + d.id;

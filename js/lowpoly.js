@@ -9,14 +9,14 @@ const LP = {
     kueche: { map: 'assets/lowpoly/kueche/map.jpg?v=2', staff: { k_nina: 'nina', k_tom: 'tom', k_luca: 'luca', k_marco: 'marco', k_lea: 'lea' } },
     gastraum: { map: 'assets/lowpoly/gastraum/map.jpg?v=2', staff: {} },
     aussen: { map: 'assets/lowpoly/aussen/map.jpg?v=1', staff: {} },
-    parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=2', staff: {} },
+    parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=3', staff: {} },
     uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=1', staff: {} },
     chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=2', staff: {} },
     spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=3', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   zoomK: 0.72,   // Zoom in allen Bereichen gleich (Küche als Maß)
   playerArt: true,   // gemalte Spielfigur (Löwe/Bär/Hund); andere Tiere zeichnen weiter die alte Figur
-  catH: 96, staffH: 118, part: 2,   // Kamera: man sieht etwa 1/2 des Raums, auf jedem Bildschirm gleich
+  catH: 74, staffH: 90, part: 2,   // Kamera: man sieht etwa 1/2 des Raums, auf jedem Bildschirm gleich
     // Figurengröße passend zu den Möbeln im Bild
   img: {}, ready: false, runs: {},
   player: { face: 'front', flip: 1, dist: 0, lx: null, ly: null },
@@ -68,6 +68,7 @@ function lpOcclude(c, x, y, w, h) {
     c.drawImage(im, cx * CELL * sx, cy * CELL * sy, CELL * sx, CELL * sy, cx * CELL, cy * CELL, CELL + 0.5, CELL + 0.5);
   }
 }
+const LP_STEP = [0, 1, 3, 4];   // Laufbilder 3 und 6 stehen fast still (hakt) – nur die 4 Schrittbilder
 function lpSprite(c, im, x, y, h, flip = 1, bob = 0, tilt = 0) {
   const w = h * im.naturalWidth / im.naturalHeight;
   c.save(); c.translate(x, y);
@@ -91,7 +92,8 @@ function lpDrawPlayer(c, p, x, y, tilt, kind) {
     if (Math.abs(dx) > Math.abs(dy) * 0.8) { P.face = 'side'; P.flip = dx < 0 ? -1 : 1; } else P.face = dy < 0 ? 'back' : 'front';
     P.dist += d;
   }
-  const im = (p.moving && lpSpr(`${set}${P.face}_${Math.floor(P.dist / 11) % 6}`)) || lpSpr(set + 'stand_front');
+  if (p.slide) { const sim = lpSpr(set + 'stand_side') || lpSpr(set + 'stand_front'); lpSprite(c, sim, x, y + 6, LP.catH * 0.92, 1, 0, 0.42); P.face = 'side'; P.flip = 1; return true; }   // Rutschen: seitlich, nach vorn geneigt wie die Rutsche
+  const im = (p.moving && lpSpr(`${set}${P.face}_${LP_STEP[Math.floor(P.dist / 14) % 4]}`)) || lpSpr(set + 'stand_front');
   lpSprite(c, im, x, y, LP.catH, p.moving && P.face === 'side' ? P.flip : 1, p.moving ? 0 : Math.sin(p.t * 2.2) * 0.6, tilt || 0);
   return true;
 }
@@ -227,13 +229,13 @@ function lpPigeonWrap(orig) {
     c.save(); c.translate(x, y); c.scale(dir < 0 ? -1 : 1, 1); c.drawImage(im, -w / 2, -h, w, h); c.restore();
   };
 }
-// Leute (Gäste, Kinder, Kellner …): gemaltes Bild, 25 % größer als die alte Figur, leichtes Wippen; winken = kleiner Hüpfer
+// Leute (Gäste, Kinder, Kellner …): gemaltes Bild, etwa so groß wie die alte Figur (passend zu Stühlen/Tischen), leichtes Wippen; winken = kleiner Hüpfer
 const LP_LEUTE = new Set(["a_hoffmann", "a_klaus", "a_mila", "a_noah", "a_ober", "a_weber", "c_anna", "c_berger", "c_felix", "c_gerda", "c_sepp", "c_toni", "eule", "fuchs", "g_becker", "g_ben", "g_jonas", "g_lina", "g_rosi", "g_s1", "g_s2", "g_s3", "g_s4", "g_schulz", "g_sophie", "hase", "igel", "leo", "olli", "p_julia", "p_karl", "p_petra", "p_schmidt", "p_tim", "waschbaer"]);   // nur für diese gibt es Bilder
 function lpPersonWrap(orig, kind) {
   return function (c, id, x, y, s, t, o = {}) {
     const im = LP_LEUTE.has(id) && lpSpr('leute/' + id);
     if (!im) return orig.apply(this, arguments);
-    const B = lpMeasure(kind + '_' + id, (g, gx, gy) => orig(g, id, gx, gy, 1, 0, { noShadow: true, staff: true })), h = B.h * s * 1.25, w = im.naturalWidth * h / im.naturalHeight;
+    const B = lpMeasure(kind + '_' + id, (g, gx, gy) => orig(g, id, gx, gy, 1, 0, { noShadow: true, staff: true })), h = B.h * s * 0.96, w = im.naturalWidth * h / im.naturalHeight;
     const bob = o.wave ? Math.abs(Math.sin((t || 0) * 6)) * 4 * s : Math.abs(Math.sin((t || 0) * 1.6 + (o.ph || x))) * 1.2 * s;
     if (!o.noShadow) { c.save(); c.fillStyle = 'rgba(40,25,10,.25)'; ell(c, x, y - 1, w * 0.36, 5 * s); c.fill(); c.restore(); }
     c.drawImage(im, x - w / 2, y - h - bob - (o.sit ? -h * 0.12 : 0), w, h);
@@ -293,7 +295,7 @@ function lpAnimalWrap(orig) {
     const have = new Set(LP_SKIN_HAVE[kind] || []), sk = id && SKINS[id];
     const dir = id && have.has(id) ? id : sk && sk.uniform && have.has('u_' + sk.uniform) ? 'u_' + sk.uniform : 'basis';
     const base = 'spieler/' + kind + '/' + dir + '/', t = o.t || 0;
-    const im = (o.moving && lpSpr(base + 'side_' + (Math.floor(t * 10) % 6))) || lpSpr(base + 'stand_front') || lpSpr('spieler/' + kind + '/basis/stand_front');
+    const im = (o.moving && lpSpr(base + 'side_' + LP_STEP[Math.floor(t * 8) % 4])) || lpSpr(base + 'stand_front') || lpSpr('spieler/' + kind + '/basis/stand_front');
     if (dir !== 'basis' && !lpSpr(base + 'stand_front')) LP_MISS = true;   // Kostüm-Bild lädt noch: Karte nicht mit der Grundfigur merken
     if (!im) { LP_MISS = true; return orig.apply(this, arguments); }
     const B = lpMeasure('animal_' + kind, (g, gx, gy) => orig(g, kind, gx, gy, 1, { noShadow: true, look: DEFAULT_LOOK, noOutfit: true }));
@@ -419,3 +421,7 @@ function lpFogPatch() {
   };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpFogPatch); else setTimeout(lpFogPatch, 0);
+
+// Deko, die im Low-Poly-Modus trotzdem als Sprite gezeichnet wird (nicht im Bodenbild): Autos auf dem Parkplatz
+const LP_DECOR_KEEP = { parkplatz: new Set(['auto']) };
+function lpKeep(id, d) { const K = LP_DECOR_KEEP[id]; return !!(K && K.has(d.t)); }

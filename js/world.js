@@ -184,11 +184,12 @@ Object.assign(Play.prototype, {
     const inView = (x0, y0, w, h) => !(x0 > vx1 || x0 + w < vx0 || y0 > vy1 || y0 + h < vy0);
     // eigene Durchgangs-Sperren + Wegweiser
     pushLinkBarriers(c, L, this.stage, 0, 0, this.diff, t);
-    pushSigns(c, L, this.stage, this.diff, t);
+    if (!(typeof LP !== "undefined" && LP.on)) pushSigns(c, L, this.stage, this.diff, t);   // Low-Poly: keine Wegweiser-Schilder (User-Wunsch)
     for (const N of this.nb || []) {
       if (N.fog || !this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       const { ox, oy, D } = N, tr = f => () => { c.save(); c.translate(ox, oy); f(); c.restore(); };
       const lpN = typeof lpFor === 'function' && lpFor(N.id);   // Low-Poly: Möbel/Deko sind schon im Bodenbild
+      if (lpN) for (const d of D.decor) if (lpKeep(N.id, d) && inView(d.x - 80 + ox, d.y - 140 + oy, 160, 160)) L.push({ y: d.y + oy, f: tr(() => D.decorDraw[d.t](c, d, t, 0)) });
       for (const d of (lpN ? [] : D.decor)) {
         const bb = BB_CACHE[N.id + '_d_' + d.id] || decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3] + 100)) continue;
         const fn = decorStatic(N.id, D, d); if (fn) L.push({ y: d.y + (d.zy || 0) + (d.t === 'bench' ? 10 : 0) + oy, f: tr(() => fn(c, t)) });
@@ -363,9 +364,9 @@ class WorldMap {
     c.save(); c.beginPath(); c.rect(mx, my, mw, mh); c.clip(); c.drawImage(T.cv, mx, my, mw, mh);
     for (const id of Object.keys(WORLD_XY)) {
       const [wx, wy] = WORLD_XY[id], x = X(wx), y = Y(wy), tw = areaW(id) * sc, th = areaH(id) * sc;
-      const open = areaUnlocked(this.play.diff, id), img = GROUND_CACHE[id], here = id === this.play.stage, cl = areaCleared(this.play.diff, id);
+      const open = areaUnlocked(this.play.diff, id), lpm = typeof LP !== 'undefined' && LP.on && LP.img['map_' + id], img = lpm && lpm.complete && lpm.naturalWidth ? lpm : GROUND_CACHE[id], here = id === this.play.stage, cl = areaCleared(this.play.diff, id);
       if (img) c.drawImage(img, x, y, tw, th); else { c.fillStyle = STAGE_COL[id] || '#ddd'; c.fillRect(x, y, tw, th); stageIcon(c, id, x + tw / 2, y + th * 0.42, Math.min(tw, th) * 0.3); }
-      if (!open) { c.fillStyle = 'rgba(210,220,224,.92)'; c.fillRect(x, y, tw, th); icon(c, 'lock', x + tw / 2, y + th * 0.42, Math.min(tw, th) * 0.3); }
+      if (!open) { c.fillStyle = img ? 'rgba(210,220,224,.62)' : 'rgba(210,220,224,.92)'; c.fillRect(x, y, tw, th); icon(c, 'lock', x + tw / 2, y + th * 0.42, Math.min(tw, th) * 0.3); }
       c.lineWidth = here ? 4 : 2; c.strokeStyle = here ? '#ffd166' : 'rgba(0,0,0,.35)'; c.strokeRect(x, y, tw, th);
       const lab = (cl ? '✓ ' : '') + STAGE_NAME[id]; c.font = `900 ${Math.max(10, Math.min(14, tw / 8))}px ${FONT}`; const lw = c.measureText(lab).width + 14;
       rrPath(c, x + tw / 2 - lw / 2, y + th - 26, lw, 20, 9); fs(c, here ? '#ffd166' : open ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.7)', 1.5);

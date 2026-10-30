@@ -82,11 +82,12 @@ function drawGroundParkplatz(g, R) {
 const PK_IN = 1610, PK_CH = 860, PK_GATE = 2300;   // Weg vom Spielplatz (oben), Durchgang + Schranke zum Chalet (rechts)
 const car = (id, x, cy, a, col) => ({ id, t: 'auto', x, y: cy + 58, cy, a, col, r: 34, x0: x - 34 - Math.abs(a) * 40, y0: cy - 60, w: 68 + Math.abs(a) * 80, h: 120, bb: [x - 60, cy - 70, 120, 140] });
 const PDECOR = [
-  // am Rand vom Kreisverkehr + in den Reihen geparkt (wie auf dem Bild)
-  car('a1', 520, 700, 0.25, PCOLS[0]), car('a2', 610, 690, 0.2, PCOLS[3]), car('a3', 1020, 690, -0.2, PCOLS[3]), car('a4', 1240, 520, -0.25, PCOLS[2]),
-  car('a5', 700, 1020, 0.05, PCOLS[4]), car('a6', 1450, 1260, 0.1, PCOLS[3]), car('a7', 1880, 470, 0, PCOLS[1]),
-  car('a8', 2050, 520, 0.2, PCOLS[5]), car('a9', 2380, 470, 0.15, PCOLS[6]), car('a10', 1700, 1010, 0.1, PCOLS[7]), car('a11', 2150, 1000, 0.15, PCOLS[8]), car('a12', 2550, 980, -0.1, PCOLS[9]), car('a13', 1000, 1260, 0.1, PCOLS[2]),
-  car('a14', 1700, 700, -0.15, PCOLS[4]), car('a15', 2700, 690, 0.1, PCOLS[0]), car('a16', 600, 1280, 0.05, PCOLS[6]), car('a17', 2250, 1290, -0.1, PCOLS[3]), car('a18', 2700, 1250, 0.12, PCOLS[7]),
+  // ordentlich in den gemalten Parkbuchten (oben 13, unten 20 Buchten, 110 px Abstand, Linien 19° geneigt)
+  car('a1', 1225, 701, -0.34, '#e63946'), car('a2', 1335, 701, -0.34, '#f4a261'), car('a3', 1555, 701, -0.34, '#f8f9fa'), car('a4', 1774, 701, -0.34, '#2a9d8f'),
+  car('a5', 2214, 701, -0.34, '#ffd166'), car('a6', 2434, 701, -0.34, '#4dabf7'), car('a7', 2544, 701, -0.34, '#e63946'), car('a8', 324, 1239, -0.34, '#f4a261'),
+  car('a9', 544, 1239, -0.34, '#f8f9fa'), car('a10', 654, 1239, -0.34, '#2a9d8f'), car('a11', 764, 1239, -0.34, '#ffd166'), car('a12', 983, 1239, -0.34, '#4dabf7'),
+  car('a13', 1203, 1239, -0.34, '#e63946'), car('a14', 1313, 1239, -0.34, '#f4a261'), car('a15', 1643, 1239, -0.34, '#f8f9fa'), car('a16', 2083, 1239, -0.34, '#2a9d8f'),
+  car('a17', 2192, 1239, -0.34, '#ffd166'), car('a18', 2412, 1239, -0.34, '#4dabf7'),
   { id: 'anhaenger', t: 'anhaenger', x: 170, y: 1250, x0: 150, y0: 1110, w: 44, h: 140, bb: [135, 1090, 80, 170] },
   { id: 'transporter', t: 'transporter', x: 300, y: 1390, x0: 272, y0: 1280, w: 56, h: 110, bb: [258, 1260, 90, 140] },
   { id: 'insel', t: 'rbinsel', x: RB.x, y: RB.y + RB.ri, bb: [RB.x - 110, RB.y - 180, 220, 270] },
