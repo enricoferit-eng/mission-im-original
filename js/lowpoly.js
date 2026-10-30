@@ -266,7 +266,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   if (!LP.on) return;
   const im = new Image();
   im.onload = () => { if (typeof worldBox === 'function') TERRAIN = { cv: im, B: worldBox() }; };
-  im.src = 'assets/lowpoly/welt/gelaende.jpg?v=1';
+  im.src = 'assets/lowpoly/welt/gelaende.jpg?v=2';
 })();
 
 // ---------- Skins der Spielfigur: welcher Ordner mit gemalten Bildern gehört zu welchem Skin ----------
