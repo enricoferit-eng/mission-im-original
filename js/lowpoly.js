@@ -188,7 +188,7 @@ function lpSplit(c, top, bottom, line) {   // oben bis `line`, darunter Boden, d
 const LP_SPR = {};
 function lpSpr(path) {
   if (!LP.on) return null;
-  let im = LP_SPR[path]; if (!im) { im = LP_SPR[path] = new Image(); im.src = 'assets/lowpoly/' + path + '.png?v=1'; }
+  let im = LP_SPR[path]; if (!im) { im = LP_SPR[path] = new Image(); im.src = 'assets/lowpoly/' + path + '.png?v=2'; }
   return im.complete && im.naturalWidth ? im : null;
 }
 const LP_BOX = new Map();
@@ -265,3 +265,14 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   im.onload = () => { if (typeof worldBox === 'function') TERRAIN = { cv: im, B: worldBox() }; };
   im.src = 'assets/lowpoly/welt/gelaende.jpg?v=1';
 })();
+
+// ---------- Skins der Spielfigur: welcher Ordner mit gemalten Bildern gehört zu welchem Skin ----------
+// LP_SKIN_HAVE wird beim Hinzufügen neuer Bögen aktualisiert (tier -> vorhandene Ordner).
+const LP_SKIN_HAVE = {"bear":[],"dog":[],"lion":["sk_bau","sk_biene","sk_detektiv","sk_gaertner","sk_koch","sk_matrose","sk_sport","sk_surfer"]};   // @@SKINLISTE@@
+function lpSkinDir(id) {
+  const sk = typeof SKINS !== 'undefined' && SKINS[id]; if (!sk) return null;
+  const kind = typeof scene !== 'undefined' && scene && scene.kind, have = new Set(LP_SKIN_HAVE[kind] || []);
+  if (have.has(id)) return id;
+  if (sk.uniform && have.has('u_' + sk.uniform)) return 'u_' + sk.uniform;
+  return null;
+}
