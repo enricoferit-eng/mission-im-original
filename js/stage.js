@@ -675,7 +675,7 @@ class Play {
   z() { const p = this.p; if (p.slide) return p.slideZ; const i = cellIdx(p.x, p.y); if (i >= 0 && ST[i]) return stairsZ(p.y); return p.level ? HOUSE.fz : 0; }
   w2s(x, y, z = 0) { return { x: (x - this.camX) * this.zoom + W / 2, y: (y - z - this.camY) * this.zoom + H / 2 }; }
   s2w(sx, sy) { return { x: (sx - W / 2) / this.zoom + this.camX, y: (sy - H / 2) / this.zoom + this.camY }; }
-  seatOff(k) { if (this.swinging && this.swinging.k === k) return this.swinging.off; return k === this.freeSeat() ? 6 * Math.sin(this.t * 1.6 + k * 2.1) : 30 * Math.sin(this.t * 1.6 + k * 2.1); }
+  seatOff(k) { if (this.swinging && this.swinging.k === k) return this.swinging.off; return k === this.freeSeat() ? (lpActive() ? 12 : 6) * Math.sin(this.t * 1.6 + k * 2.1) : 30 * Math.sin(this.t * 1.6 + k * 2.1); }   // Low-Poly: leere Schaukel pendelt etwas sichtbarer
   freeSeat() { return 1 - this.st.layout.seat; }
   // ---- Schaukeln (Extra): im richtigen Moment tippen = Schwung holen, dann weit abspringen ----
   startSwing() {
@@ -1344,22 +1344,31 @@ class Play {
     c.strokeStyle = 'rgba(60,35,15,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(SWING.x0, bY); c.lineTo(SWING.x1, bY + 1); c.stroke();
   }
   drawSeat(c, sx, off, k) {
+    if (lpActive() && LP.img.sitz) return this.drawSeatLp(c, sx, off, k);
     const bY = SWING.y - SWING.top, sy = SWING.y + off, zz = 24 + Math.abs(off) * 0.35;
     const rider = this.npcs.find(n => n.swing === k);
     if (this.swinging && !this.swinging.jump && this.swinging.k === k) drawAnimal(c, this.kind, sx, sy - zz + 6, 1.0, { t: this.t, dir: 1, cap: hasCap(this.kind), noShadow: true, tilt: Math.cos(this.swinging.ph) * this.swinging.amp * 0.35 });
     c.fillStyle = 'rgba(0,0,0,.2)'; ell(c, sx, sy, 20, 6); c.fill();
-    if (!lpActive()) line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
+    line(c, sx - 14, bY + 4, sx - 15, sy - zz, 2, '#ced4da');
     if (rider) { const a = this.npcAnim[rider.id], j = a.jump > 0 ? Math.abs(Math.sin(a.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, sy - zz + 4 - j, 1.0, this.t, { staff: true, ph: a.ph, noShadow: true, wave: a.wave > 0 || this.npcState(rider.id) === 'ready' }); }
-    if (lpActive() && LP.img.sitz) {   // Low-Poly-Sitz in fester Größe, Ketten als Glieder vom Balken bis zu den Haken
-      const im = LP.img.sitz, w = 48, h = w * im.naturalHeight / im.naturalWidth, top = sy - zz - h * 0.45;
-      for (const d of [-1, 1]) { const x1 = sx + d * w * 0.38, y1 = top + h * 0.12, x0 = sx + d * 15, y0 = bY + 4;
-        c.save(); c.lineCap = 'round'; c.setLineDash([2.6, 2.2]);
-        c.strokeStyle = '#5c636b'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
-        c.strokeStyle = '#dfe3e8'; c.lineWidth = 1.6; c.lineDashOffset = 1.2; c.stroke(); c.restore(); }
-      c.drawImage(im, sx - w / 2, top, w, h); return;
-    }
     rrPath(c, sx - 19, sy - zz - 4, 38, 9, 3); fs(c, '#343a40', 3);
     line(c, sx + 14, bY + 4, sx + 15, sy - zz, 2, '#ced4da');
+  }
+  // Low-Poly-Schaukel: Sitz pendelt vor und zurück (von oben gesehen: hoch/runter im Bild), hebt sich an den Enden,
+  // kippt dabei (Sitzfläche wird schmaler/breiter), Schatten bleibt am Boden und wird kleiner, je höher der Sitz ist
+  drawSeatLp(c, sx, off, k) {
+    const bY = SWING.y - SWING.top, sy = SWING.y + off, lift = 22 + off * off * 0.014, a = clamp(off / 34, -1, 1);
+    const im = LP.img.sitz, w = 48, h = w * im.naturalHeight / im.naturalWidth * (1 + 0.45 * a), top = sy - lift - h * 0.45;
+    const rider = this.npcs.find(n => n.swing === k), me = this.swinging && !this.swinging.jump && this.swinging.k === k;
+    const sh = 1 - Math.min(0.45, (lift - 22) / 60);
+    c.fillStyle = `rgba(40,20,5,${0.22 * sh})`; ell(c, sx + 4, SWING.y + off * 0.9 + 2, 20 * sh, 6 * sh); c.fill();
+    for (const d of [-1, 1]) { const x1 = sx + d * w * 0.38, y1 = top + h * 0.12, x0 = sx + d * 15, y0 = bY + 4;
+      c.save(); c.lineCap = 'round'; c.setLineDash([2.6, 2.2]);
+      c.strokeStyle = '#5c636b'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+      c.strokeStyle = '#dfe3e8'; c.lineWidth = 1.6; c.lineDashOffset = 1.2; c.stroke(); c.restore(); }
+    if (me) lpSprite(c, LP.img.katze_steht, sx, top + h * 0.7, LP.catH * 0.8, 1, 0, a * 0.12);
+    if (rider) { const an = this.npcAnim[rider.id], j = an.jump > 0 ? Math.abs(Math.sin(an.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, top + h * 0.6 - j, 1.0, this.t, { staff: true, ph: an.ph, noShadow: true, wave: an.wave > 0 || this.npcState(rider.id) === 'ready' }); }
+    c.drawImage(im, sx - w / 2, top, w, h);
   }
   drawSlide(c) { if (lpActive()) return; drawSprite(c, sprite('slide', 735, 522, 200, 142, g => this.drawSlideRaw(g))); }
   drawSlideRaw(c) {
