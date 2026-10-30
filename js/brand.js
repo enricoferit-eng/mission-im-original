@@ -147,6 +147,7 @@ const FOOD = {
 };
 const FOOD6 = ['kuchen', 'eisclown', 'limo', 'flammkuchen', 'pasta', 'croissant'];
 function drawFood(c, id, x, y, size, sil) {
+  if (typeof lpDrawItem === 'function' && lpDrawItem(c, 'food', id, x, y, size, sil)) return;   // Low-Poly-Bild, wenn geladen
   c.save(); c.translate(x, y); const k = size / 44; c.scale(k, k); c.lineJoin = 'round'; c.lineCap = 'round';
   if (sil) {
     // Schatten: auf eigene Leinwand zeichnen und einfärben (funktioniert in allen Browsern)

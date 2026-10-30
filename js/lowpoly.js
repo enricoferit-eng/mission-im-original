@@ -90,3 +90,23 @@ function lpRoof(c, alpha) {
   c.save(); c.globalAlpha = alpha; c.drawImage(LP.img.dach, r[0], r[1], r[2], r[3]); c.restore();
   return true;
 }
+// Leckereien + Such-Gegenstände als gemalte Bilder (assets/lowpoly/items/<food|item>_<id>.png), werden erst bei Bedarf geladen.
+// Solange ein Bild noch lädt, zeichnet das Spiel die alte Grafik.
+const LP_ITEMS = {};
+function lpItemImg(kind, id) {
+  if (!LP.on) return null;
+  const k = kind + '_' + id; let im = LP_ITEMS[k];
+  if (!im) { im = LP_ITEMS[k] = new Image(); im.src = 'assets/lowpoly/items/' + k + '.png?v=1'; }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function lpDrawItem(c, kind, id, x, y, size, sil) {
+  const im = lpItemImg(kind, id); if (!im) return false;
+  const box = size * 1.25, s = box / Math.max(im.naturalWidth, im.naturalHeight), w = im.naturalWidth * s, h = im.naturalHeight * s;
+  if (!sil) { c.drawImage(im, x - w / 2, y - h / 2, w, h); return true; }
+  // Schatten-Umriss (für „Welches Teil fehlt?“ usw.): Bild einfärben
+  const cv = lpDrawItem.cv || (lpDrawItem.cv = document.createElement('canvas')), S = 160; cv.width = cv.height = S;
+  const g = cv.getContext('2d'); g.clearRect(0, 0, S, S); const t = S / Math.max(im.naturalWidth, im.naturalHeight);
+  g.drawImage(im, (S - im.naturalWidth * t) / 2, (S - im.naturalHeight * t) / 2, im.naturalWidth * t, im.naturalHeight * t);
+  g.globalCompositeOperation = 'source-in'; g.fillStyle = '#2a2340'; g.fillRect(0, 0, S, S);
+  c.drawImage(cv, x - box / 2, y - box / 2, box, box); return true;
+}

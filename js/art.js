@@ -459,6 +459,7 @@ const ITEMS = {
 };
 const ITEM_IDS = Object.keys(ITEMS);
 function drawItem(c, id, x, y, size, sil) {
+  if (typeof lpDrawItem === 'function' && lpDrawItem(c, 'item', id, x, y, size, sil)) return;   // Low-Poly-Bild, wenn geladen
   c.save(); c.translate(x, y); const k = size / 44; c.scale(k, k);
   c.lineJoin = 'round'; c.lineCap = 'round';
   const prev = OL;
