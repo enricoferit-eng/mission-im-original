@@ -425,7 +425,14 @@ function lpFogPatch() {
     const im = LP.on && LP.img['map_' + id];
     if (!im || !im.complete || !im.naturalWidth) return fog0.apply(this, arguments);
     c.drawImage(im, ox, oy, areaW(id), areaH(id));
-    c.save(); c.beginPath(); c.rect(ox, oy, areaW(id), areaH(id)); c.clip(); c.globalAlpha = 0.74; fog0.apply(this, arguments); c.restore();   // Wolken bleiben im Bereich
+    const TW = areaW(id), TH = areaH(id), cx = ox + TW / 2, cy = oy + TH / 2;   // ruhiger Schleier statt Wolken + vieler Schilder
+    c.fillStyle = 'rgba(232,238,241,.62)'; c.fillRect(ox, oy, TW, TH);
+    // Schloss + Name dort, wo man gerade hinschaut (sonst sieht man es im Hochformat oft nicht)
+    const sc = typeof scene !== 'undefined' && scene, vx = sc && sc.camX != null ? clamp(sc.camX, ox + 140, ox + TW - 140) : cx, vy = sc && sc.camY != null ? clamp(sc.camY, oy + 140, oy + TH - 160) : cy;
+    const bx = Math.abs(vx - cx) < TW * 0.35 ? cx : vx, by = Math.abs(vy - cy) < TH * 0.35 ? cy : vy;
+    ell(c, bx, by, 54, 54); fs(c, 'rgba(255,255,255,.92)', 4, '#868e96'); icon(c, 'lock', bx, by - 4, 54);
+    txt(c, STAGE_NAME[id] || '', bx, by + 84, 32, '#495057', 'center', '#fff');
+    { const i = STAGE_ORDER.indexOf(id), prev = STAGE_ORDER[i - 1]; if (prev) txt(c, 'Schaffe zuerst: ' + STAGE_NAME[prev], bx, by + 120, 20, '#6c757d', 'center', '#fff'); }
   };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpFogPatch); else setTimeout(lpFogPatch, 0);
@@ -433,3 +440,4 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 // Deko, die im Low-Poly-Modus trotzdem als Sprite gezeichnet wird (nicht im Bodenbild): Autos auf dem Parkplatz
 const LP_DECOR_KEEP = { parkplatz: new Set(['auto']) };
 function lpKeep(id, d) { const K = LP_DECOR_KEEP[id]; return !!(K && K.has(d.t)); }
+function lpOccDraw(c, id, o) { const im = lpSpr(id + '/occ/' + o[0]); if (im) c.drawImage(im, o[1], o[2], o[3], o[4]); }

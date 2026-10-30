@@ -1267,6 +1267,7 @@ class Play {
     const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
     const benchRaw = (g, d, sx) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y + 12, 48, 8); g.fill(); rrPath(g, d.x - 43 + sx, d.y - 18, 86, 12, 4); fs(g, '#a0673a', 3); rrPath(g, d.x - 43 + sx, d.y - 2, 86, 12, 4); fs(g, '#8d5a3b', 3); rrPath(g, d.x - 38, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); rrPath(g, d.x + 30, d.y + 8, 8, 10, 2); fs(g, '#495057', 2); };
     const lampRaw = (g, d) => { g.fillStyle = 'rgba(0,0,0,.2)'; ell(g, d.x, d.y, 12, 4); g.fill(); line(g, d.x, d.y, d.x, d.y - 170, 5, '#adb5bd'); rrPath(g, d.x - 4, d.y - 182, 30, 10, 4); fs(g, '#6c757d', 3); };
+    if (lpActive()) for (const o of (typeof LP_OCC !== 'undefined' && LP_OCC[SG.id]) || []) if (vis(o[1] + o[3] / 2, o[5])) L.push({ y: o[5], f: () => lpOccDraw(c, SG.id, o) });   // Bäume usw. als eigene Ebene: wer dahinter steht, wird verdeckt
     if (lpActive()) for (const d of DECOR) if (lpKeep(SG.id, d) && vis(d.x, d.y)) L.push({ y: d.y, f: () => SG.decorDraw[d.t](c, d, t, 0) });   // z. B. Autos auf dem Parkplatz: als gemalte Sprites, nicht im Bild
     for (const d of (lpActive() ? [] : DECOR)) {   // Low-Poly: Möbel sind im Bodenbild
       { const B = BB_CACHE[SG.id + '_d_' + d.id] || d.bb; if (B ? (B[0] > vx1 || B[0] + B[2] < vx0 || B[1] > vy1 + 100 || B[1] + B[3] < vy0 - 200) : !vis(d.x, d.y)) continue; }   // hohe/lange Möbel: ganze Fläche zählt

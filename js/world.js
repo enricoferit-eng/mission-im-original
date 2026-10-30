@@ -189,6 +189,7 @@ Object.assign(Play.prototype, {
       if (N.fog || !this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       const { ox, oy, D } = N, tr = f => () => { c.save(); c.translate(ox, oy); f(); c.restore(); };
       const lpN = typeof lpFor === 'function' && lpFor(N.id);   // Low-Poly: Möbel/Deko sind schon im Bodenbild
+      if (lpN) for (const o of (typeof LP_OCC !== 'undefined' && LP_OCC[N.id]) || []) if (inView(o[1] + ox, o[2] + oy, o[3], o[4])) L.push({ y: o[5] + oy, f: tr(() => lpOccDraw(c, N.id, o)) });
       if (lpN) for (const d of D.decor) if (lpKeep(N.id, d) && inView(d.x - 80 + ox, d.y - 140 + oy, 160, 160)) L.push({ y: d.y + oy, f: tr(() => D.decorDraw[d.t](c, d, t, 0)) });
       for (const d of (lpN ? [] : D.decor)) {
         const bb = BB_CACHE[N.id + '_d_' + d.id] || decorBB(d); if (!inView(bb[0] + ox, bb[1] + oy, bb[2], bb[3] + 100)) continue;
