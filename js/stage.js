@@ -82,13 +82,14 @@ function buildGridSpielplatz() {
 // Sichtbare Möbel sind fest: man kann nicht hinter hohe Objekte laufen (Bäume, Pfosten, Lampen ausgenommen)
 const SOFT_DECOR = /tisch|palm|olive|baum|tanne|busch|lampe|laterne|pfosten|treppe|pylon|poller|cypress/;
 function solidDecor() {
-  if (!SG || SG.id === 'spielplatz' || !DECOR) return;
+  if (!SG || !DECOR) return;
   const MW = typeof LP_WALK !== 'undefined' && typeof LP !== 'undefined' && LP.on && LP.stages[SG.id] && LP_WALK[SG.id];
   if (MW) {   // gemalte Karte: begehbar ist, was auf dem Bild Boden ist (Laufmaske aus js/lpwalk.js)
     const R = MW.rows.split('|');
     for (let y = 0; y < MW.gh; y++) for (let x = 0; x < MW.gw; x++) if (R[y][x] === '0') G0[cellIdx(x * CELL + 12.5, y * CELL + 12.5)] = 0;
     return;
   }
+  if (SG.id === 'spielplatz') return;
   for (const d of DECOR) {
     if (!d.bb || SOFT_DECOR.test(d.t)) continue;
     // gesperrt wird nur der Bereich HINTER dem Möbel (zwischen Oberkante des Bildes und der Standfläche) – dort würde man verdeckt

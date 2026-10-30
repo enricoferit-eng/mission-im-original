@@ -141,8 +141,13 @@ function logo(c, x, y, s) {
   drawLogo(c, x, y + 10 * s, 250 * s, true);
 }
 // Leitsatz von Im Original als Band
-function claimBand(c, text, x, y, size = 16, col = BRAND.olive) {
-  c.font = `800 ${size}px ${FONT}`; const w = c.measureText(text).width + size * 2;
+function claimBand(c, text, x, y, size = 16, col = BRAND.olive, maxW = 0) {
+  c.font = `800 ${size}px ${FONT}`; let w = c.measureText(text).width + size * 2;
+  if (maxW && w > maxW) {   // zu breit (Hochformat): kleiner, notfalls auf zwei Zeilen
+    const k = c.getTransform(), scr = Math.hypot(k.a, k.b) / (DPR || 1), ns = size * maxW / w;
+    if (ns * scr < 13.5 && text.includes(' ')) { const mid = text.length / 2, sp = [...text.matchAll(/ /g)].map(m => m.index).sort((p, q) => Math.abs(p - mid) - Math.abs(q - mid))[0];
+      claimBand(c, text.slice(0, sp), x, y - size * 1.05, size, col, maxW); claimBand(c, text.slice(sp + 1), x, y + size * 1.05, size, col, maxW); return; }
+    size = ns; c.font = `800 ${size}px ${FONT}`; w = c.measureText(text).width + size * 2; }
   rrPath(c, x - w / 2, y - size * 0.95, w, size * 1.9, size * 0.95); c.fillStyle = 'rgba(251,248,242,.93)'; c.fill(); c.lineWidth = 2.5; c.strokeStyle = col; c.stroke();
   leaf(c, x - w / 2 + size * 0.75, y, size * 0.075); leaf(c, x + w / 2 - size * 0.75, y, size * 0.075, BRAND.lime, Math.PI + 0.5);
   txt(c, text, x, y + 1, size, col, 'center', null);
@@ -1594,8 +1599,8 @@ class ClearOverlay {
     c.restore();
     for (let s = 0; s < 3; s++) { const kk = ease.back(clamp(t * 2 - 0.4 - s * 0.2, 0, 1)); c.save(); c.translate(cx + (s - 1) * 56, cy - 122 - (s === 1 ? 14 : 0)); c.scale(kk, kk); icon(c, 'star', 0, 0, s === 1 ? 54 : 44); c.restore(); }
     if (!o.finale) drawLogo(c, cx, Math.max(56, cy - 200), Math.min(220, W - 80), true);   // Finale: Glückwunsch-Titel statt Logo
-    if (t > 1.2) { claimBand(c, o.finale ? 'Alle Bereiche geschafft – du bist ein echter Original-Held!' : 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, o.finale ? cy + 262 : cy + 196, Math.max(16, 14 / sk)); }
-    if (o.finale) { const k2 = ease.back(clamp(t * 1.5, 0, 1)); c.save(); c.translate(cx, Math.max(40, cy - 196)); c.scale(k2, k2); txt(c, 'Herzlichen Glückwunsch!', 0, 0, 34, '#ffd23f', 'center', BRAND.ink); c.restore(); }
+    if (t > 1.2) { claimBand(c, o.finale ? 'Alle Bereiche geschafft – du bist ein echter Original-Held!' : 'Bereich geschafft – du bist ein echter Original-Helfer!', cx, o.finale ? cy + 272 : cy + 208, Math.max(16, 14 / sk), BRAND.olive, W / sk - 24); }
+    if (o.finale) { const k2 = ease.back(clamp(t * 1.5, 0, 1)); c.save(); c.translate(cx, Math.max(40, cy - 196)); c.scale(k2, k2); txt(c, 'Herzlichen Glückwunsch!', 0, 0, 34, '#ffd23f', 'center', BRAND.ink, W / sk - 30); c.restore(); }
     const ry = cy + 128, kk = ease.back(clamp(t * 2 - 1, 0, 1));
     c.save(); c.translate(cx, ry); c.scale(kk, kk);
     panel(c, -150, -34, 300, 76, '#fff7e6', 20);

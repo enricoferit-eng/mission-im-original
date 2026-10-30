@@ -359,10 +359,12 @@ class WorldMap {
     txt(c, 'Weltkarte', W / 2, 32, 24, '#fff', 'center', BRAND.olive);
     roundBtn(c, W - 40, 36, 22, '#ced4da', 'cross', () => this.close());
     // ganze Anlage maßstabsgetreu wie auf dem Luftbild
-    const T = terrainImage(), B = T.B, pad = 14, top = 62, aw = W - pad * 2 - 80, ah = H - top - pad, sc = Math.min(aw / (B.x1 - B.x0), ah / (B.y1 - B.y0));
+    const T = terrainImage(), B = { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 }, pad = 14, top = 62, aw = W - pad * 2 - (W > H ? 80 : 0), ah = H - top - pad;
+    for (const id in WORLD_XY) { const [ax, ay] = WORLD_XY[id]; B.x0 = Math.min(B.x0, ax - 160); B.y0 = Math.min(B.y0, ay - 160); B.x1 = Math.max(B.x1, ax + areaW(id) + 160); B.y1 = Math.max(B.y1, ay + areaH(id) + 160); }   // nur die Anlage, nicht das ganze Gelände – so wird alles größer
+    const sc = Math.min(aw / (B.x1 - B.x0), ah / (B.y1 - B.y0));
     const mw = (B.x1 - B.x0) * sc, mh = (B.y1 - B.y0) * sc, mx = (W - mw) / 2, my = top + (ah - mh) / 2, X = wx => mx + (wx - B.x0) * sc, Y = wy => my + (wy - B.y0) * sc;
     rrPath(c, mx - 6, my - 6, mw + 12, mh + 12, 14); fs(c, '#fbf8f2', 3);
-    c.save(); c.beginPath(); c.rect(mx, my, mw, mh); c.clip(); c.drawImage(T.cv, mx, my, mw, mh);
+    c.save(); c.beginPath(); c.rect(mx, my, mw, mh); c.clip(); c.drawImage(T.cv, X(T.B.x0), Y(T.B.y0), (T.B.x1 - T.B.x0) * sc, (T.B.y1 - T.B.y0) * sc);
     for (const id of Object.keys(WORLD_XY)) {
       const [wx, wy] = WORLD_XY[id], x = X(wx), y = Y(wy), tw = areaW(id) * sc, th = areaH(id) * sc;
       const open = areaUnlocked(this.play.diff, id), lpm = typeof LP !== 'undefined' && LP.on && LP.img['map_' + id], img = lpm && lpm.complete && lpm.naturalWidth ? lpm : GROUND_CACHE[id], here = id === this.play.stage, cl = areaCleared(this.play.diff, id);
