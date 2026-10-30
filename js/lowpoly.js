@@ -14,6 +14,7 @@ const LP = {
     chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=1', staff: {} },
     spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=2', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
+  playerArt: false,   // gemalte Spielfigur erst, wenn Löwe/Bär/Hund + Skins fertig sind (bis dahin alte Figur)
   catH: 96, staffH: 118, part: 2,   // Kamera: man sieht etwa 1/2 des Raums, auf jedem Bildschirm gleich
     // Figurengröße passend zu den Möbeln im Bild
   img: {}, ready: false, runs: {},

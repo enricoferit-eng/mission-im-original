@@ -1249,7 +1249,7 @@ class Play {
       (q.decoys || []).forEach(d => { if (d.done) return; if (d.px != null) L.push({ y: d.zy + (d.front ? 0.5 : -0.5), f: () => { c.save(); c.translate(d.px, d.py + 6); c.rotate(d.rot); drawJunk(c, 0, 0, d.kind, hard ? 1.25 : 1.4); c.restore(); } }); else L.push({ y: d.y + 0.5, f: () => drawJunk(c, d.x, d.y, d.kind, hard ? 1.25 : 1.4) }); });
     }
     const dig = this.searching ? Math.abs(Math.sin(this.searching.t * 18)) * 0.25 : 0;
-    const drawPlayer = () => { if (lpActive()) { lpDrawPlayer(c, p, p.x, p.y - pz - (this.swingZ || 0), dig * p.dir); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); return; } drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir }); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); };
+    const drawPlayer = () => { if (lpActive() && LP.playerArt) { lpDrawPlayer(c, p, p.x, p.y - pz - (this.swingZ || 0), dig * p.dir); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); return; } drawAnimal(c, this.kind, p.x, p.y - pz - (this.swingZ || 0), 1.12, { t: p.t, moving: p.moving, dir: p.dir, cap: hasCap(this.kind), tilt: p.slide ? -0.35 : dig * p.dir }); if (this.myEmo) emoBubble(c, p.x, p.y - pz - 110, this.myEmo); };
     // nur zeichnen, was im Bild ist
     const vx0 = this.camX - W / 2 / z - 120, vx1 = this.camX + W / 2 / z + 120, vy0 = this.camY - H / 2 / z - 40, vy1 = this.camY + H / 2 / z + 260;
     const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
@@ -1366,7 +1366,7 @@ class Play {
       c.save(); c.lineCap = 'round'; c.setLineDash([2.6, 2.2]);
       c.strokeStyle = '#5c636b'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
       c.strokeStyle = '#dfe3e8'; c.lineWidth = 1.6; c.lineDashOffset = 1.2; c.stroke(); c.restore(); }
-    if (me) lpSprite(c, LP.img.katze_steht, sx, top + h * 0.7, LP.catH * 0.8, 1, 0, a * 0.12);
+    if (me) { if (LP.playerArt) lpSprite(c, LP.img.katze_steht, sx, top + h * 0.7, LP.catH * 0.8, 1, 0, a * 0.12); else drawAnimal(c, this.kind, sx, top + h * 0.7, 1.0, { t: this.t, dir: 1, cap: hasCap(this.kind), noShadow: true, tilt: a * 0.12 }); }
     if (rider) { const an = this.npcAnim[rider.id], j = an.jump > 0 ? Math.abs(Math.sin(an.jump * 9)) * 10 : 0; drawCritter(c, rider.id, sx, top + h * 0.6 - j, 1.0, this.t, { staff: true, ph: an.ph, noShadow: true, wave: an.wave > 0 || this.npcState(rider.id) === 'ready' }); }
     c.drawImage(im, sx - w / 2, top, w, h);
   }
