@@ -1,6 +1,7 @@
 // Konten-Server für "Mission: Im Original" – läuft als Supabase Edge Function (index.ts), lokal testbar mit Node
 // Speichert Konten in der Supabase-Tabelle "kv". Keine E-Mail, keine echten Personendaten.
 import crypto from 'node:crypto';
+import { Buffer } from 'node:buffer';
 
 const ENV = k => (globalThis.Deno ? globalThis.Deno.env.get(k) : globalThis.process && process.env[k]) || '';
 const SECRET = ENV('TOKEN_SECRET');
@@ -291,7 +292,7 @@ async function readAll(prefix) {   // alle Einträge unter einem Pfad (seitenwei
 }
 async function stats(b) {
   if (!b.key || !sameStr(crypto.createHash('sha256').update(String(b.key)).digest('hex'), STATS_KEY_HASH)) return [401, { error: 'auth' }];
-  const all = await readAll('tele/'), now = Date.now(), DAY = 86400000, today = berlinDay(now);
+  const all = (await readAll('tele/')).filter(T => Object.values(T.days || {}).some(v => v > 0)), now = Date.now(), DAY = 86400000, today = berlinDay(now);
   const dayList = n => Array.from({ length: n }, (_, i) => berlinDay(now - (n - 1 - i) * DAY));
   const last30 = dayList(30), dayIdx = d => Math.round((Date.parse(d) - Date.parse(today)) / DAY);
   const S = { generated: now, devices: all.length, accountsServer: (await listJSON('accounts/')).length, withAccount: 0, guests: 0,
