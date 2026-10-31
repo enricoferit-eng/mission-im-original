@@ -972,7 +972,7 @@ class Play {
     { const R = this.racer; if (R.state === 'idle' || R.state === 'done') out.push({ k: 'racer', x: R.x, y: R.y, l: 0, r: 56, sx: R.x, sy: R.y - 40 }); }
     if (this.coop && this.role === 0 && this.st.active && this.st.active.coop && !this.st.active.coop.roof) { const L2 = this.coop.ladder; out.push({ k: 'ladder', x: L2.x, y: L2.y + 20, l: 0, r: 52, sx: L2.x, sy: L2.y - 60 }); }
     if (SG.feat.swing) { const k = this.freeSeat(), sx = SWING.seats[k]; out.push({ k: 'swing', x: sx, y: SWING.y + 58, l: 0, r: 70, sx, sy: SWING.y - 24 }); }
-    if (lpActive() && !this.searching) (SEATS[SG.id] || []).forEach(([x, y]) => out.push({ k: 'seat', x, y, l: 0, r: 80, sx: x, sy: y - 14 }));
+    if (false) (SEATS[SG.id] || []).forEach(([x, y]) => out.push({ k: 'seat', x, y, l: 0, r: 80, sx: x, sy: y - 14 }));   // Sitzen auf Stühlen abgeschaltet (User: nervt)
     if (SG.feat.slide) out.push({ k: 'slide', x: SLIDE.x0 - 10, y: (SLIDE.y0 + SLIDE.y1) / 2, l: 1, r: 22, sx: SLIDE.x0 + 20, sy: SLIDE.y0 - HOUSE.fz + 20 });
     return out;
   }

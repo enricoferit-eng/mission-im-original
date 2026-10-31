@@ -217,23 +217,24 @@ function lpMeasure(key, draw) {
 }
 function lpLock(c, x, y, r, t) { const im = lpSpr('tore/schloss'); if (!im) return; const b = Math.sin((t || 0) * 3) * 2; c.drawImage(im, x - r, y - r + b, r * 2, r * 2); }
 // Tor: geschlossen/offen als Bild, gleiche Breite wie die alte Zeichnung, gleicher Boden
+const LP_GATE_DY = { spielplatz: -16 };   // Tor genau in die gemalte Zaunlinie setzen
 function lpGateWrap(orig, name) {
   const f = function (c, x, y, s, open, locked, t, ...rest) {
     const a = lpSpr('tore/tor_' + name + '_0'), b = lpSpr('tore/tor_' + name + '_1');
     if (!a || !b) return orig.call(this, c, x, y, s, open, locked, t, ...rest);
     const B = lpMeasure('gate_' + name, (g, gx, gy) => orig(g, gx, gy, 1, 0, false, 0)), k = B.w * s / a.naturalWidth, im = (open || 0) > 0.5 ? b : a;
-    const w = im.naturalWidth * k, h = im.naturalHeight * k, left = x + B.x0 * s, bottom = y + (B.y0 + B.h) * s;
+    const w = im.naturalWidth * k, h = im.naturalHeight * k, left = x + B.x0 * s, bottom = y + (B.y0 + B.h) * s + (LP_GATE_DY[name] || 0) * s;
     const side = s >= 0.9 && typeof WORLD_W !== 'undefined' && (x < 140 || x > WORLD_W - 140) ? (x < 140 ? -1 : 1) : 0;   // Tor in einer Seitenwand: von der Seite gesehen (schmal), nicht quer im Raum
     if (side) {
       const cx = x + (B.x0 + B.w / 2) * s, sw = w * 0.34;
       c.save(); lpShadow(c, cx, bottom, sw * 1.4, h);
       c.translate(cx, bottom); c.transform(1, side * -0.35, 0, 1, 0, 0); c.drawImage(im, -sw / 2, -h, sw, h); c.restore();
-      if (locked) lpLock(c, cx, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
+      if (locked && !((open || 0) > 0.5)) lpLock(c, cx, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
       return;
     }
     lpShadow(c, x + (B.x0 + B.w / 2) * s, bottom, B.w * s, h);
     c.drawImage(im, left, bottom - h, w, h);
-    if (locked) lpLock(c, x + (B.x0 + B.w / 2) * s, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
+    if (locked && !((open || 0) > 0.5)) lpLock(c, x + (B.x0 + B.w / 2) * s, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
   };
   f.lpOrig = orig; return f;
 }
@@ -451,3 +452,11 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 const LP_DECOR_KEEP = { parkplatz: new Set(['auto']) };
 function lpKeep(id, d) { const K = LP_DECOR_KEEP[id]; return !!(K && K.has(d.t)); }
 function lpOccDraw(c, id, o) { const im = lpSpr(id + '/occ/' + o[0]); if (im) c.drawImage(im, o[1], o[2], o[3], o[4]); }
+// Rand um jede Karte (320 px weitergemalt, außen durchsichtig auslaufend): nichts endet hart am Bereichsrand
+const LP_RING = 320, LP_RINGS = {};
+function lpRing(c, id, ox, oy, a) {
+  if (!LP.on || !LP.stages[id]) return;
+  let im = LP_RINGS[id]; if (!im) { im = LP_RINGS[id] = new Image(); im.src = 'assets/lowpoly/' + id + '/rand.webp?v=1'; }
+  if (!im.complete || !im.naturalWidth) return;
+  c.save(); c.globalAlpha = a; c.drawImage(im, ox - LP_RING, oy - LP_RING, areaW(id) + LP_RING * 2, areaH(id) + LP_RING * 2); c.restore();
+}

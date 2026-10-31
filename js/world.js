@@ -168,6 +168,10 @@ Object.assign(Play.prototype, {
       const P = [[4900, T.B.y0], [4900, 3700], [4500, 4500], [3000, 4700], [T.B.x0, 4700]], len = []; let tot = 0; for (let k = 1; k < P.length; k++) { const l = dist(P[k - 1][0], P[k - 1][1], P[k][0], P[k][1]); len.push(l); tot += l; }
       for (const [off, col, dir] of [[0, '#e63946', 1], [0.45, '#118ab2', -1]]) { const per = tot / 520 + 9, ph = ((this.t / per) + off) % 1, dd = (dir > 0 ? ph : 1 - ph) * (tot + 4000) - 2000; if (dd < 0 || dd > tot) continue; let rem = dd, k = 0; while (k < len.length - 1 && rem > len[k]) { rem -= len[k]; k++; } const a = P[k], b = P[k + 1], f = rem / len[k], gx = a[0] + (b[0] - a[0]) * f, gy = a[1] + (b[1] - a[1]) * f, ang = Math.atan2(b[1] - a[1], b[0] - a[0]) + (dir < 0 ? Math.PI : 0), side = dir > 0 ? 70 : -70; const nx = -Math.sin(Math.atan2(b[1] - a[1], b[0] - a[0])) * side, ny = Math.cos(Math.atan2(b[1] - a[1], b[0] - a[0])) * side;
         const x = gx + nx - X0, y = gy + ny - Y0; if (x > this.camX - W && x < this.camX + W && y > this.camY - H && y < this.camY + H) drawCar(c, x, y, ang + Math.PI / 2, col, 1.3, { lights: true }); } }
+    if (typeof lpRing === 'function') {   // gemalte Ränder (Hecken, Bäume … laufen weiter) unter allen Bereichen, nach außen weich ins Gelände
+      for (const N of this.nb || []) if (this.tileVisible(N.ox - 320, N.oy - 320, N.w + 640, N.h + 640)) lpRing(c, N.fog || N.id, N.ox, N.oy, N.fog ? 0.55 : 1);
+      lpRing(c, this.stage, 0, 0, 1);
+    }
     for (const N of this.nb || []) {
       if (!this.tileVisible(N.ox, N.oy, N.w, N.h)) continue;
       if (N.fog) { drawFog(c, N.ox, N.oy, N.fog, this.t); continue; }
