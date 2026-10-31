@@ -10,9 +10,9 @@ const LP = {
     gastraum: { map: 'assets/lowpoly/gastraum/map.jpg?v=2', staff: {} },
     aussen: { map: 'assets/lowpoly/aussen/map.jpg?v=1', staff: {} },
     parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=3', staff: {} },
-    uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=1', staff: {} },
+    uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=2', staff: {} },
     chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=2', staff: {} },
-    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=3', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
+    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=4', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   zoomK: 0.72,   // Zoom in allen Bereichen gleich (Küche als Maß)
   playerArt: true,   // gemalte Spielfigur (Löwe/Bär/Hund); andere Tiere zeichnen weiter die alte Figur
@@ -34,6 +34,7 @@ const LP = {
     im.onload = im.onerror = () => {
       if (--left) return;
       LP.ready = list.every(([n]) => LP.img[n].naturalWidth > 0);
+      if (LP.ready) for (const id in LP.stages) { const m = LP.img['map_' + id]; if (m.decode) m.decode().catch(() => {}); }   // alle Karten schon jetzt entpacken: kein Ruckeln beim ersten Betreten
       if (LP.ready) {   // Boden mit dem Bild neu aufbauen – auch die Nachbar-Bereiche, die man am Rand sieht
         GROUND = null; for (const id in LP.stages) delete GROUND_CACHE[id];
         if (typeof scene !== 'undefined' && scene && scene.stage && !scene.mp && typeof worldPrepare === 'function') worldPrepare(scene.stage, scene.diff);
@@ -69,10 +70,19 @@ function lpOcclude(c, x, y, w, h) {
   }
 }
 const LP_STEP = [0, 1, 3, 4];   // Laufbilder 3 und 6 stehen fast still (hakt) – nur die 4 Schrittbilder
+// Schatten passend zu den gemalten Karten: Licht von rechts oben -> weicher Schatten nach links unten + kleiner Kontaktschatten an den Füßen
+function lpShadow(c, x, y, w, h) {
+  const rx = w * 0.42 + h * 0.16, ry = Math.max(4, h * 0.075), sx = x - h * 0.16, sy = y + h * 0.015;
+  c.save(); c.translate(sx, sy); c.rotate(-0.12); c.scale(1, ry / rx);
+  const g = c.createRadialGradient(0, 0, 0, 0, 0, rx); g.addColorStop(0, 'rgba(30,22,14,.30)'); g.addColorStop(0.6, 'rgba(30,22,14,.16)'); g.addColorStop(1, 'rgba(30,22,14,0)');
+  c.fillStyle = g; c.beginPath(); c.arc(0, 0, rx, 0, Math.PI * 2); c.fill(); c.restore();
+  c.save(); c.translate(x, y - 1); c.scale(1, 0.32); const k = c.createRadialGradient(0, 0, 0, 0, 0, w * 0.3); k.addColorStop(0, 'rgba(25,18,10,.32)'); k.addColorStop(1, 'rgba(25,18,10,0)');
+  c.fillStyle = k; c.beginPath(); c.arc(0, 0, w * 0.3, 0, Math.PI * 2); c.fill(); c.restore();
+}
 function lpSprite(c, im, x, y, h, flip = 1, bob = 0, tilt = 0) {
   const w = h * im.naturalWidth / im.naturalHeight;
   c.save(); c.translate(x, y);
-  c.fillStyle = 'rgba(40,25,10,.28)'; c.beginPath(); c.ellipse(0, -2, w * 0.4, h * 0.07, 0, 0, Math.PI * 2); c.fill();
+  lpShadow(c, 0, 0, w, h);
   c.translate(0, -bob); c.rotate(tilt); c.scale(flip, 1); c.drawImage(im, -w / 2, -h, w, h); c.restore();
 }
 // Spielfigur: Richtung aus der Bewegung, alle 11 px Weg ein neues Laufbild (6 Bilder = ein Schritt)
@@ -216,12 +226,12 @@ function lpGateWrap(orig, name) {
     const side = s >= 0.9 && typeof WORLD_W !== 'undefined' && (x < 140 || x > WORLD_W - 140) ? (x < 140 ? -1 : 1) : 0;   // Tor in einer Seitenwand: von der Seite gesehen (schmal), nicht quer im Raum
     if (side) {
       const cx = x + (B.x0 + B.w / 2) * s, sw = w * 0.34;
-      c.save(); c.fillStyle = 'rgba(40,25,10,.22)'; ell(c, cx, bottom - 2 * s, sw * 0.7, 6 * s); c.fill();
+      c.save(); lpShadow(c, cx, bottom, sw * 1.4, h);
       c.translate(cx, bottom); c.transform(1, side * -0.35, 0, 1, 0, 0); c.drawImage(im, -sw / 2, -h, sw, h); c.restore();
       if (locked) lpLock(c, cx, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
       return;
     }
-    c.save(); c.fillStyle = 'rgba(40,25,10,.22)'; ell(c, x + (B.x0 + B.w / 2) * s, bottom - 2 * s, B.w * 0.5 * s, 7 * s); c.fill(); c.restore();
+    lpShadow(c, x + (B.x0 + B.w / 2) * s, bottom, B.w * s, h);
     c.drawImage(im, left, bottom - h, w, h);
     if (locked) lpLock(c, x + (B.x0 + B.w / 2) * s, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
   };
@@ -233,7 +243,7 @@ function lpPigeonWrap(orig) {
     const im = flying ? lpSpr((Math.sin((t || 0) * 22) > 0) ? 'tore/taube_hoch' : 'tore/taube_runter') : lpSpr('tore/taube_steht');
     if (!im) return orig.apply(this, arguments);
     const B = lpMeasure('pigeon', (g, gx, gy) => orig(g, gx, gy, 1, 0, 1, false)), h = B.h * s * 1.25, w = im.naturalWidth * h / im.naturalHeight;
-    if (!flying) { c.save(); c.fillStyle = 'rgba(40,25,10,.22)'; ell(c, x, y, w * 0.35, 3 * s); c.fill(); c.restore(); }
+    if (!flying) lpShadow(c, x, y, w, h);
     c.save(); c.translate(x, y); c.scale(dir < 0 ? -1 : 1, 1); c.drawImage(im, -w / 2, -h, w, h); c.restore();
   };
 }
@@ -245,7 +255,7 @@ function lpPersonWrap(orig, kind) {
     if (!im) return orig.apply(this, arguments);
     const B = lpMeasure(kind + '_' + id, (g, gx, gy) => orig(g, id, gx, gy, 1, 0, { noShadow: true, staff: true })), h = B.h * s * 0.96, w = im.naturalWidth * h / im.naturalHeight;
     const bob = o.wave ? Math.abs(Math.sin((t || 0) * 6)) * 4 * s : Math.abs(Math.sin((t || 0) * 1.6 + (o.ph || x))) * 1.2 * s;
-    if (!o.noShadow) { c.save(); c.fillStyle = 'rgba(40,25,10,.25)'; ell(c, x, y - 1, w * 0.36, 5 * s); c.fill(); c.restore(); }
+    if (!o.noShadow) lpShadow(c, x, y, w, h);
     c.drawImage(im, x - w / 2, y - h - bob - (o.sit ? -h * 0.12 : 0), w, h);
   };
 }

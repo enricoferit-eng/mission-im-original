@@ -169,6 +169,7 @@ function smoothPath(sx, sy, sl, out) {   // Zickzack glätten: Zwischenpunkte we
 // ---------- Boden einmal vorzeichnen ----------
 let GROUND = null;
 function buildGround() {
+  if (lpActive()) { GROUND = GROUND_CACHE[SG.id] = LP.img['map_' + SG.id]; return; }   // Low-Poly: Bild direkt (kein Kopieren in eine eigene Fläche – spart den Hänger beim Bereichswechsel)
   const Q = Math.min(1.25, Math.sqrt(2.2e6 / (WORLD_W * WORLD_H))), cv2 = document.createElement('canvas'); cv2.width = Math.round(WORLD_W * Q); cv2.height = Math.round(WORLD_H * Q);   // große Bereiche etwas gröber (Speicher)
   const g = cv2.getContext('2d'); g.scale(Q, Q); g.lineJoin = 'round';
   const R = mulberry32(4242);
@@ -419,7 +420,7 @@ class Play {
     if (!SG.feat.racer) this.racer.state = 'off';
     for (const d of DECOR) if (SG.decorDraw && SG.decorDraw[d.t]) measureBB(SG.id + '_d_' + d.id, d.x, d.y, g => SG.decorDraw[d.t](g, d, 0, 0));   // Bildrahmen einmal vorab messen
     if (SG.extras) this.extras = SG.extras(this);   // bereichseigene Figuren/Animationen
-    if (!this.mp && !SG.solo && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) { this.banner = { text: STAGE_NAME[this.stage], t: 0 }; this.fadeIn = 0.35; } }
+    if (!this.mp && !SG.solo && typeof worldNeighbors === 'function') { worldNeighbors(this); this.markArea(); if (opt.enter) { this.banner = { text: STAGE_NAME[this.stage], t: 0 }; this.fadeIn = typeof LP !== "undefined" && LP.on ? 0 : 0.35; /* Low-Poly: nahtlos, kein Abdunkeln */ } }
     if (opt.joy) this.joy = opt.joy;
     if (!GROUND) buildGround();
     if (this.mp) this.mpSetup();
