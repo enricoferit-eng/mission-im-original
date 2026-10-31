@@ -249,9 +249,10 @@ function pushPlaygroundProps(c, L, ox, oy, inView, lp) {
 // gesperrte Durchgänge ohne Boss-Tor: Glastüren / Holztor mit Schloss
 function pushLinkBarriers(c, L, sid, ox, oy, diff, t) {
   for (const Lk of LINKS) {
-    if (Lk.a !== sid || Lk.gate || linkOpen(diff, Lk)) continue;
-    const [r0, r1] = Lk.r, m = (r0 + r1) / 2, TW = areaW(sid), TH = areaH(sid);
-    if (Lk.bar === 'garden') L.push({ y: TH - 8 + oy, f: () => { c.save(); c.translate(ox, oy); drawGardenGate(c, m, TH - 8, 0.8, 0, true, t, 'Chalet'); c.restore(); } });
+    if (Lk.a !== sid || Lk.gate) continue;
+    const [r0, r1] = Lk.r, m = (r0 + r1) / 2, TW = areaW(sid), TH = areaH(sid), op = linkOpen(diff, Lk);
+    if (Lk.bar === 'garden') L.push({ y: TH - 8 + oy, f: () => { c.save(); c.translate(ox, oy); drawGardenGate(c, m, TH - 8, 0.8, op ? 1 : 0, !op, t, 'Chalet'); c.restore(); } });   // Gartentor bleibt sichtbar – offen, sobald das Chalet frei ist
+    if (op) continue;
     else if (Lk.side === 'bottom') L.push({ y: TH - 4 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedDoors(c, m, TH - 4, r1 - r0 + 20, t); c.restore(); } });
     else if (Lk.side === 'left') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, 14, r0 - 10, r1 + 10, t); c.restore(); } });
     else if (Lk.side === 'right') L.push({ y: r1 + oy, f: () => { c.save(); c.translate(ox, oy); drawLockedFence(c, TW - 14, r0 - 10, r1 + 10, t); c.restore(); } });
