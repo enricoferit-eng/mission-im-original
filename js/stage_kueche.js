@@ -351,3 +351,5 @@ STAGE_DEFS.kueche = {
     };
   },
 };
+// Standplätze passend zum gemalten Bild (sonst stand man in Wand/Möbel und kam nicht hin)
+{ const FIX = { s_saecke_top: [320, 700] }; for (const h of KSPOTS) { const o = FIX[h.id]; if (o) [h.x, h.y] = o; } }

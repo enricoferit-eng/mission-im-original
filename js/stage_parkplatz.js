@@ -84,10 +84,11 @@ const car = (id, x, cy, a, col) => ({ id, t: 'auto', x, y: cy + 58, cy, a, col, 
 const PDECOR = [
   // ordentlich in den gemalten Parkbuchten (oben 13, unten 20 Buchten, 110 px Abstand, Linien 19° geneigt)
   car('a1', 1225, 701, -0.34, '#e63946'), car('a2', 1335, 701, -0.34, '#f4a261'), car('a3', 1555, 701, -0.34, '#f8f9fa'), car('a4', 1774, 701, -0.34, '#2a9d8f'),
-  car('a5', 2214, 701, -0.34, '#ffd166'), car('a6', 2434, 701, -0.34, '#4dabf7'), car('a7', 2544, 701, -0.34, '#e63946'), car('a8', 324, 1239, -0.34, '#f4a261'),
+  car('a5', 1884, 701, -0.34, '#ffd166'), car('a6', 2434, 701, -0.34, '#4dabf7'), car('a7', 2544, 701, -0.34, '#e63946'), car('a8', 324, 1239, -0.34, '#f4a261'),
   car('a9', 544, 1239, -0.34, '#f8f9fa'), car('a10', 654, 1239, -0.34, '#2a9d8f'), car('a11', 764, 1239, -0.34, '#ffd166'), car('a12', 983, 1239, -0.34, '#4dabf7'),
   car('a13', 1203, 1239, -0.34, '#e63946'), car('a14', 1313, 1239, -0.34, '#f4a261'), car('a15', 1643, 1239, -0.34, '#f8f9fa'), car('a16', 2083, 1239, -0.34, '#2a9d8f'),
   car('a17', 2192, 1239, -0.34, '#ffd166'), car('a18', 2412, 1239, -0.34, '#4dabf7'),
+  car('b1', 1445, 701, -0.34, '#e63946'), car('b2', 1665, 701, -0.34, '#f8f9fa'), car('b3', 1994, 701, -0.34, '#4dabf7'), car('b4', 2104, 701, -0.34, '#2a9d8f'), car('b5', 2324, 701, -0.34, '#f4a261'), car('b6', 434, 1239, -0.34, '#ffd166'), car('b7', 874, 1239, -0.34, '#e63946'), car('b8', 1093, 1239, -0.34, '#f8f9fa'), car('b9', 1423, 1239, -0.34, '#4dabf7'), car('b10', 1533, 1239, -0.34, '#2a9d8f'), car('b11', 2302, 1239, -0.34, '#f4a261'),   // mehr Autos: Parkplatz gut besetzt
   { id: 'anhaenger', t: 'anhaenger', x: 170, y: 1250, x0: 150, y0: 1110, w: 44, h: 140, bb: [135, 1090, 80, 170] },
   { id: 'transporter', t: 'transporter', x: 300, y: 1390, x0: 272, y0: 1280, w: 56, h: 110, bb: [258, 1260, 90, 140] },
   { id: 'insel', t: 'rbinsel', x: RB.x, y: RB.y + RB.ri, bb: [RB.x - 110, RB.y - 180, 220, 270] },
@@ -142,18 +143,20 @@ function buildGridParkplatz() {
     else if (d.r) cellsCircle(d.x, d.y - 6, Math.max(6, d.r - 6), i => (G0[i] = 0));
   }
 }
+// Versteck seitlich am Auto (wo es jetzt in der Bucht steht), Standplatz in der Fahrgasse davor
+const carSpot = (id, how) => { const d = PDECOR.find(q => q.id === id), sd = how === 'left' ? -1 : 1, top = d.cy < 1000;
+  return furnSpot(PDECOR, id, how, { px: d.x + sd * 30, py: d.cy - 8, sx: d.x + sd * 20, sy: top ? d.cy + 92 : d.cy - 100, reach: 125 }); };
 const PSPOTS = [
-  furnSpot(PDECOR, 'a1', 'top', { px: 525, py: 648, sx: 535, sy: 620 }),
-  furnSpot(PDECOR, 'a2', 'top', { px: 616, py: 640, sx: 620, sy: 610 }),
-  furnSpot(PDECOR, 'a3', 'right', { px: 1052, py: 697, sx: 1055, sy: 775 }),
-  furnSpot(PDECOR, 'a4', 'right', { px: 1272, py: 525, sx: 1295, sy: 600 }),
-  furnSpot(PDECOR, 'a5', 'left', { px: 662, py: 1026, sx: 636, sy: 1095 }),
-  furnSpot(PDECOR, 'a6', 'right', { px: 1482, py: 1266, sx: 1505, sy: 1330 }),
-  furnSpot(PDECOR, 'a7', 'left', { px: 1848, py: 476, sx: 1830, sy: 545 }),
-  furnSpot(PDECOR, 'a9', 'right', { px: 2412, py: 476, sx: 2435, sy: 545 }),
-  furnSpot(PDECOR, 'a11', 'left', { px: 2118, py: 1006, sx: 2095, sy: 1075 }),
+  carSpot('a1', 'right'),
+  carSpot('a2', 'right'),
+  carSpot('a3', 'right'),
+  carSpot('a4', 'right'),
+  carSpot('a5', 'left'),
+  carSpot('a6', 'right'),
+  carSpot('a7', 'left'),
+  carSpot('a9', 'right'),
+  carSpot('a11', 'left'),
   furnSpot(PDECOR, 'anhaenger', 'right', { px: 192, py: 1200, sx: 220, sy: 1210 }),
-  furnSpot(PDECOR, 'transporter', 'right', { px: 326, py: 1350, sx: 356, sy: 1360 }),
   furnSpot(PDECOR, 'insel', 'top', { px: RB.x + 60, py: RB.y + 26, sx: RB.x + 115, sy: RB.y + 60 }),
   furnSpot(PDECOR, 'pflanz', 'top', { px: 1514, py: 834, sx: 1500, sy: 900 }),
   furnSpot(PDECOR, 'lampe2', 'left', { px: 2192, py: 800, sx: 2175, sy: 840 }),
@@ -161,7 +164,6 @@ const PSPOTS = [
   furnSpot(PDECOR, 'busch2', 'top', { px: 1204, py: 1362, sx: 1200, sy: 1340 }),
   furnSpot(PDECOR, 'busch3', 'top', { px: 2624, py: 1342, sx: 2590, sy: 1320 }),
   furnSpot(PDECOR, 'baum1', 'right', { px: 146, py: 550, sx: 170, sy: 600 }),
-  furnSpot(PDECOR, 'pylon', 'left', { px: 2540, py: 1190, sx: 2515, sy: 1240 }),
 ];
 // flach gedrückter Pappkarton – darunter guckt etwas hervor
 function drawCardboard(c, x, y, w, seed = 0) {
@@ -220,7 +222,7 @@ STAGE_DEFS.parkplatz = {
         A.ang -= dt * (A.wait > 0 ? 0.35 : 0.8);
       },
       draw(c, L, vis, t) {
-        const P = pos(); if (vis(P.x, P.y)) L.push({ y: P.y + 40, f: () => drawCar(c, P.x, P.y, A.ang - Math.PI, '#118ab2', 1.05, { lights: true }) });
+        const P = pos(); if (vis(P.x, P.y)) L.push({ y: P.y + 40, f: () => drawCar(c, P.x, P.y, A.ang, '#118ab2', 1.05, { lights: true }) });
         L.push({ y: -1, f: () => { PUDDLES.forEach(([x, y, w], i) => { if (!vis(x, y)) return; const p = (t * 0.6 + i * 0.3) % 1; ell(c, x + Math.sin(i * 3) * w * 0.3, y, w * 0.2 + p * w * 0.5, (w * 0.2 + p * w * 0.5) * 0.42); c.lineWidth = 1.5; c.strokeStyle = `rgba(220,240,255,${0.6 * (1 - p)})`; c.stroke(); }); } });
       },
     };

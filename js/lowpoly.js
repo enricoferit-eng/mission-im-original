@@ -8,11 +8,11 @@ const LP = {
   stages: {
     kueche: { map: 'assets/lowpoly/kueche/map.jpg?v=2', staff: { k_nina: 'nina', k_tom: 'tom', k_luca: 'luca', k_marco: 'marco', k_lea: 'lea' } },
     gastraum: { map: 'assets/lowpoly/gastraum/map.jpg?v=2', staff: {} },
-    aussen: { map: 'assets/lowpoly/aussen/map.jpg?v=1', staff: {} },
-    parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=3', staff: {} },
+    aussen: { map: 'assets/lowpoly/aussen/map.jpg?v=2', staff: {} },
+    parkplatz: { map: 'assets/lowpoly/parkplatz/map.jpg?v=4', staff: {} },
     uebung: { map: 'assets/lowpoly/uebung/map.jpg?v=2', staff: {} },
     chalet: { map: 'assets/lowpoly/chalet/map.jpg?v=2', staff: {} },
-    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=4', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
+    spielplatz: { map: 'assets/lowpoly/spielplatz/map.jpg?v=5', staff: {}, roof: [518, 395, 288, 168] },   // Schaukelgerüst, Rutsche, Treppe, Häuschen sind im Bild; Dach extra (wird durchsichtig)
   },
   zoomK: 0.72,   // Zoom in allen Bereichen gleich (Küche als Maß)
   playerArt: true,   // gemalte Spielfigur (Löwe/Bär/Hund); andere Tiere zeichnen weiter die alte Figur
@@ -216,25 +216,44 @@ function lpMeasure(key, draw) {
   LP_BOX.set(key, b); return b;
 }
 function lpLock(c, x, y, r, t) { const im = lpSpr('tore/schloss'); if (!im) return; const b = Math.sin((t || 0) * 3) * 2; c.drawImage(im, x - r, y - r + b, r * 2, r * 2); }
-// Tor: geschlossen/offen als Bild, gleiche Breite wie die alte Zeichnung, gleicher Boden
-const LP_GATE_DY = { spielplatz: -16 };   // Tor genau in die gemalte Zaunlinie setzen
+// Tor zwischen den Bereichen: Absperrkordel wie im Restaurant (zwei Messingpfosten, rote Samtkordel).
+// Gesperrt/zu: Kordel hängt quer davor (mit Schloss). Offen: Kordel ist ausgehakt und hängt am linken Pfosten.
+function lpPost(c, x, y, k) {   // Messingpfosten, Fuß bei (x, y)
+  c.fillStyle = 'rgba(40,30,20,.28)'; ell(c, x + 3 * k, y + 2 * k, 15 * k, 5 * k); c.fill();
+  ell(c, x, y, 13 * k, 5 * k); c.fillStyle = '#8a6a2a'; c.fill();
+  ell(c, x, y - 2 * k, 12 * k, 4.5 * k); c.fillStyle = '#d9b45a'; c.fill();
+  const g = c.createLinearGradient(x - 4 * k, 0, x + 4 * k, 0); g.addColorStop(0, '#9c7a30'); g.addColorStop(0.45, '#f6dc8c'); g.addColorStop(1, '#a8842f');
+  c.fillStyle = g; c.fillRect(x - 3.5 * k, y - 56 * k, 7 * k, 54 * k);
+  ell(c, x, y - 58 * k, 6.5 * k, 6.5 * k); c.fillStyle = '#c9a24a'; c.fill();
+  ell(c, x - 2 * k, y - 60 * k, 2.6 * k, 2.6 * k); c.fillStyle = '#fff3c4'; c.fill();
+}
+function lpRope(c, pts, k) {   // Samtkordel entlang einer Kurve
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  const path = () => { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); if (pts.length === 3) c.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]); else c.lineTo(pts[1][0], pts[1][1]); };
+  path(); c.lineWidth = 7 * k; c.strokeStyle = '#6e0f1f'; c.stroke();
+  path(); c.lineWidth = 4.5 * k; c.strokeStyle = '#c1203a'; c.stroke();
+  path(); c.lineWidth = 1.4 * k; c.strokeStyle = 'rgba(255,190,200,.55)'; c.stroke();
+}
 function lpGateWrap(orig, name) {
   const f = function (c, x, y, s, open, locked, t, ...rest) {
-    const a = lpSpr('tore/tor_' + name + '_0'), b = lpSpr('tore/tor_' + name + '_1');
-    if (!a || !b) return orig.call(this, c, x, y, s, open, locked, t, ...rest);
-    const B = lpMeasure('gate_' + name, (g, gx, gy) => orig(g, gx, gy, 1, 0, false, 0)), k = B.w * s / a.naturalWidth, im = (open || 0) > 0.5 ? b : a;
-    const w = im.naturalWidth * k, h = im.naturalHeight * k, left = x + B.x0 * s, bottom = y + (B.y0 + B.h) * s + (LP_GATE_DY[name] || 0) * s;
-    const side = s >= 0.9 && typeof WORLD_W !== 'undefined' && (x < 140 || x > WORLD_W - 140) ? (x < 140 ? -1 : 1) : 0;   // Tor in einer Seitenwand: von der Seite gesehen (schmal), nicht quer im Raum
+    const B = lpMeasure('gate_' + name, (g, gx, gy) => orig(g, gx, gy, 1, 0, false, 0)), k = Math.max(0.3, s);
+    const half = Math.min(70, Math.max(38, B.w * 0.42)) * s, cx = x + (B.x0 + B.w / 2) * s, by = y - 4 * s, op = (open || 0) > 0.5;
+    const side = s >= 0.9 && typeof WORLD_W !== 'undefined' && (x < 140 || x > WORLD_W - 140) ? (x < 140 ? -1 : 1) : 0;   // Durchgang in einer Seitenwand: Pfosten oben und unten
     if (side) {
-      const cx = x + (B.x0 + B.w / 2) * s, sw = w * 0.34;
-      c.save(); lpShadow(c, cx, bottom, sw * 1.4, h);
-      c.translate(cx, bottom); c.transform(1, side * -0.35, 0, 1, 0, 0); c.drawImage(im, -sw / 2, -h, sw, h); c.restore();
-      if (locked && !((open || 0) > 0.5)) lpLock(c, cx, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
+      const px = cx, y0 = by - half * 0.9, y1 = by + half * 0.9, ry = -46 * k;
+      lpPost(c, px, y0, k);
+      if (op) lpRope(c, [[px, y0 + ry], [px + side * 6 * k, y0 + ry + 26 * k], [px + side * 4 * k, y0 + 2 * k]], k);
+      else lpRope(c, [[px, y0 + ry], [px + side * 10 * k, (y0 + y1) / 2 + ry + 18 * k], [px, y1 + ry]], k);
+      lpPost(c, px, y1, k);
+      if (locked && !op) lpLock(c, px, (y0 + y1) / 2 - 70 * k, 18 * k, t);
       return;
     }
-    lpShadow(c, x + (B.x0 + B.w / 2) * s, bottom, B.w * s, h);
-    c.drawImage(im, left, bottom - h, w, h);
-    if (locked && !((open || 0) > 0.5)) lpLock(c, x + (B.x0 + B.w / 2) * s, bottom - h * 0.55, 20 * Math.max(0.6, s), t);
+    const x0 = cx - half, x1 = cx + half, ry = by - 46 * k;
+    lpPost(c, x0, by, k);
+    if (op) lpRope(c, [[x0, ry], [x0 + 10 * k, ry + 30 * k], [x0 + 5 * k, by - 2 * k]], k);   // ausgehakt
+    lpPost(c, x1, by, k);
+    if (!op) lpRope(c, [[x0, ry], [cx, ry + 22 * k], [x1, ry]], k);
+    if (locked && !op) lpLock(c, cx, ry - 30 * k, 18 * k, t);
   };
   f.lpOrig = orig; return f;
 }
@@ -260,6 +279,41 @@ function lpPersonWrap(orig, kind) {
     c.drawImage(im, x - w / 2, y - h - bob - (o.sit ? -h * 0.12 : 0), w, h);
   };
 }
+// Nieten (falsche Fundsachen) im Low-Poly-Stil: flache Facetten in 2–3 Tönen, keine schwarzen Umrisse
+function lpFacet(c, pts, col) { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.fillStyle = col; c.fill(); }
+function lpStick(c, x0, y0, x1, y1, w, lit, dark) {   // Ast/Halm als Kante mit heller Oberseite
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1, nx = -dy / L * w / 2, ny = dx / L * w / 2;
+  lpFacet(c, [[x0 + nx, y0 + ny], [x1 + nx, y1 + ny], [x1, y1], [x0, y0]], lit);
+  lpFacet(c, [[x0, y0], [x1, y1], [x1 - nx, y1 - ny], [x0 - nx, y0 - ny]], dark);
+}
+const LP_JUNK = {
+  twig(c) { lpStick(c, -11, 0, 9, -12, 4, '#a0703f', '#6b4423'); lpStick(c, 1, -5, 10, -2, 2.6, '#a0703f', '#6b4423'); lpStick(c, -4, -3, -6, -10, 2.2, '#a0703f', '#6b4423'); },
+  ast(c) { LP_JUNK.twig(c); lpFacet(c, [[-6, -6], [0, -9], [3, -7], [-4, -4]], '#f4f8fc'); lpFacet(c, [[5, -11], [9, -13], [9, -11]], '#e2eaf3'); },
+  leaf(c) { lpFacet(c, [[-10, 0], [-1, -9], [11, -12], [3, -6]], '#a5cf72'); lpFacet(c, [[-10, 0], [3, -6], [11, -12], [2, -1]], '#6f9f45'); lpStick(c, -12, 1, -9, 0, 1.5, '#7b5a34', '#5b4026'); },
+  salat(c) { lpFacet(c, [[-11, -2], [-6, -10], [2, -12], [3, -4]], '#b6e3a6'); lpFacet(c, [[3, -4], [2, -12], [10, -9], [11, -2]], '#8ccc84'); lpFacet(c, [[-11, -2], [3, -4], [11, -2], [0, 1]], '#5fa863'); },
+  pebble(c) { lpFacet(c, [[-9, -2], [-6, -8], [2, -10], [8, -6], [9, -1], [0, 1]], '#9aa1a8'); lpFacet(c, [[-6, -8], [2, -10], [8, -6], [1, -5]], '#c9ced3'); lpFacet(c, [[-9, -2], [-6, -8], [1, -5], [0, 1]], '#b1b7bd'); },
+  cap(c) { const r = (a, k) => [Math.cos(a) * 8 * k, -4 + Math.sin(a) * 4 * k]; const top = [], rim = [];
+    for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; top.push(r(a, 1)); rim.push([top[i][0] * 1.08, top[i][1] + 3.2]); }
+    lpFacet(c, [...rim.slice(0, 6), ...top.slice(0, 6).reverse()], '#a52a2a'); lpFacet(c, top, '#e04a4a'); lpFacet(c, [r(3.6, 0.6), r(4.4, 0.6), r(5.4, 0.5), r(4.6, 0.2)], '#f07a7a'); },
+  nudel(c) { const P = [[-11, -3], [-6, -11], [-1, -4], [4, 3], [9, -6], [12, -9]]; for (let i = 0; i < P.length - 1; i++) lpStick(c, P[i][0], P[i][1], P[i + 1][0], P[i + 1][1], 4, '#f5d68a', '#d8a84c'); },
+  zettel(c) { c.save(); c.rotate(0.25); lpFacet(c, [[-10, -12], [8, -12], [10, 2], [-9, 2]], '#f6f3ea'); lpFacet(c, [[4, -12], [8, -12], [10, -7]], '#d9d2c2');
+    lpFacet(c, [[-7, -8], [3, -8], [3, -6.8], [-7, -6.8]], '#b8bec6'); lpFacet(c, [[-7, -4], [5, -4], [5, -2.8], [-7, -2.8]], '#b8bec6'); c.restore(); },
+  korken(c) { lpFacet(c, [[-9, -9], [7, -11], [9, -3], [-7, -1]], '#c89a62'); lpFacet(c, [[-7, -1], [9, -3], [9, 0], [-6, 2]], '#9b6f42'); lpFacet(c, [[7, -11], [11, -9], [11, -1], [9, -3]], '#e0bb82'); },
+  zucker(c) { lpFacet(c, [[-7, -9], [0, -12], [7, -9], [0, -6]], '#ffffff'); lpFacet(c, [[-7, -9], [0, -6], [0, 1], [-7, -2]], '#e5e6ec'); lpFacet(c, [[0, -6], [7, -9], [7, -2], [0, 1]], '#c9cbd3'); },
+  strohhalm(c) { const seg = [[-12, -1], [-4, -4], [4, -7], [9, -14]]; for (let i = 0; i < 3; i++) lpStick(c, seg[i][0], seg[i][1], seg[i + 1][0], seg[i + 1][1], 3, i % 2 ? '#ffffff' : '#ef5a6f', i % 2 ? '#d9dde3' : '#b83246'); },
+  zapfen(c) { lpFacet(c, [[-4, -1], [4, -1], [7, -8], [3, -15], [-3, -15], [-7, -8]], '#7a4c2a');
+    for (let r = 0; r < 3; r++) for (let k = -1; k <= 1; k++) { const x = k * 4 + (r % 2) * 2 - 1, y = -3 - r * 4; lpFacet(c, [[x - 2.4, y], [x + 2.4, y], [x, y - 3.4]], r % 2 ? '#a8743f' : '#93613a'); } },
+  schneeball(c) { const P = []; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; P.push([Math.cos(a) * 8, -7 + Math.sin(a) * 7.5]); }
+    lpFacet(c, P, '#d3dfeb'); lpFacet(c, [P[4], P[5], P[6], P[7], [0, -7]], '#ffffff'); lpFacet(c, [P[3], P[4], [0, -7], P[2]], '#eef3f8'); },
+};
+function lpJunkWrap(orig) {
+  return function (c, x, y, kind, s = 1) {
+    const f = LP.on && LP_JUNK[kind]; if (!f) return orig.apply(this, arguments);
+    c.save(); c.translate(x, y); c.scale(s, s);
+    c.fillStyle = 'rgba(40,30,20,.14)'; ell(c, 1, 1, 9, 2.6); c.fill();
+    f(c); c.restore();
+  };
+}
 function lpPatch() {
   if (!LP.on || lpPatch.done) return; lpPatch.done = true;
   const G = { kueche: 'kueche', gastraum: 'gastraum', aussen: 'aussen', chalet: 'chalet', parkplatz: 'parkplatz' };
@@ -267,6 +321,7 @@ function lpPatch() {
   if (typeof drawGate === 'function') drawGate = lpGateWrap(drawGate, 'spielplatz');
   if (typeof drawGardenGate === 'function') drawGardenGate = lpGateWrap(drawGardenGate, 'aussen');
   if (typeof drawPigeon === 'function') drawPigeon = lpPigeonWrap(drawPigeon);
+  if (typeof drawJunk === 'function') drawJunk = lpJunkWrap(drawJunk);
   if (typeof drawAnimal === 'function') drawAnimal = lpAnimalWrap(drawAnimal);
   if (typeof cachedCard === 'function') { const cc0 = cachedCard;   // Laden-Karten erst merken, wenn die gemalte Figur geladen ist
     cachedCard = function (key, w, h, draw) { LP_MISS = false; const r = cc0(key, w, h, draw); if (LP_MISS) { SHOP_CARD_CACHE.clear(); LP_MISS = false; } return r; }; }

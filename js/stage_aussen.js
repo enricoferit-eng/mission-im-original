@@ -248,7 +248,7 @@ function buildGridAussen() {
   }
 }
 const ASPOTS = [
-  ...[1, 2, 3].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 300, 520, 740][k] + 26, py: 332, sx: [0, 300, 520, 740][k], sy: 318 })),
+  ...[1, 2, 3].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 300, 520, 740][k] + 26, py: 248, sx: [0, 300, 520, 740][k], sy: 318 })),
   ...[4, 5, 6].map(k => furnSpot(ADECOR, 'tisch' + k, 'top', { px: [0, 0, 0, 0, 300, 520, 740][k] - 26, py: 412, sx: [0, 0, 0, 0, 300, 520, 740][k], sy: 492 })),
   furnSpot(ADECOR, 'olive1', 'top', { px: 190, py: 196, sx: 230, sy: 290 }),
   furnSpot(ADECOR, 'olive2', 'top', { px: 865, py: 471, sx: 830, sy: 560 }),

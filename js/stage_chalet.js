@@ -380,4 +380,10 @@ STAGE_DEFS.chalet = {
   },
 };
 STAGE_DEFS.chalet.npcs.forEach(n => n.pos.forEach(pt => { if (pt[1] > 840 && !(pt[0] > HUT.x0 && pt[0] < HUT.x1 && pt[1] < HUT.y1)) pt[1] += CY2; }));   // vor der Hütte: CY2 tiefer (Plätze in der größeren Hütte bleiben)
+// Verstecke an die Dinge im gemalten Bild angepasst (sonst lag die Sache frei im Schnee): [px, py, Standplatz x, y]
+{ const FIX = { s_tafel1_top: [440, 610, 440, 702], s_garderobe_left: [265, 420, 265, 492], s_tanne1_right: [168, 1192, 215, 1228], s_tanne2_left: [950, 1172, 992, 1212],
+    s_tanne3_right: [196, 1622, 246, 1652], s_tanne4_left: [420, 1532, 466, 1566], s_schneemann_left: [352, 1258, 300, 1302], s_schlitten_on: [292, 1446, 292, 1496],
+    s_rentier_left: [900, 1640, 900, 1692], s_wagenrad_left: [658, 1662, 660, 1720], s_schneehaufen_top: [255, 1300, 255, 1346], s_tanne5_right: [1196, 1282, 1240, 1322],
+    s_tanne8_left: [1496, 1272, 1450, 1312] };
+  for (const h of CSPOTS) { const o = FIX[h.id]; if (o) { [h.px, h.py, h.x, h.y] = o; h.reach = Math.max(h.reach || 0, 110); } } }
 

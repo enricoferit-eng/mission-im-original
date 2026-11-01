@@ -401,3 +401,5 @@ STAGE_DEFS.gastraum = {
     };
   },
 };
+// Standplätze passend zum gemalten Bild (sonst stand man in Wand/Möbel und kam nicht hin)
+{ const FIX = { s_tafel_top: [1200, 785], s_tafel_ontisch: [1020, 785] }; for (const h of GSPOTS) { const o = FIX[h.id]; if (o) [h.x, h.y] = o; } }

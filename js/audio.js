@@ -17,7 +17,12 @@
   window.addEventListener('pointerdown', go, true); window.addEventListener('touchend', go, true);
   // Bildschirm aus / andere App / anderer Tab / Browser im Hintergrund: Ton ganz anhalten – auch Musik-Timer und Vorlesen
   const off = () => { try { window.__appBlur = true; Tune.stop(); Music.stop(); Voice.stop(); if (window.speechSynthesis) speechSynthesis.cancel(); if (Sfx.ac && Sfx.ac.state === 'running') Sfx.ac.suspend(); } catch (e) { /* egal */ } };
-  const on = () => { try { if (document.hidden) return; window.__appBlur = false; if (Sfx.ac && Sfx.ac.state !== 'running') Sfx.ac.resume(); } catch (e) { /* egal */ } };
+  const on = e => { try {
+    if (document.hidden) return; window.__appBlur = false; const c = Sfx.ac; if (!c) return;
+    if (c.state !== 'running') c.resume().catch(() => {});
+    // iPhone: nach dem Zurückkommen bleibt der Ton oft stumm, bis in einer Berührung wieder etwas abgespielt wird
+    if (e && e.type === 'pointerdown' && c.state !== 'closed') { const s = c.createBufferSource(); s.buffer = c.createBuffer(1, 1, 22050); s.connect(c.destination); s.start(0); }
+  } catch (err) { /* egal */ } };
   document.addEventListener('visibilitychange', () => (document.hidden ? off() : on()));
   window.addEventListener('pagehide', off); window.addEventListener('blur', off);
   window.addEventListener('pageshow', on); window.addEventListener('focus', on); window.addEventListener('pointerdown', on, true);

@@ -87,6 +87,8 @@ function solidDecor() {
   if (MW) {   // gemalte Karte: begehbar ist, was auf dem Bild Boden ist (Laufmaske aus js/lpwalk.js)
     const R = MW.rows.split('|');
     for (let y = 0; y < MW.gh; y++) for (let x = 0; x < MW.gw; x++) if (R[y][x] === '0') G0[cellIdx(x * CELL + 12.5, y * CELL + 12.5)] = 0;
+    const F = typeof LP_FIX !== 'undefined' && LP_FIX[SG.id];   // von Hand nachgebessert (js/lpfix.js)
+    if (F) for (const [v, x0, y0, x1, y1] of F) cellsIn(x0, y0, x1, y1, i => { G0[i] = v; });
     return;
   }
   if (SG.id === 'spielplatz') return;
@@ -1397,8 +1399,6 @@ class Play {
   }
   drawStairs(c) {
     if (!lpActive()) drawSprite(c, sprite('stairs', 605, 600, 90, 240, g => this.drawStairsRaw(g)));
-    const p = this.p, { x, y, w, h } = STAIRS;   // Treppe deutlich zeigen: hier geht es nach oben ins Spielhaus
-    if (p.level === 0 && !this.mp && dist(p.x, p.y, x + w / 2, y + h) < 280) { const b = Math.abs(Math.sin(this.t * 3)) * 8, ax = x + w / 2, ay = y + h + 26 - b; c.save(); c.globalAlpha = 0.9; polyPath(c, [[ax, ay - 22], [ax + 16, ay], [ax + 6, ay], [ax + 6, ay + 14], [ax - 6, ay + 14], [ax - 6, ay], [ax - 16, ay]]); fs(c, '#ffd23f', 2.5); c.restore(); }
   }
   drawStairsRaw(c) {
     const { x, y, w, h } = STAIRS, fz = HOUSE.fz, top = y - fz, bot = y + h;
