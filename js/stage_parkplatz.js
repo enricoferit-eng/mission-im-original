@@ -146,6 +146,24 @@ function buildGridParkplatz() {
 // Versteck seitlich am Auto (wo es jetzt in der Bucht steht), Standplatz in der Fahrgasse davor
 const carSpot = (id, how) => { const d = PDECOR.find(q => q.id === id), sd = how === 'left' ? -1 : 1, top = d.cy < 1000;
   return furnSpot(PDECOR, id, how, { px: d.x + sd * 30, py: d.cy - 8, sx: d.x + sd * 20, sy: top ? d.cy + 92 : d.cy - 100, reach: 125 }); };
+// Kleine Details im Low-Poly-Stil (nur zur gemalten Karte): P-Schilder, Parkscheinautomat, Mülleimer – [Art, x, Fußpunkt-y]
+const PK_DETAILS = [['schild', 1480, 215], ['automat', 1725, 240], ['eimer', 1765, 250], ['schild', 2760, 770], ['eimer', 2740, 1000], ['automat', 420, 1105], ['eimer', 380, 1110], ['eimer', 1420, 1110]];
+function drawPkDetail(c, kind, x, y) {
+  const F = (pts, col) => lpFacet(c, pts.map(([a, b]) => [x + a, y + b]), col);
+  c.fillStyle = 'rgba(40,30,20,.2)'; ell(c, x + 4, y + 1, kind === 'schild' ? 10 : 15, 4); c.fill();
+  if (kind === 'schild') {
+    F([[-2.5, 0], [2.5, 0], [2.5, -58], [-2.5, -58]], '#8d949c'); F([[0, 0], [2.5, 0], [2.5, -58], [0, -58]], '#6c737b');
+    F([[-15, -86], [15, -86], [15, -56], [-15, -56]], '#1f62c4'); F([[5, -86], [15, -86], [15, -56], [5, -56]], '#1a52a6');
+    txt(c, 'P', x, y - 71, 22, '#fff', 'center', null);
+  } else if (kind === 'automat') {
+    F([[-11, 0], [11, 0], [11, -44], [-11, -44]], '#59626e'); F([[4, 0], [11, 0], [11, -44], [4, -44]], '#46505b');
+    F([[-12, -44], [12, -44], [10, -50], [-10, -50]], '#7a8591'); F([[-7, -38], [5, -38], [5, -30], [-7, -30]], '#ffd166');
+    F([[-6, -22], [3, -22], [3, -20], [-6, -20]], '#2b3038'); F([[-5, -14], [1, -14], [1, -9], [-5, -9]], '#e63946');
+  } else {
+    F([[-9, 0], [9, 0], [10, -26], [-10, -26]], '#3f7d4e'); F([[3, 0], [9, 0], [10, -26], [4, -26]], '#336a41');
+    F([[-11, -26], [11, -26], [9, -31], [-9, -31]], '#2e5a39'); F([[-4, -18], [4, -18], [4, -16], [-4, -16]], '#9ccf86');
+  }
+}
 const PSPOTS = [
   carSpot('a1', 'right'),
   carSpot('a2', 'right'),
@@ -222,6 +240,7 @@ STAGE_DEFS.parkplatz = {
         A.ang -= dt * (A.wait > 0 ? 0.35 : 0.8);
       },
       draw(c, L, vis, t) {
+        if (typeof lpActive === 'function' && lpActive()) for (const D of PK_DETAILS) if (vis(D[1], D[2])) L.push({ y: D[2], f: () => drawPkDetail(c, D[0], D[1], D[2]) });
         const P = pos(); if (vis(P.x, P.y)) L.push({ y: P.y + 40, f: () => drawCar(c, P.x, P.y, A.ang, '#118ab2', 1.05, { lights: true }) });
         L.push({ y: -1, f: () => { PUDDLES.forEach(([x, y, w], i) => { if (!vis(x, y)) return; const p = (t * 0.6 + i * 0.3) % 1; ell(c, x + Math.sin(i * 3) * w * 0.3, y, w * 0.2 + p * w * 0.5, (w * 0.2 + p * w * 0.5) * 0.42); c.lineWidth = 1.5; c.strokeStyle = `rgba(220,240,255,${0.6 * (1 - p)})`; c.stroke(); }); } });
       },
