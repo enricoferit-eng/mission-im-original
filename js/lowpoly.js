@@ -216,44 +216,13 @@ function lpMeasure(key, draw) {
   LP_BOX.set(key, b); return b;
 }
 function lpLock(c, x, y, r, t) { const im = lpSpr('tore/schloss'); if (!im) return; const b = Math.sin((t || 0) * 3) * 2; c.drawImage(im, x - r, y - r + b, r * 2, r * 2); }
-// Tor zwischen den Bereichen: Absperrkordel wie im Restaurant (zwei Messingpfosten, rote Samtkordel).
-// Gesperrt/zu: Kordel hängt quer davor (mit Schloss). Offen: Kordel ist ausgehakt und hängt am linken Pfosten.
-function lpPost(c, x, y, k) {   // Messingpfosten, Fuß bei (x, y)
-  c.fillStyle = 'rgba(40,30,20,.28)'; ell(c, x + 3 * k, y + 2 * k, 15 * k, 5 * k); c.fill();
-  ell(c, x, y, 13 * k, 5 * k); c.fillStyle = '#8a6a2a'; c.fill();
-  ell(c, x, y - 2 * k, 12 * k, 4.5 * k); c.fillStyle = '#d9b45a'; c.fill();
-  const g = c.createLinearGradient(x - 4 * k, 0, x + 4 * k, 0); g.addColorStop(0, '#9c7a30'); g.addColorStop(0.45, '#f6dc8c'); g.addColorStop(1, '#a8842f');
-  c.fillStyle = g; c.fillRect(x - 3.5 * k, y - 56 * k, 7 * k, 54 * k);
-  ell(c, x, y - 58 * k, 6.5 * k, 6.5 * k); c.fillStyle = '#c9a24a'; c.fill();
-  ell(c, x - 2 * k, y - 60 * k, 2.6 * k, 2.6 * k); c.fillStyle = '#fff3c4'; c.fill();
-}
-function lpRope(c, pts, k) {   // Samtkordel entlang einer Kurve
-  c.lineCap = 'round'; c.lineJoin = 'round';
-  const path = () => { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); if (pts.length === 3) c.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]); else c.lineTo(pts[1][0], pts[1][1]); };
-  path(); c.lineWidth = 7 * k; c.strokeStyle = '#6e0f1f'; c.stroke();
-  path(); c.lineWidth = 4.5 * k; c.strokeStyle = '#c1203a'; c.stroke();
-  path(); c.lineWidth = 1.4 * k; c.strokeStyle = 'rgba(255,190,200,.55)'; c.stroke();
-}
 function lpGateWrap(orig, name) {
-  const f = function (c, x, y, s, open, locked, t, ...rest) {
-    const B = lpMeasure('gate_' + name, (g, gx, gy) => orig(g, gx, gy, 1, 0, false, 0)), k = Math.max(0.3, s);
-    const half = Math.min(70, Math.max(38, B.w * 0.42)) * s, cx = x + (B.x0 + B.w / 2) * s, by = y - 4 * s, op = (open || 0) > 0.5;
-    const side = s >= 0.9 && typeof WORLD_W !== 'undefined' && (x < 140 || x > WORLD_W - 140) ? (x < 140 ? -1 : 1) : 0;   // Durchgang in einer Seitenwand: Pfosten oben und unten
-    if (side) {
-      const px = cx, y0 = by - half * 0.9, y1 = by + half * 0.9, ry = -46 * k;
-      lpPost(c, px, y0, k);
-      if (op) lpRope(c, [[px, y0 + ry], [px + side * 6 * k, y0 + ry + 26 * k], [px + side * 4 * k, y0 + 2 * k]], k);
-      else lpRope(c, [[px, y0 + ry], [px + side * 10 * k, (y0 + y1) / 2 + ry + 18 * k], [px, y1 + ry]], k);
-      lpPost(c, px, y1, k);
-      if (locked && !op) lpLock(c, px, (y0 + y1) / 2 - 70 * k, 18 * k, t);
-      return;
-    }
-    const x0 = cx - half, x1 = cx + half, ry = by - 46 * k;
-    lpPost(c, x0, by, k);
-    if (op) lpRope(c, [[x0, ry], [x0 + 10 * k, ry + 30 * k], [x0 + 5 * k, by - 2 * k]], k);   // ausgehakt
-    lpPost(c, x1, by, k);
-    if (!op) lpRope(c, [[x0, ry], [cx, ry + 22 * k], [x1, ry]], k);
-    if (locked && !op) lpLock(c, cx, ry - 30 * k, 18 * k, t);
+  // Tor = nur ein Schloss, das den Spieler anschaut (gesperrt); offen = freier Durchgang ohne alles
+  const f = function (c, x, y, s, open, locked, t) {
+    if ((open || 0) > 0.5) return;
+    const B = lpMeasure('gate_' + name, (g, gx, gy) => orig(g, gx, gy, 1, 0, false, 0)), k = Math.max(0.3, s), cx = x + (B.x0 + B.w / 2) * s;
+    c.fillStyle = 'rgba(40,30,20,.22)'; ell(c, cx, y - 2 * k, 26 * k, 7 * k); c.fill();
+    lpLock(c, cx, y - 46 * k, 34 * k, t);
   };
   f.lpOrig = orig; return f;
 }
@@ -327,7 +296,7 @@ function lpPatch() {
     cachedCard = function (key, w, h, draw) { LP_MISS = false; const r = cc0(key, w, h, draw); if (LP_MISS) { SHOP_CARD_CACHE.clear(); LP_MISS = false; } return r; }; }
   if (typeof drawPerson === 'function') drawPerson = lpPersonWrap(drawPerson, 'p');
   if (typeof drawCritter === 'function') drawCritter = lpPersonWrap(drawCritter, 'c');
-  if (typeof drawLockedDoors === 'function') { const o = drawLockedDoors; drawLockedDoors = function (c, x, y, w, t) { const im = lpSpr('tore/glastuer'); if (!im) return o(c, x, y, w, t); const h = 118; c.drawImage(im, x - w / 2 - 6, y - h, w + 12, h); lpLock(c, x, y - 60, 18, t); }; }
+  if (typeof drawLockedDoors === 'function') { const o = drawLockedDoors; drawLockedDoors = function (c, x, y, w, t) { if (!lpSpr('tore/schloss')) return; c.fillStyle = 'rgba(40,30,20,.22)'; ell(c, x, y - 2, 26, 7); c.fill(); lpLock(c, x, y - 46, 34, t); }; }
   if (typeof drawLockedFence === 'function') { const o = drawLockedFence; drawLockedFence = function (c, x, y0, y1, t) {   // Zaun von der Seite: Zaunstücke übereinander
       const im = lpSpr('tore/zaun'); if (!im) return o(c, x, y0, y1, t);
       const sw = 44, sh = sw * im.naturalHeight / im.naturalWidth;
@@ -514,4 +483,50 @@ function lpRing(c, id, ox, oy, a) {
   let im = LP_RINGS[id]; if (!im) { im = LP_RINGS[id] = new Image(); im.src = 'assets/lowpoly/' + id + '/rand.webp?v=1'; }
   if (!im.complete || !im.naturalWidth) return;
   c.save(); c.globalAlpha = a; c.drawImage(im, ox - LP_RING, oy - LP_RING, areaW(id) + LP_RING * 2, areaH(id) + LP_RING * 2); c.restore();
+}
+
+// ---------- Vorladen: erst alle gemalten Bilder, dann das Spiel (sonst blitzt kurz die alte Grafik auf) ----------
+const LP_PRE = { n: 0, done: 0, t: 0, ok: !LP.on };
+(function lpPreload() {
+  if (!LP.on || typeof LP_MANIFEST === 'undefined') { LP_PRE.ok = true; return; }
+  const M = LP_MANIFEST, list = [];
+  M.items.forEach(k => { const i = k.indexOf('_'); lpItemImg(k.slice(0, i), k.slice(i + 1)); list.push(LP_ITEMS[k]); });
+  M.bg.forEach(n => { lpBgImg(n); list.push(LP_BG[n]); });
+  M.menu.forEach(n => { lpMenuImg(n); list.push(LP_MENU[n]); });
+  M.spr.forEach(p => { lpSpr(p); list.push(LP_SPR[p]); });
+  M.rings.forEach(id => { const im = LP_RINGS[id] = LP_RINGS[id] || new Image(); if (!im.src) im.src = 'assets/lowpoly/' + id + '/rand.webp?v=1'; list.push(im); });
+  LP_PRE.n = list.length;
+  const tick = () => { LP_PRE.done++; };
+  for (const im of list) { if (im.complete) LP_PRE.done++; else { im.addEventListener('load', tick, { once: true }); im.addEventListener('error', tick, { once: true }); } }
+})();
+// Skin der eigenen Figur gleich mitladen (die übrigen Skins erst, wenn man sie anzieht)
+function lpPreloadSkin() {   // die angezogenen Skins (je Stufe ein Tier) gleich mitladen
+  if (!LP.on || typeof ACC !== 'function' || !ACC() || typeof ANIMAL_OF === 'undefined') return [];
+  const out = [];
+  for (const d of ['easy', 'medium', 'hard']) {
+    const kind = ANIMAL_OF[d], sk = DP(d).equip, dir = sk && typeof lpSkinDir === 'function' && lpSkinDir(sk);
+    if (!dir || !LP_KINDS.has(kind)) continue;
+    const base = 'spieler/' + kind + '/' + dir + '/', names = ['stand_front', 'stand_side', 'stand_back'];
+    ['front', 'side', 'back'].forEach(f => { for (let i = 0; i < 6; i++) names.push(f + '_' + i); });
+    names.forEach(n => { lpSpr(base + n); out.push(LP_SPR[base + n]); });
+  }
+  return out;
+}
+function lpLoading(dt) {
+  if (LP_PRE.ok) return false;
+  LP_PRE.t += dt || 0;
+  if (!LP_PRE.skin) { try { LP_PRE.skin = lpPreloadSkin(); } catch (e) { LP_PRE.skin = []; } }
+  const skinOk = LP_PRE.skin.every(im => !im || im.complete);
+  if ((LP.ready && LP_PRE.done >= LP_PRE.n && skinOk) || LP_PRE.t > 40) LP_PRE.ok = true;   // nach 40 s trotzdem los (sehr langsames Netz)
+  return !LP_PRE.ok;
+}
+function drawLpLoading(c) {
+  c.fillStyle = BRAND.olive; c.fillRect(0, 0, W, H);
+  const core = LP.ready ? 1 : 0, k = LP_PRE.n ? Math.min(1, (LP_PRE.done + core * 10) / (LP_PRE.n + 10)) : core;
+  if (typeof LOGO !== 'undefined' && LOGO.complete && LOGO.naturalWidth) { const lw = Math.min(W * 0.6, 260), lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; c.drawImage(LOGO, W / 2 - lw / 2, H * 0.36 - lh / 2, lw, lh); }
+  else txt(c, 'Mission: Im Original', W / 2, H * 0.36, 26, BRAND.cream, 'center', null);
+  const bw = Math.min(W * 0.62, 300), bx = W / 2 - bw / 2, by = H * 0.56;
+  rrPath(c, bx, by, bw, 14, 7); c.fillStyle = 'rgba(251,248,242,.18)'; c.fill();
+  rrPath(c, bx, by, Math.max(14, bw * k), 14, 7); c.fillStyle = BRAND.lime; c.fill();
+  txt(c, 'Lädt … ' + Math.round(k * 100) + ' %', W / 2, by + 40, 15, BRAND.cream, 'center', null);
 }

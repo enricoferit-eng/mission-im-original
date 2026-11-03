@@ -1675,6 +1675,7 @@ function frame(now) {
   Perf.acc += (now - (frame.prev || now)) / 1000; frame.prev = now; Perf.n++;
   if (!(scene instanceof Play) && !overlay) { Perf.acc = 0; Perf.n = 0; }   /* gemessen wird nur im Spiel (Menüs laufen absichtlich langsamer) */
   if (Perf.acc > 2) { const avg = Perf.acc / Perf.n; if (avg > 0.022 && Perf.cap > 1.01 && document.visibilityState === 'visible') { Perf.cap = Math.max(1, Perf.cap - 0.25); resize(); } Perf.acc = 0; Perf.n = 0; }
+  if (typeof lpLoading === 'function' && lpLoading(dt)) { try { drawLpLoading(ctx); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }   // gemalte Bilder laden noch
   if (false && TOUCH && H > W && !(scene && scene.portraitOk)) { rotT += dt;   /* Hochformat geht jetzt überall (kein „bitte drehen“ mehr) */ try { drawRotate(ctx, rotT); } catch (e) { console.error(e); } UI.flip(); requestAnimationFrame(frame); return; }
   try {
     // Während Minispielen/Dialogen: Hintergrund einfrieren statt ständig neu zu zeichnen
