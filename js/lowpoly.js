@@ -238,9 +238,13 @@ function lpPigeonWrap(orig) {
 }
 // Leute (Gäste, Kinder, Kellner …): gemaltes Bild, etwa so groß wie die alte Figur (passend zu Stühlen/Tischen), leichtes Wippen; winken = kleiner Hüpfer
 const LP_LEUTE = new Set(["a_hoffmann", "a_klaus", "a_mila", "a_noah", "a_ober", "a_weber", "c_anna", "c_berger", "c_felix", "c_gerda", "c_sepp", "c_toni", "eule", "fuchs", "g_becker", "g_ben", "g_jonas", "g_lina", "g_rosi", "g_s1", "g_s2", "g_s3", "g_s4", "g_schulz", "g_sophie", "hase", "igel", "leo", "olli", "p_julia", "p_karl", "p_petra", "p_schmidt", "p_tim", "waschbaer"]);   // nur für diese gibt es Bilder
+function lpStaffImg(id) {
+  for (const sid in LP.stages) { const key = LP.stages[sid].staff[id], im = key && LP.img[key]; if (im && im.complete && im.naturalWidth) return im; }
+  return null;
+}
 function lpPersonWrap(orig, kind) {
   return function (c, id, x, y, s, t, o = {}) {
-    const im = LP_LEUTE.has(id) && lpSpr('leute/' + id);
+    const im = (LP_LEUTE.has(id) && lpSpr('leute/' + id)) || lpStaffImg(id);   // Küchen-Team: dieselben Bilder wie in der Welt (sonst stünde im Auftrag die alte Figur)
     if (!im) return orig.apply(this, arguments);
     const B = lpMeasure(kind + '_' + id, (g, gx, gy) => orig(g, id, gx, gy, 1, 0, { noShadow: true, staff: true })), h = B.h * s * 0.96, w = im.naturalWidth * h / im.naturalHeight;
     const bob = o.wave ? Math.abs(Math.sin((t || 0) * 6)) * 4 * s : Math.abs(Math.sin((t || 0) * 1.6 + (o.ph || x))) * 1.2 * s;
@@ -579,6 +583,7 @@ const LP_PRE = { n: 0, done: 0, t: 0, ok: !LP.on };
 (function lpPreload() {
   if (!LP.on || typeof LP_MANIFEST === 'undefined') { LP_PRE.ok = true; return; }
   const M = LP_MANIFEST, list = [];
+  lpMenuImg('menu'); for (let i = 0; i < 6; i++) lpSpr('spieler/dog/basis/side_' + i);   // zuerst, was das Ladebild selbst zeigt
   M.items.forEach(k => { const i = k.indexOf('_'); lpItemImg(k.slice(0, i), k.slice(i + 1)); list.push(LP_ITEMS[k]); });
   M.bg.forEach(n => { lpBgImg(n); list.push(LP_BG[n]); });
   M.menu.forEach(n => { lpMenuImg(n); list.push(LP_MENU[n]); });
@@ -609,13 +614,33 @@ function lpLoading(dt) {
   if ((LP.ready && LP_PRE.done >= LP_PRE.n && skinOk) || LP_PRE.t > 40) LP_PRE.ok = true;   // nach 40 s trotzdem los (sehr langsames Netz)
   return !LP_PRE.ok;
 }
+// Ladebild: Menü-Bild im Hintergrund (lädt als Erstes), Logo, Ladebalken mit laufender Figur, wehende Blätter, Tipps
+const LP_LOAD_TIPS = ['Tipp: Schieb den Finger übers Bild – dann läufst du wie mit einem Joystick.', 'Tipp: Wer mit ! wartet, braucht deine Hilfe.', 'Tipp: Bleib nah an einem Versteck stehen, dann suchst du von selbst.', 'Tipp: Bist du schnell, bekommst du einen Extra-Joker.', 'Tipp: Mit den Talern kaufst du im Laden neue Kostüme.'];
 function drawLpLoading(c) {
+  const t = LP_PRE.t, core = LP.ready ? 1 : 0, k = LP_PRE.n ? Math.min(1, (LP_PRE.done + core * 10) / (LP_PRE.n + 10)) : core;
+  const show = LP_PRE.shown = lerp(LP_PRE.shown || 0, k, 0.08);   // Balken gleitet weich nach
   c.fillStyle = BRAND.olive; c.fillRect(0, 0, W, H);
-  const core = LP.ready ? 1 : 0, k = LP_PRE.n ? Math.min(1, (LP_PRE.done + core * 10) / (LP_PRE.n + 10)) : core;
-  if (typeof LOGO !== 'undefined' && LOGO.complete && LOGO.naturalWidth) { const lw = Math.min(W * 0.6, 260), lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; c.drawImage(LOGO, W / 2 - lw / 2, H * 0.36 - lh / 2, lw, lh); }
-  else txt(c, 'Mission: Im Original', W / 2, H * 0.36, 26, BRAND.cream, 'center', null);
-  const bw = Math.min(W * 0.62, 300), bx = W / 2 - bw / 2, by = H * 0.56;
-  rrPath(c, bx, by, bw, 14, 7); c.fillStyle = 'rgba(251,248,242,.18)'; c.fill();
-  rrPath(c, bx, by, Math.max(14, bw * k), 14, 7); c.fillStyle = BRAND.lime; c.fill();
-  txt(c, 'Lädt … ' + Math.round(k * 100) + ' %', W / 2, by + 40, 15, BRAND.cream, 'center', null);
+  const bg = lpMenuImg('menu');
+  if (bg) { LP_PRE.bgA = Math.min(1, (LP_PRE.bgA || 0) + 0.05); c.save(); c.globalAlpha = LP_PRE.bgA; lpCover(c, bg, 0, 0, W, H, 0.5); c.restore(); }
+  { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(53,69,47,.1)'); g.addColorStop(0.5, 'rgba(53,69,47,.3)'); g.addColorStop(1, 'rgba(36,48,32,.85)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  for (let i = 0; i < 12; i++) {   // Blätter wehen durchs Bild (wie der Sturm aus der Geschichte, nur sanft)
+    const sp = 40 + (i * 37) % 50, x = ((t * sp + i * 173) % (W + 80)) - 40, y = (i * 97 + t * 18) % H + Math.sin(t * 1.3 + i) * 18;
+    c.save(); c.translate(x, y); c.rotate(t * (0.8 + (i % 3) * 0.4) + i); c.globalAlpha = 0.55; c.beginPath(); c.moveTo(-9, 0); c.quadraticCurveTo(0, -8, 9, 0); c.quadraticCurveTo(0, 8, -9, 0); c.fillStyle = i % 3 ? BRAND.lime : '#c7e27a'; c.fill(); c.restore();
+  }
+  const land = W > H, cy = land ? H * 0.34 : H * 0.36, bob = Math.sin(t * 2) * 4;
+  { const R = Math.min(W * 0.48, 230), g = c.createRadialGradient(W / 2, cy, 10, W / 2, cy, R); g.addColorStop(0, 'rgba(251,248,242,.75)'); g.addColorStop(0.6, 'rgba(251,248,242,.4)'); g.addColorStop(1, 'rgba(251,248,242,0)'); c.save(); c.translate(W / 2, cy); c.scale(1, 0.62); c.translate(-W / 2, -cy); c.fillStyle = g; c.fillRect(W / 2 - R, cy - R, R * 2, R * 2); c.restore(); }   // heller Schein hinter dem Logo (gut lesbar auf dem Bild)
+  txt(c, 'Mission:', W / 2, cy - (land ? 62 : 74) + bob, land ? 22 : 26, '#fff', 'center', BRAND.ink);
+  if (typeof LOGO !== 'undefined' && LOGO.complete && LOGO.naturalWidth) { const lw = Math.min(W * 0.7, land ? 300 : 280), lh = lw * LOGO.naturalHeight / LOGO.naturalWidth; c.drawImage(LOGO, W / 2 - lw / 2, cy - lh / 2 + bob, lw, lh); }
+  else txt(c, 'Im Original', W / 2, cy + bob, 30, BRAND.cream, 'center', BRAND.ink);
+  const bw = Math.min(W * 0.72, 340), bh = 22, bx = W / 2 - bw / 2, by = land ? H * 0.68 : H * 0.62, fw = Math.max(bh, bw * show);
+  rrPath(c, bx - 4, by - 4, bw + 8, bh + 8, (bh + 8) / 2); c.fillStyle = 'rgba(20,28,18,.55)'; c.fill(); c.lineWidth = 3; c.strokeStyle = BRAND.cream; c.stroke();
+  c.save(); rrPath(c, bx, by, fw, bh, bh / 2); c.clip();
+  { const g = c.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, '#c7e27a'); g.addColorStop(1, BRAND.lime); c.fillStyle = g; c.fillRect(bx, by, fw, bh); }
+  c.fillStyle = 'rgba(255,255,255,.22)'; for (let x = bx - 40 + (t * 40) % 28; x < bx + fw; x += 28) { c.beginPath(); c.moveTo(x, by + bh); c.lineTo(x + 12, by); c.lineTo(x + 24, by); c.lineTo(x + 12, by + bh); c.fill(); }   // wandernde Streifen
+  c.restore();
+  const kind = (typeof ANIMAL_OF !== 'undefined' && ANIMAL_OF.medium) || 'dog', fr = lpSpr('spieler/' + kind + '/basis/side_' + (Math.floor(t * 10) % 6)) || lpSpr('spieler/dog/basis/side_' + (Math.floor(t * 10) % 6));
+  if (fr) { const h = land ? 64 : 72, w = h * fr.naturalWidth / fr.naturalHeight; c.drawImage(fr, bx + fw - w * 0.5, by - h + 6 - Math.abs(Math.sin(t * 10)) * 3, w, h); }   // die Figur läuft vorne am Balken mit
+  txt(c, Math.round(show * 100) + ' %', W / 2, by + bh + 26, 15, BRAND.cream, 'center', null);
+  const tip = LP_LOAD_TIPS[Math.floor(t / 4) % LP_LOAD_TIPS.length], ta = Math.min(1, (t % 4) * 3, (4 - t % 4) * 3);
+  c.save(); c.globalAlpha = ta; c.font = `800 14px ${FONT}`; const L = wrapLines(c, tip, Math.min(W - 40, 420), 14); L.forEach((l, i) => txt(c, l, W / 2, by + bh + 58 + i * 19, 14, '#fff', 'center', null)); c.restore();
 }

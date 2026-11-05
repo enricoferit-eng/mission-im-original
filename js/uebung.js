@@ -166,6 +166,7 @@ function startUebung(diff, back) { const a = ACC(); if (a) a.tut.symbol = true; 
     }
     if (!U.walked && dist(this.p.x, this.p.y, UEB_RING.x, UEB_RING.y) < 60) { U.walked = true; Sfx.play('good'); const s = this.w2s(UEB_RING.x, UEB_RING.y); FX.sparkle(s.x, s.y, 20, '#c7f464'); }
     if (this.st.done.olli && !this.st.done.gate) { this.st.done.gate = true; Save.write(); }   // Tor geht auf, sobald Olli geholfen ist
+    if (this.st.done.gate && !this.exiting && !overlay && this.p.y < GATE.iy + 10 && Math.abs(this.p.x - GATE.x) < 90) { this.joy = null; this.startExit(); }   // mit dem Joystick einfach durchs offene Tor laufen
     const step = uebungStep(this);
     if (step !== U.said && !overlay) { U.said = step; U.stepT = 0; Voice.say(UEBUNG_SAY[step], true, 'olli'); }
     U.stepT = (U.stepT || 0) + dt;

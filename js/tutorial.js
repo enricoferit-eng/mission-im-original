@@ -68,12 +68,11 @@ const TUT_CHAPTERS = [
     tap(S, x, y) { if (dist(x, y, 90, 220) < 60) { S.ok = true; Sfx.play('good'); } },
     check(S) { return S.ok; } },
   { title: 'Suchen mit der Lupe', dur: 8,
-    say: 'Die Sachen stecken in, hinter und unter Möbeln, Töpfen, Pflanzen und Autos – auf dem Spielplatz gucken sie auch aus den Hackschnitzeln. Geh nah heran und tippe auf die Lupe. Aber Vorsicht: Manchmal ist es nur ein Stöckchen, ein Blatt oder ein Kronkorken!',
+    say: 'Die Sachen stecken in, hinter und unter Möbeln, Töpfen, Pflanzen und Autos – auf dem Spielplatz gucken sie auch aus den Hackschnitzeln. Geh nah heran und tippe auf die Lupe.',
     try: 'Jetzt du: Dein Tier steht am Stein. Tippe auf die Lupe!',
     draw(c, t, S) {
       tvGround(c);
       drawItem(c, 'ball', 352, 200, 40); drawRock(c, 330, 222, 34, S.shake || 0);
-      drawJunk(c, 160, 280, 'twig', 1.6);
       const found = S.trying ? S.ok : t > 4.5;
       const x = S.trying ? 270 : lerp(120, 270, clamp((t - 0.5) / 2, 0, 1));
       drawAnimal(c, S.kind, x, 240, 1.5, { t, moving: !S.trying && t < 2.5, tilt: !S.trying && t > 3 && t < 4.5 ? Math.abs(Math.sin(t * 18)) * 0.25 : 0 });
@@ -81,7 +80,6 @@ const TUT_CHAPTERS = [
       c.save(); c.translate(540, 300); c.scale(pu, pu); roundBtn(c, 0, 0, 34, !S.trying && t > 3 && t < 4.5 ? '#ffd166' : '#fff', 'search', null); c.restore();
       if (!S.trying && t > 2.6 && t < 3.4) tvHand(c, 540, 300, true);
       if (found) { const k = ease.back(clamp(((S.trying ? S.okT : t - 4.5)) * 3, 0, 1)); c.save(); c.translate(330, 130); c.scale(k, k); ell(c, 0, 0, 30, 30); fs(c, '#fff7e6', 3); drawItem(c, 'ball', 0, 0, 40); c.restore(); txt(c, 'Ball gefunden!', 330, 90, 18, '#fff', 'center', BRAND.olive); }
-      if (!S.trying && t > 6) txt(c, 'Nur ein Stöckchen …', 160, 220, 16, '#fff', 'center', BRAND.olive);
     },
     tap(S, x, y) { if (dist(x, y, 540, 300) < 46 && !S.ok) { S.ok = true; S.okT = 0; Sfx.play('good'); } },
     tick(S, dt) { if (S.ok) S.okT = (S.okT || 0) + dt; },

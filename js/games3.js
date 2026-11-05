@@ -199,18 +199,20 @@ GAMES.kneten = { make(env) {
 
 // 6) Eier aufschlagen: Das Ei schwingt über der Schüssel – genau in der Mitte tippen
 GAMES.eier = { make(env) {
-  const r = env.r, L = LVL(env), need = 5 + L * 2;
-  let ph = 0, sp = 2.2 + L * 0.8, got = 0, crack = 0, mess = 0, yolks = []; const fin = finisher(env);
+  const r = env.r, L = LVL(env), need = 4 + L * 2, TOL = 40 - L * 6;   // leichter: breitere Mitte, langsameres Schwingen
+  let ph = 0, sp = 1.5 + L * 0.5, got = 0, crack = 0, mess = 0, yolks = []; const fin = finisher(env);
   return {
     hint: { type: 'tap', x: 200, y: 200 },
-    update(dt) { ph += dt * sp * (1 + got / need * 0.6) * GAME_MOTION; crack = Math.max(0, crack - dt * 2); mess = Math.max(0, mess - dt); fin.tick(dt); },
+    update(dt) { ph += dt * sp * (1 + got / need * 0.3) * GAME_MOTION; crack = Math.max(0, crack - dt * 2); mess = Math.max(0, mess - dt); fin.tick(dt); },
     draw(c) {
       kitchenBg(c, 360);
       counterTxt(c, got + ' / ' + need, 200, 40, 22);
       ell(c, 200, 420, 110, 30); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
       if (!lpT(c, 'schuessel', 200, 428, 250)) { c.beginPath(); c.moveTo(90, 360); c.quadraticCurveTo(200, 500, 310, 360); c.closePath(); fs(c, '#74c0fc', 3); ell(c, 200, 360, 110, 26); fs(c, '#e7f5ff', 3); }
       yolks.forEach((y, i) => { ell(c, 200 + y, 362, 12, 7); c.fillStyle = '#ffd166'; c.fill(); });
-      const W2 = 18 - L * 4; rrPath(c, 200 - W2, 330, W2 * 2, 8, 4); c.fillStyle = 'rgba(6,214,160,.6)'; c.fill();
+      c.save(); c.setLineDash([8, 8]); line(c, 200, 236, 200, 324, 3, 'rgba(6,214,160,.55)', false); c.restore();   // Ziel-Linie: hier fällt das Ei in die Schüssel
+      const W2 = TOL; rrPath(c, 200 - W2, 330, W2 * 2, 8, 4); c.fillStyle = 'rgba(6,214,160,.6)'; c.fill();
+      { const ex0 = 200 + Math.sin(ph) * 150; if (Math.abs(ex0 - 200) < TOL) { rrPath(c, 200 - W2, 326, W2 * 2, 16, 8); c.fillStyle = 'rgba(6,214,160,.35)'; c.fill(); } }   // leuchtet, solange man tippen darf
       const ex = 200 + Math.sin(ph) * 150, ey = 200;
       line(c, 200, 70, ex, ey - 30, 2, '#adb5bd', false);
       c.save(); c.translate(ex, ey); c.rotate(Math.cos(ph) * 0.3); if (!lpT(c, 'ei', 0, 3, 46)) { ell(c, 0, 0, 22, 28); fs(c, crack ? '#f8f9fa' : '#fdf0d5', 3); } if (crack) { polyPath(c, [[-20, 0], [-8, -6], [0, 4], [8, -6], [20, 0]]); c.lineWidth = 2; c.strokeStyle = OL; c.stroke(); } c.restore();
@@ -218,7 +220,7 @@ GAMES.eier = { make(env) {
     },
     down() {
       if (fin.on()) return; const ex = 200 + Math.sin(ph) * 150;
-      if (Math.abs(ex - 200) < 22 - L * 4) { got++; crack = 1; yolks.push((r() - 0.5) * 60); if (yolks.length > 6) yolks.shift(); Sfx.play('pop'); env.burst(200, 340, 10); if (got >= need) fin.set(0.5); }
+      if (Math.abs(ex - 200) < TOL + 4) { got++; crack = 1; yolks.push((r() - 0.5) * 60); if (yolks.length > 6) yolks.shift(); Sfx.play('pop'); env.burst(200, 340, 10); if (got >= need) fin.set(0.5); }
       else { mess = 0.8; Sfx.play('bad'); }
     },
   };
@@ -279,17 +281,17 @@ GAMES.kuehlpacken = { make(env) {
 
 // 8) Flammkuchen backen: im Ofen beobachten und genau dann herausholen, wenn er goldbraun ist
 GAMES.pizzaofen = { make(env) {
-  const r = env.r, L = LVL(env), need = 5 + L * 2, n = 2 + (L ? 1 : 0);
-  const S = [...Array(n)].map((_, i) => ({ y: 120 + i * 120, b: 0, sp: 0, on: false, out: 0, wait: 0.5 + i * 0.9 }));
+  const r = env.r, L = LVL(env), need = 4 + L * 2, n = 2 + (L === 2 ? 1 : 0);   // leichter: weniger Öfen, mehr Zeit, breiteres Goldbraun
+  const S = [...Array(n)].map((_, i) => ({ y: (n === 2 ? 170 : 120) + i * (n === 2 ? 130 : 120), b: 0, sp: 0, on: false, out: 0, wait: 0.5 + i * 1.6 }));
   let got = 0, t = 0, fly = []; const fin = finisher(env);
-  const W1 = 0.62, W2 = 0.82 - L * 0.04;   // goldbraun-Bereich
+  const W1 = 0.55, W2 = 0.9 - L * 0.04;   // goldbraun-Bereich
   return {
     hint: { type: 'tap', x: 200, y: S[0].y + 40 },
     update(dt) {
       t += dt;
       S.forEach(s => {
-        if (!s.on) { s.wait -= dt; if (s.wait <= 0) { s.on = true; s.b = 0; s.sp = (0.16 + r() * 0.08 + L * 0.06) * (1 + got / need * 0.4); } return; }
-        s.b += s.sp * dt; if (s.b >= 1.15) { s.on = false; s.wait = 0.8; Sfx.play('bad'); got = Math.max(0, got - 1); fly.push({ y: s.y, t: 0, burnt: true }); }
+        if (!s.on) { s.wait -= dt; if (s.wait <= 0) { s.on = true; s.b = 0; s.sp = (0.12 + r() * 0.05 + L * 0.04) * (1 + got / need * 0.25); } return; }
+        s.b += s.sp * dt; if (s.b >= 1.15) { s.on = false; s.wait = 0.8; Sfx.play('bad'); if (L === 2) got = Math.max(0, got - 1); fly.push({ y: s.y, t: 0, burnt: true }); }
       });
       fly.forEach(f => (f.t += dt)); fly = fly.filter(f => f.t < 0.8);
       fin.tick(dt);
@@ -312,7 +314,7 @@ GAMES.pizzaofen = { make(env) {
       rrPath(c, 150, 470, 100, 20, 6); fs(c, '#c08b55', 2.5); rrPath(c, 192, 488, 16, 40, 4); fs(c, '#8d5a3b', 2);
     },
     down(x, y) {
-      if (fin.on()) return; const s = S.find(q => y > q.y && y < q.y + 96); if (!s || !s.on) return;
+      if (fin.on()) return; const s = S.find(q => y > q.y - 10 && y < q.y + 112); if (!s || !s.on) return;
       s.on = false; s.wait = 0.6 + r() * 0.6;
       if (s.b >= W1 && s.b <= W2) { got++; Sfx.play('good'); env.burst(200, s.y + 48, 14); fly.push({ y: s.y, t: 0 }); if (got >= need) fin.set(0.5); }
       else { Sfx.play('bad'); fly.push({ y: s.y, t: 0, burnt: s.b > W2 }); if (s.b < W1) fly[fly.length - 1].raw = true; }

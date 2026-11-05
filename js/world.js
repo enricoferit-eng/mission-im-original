@@ -201,7 +201,7 @@ Object.assign(Play.prototype, {
       }
       if (N.id === 'spielplatz') pushPlaygroundProps(c, L, ox, oy, inView, lpN);
       const G = D.gate, cl = areaCleared(this.diff, N.id);
-      if (G && inView(G.x - 120 + ox, G.y - 220 + oy, 240, 260)) L.push({ y: G.y + oy, f: tr(() => (D.drawGate || drawGate)(c, G.x, G.y, 1, cl ? 1 : 0, !cl, t)) });
+      if (G && !cl && inView(G.x - 120 + ox, G.y - 220 + oy, 240, 260)) L.push({ y: G.y + oy, f: tr(() => (D.drawGate || drawGate)(c, G.x, G.y, 1, cl ? 1 : 0, !cl, t)) });
       for (const n of N.npcs) if (inView(n.x - 40 + ox, n.y - 120 + oy, 80, 130)) L.push({ y: n.y + oy, f: tr(() => { if (!(lpN && lpDrawStaff(c, n, n.x, n.y, t, false, N.id))) drawCritter(c, n.id, n.x, n.y, 1.12, t, { staff: true, ph: n.x }); }) });
       pushLinkBarriers(c, L, N.id, ox, oy, this.diff, t);
     }

@@ -35,7 +35,7 @@ class GameOverlay {
     this.timed = o.diff === 'hard' && !!GAMES[this.id].challenge;   // nur Schwer-Challenges: Leben + Zeit
     this.lives = this.timed && typeof ability === 'function' && ability('extraherz') ? ABIL_VAL.extraherz[ability('extraherz')] : 4; this.maxLives = this.lives; this.lostAnim = []; this.lastTick = 99;
     this.env = {
-      diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1,
+      diff: o.diff, hard: o.diff === 'hard', kind: ANIMAL_OF[o.diff], slow: o.slow ? 0.6 : 1, item: o.item,
       r: mulberry32(((o.seed || 7) + this.retries * 977) >>> 0),
       win() {
         if (self.state !== 'play') return;
@@ -597,6 +597,8 @@ function cypress(c, x, y, h) {
 }
 function shakeX(t) { return t > 0 ? Math.sin(t * 60) * 8 : 0; }
 function roundDots(c, n, done, y = 26) { for (let i = 0; i < n; i++) { ell(c, 200 + (i - (n - 1) / 2) * 30, y, 10, 10); fs(c, i < done ? '#06d6a0' : 'rgba(255,255,255,.7)', 3); } }
+// Das Ding, um das es in der Aufgabe geht (der gesuchte Gegenstand) – sonst das Standard-Motiv
+function prizeId(env, def) { const it = env && env.item; return it && (ITEMS[it] || (typeof FOOD !== 'undefined' && FOOD[it])) ? it : def; }
 function makeImage(subj, size = 300) {
   const img = document.createElement('canvas'); img.width = img.height = size * 2;
   const ic = img.getContext('2d'); ic.scale(2 * size / 200, 2 * size / 200);
@@ -730,7 +732,7 @@ GAMES.pop = { make(env) {
 } };
 
 GAMES.puzzle = { make(env) {
-  const r = env.r, img = makeImage(pick(areaPick(['eisclown', 'eisbecher', 'kuchen', 'glashaus', 'palme', 'flammkuchen']), r), 210);
+  const r = env.r, img = makeImage(prizeId(env, pick(areaPick(['eisclown', 'eisbecher', 'kuchen', 'glashaus', 'palme', 'flammkuchen']), r)), 210);
   const bx = 95, by = 28, P = 70;
   const tray = shuffle([[50, 330], [125, 300], [200, 335], [275, 300], [350, 330], [85, 430], [165, 455], [245, 430], [325, 455]], r);
   const pcs = [...Array(9).keys()].map(k => {
@@ -1088,7 +1090,7 @@ GAMES.balance = { make(env) {
 
 // Schiebepuzzle
 GAMES.slider = { make(env) {
-  const r = env.r, N = 3, P = 100, ox = 50, oy = 150, img = makeImage(pick(areaPick(['ball', 'pluesch', 'drachen', 'roller', 'helm', 'kreisel', 'wasserpistole']), r), 300);
+  const r = env.r, N = 3, P = 100, ox = 50, oy = 150, img = makeImage(prizeId(env, pick(areaPick(['ball', 'pluesch', 'drachen', 'roller', 'helm', 'kreisel', 'wasserpistole']), r)), 300);
   const b = [...Array(N * N).keys()]; // b[pos] = Kachel, N*N-1 = leer
   let e = N * N - 1, prev = -1;
   const nb = p => [p - N, p + N, p % N ? p - 1 : -1, p % N < N - 1 ? p + 1 : -1].filter(q => q >= 0 && q < N * N);
@@ -1228,7 +1230,7 @@ function shellMake(env, P) {
       rrPath(c, 30, 370, 340, 24, 10); fs(c, '#a0673a', 3);
       roundDots(c, rounds, round, 40);
       const bc = cups[ball];
-      if ((lift[ball] || 0) > 0.02) drawAny(c, heroId('eisclown'), bc.x, 344, 36);   // nur sichtbar, wenn die Glocke angehoben ist
+      if ((lift[ball] || 0) > 0.02) drawAny(c, prizeId(env, heroId('eisclown')), bc.x, 344, 36);   // nur sichtbar, wenn die Glocke angehoben ist
       [...cups].sort((a, b) => a.y - b.y).forEach((cp, i) => {
         const ci = cups.indexOf(cp), up = (lift[ci] || 0) * 70, sx = state === 'pick' ? 0 : 0;
         c.save(); c.translate(cp.x + sx + (shake > 0 && state === 'reveal' ? shakeX(shake) : 0), cp.y - up);
@@ -1308,7 +1310,7 @@ function mazeMake(env, N, fog) {
     const [dx, dy, b, ob] = pick(opts, r), n = (y + dy) * N + x + dx;
     W4[c0] &= ~b; W4[n] &= ~ob; seen[n] = 1; st.push(n);
   }
-  let pos = 0, ax = 0, ay = 0, t = 0; const goal = N * N - 1, fin = finisher(env), goalId = pick(MOT(), r);
+  let pos = 0, ax = 0, ay = 0, t = 0; const goal = N * N - 1, fin = finisher(env), goalId = prizeId(env, pick(MOT(), r));
   const tryTo = cx => {
     const x = pos % N, y = Math.floor(pos / N), tx = cx % N, ty = Math.floor(cx / N);
     const dx = tx - x, dy = ty - y; if (Math.abs(dx) + Math.abs(dy) !== 1) return;
@@ -1501,7 +1503,7 @@ GAMES.run = { challenge: true, make(env) {
       for (const o of obs) {
         if (o.done) continue;
         const y = 440 - (o.D - d);
-        if (Math.abs(y - 440) < 30 && Math.abs(px - (100 + o.lane * 100)) < 48) {
+        if (Math.abs(y - 440) < 26 && Math.abs(px - (100 + o.lane * 100)) < 44) {
           if (o.clock) { o.done = true; env.addTime(3); }
           else if (o.coin) { o.done = true; env.coin(px, 440); }
           else if (inv <= 0) { o.done = true; env.hit(); stun = env.hard ? 0.3 : 0.8; inv = 1; }
@@ -1523,7 +1525,7 @@ GAMES.run = { challenge: true, make(env) {
         const x = 100 + o.lane * 100;
         if (o.clock) { icon(c, 'clock', x, y - 10, 46); continue; }
         if (o.coin) { env.drawCoin(c, x, y - 10, 46); continue; }
-        ell(c, x, y + 22, 30, 8); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); drawAny(c, o.id, x, y, 66);
+        ell(c, x, y + 18, 22, 6); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); drawAny(c, o.id, x, y, 46);   // kleiner: die gemalten Sachen füllten sonst fast die ganze Spur
       }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 470, 1.7, { t, moving: true, cap: hasCap(env.kind) });
     },
@@ -1704,7 +1706,7 @@ GAMES.slide = { challenge: true, make(env) {
       px = lerp(px, tx, Math.min(1, dt * 14));
       for (const o of obs) {
         o.y -= v * dt; o.x += o.vx * dt; if (o.x < 100 || o.x > 300) o.vx *= -1;
-        if (!o.done && dist(o.x, o.y, px, 130) < 44) {
+        if (!o.done && dist(o.x, o.y, px, 130) < (o.id ? 36 : 44)) {
           if (o.clock) { o.done = true; env.addTime(3); }
           else if (o.coin) { o.done = true; env.coin(px, 130); }
           else if (inv <= 0) { o.done = true; env.hit(); inv = 1; }
@@ -1727,7 +1729,7 @@ GAMES.slide = { challenge: true, make(env) {
         if (o.clock) icon(c, 'clock', o.x, o.y, 44);
         else if (o.coin) env.drawCoin(c, o.x, o.y, 44);
         else if (o.kid) drawCritter(c, o.id, o.x, o.y + 20, 1.1, t);
-        else { c.save(); c.translate(o.x, o.y); if (o.vx) c.rotate(o.y * 0.03); drawAny(c, o.id, 0, 0, 60); c.restore(); }
+        else { c.save(); c.translate(o.x, o.y); if (o.vx) c.rotate(o.y * 0.03); drawAny(c, o.id, 0, 0, 44); c.restore(); }
       }
       if (!(inv > 0 && Math.floor(t * 12) % 2)) drawAnimal(c, env.kind, px, 150, 1.5, { t, moving: false, tilt: (tx - px) * 0.01, cap: hasCap(env.kind) });
       for (let i = 0; i < 4; i++) line(c, px - 30 + i * 20, 70 - ((t * 300 + i * 40) % 60), px - 30 + i * 20, 90 - ((t * 300 + i * 40) % 60), 3, 'rgba(255,255,255,.8)', false);
@@ -1826,7 +1828,7 @@ GAMES.mirror = { make(env) {
 
 // Bild drehen: jede Kachel ist verdreht
 GAMES.rotimg = { make(env) {
-  const r = env.r, N = env.hard ? 4 : 3, P = 300 / N, ox = 50, oy = 150, img = makeImage(pick(areaPick(['roller', 'drachen', 'wasserpistole', 'seifenblasen', 'helm', 'kreisel']), r), 300);
+  const r = env.r, N = env.hard ? 4 : 3, P = 300 / N, ox = 50, oy = 150, img = makeImage(prizeId(env, pick(areaPick(['roller', 'drachen', 'wasserpistole', 'seifenblasen', 'helm', 'kreisel']), r)), 300);
   const S = img.width / N, fin = finisher(env), ictx = img.getContext('2d');
   // Für jedes Teil prüfen, in welchen Drehungen es gleich aussieht (z. B. nur Wiese oder Himmel)
   const sameRots = i => {
@@ -1962,7 +1964,7 @@ GAMES.trace = { make(env) {
       c.setLineDash([4, 14]); c.lineWidth = 6; c.strokeStyle = '#118ab2'; c.stroke(); c.setLineDash([]);
       if (idx > 0) { c.beginPath(); for (let i = 0; i <= idx; i++) i ? c.lineTo(pts[i][0], pts[i][1]) : c.moveTo(pts[i][0], pts[i][1]); c.lineWidth = 10; c.strokeStyle = '#ffd166'; c.stroke(); }
       const e = pts[pts.length - 1]; drawUmbrella(c, e[0], e[1], 34);
-      const p = pts[idx]; ell(c, p[0], p[1], 26, 8); fs(c, '#adb5bd', 3); drawAny(c, heroId('eisclown'), p[0], p[1] - 20, 50);
+      const p = pts[idx]; ell(c, p[0], p[1], 26, 8); fs(c, '#adb5bd', 3); drawAny(c, prizeId(env, heroId('eisclown')), p[0], p[1] - 20, 50);
     },
     down(x, y) { const p = pts[idx]; if (dist(x, y, p[0], p[1]) < 60) drag = true; },
     move(x, y) {

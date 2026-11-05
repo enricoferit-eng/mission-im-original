@@ -379,7 +379,7 @@ class Play {
     if (!this.mp && !solo && typeof carveLinks === 'function') { G0.fill(0); G1.fill(0); ST.fill(0); SL.fill(0); SG.grid(); solidDecor(); carveLinks(this.stage, diff); }
     this.sp = this.mp ? { run: null, clears: 0, skins: [] } : SP(diff, this.stage);
     if (!this.sp.run) this.sp.run = { done: {}, active: null, easy: {} };
-    this.st = this.sp.run; this.st.clears = this.sp.clears;
+    this.st = this.sp.run; this.st.clears = this.sp.clears; if (this.st.active) this.st.active.decoys = [];   /* keine Täuschungen mehr (auch nicht in alten Spielständen) */
     if (!this.st.layout) { const r = mulberry32(this.seedFor('layout')); this.st.layout = { seat: ri(0, 1, r) }; NPC_DEFS.forEach(n => { if (n.pos) this.st.layout[n.id] = ri(0, n.pos.length - 1, r); }); Save.write(); }
     this.npcs = NPC_DEFS.map(n => {
       if (n.swing) return { id: n.id, swing: this.st.layout.seat, x: SWING.seats[this.st.layout.seat], y: SWING.y + 55, l: 0 };
@@ -760,6 +760,7 @@ class Play {
     c.font = `900 15px ${FONT}`; const msg = 'Tippe, wenn der Ring grün ist!', mw = c.measureText(msg).width + 28;
     rrPath(c, W / 2 - mw / 2, H - 106, mw, 34, 17); c.fillStyle = 'rgba(32,44,30,.9)'; c.fill(); txt(c, msg, W / 2, H - 89, 15, '#fff', 'center', null);
   }
+  gateGone() { return !this.mp && !SG.finalExit && !SG.solo && typeof areaCleared === 'function' && typeof carveLinks === 'function' && areaCleared(this.diff, this.stage); }   // Tor verschwindet, sobald der Bereich einmal geschafft ist
   bossOpen() { if (this.mp && this.mp.mode === 'duell') return this.mpKidsDone() >= this.mp.opts.kids; return NPC_DEFS.every(n => this.st.done[n.id]); }
   npcState(id) {
     const st = this.st;
@@ -964,7 +965,7 @@ class Play {
   interactables() {
     const out = [];
     for (const n of this.npcs) { const P = this.npcPos(n); out.push({ k: 'npc', id: n.id, x: P.x, y: P.y, l: P.l, r: P.r, sx: n.x, sy: P.hy - P.hz - 26 }); }
-    out.push({ k: 'gate', id: 'gate', x: GATE.ix, y: GATE.iy, l: 0, r: 64, sx: GATE.x, sy: GATE.y - 50 });
+    if (!this.gateGone()) out.push({ k: 'gate', id: 'gate', x: GATE.ix, y: GATE.iy, l: 0, r: 64, sx: GATE.x, sy: GATE.y - 50 });
     if (this.canSearch()) for (const s of SPOTS) out.push({ k: 'spot', x: s.x, y: s.y, l: s.l || 0, r: s.reach - 12, sx: s.x, sy: s.y - (s.l ? HOUSE.fz : 0) - 16 });
     const q = this.st.active;
     if (this.canSearch() && q) {
@@ -1089,7 +1090,7 @@ class Play {
       const g = this.pickRole(cand, r); used.push(g); return g;
     });
     // Täuschungen: an anderen Stellen guckt auch etwas heraus (Stöckchen, Blatt, Steinchen, Kronkorken)
-    const decoys = [], nd = this.diff === 'hard' ? 3 : this.diff === 'easy' ? 0 : 2;
+    const decoys = [], nd = 0;   // keine falschen Gegenstände mehr: die Kinder fanden das verwirrend
     // Täuschungen auch an Möbeln: dort, wo nichts versteckt ist, guckt manchmal nur Krimskrams hervor
     const freeSp = shuffle(SPOTS.filter(s2 => s2.px != null && !hidden.some(h => h.spot === s2.id)), r), nFurn = freeSp.length ? Math.ceil(nd * 0.6) : 0;
     for (let k = 0; k < nFurn && k < freeSp.length; k++) { const s2 = freeSp[k], dd = DECOR_BY[s2.decor]; decoys.push({ x: s2.x, y: s2.y, px: s2.px, py: s2.py, rot: s2.rot || 0, front: !!s2.front, zy: dd ? dd.y + (dd.zy || 0) : s2.py, kind: pick(SG.junk, r), done: false, reach: 60 }); }
@@ -1127,6 +1128,7 @@ class Play {
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: W_('opened') || 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => (SG.finalExit || typeof carveLinks !== 'function' ? this.startExit() : this.stageClear()) };
+    else if (this.bossOpen() && this.gateGone()) { st.done.gate = true; Save.write(); this.pending = { t: 1.2, fn: () => this.stageClear() }; }   // Bereich schon einmal geschafft: kein Tor mehr – nach dem letzten Kind ist er fertig
     else if (this.bossOpen()) this.pending = { t: 1.0, fn: () => { const gs = this.w2s(GATE.x, GATE.y, 60); FX.sparkle(gs.x, gs.y, 30, '#ffd23f'); Sfx.play('good'); } };
   }
   anchor(id) {
@@ -1166,6 +1168,7 @@ class Play {
     this.npcAnim[id].jump = 1.5; this.justDone = { id, t: 0 };
     this.banner = id === 'gate' ? { text: W_('opened') || 'Das Tor ist offen!', t: 0 } : null;
     if (id === 'gate' && !this.mp) this.pending = { t: 1.0, fn: () => (SG.finalExit || typeof carveLinks !== 'function' ? this.startExit() : this.stageClear()) };
+    else if (this.bossOpen() && this.gateGone()) { st.done.gate = true; Save.write(); this.pending = { t: 1.2, fn: () => this.stageClear() }; }
   }
   // Tor geht auf, Figur läuft hinaus zum Parkplatz
   startExit() {
@@ -1246,8 +1249,8 @@ class Play {
         if (this.off(q, i)) return;
         const pk = peekOf(h), tilt = ((i * 37) % 7 - 3) * 0.12;
         const wob = !hard && Math.sin(t * 2 + i) > 0.97 ? Math.sin(t * 40) * 0.15 : 0;
-        if (h.px != null) {   // steckt hinter/in/auf einem Möbelstück: das Möbel verdeckt einen Teil davon
-          L.push({ y: h.zy + (h.front ? 0.5 : -0.5), f: () => { c.save(); if (h.cut != null) { c.beginPath(); c.rect(h.px - 80, h.cut - 200, 160, 200); c.clip(); } c.translate(h.px, h.py); c.rotate(h.rot + tilt * 0.5 + wob); drawItem(c, q.items[i], 0, 0, size * h.sz); c.restore(); } });
+        if (h.px != null) {   // steckt hinter/in/auf einem Möbelstück (immer ganz sichtbar, nie abgeschnitten)
+          L.push({ y: h.zy + (h.front ? 0.5 : -0.5), f: () => { c.save(); c.translate(h.px, h.py); c.rotate(h.rot + tilt * 0.5 + wob); drawItem(c, q.items[i], 0, 0, size * h.sz); c.restore(); } });
           return;
         }
         const f = h.behind ? () => {
@@ -1328,7 +1331,7 @@ class Play {
     if (SG.feat.slide) L.push({ y: SLIDE.y1, f: () => this.drawSlide(c) });
     if (SG.feat.house) { L.push({ y: HOUSE.y + HOUSE.h, f: () => this.drawHouse(c, behind, drawPlayer) }); L.push({ y: HOUSE.y + HOUSE.h + 0.5, f: () => this.drawStairs(c) }); }
     if (this.extras && this.extras.draw) this.extras.draw(c, L, vis, t);
-    L.push({ y: GATE.y, f: () => (SG.drawGate || drawGate)(c, GATE.x, GATE.y, 1, this.gateA, this.npcState('gate') === 'locked', t) });
+    if (!this.gateGone()) L.push({ y: GATE.y, f: () => (SG.drawGate || drawGate)(c, GATE.x, GATE.y, 1, this.gateA, this.npcState('gate') === 'locked', t) });
     if (p.slide) L.push({ y: SLIDE.y1 + 1, f: drawPlayer });
     else if (this.swinging && !this.swinging.jump) { /* sitzt auf der Schaukel: wird mit dem Sitz gezeichnet */ }
     else if (this.climb) { /* klettert: wird nach dem Dach gezeichnet */ }
@@ -1467,7 +1470,7 @@ class Play {
   drawMarkers(c) {
     const t = this.t, q = this.st.active, diff = this.diff, p = this.p;
     const marks = this.npcs.map(n => { const P = this.npcPos(n); return { id: n.id, x: n.x, y: P.hy - P.hz - (lpActive() && LP.stages[SG.id].staff[n.id] ? LP.staffH + 22 : 72) }; });   // Low-Poly-Figuren sind größer
-    marks.push({ id: 'gate', x: GATE.x, y: GATE.y - 128 });
+    if (!this.gateGone()) marks.push({ id: 'gate', x: GATE.x, y: GATE.y - 128 });
     if (SG.feat.racer && this.racer && this.racer.state === 'idle' && !this.mp && dist(p.x, p.y, this.racer.x, this.racer.y) < 260) {   // Leo lädt zum Wettrennen ein
       const R = this.racer, b = Math.sin(t * 3) * 3, bx = R.x, by = R.y - 118 + b; c.font = `900 13px ${FONT}`; const tw = c.measureText('Wettrennen? Tipp mich an!').width + 22;
       rrPath(c, bx - tw / 2, by - 15, tw, 30, 14); fs(c, '#fff', 2.5); polyPath(c, [[bx - 6, by + 14], [bx + 6, by + 14], [bx, by + 24]]); fs(c, '#fff', 0); txt(c, 'Wettrennen? Tipp mich an!', bx, by + 1, 13, '#3d2c1f', 'center', null);
@@ -1562,8 +1565,8 @@ class Play {
       if (v !== this.coinShown) { this.coinPop = 1; this.coinShown = v; this.coinShowT = 3.5; } this.coinPop = Math.max(0, (this.coinPop || 0) - 0.04); this.coinShowT = Math.max(0, (this.coinShowT || 0) - 1 / 60);
       if (this.coinShowT > 0) {
       const k = 1 + this.coinPop * 0.3; c.font = `900 15px ${FONT}`; const tw = Math.max(56, c.measureText(String(v)).width + 44);
-      rrPath(c, 150, 70, tw, 30, 15); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();
-      c.save(); c.translate(168, 85); c.scale(k, k); GAME_COIN.draw(c, 0, 0, 10); c.restore(); txt(c, String(v), 184, 86, 15, '#ffd166', 'left', null);
+      rrPath(c, 84, 70, tw, 30, 15); c.fillStyle = 'rgba(30,20,10,.5)'; c.fill();   // bündig unter der Joker-Anzeige
+      c.save(); c.translate(102, 85); c.scale(k, k); GAME_COIN.draw(c, 0, 0, 10); c.restore(); txt(c, String(v), 118, 86, 15, '#ffd166', 'left', null);
       }
     }
     // Obere Leiste (Spielfeld bleibt frei): links Kinder-Fortschritt, rechts gesuchte Sachen + Bonus-Uhr
