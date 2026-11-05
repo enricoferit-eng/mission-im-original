@@ -301,7 +301,7 @@ GAMES.geschenke = { make(env) {
     },
     draw(c) {
       chaletBg(c, 330, t); txtGot(c, got, need);
-      sacks.forEach((s, i) => { c.beginPath(); c.moveTo(s.x - 42, s.y - 20); c.quadraticCurveTo(s.x - 60, s.y + 70, s.x, s.y + 70); c.quadraticCurveTo(s.x + 60, s.y + 70, s.x + 42, s.y - 20); c.closePath(); fs(c, '#a0673a', 3); ell(c, s.x, s.y - 20, 42, 12); fs(c, '#6b4423', 3); rrPath(c, s.x - 40, s.y - 6, 80, 12, 6); fs(c, s.col, 2.5); ell(c, s.x, s.y + 32, 20, 20); fs(c, s.col, 2.5); icon(c, GIFT_SYM[i], s.x, s.y + 32, 26, '#fff'); });   /* Symbol zusätzlich zur Farbe */
+      sacks.forEach((s, i) => { if (lpT(c, 'sack', s.x, s.y + 14, 112)) { rrPath(c, s.x - 36, s.y - 2, 72, 11, 5); fs(c, s.col, 2.5); } else { c.beginPath(); c.moveTo(s.x - 42, s.y - 20); c.quadraticCurveTo(s.x - 60, s.y + 70, s.x, s.y + 70); c.quadraticCurveTo(s.x + 60, s.y + 70, s.x + 42, s.y - 20); c.closePath(); fs(c, '#a0673a', 3); ell(c, s.x, s.y - 20, 42, 12); fs(c, '#6b4423', 3); rrPath(c, s.x - 40, s.y - 6, 80, 12, 6); fs(c, s.col, 2.5); } ell(c, s.x, s.y + 32, 20, 20); fs(c, s.col, 2.5); icon(c, GIFT_SYM[i], s.x, s.y + 32, 26, '#fff'); });   /* Symbol zusätzlich zur Farbe */
       gifts.forEach(g => { drawGift(c, g.x, g.y, g.s, g.box, g.col); const i = COLS.indexOf(g.col); ell(c, g.x + 22 * g.s, g.y + 18 * g.s, 11, 11); fs(c, g.col, 2); icon(c, GIFT_SYM[i], g.x + 22 * g.s, g.y + 18 * g.s, 14, '#fff'); });
       fxText(c, fx);
     },
@@ -387,7 +387,7 @@ GAMES.autowasch = { make(env) {
       spots.forEach(s => { if (s.d <= 0) return; ell(c, s.x, s.y, s.r, s.r * 0.8); c.fillStyle = `rgba(110,80,50,${0.85 * s.d})`; c.fill(); ell(c, s.x + s.r * 0.6, s.y + s.r * 0.4, s.r * 0.4, s.r * 0.3); c.fill(); });
       bubbles.forEach(b => { ell(c, b.x, b.y - b.t * 30, 6 + b.t * 6, 6 + b.t * 6); c.lineWidth = 1.5; c.strokeStyle = `rgba(255,255,255,${1 - b.t})`; c.stroke(); });
       const left = spots.filter(s => s.d > 0).length; txtGot(c, spots.length - left, spots.length);
-      rrPath(c, sp.x - 30, sp.y - 20, 60, 40, 12); fs(c, '#ffd60a', 3); for (let k = 0; k < 5; k++) { ell(c, sp.x - 20 + k * 10, sp.y - 6 + (k % 2) * 10, 3, 3); c.fillStyle = 'rgba(200,150,0,.5)'; c.fill(); }
+      if (!lpT(c, 'schwamm', sp.x, sp.y, 74)) rrPath(c, sp.x - 30, sp.y - 20, 60, 40, 12), fs(c, '#ffd60a', 3); if (!lpHas('schwamm')) for (let k = 0; k < 5; k++) { ell(c, sp.x - 20 + k * 10, sp.y - 6 + (k % 2) * 10, 3, 3); c.fillStyle = 'rgba(200,150,0,.5)'; c.fill(); }
     },
     down(x, y) { down = true; sp = { x, y }; },
     move(x, y) { if (!down) return; if (dist(x, y, sp.x, sp.y) > 4 && Math.random() < 0.5) bubbles.push({ x, y, t: 0 }); sp = { x, y }; },

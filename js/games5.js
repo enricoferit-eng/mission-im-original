@@ -107,12 +107,14 @@ GAMES.holzhacken = { make(env) {
     draw(c) {
       snowBg(c, t, 200); txtGot(c, got, need);
       for (let k = 0; k < got; k++) { rrPath(c, 20 + (k % 6) * 22, 470 - Math.floor(k / 6) * 16, 20, 14, 4); fs(c, '#c08b55', 2); }
-      rrPath(c, 140, 380, 120, 70, 10); fs(c, '#8d5a3b', 3); ell(c, 200, 380, 60, 16); fs(c, '#d4a373', 3); for (let k = 1; k < 4; k++) { ell(c, 200, 380, k * 14, k * 4); c.lineWidth = 1.2; c.strokeStyle = 'rgba(120,80,40,.5)'; c.stroke(); }
-      c.save(); c.translate(200, 376); c.rotate(ang); rrPath(c, -26, -110, 52, 110, 10); fs(c, upright() ? '#c08b55' : '#b07d4b', 3); ell(c, 0, -110, 26, 8); fs(c, '#e9c46a', 2.5); line(c, 0, -104, 0, -10, 1.5, 'rgba(90,60,30,.4)', false); c.restore();
+      if (!lpT(c, 'klotz', 200, 418, 168)) { rrPath(c, 140, 380, 120, 70, 10); fs(c, '#8d5a3b', 3); ell(c, 200, 380, 60, 16); fs(c, '#d4a373', 3); for (let k = 1; k < 4; k++) { ell(c, 200, 380, k * 14, k * 4); c.lineWidth = 1.2; c.strokeStyle = 'rgba(120,80,40,.5)'; c.stroke(); } }
+      c.save(); c.translate(200, 376); c.rotate(ang); if (!lpT(c, 'scheit', 0, -56, 62, 120)) { rrPath(c, -26, -110, 52, 110, 10); fs(c, upright() ? '#c08b55' : '#b07d4b', 3); ell(c, 0, -110, 26, 8); fs(c, '#e9c46a', 2.5); line(c, 0, -104, 0, -10, 1.5, 'rgba(90,60,30,.4)', false); } c.restore();
       ell(c, 200, 240, 36, 10); c.fillStyle = upright() ? 'rgba(6,214,160,.6)' : 'rgba(239,71,111,.35)'; c.fill();
-      halves.forEach(h => { c.save(); c.translate(h.x, h.y); c.rotate(h.a); rrPath(c, -13, -50, 26, 100, 6); fs(c, '#c08b55', 2.5); c.restore(); });
+      halves.forEach(h => { c.save(); c.translate(h.x, h.y); c.rotate(h.a); if (!lpT(c, 'scheit', 0, 0, 32, 104)) { rrPath(c, -13, -50, 26, 100, 6); fs(c, '#c08b55', 2.5); } c.restore(); });
       // Axt
-      c.save(); c.translate(330, 200); c.rotate(-1.2 + axe * 1.4 - bounce * 0.4 + Math.sin(t * 3) * 0.05); line(c, 0, 0, 0, -150, 8, '#8d5a3b'); polyPath(c, [[-6, -130], [-46, -150], [-42, -110], [-6, -118]]); fs(c, '#adb5bd', 3); c.restore();
+      c.save(); c.translate(330, 200); c.rotate(-1.2 + axe * 1.4 - bounce * 0.4 + Math.sin(t * 3) * 0.05); const axIm = lpHas('axt') && lpSpr('teile/axt');
+      if (axIm) { c.rotate(1.107); const W = 172, H = W * axIm.naturalHeight / axIm.naturalWidth; c.drawImage(axIm, -0.95 * W, -0.9 * H, W, H); }
+      else { line(c, 0, 0, 0, -150, 8, '#8d5a3b'); polyPath(c, [[-6, -130], [-46, -150], [-42, -110], [-6, -118]]); fs(c, '#adb5bd', 3); } c.restore();
       if (bounce) txt(c, 'Abgerutscht!', 200, 160, 22, '#ef476f', 'center', '#fff');
     },
     down(x, y) { start = { x, y }; },
@@ -480,8 +482,8 @@ GAMES.heimfahrt = { challenge: true, make(env) {
       fin.tick(dt);
     },
     draw(c) {
-      c.fillStyle = '#74c69d'; c.fillRect(0, 0, GAME_W, GAME_H);
-      for (let k = 0; k < 12; k++) { const y = ((k * 90 + pos) % 1080) - 60; ell(c, 30, y, 22, 22); fs(c, '#40916c', 2.5); ell(c, 370, (y + 45) % 1080 - 20, 22, 22); fs(c, '#40916c', 2.5); }
+      if (!lpRasen(c, 0, GAME_H)) { c.fillStyle = '#74c69d'; c.fillRect(0, 0, GAME_W, GAME_H); }
+      for (let k = 0; k < 12; k++) { const y = ((k * 90 + pos) % 1080) - 60, y2 = (y + 45) % 1080 - 20; if (lpHas('baum_oben')) { lpT(c, 'baum_oben', 32, y, 58); lpT(c, 'baum_oben', 368, y2, 58); continue; } ell(c, 30, y, 22, 22); fs(c, '#40916c', 2.5); ell(c, 370, y2, 22, 22); fs(c, '#40916c', 2.5); }
       rrPath(c, 70, -10, 260, GAME_H + 20, 0); c.fillStyle = '#6c757d'; c.fill(); line(c, 70, -10, 70, 540, 4, '#f8f9fa', false); line(c, 330, -10, 330, 540, 4, '#f8f9fa', false);
       for (let k = 0; k < 12; k++) { const y = ((k * 60 + pos) % 720) - 60; line(c, 160, y, 160, y + 30, 4, '#f8f9fa', false); line(c, 240, y, 240, y + 30, 4, '#f8f9fa', false); }
       lights.forEach(l => { const sy = 420 - (l.y - pos); if (sy < -80 || sy > 600) return; line(c, 70, sy, 330, sy, 6, 'rgba(255,255,255,.8)', false); rrPath(c, 336, sy - 70, 26, 64, 6); fs(c, '#212529', 2.5); ell(c, 349, sy - 54, 8, 8); c.fillStyle = red(l) ? '#ff4d4d' : '#4a1515'; c.fill(); ell(c, 349, sy - 26, 8, 8); c.fillStyle = red(l) ? '#14421f' : '#2bff6a'; c.fill(); });

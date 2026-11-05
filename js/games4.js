@@ -297,8 +297,9 @@ GAMES.einschenken = { make(env) {
       fin.tick(dt);
     },
     draw(c) {
-      c.fillStyle = '#5c3d2e'; c.fillRect(0, 0, GAME_W, GAME_H);
-      for (let k = 0; k < 4; k++) { rrPath(c, 20, 40 + k * 70, 360, 10, 3); fs(c, '#8d5a3b', 2); for (let m = 0; m < 7; m++) { rrPath(c, 32 + m * 50, 0 + k * 70, 14, 40, 4); fs(c, ['#2b9348', '#e9c46a', '#9d0208', '#adb5bd'][(m + k) % 4], 2); } }
+      const lpE = typeof LP !== 'undefined' && LP.on && lpTinted('flasche', '#2b9348');
+      if (lpE) bgWood(c); else { c.fillStyle = '#5c3d2e'; c.fillRect(0, 0, GAME_W, GAME_H); }
+      for (let k = 0; k < 4; k++) { rrPath(c, 20, 40 + k * 70, 360, 10, 3); fs(c, '#8d5a3b', 2); for (let m = 0; m < 7; m++) { const col = ['#2b9348', '#e9c46a', '#9d0208', '#adb5bd'][(m + k) % 4], fl = lpE && lpTinted('flasche', col); if (fl) c.drawImage(fl, 30 + m * 50, -4 + k * 70, 19, 44); else { rrPath(c, 32 + m * 50, 0 + k * 70, 14, 40, 4); fs(c, col, 2); } } }
       txtGot(c, got, need, '#ffd166');
       // Zapfhahn
       rrPath(c, 170, 250, 60, 40, 10); fs(c, '#adb5bd', 3); rrPath(c, 190, 288, 20, 26, 5); fs(c, '#868e96', 3); rrPath(c, 196, 214, 8, 40, 4); fs(c, pour ? '#ef476f' : '#212529', 2.5);
@@ -469,8 +470,9 @@ GAMES.werfen = { make(env) {
     draw(c) {
       terraceBg(c, 250, t);
       // Hecke + Rasen hinten
-      c.fillStyle = '#74c69d'; c.fillRect(170, 200, 230, 50); for (let k = 0; k < 12; k++) { ell(c, 170 + k * 20, 236, 14, 16); fs(c, '#40916c', 2); }
-      c.save(); c.translate(kid.x, 210); const kp = { skin: '#f1c7a5' }; rrPath(c, -10, -28, 20, 22, 6); fs(c, '#4dabf7', 2.5); ell(c, 0, -38, 10, 10); fs(c, kp.skin, 2.5); line(c, -10, -24, -18, -40 + Math.sin(t * 8) * 4, 4, kp.skin); line(c, 10, -24, 18, -40 - Math.sin(t * 8) * 4, 4, kp.skin); ell(c, 0, -46, 10, 5); fs(c, '#7a4a2a', 2); c.restore();
+      if (lpHas('hecke')) { for (let k = 0; k < 3; k++) lpT(c, 'hecke', 208 + k * 76, 228, 86); } else { c.fillStyle = '#74c69d'; c.fillRect(170, 200, 230, 50); for (let k = 0; k < 12; k++) { ell(c, 170 + k * 20, 236, 14, 16); fs(c, '#40916c', 2); } }
+      const kidIm = typeof LP !== 'undefined' && LP.on && lpSpr('leute/a_mila'); if (kidIm) { const h = 64, w = h * kidIm.naturalWidth / kidIm.naturalHeight; c.drawImage(kidIm, kid.x - w / 2, 212 - h - Math.abs(Math.sin(t * 4)) * 4, w, h); }
+      else { c.save(); c.translate(kid.x, 210); const kp = { skin: '#f1c7a5' }; rrPath(c, -10, -28, 20, 22, 6); fs(c, '#4dabf7', 2.5); ell(c, 0, -38, 10, 10); fs(c, kp.skin, 2.5); line(c, -10, -24, -18, -40 + Math.sin(t * 8) * 4, 4, kp.skin); line(c, 10, -24, 18, -40 - Math.sin(t * 8) * 4, 4, kp.skin); ell(c, 0, -46, 10, 5); fs(c, '#7a4a2a', 2); c.restore(); }
       txtGot(c, got, need);
       if (wind) txt(c, (wind > 0 ? 'Wind →' : '← Wind'), 200, 70, 16, '#118ab2', 'center', '#fff');
       c.save(); c.translate(ball.x, ball.y); c.rotate(ball.a); const s = ball.fly ? clamp(1 - (440 - ball.y) / 900, 0.6, 1) : 1; c.scale(s, s); drawItem(c, 'ball', 0, 0, 44); c.restore();
@@ -511,8 +513,8 @@ GAMES.kissen = { make(env) {
       for (let k = 0; k < 3; k++) { const cx = front - 60 - k * 90; ell(c, cx, 70 + (k % 2) * 20, 70, 32); fs(c, '#6c757d', 3); ell(c, cx + 40, 60 + (k % 2) * 20, 46, 26); fs(c, '#868e96', 0); }
       c.strokeStyle = 'rgba(160,210,255,.9)'; c.lineWidth = 2; drops.forEach(d => { c.beginPath(); c.moveTo(d.x, d.y); c.lineTo(d.x - 3, d.y + 12); c.stroke(); });
       // Kissenbox
-      rrPath(c, BX - 60, BY - 50, 120, 90, 10); fs(c, '#8d5a3b', 3); rrPath(c, BX - 66, BY - 66, 132, 22, 8); fs(c, '#a0673a', 3); txt(c, 'Kissenbox', BX, BY - 4, 13, '#fff', 'center', null);
-      K.forEach(k => { if (k.safe) return; c.save(); c.translate(k.x, k.y); if (k.lost) c.globalAlpha = 0.4; rrPath(c, -26, -18, 52, 36, 12); fs(c, k.col, 3); if (k.wet > 0) { c.fillStyle = `rgba(30,80,140,${k.wet * 0.5})`; rrPath(c, -26, -18, 52, 36, 12); c.fill(); } line(c, -14, 0, 14, 0, 2, 'rgba(255,255,255,.5)', false); c.restore(); });
+      if (!lpT(c, 'kiste', BX, BY - 6, 134)) { rrPath(c, BX - 60, BY - 50, 120, 90, 10); fs(c, '#8d5a3b', 3); rrPath(c, BX - 66, BY - 66, 132, 22, 8); fs(c, '#a0673a', 3); } txt(c, 'Kissenbox', BX, BY - 4, 13, '#fff', 'center', null);
+      K.forEach(k => { if (k.safe) return; c.save(); c.translate(k.x, k.y); if (k.lost) c.globalAlpha = 0.4; const kim = typeof lpTinted === 'function' && LP.on && lpTinted('kissen', k.col); if (kim) c.drawImage(kim, -32, -28, 64, 57); else rrPath(c, -26, -18, 52, 36, 12), fs(c, k.col, 3); if (k.wet > 0) { c.fillStyle = `rgba(30,80,140,${k.wet * 0.5})`; rrPath(c, -26, -18, 52, 36, 12); c.fill(); } line(c, -14, 0, 14, 0, 2, 'rgba(255,255,255,.5)', false); c.restore(); });
       counterTxt(c, K.filter(k => k.safe).length + ' / ' + n + ' gerettet', 200, 36, 18);
     },
     down(x, y) { if (fin.on()) return; const k = K.filter(q => !q.safe && !q.lost).sort((a, b) => dist(x, y, a.x, a.y) - dist(x, y, b.x, b.y))[0]; if (k && dist(x, y, k.x, k.y) < 46) { drag = { k, ox: k.x - x, oy: k.y - y }; Sfx.play('tap'); } },
