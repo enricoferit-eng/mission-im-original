@@ -66,6 +66,7 @@ GAMES.belegen = { make(env) {
   const want = kinds.map(() => ri(2, 3 + L, r)), have = kinds.map(() => 0), placed = [];
   let shake = -1, sT = 0, hideT = L === 2 ? 5 : 1e9; const fin = finisher(env);
   const topping = (c, k, x, y, s = 1) => {
+    if (typeof lpTeil === 'function' && lpTeil(c, 't_' + k, x, y, (k === 'speck' ? 15 : k === 'lauch' ? 13 : 18) * s)) return;
     if (k === 'speck') { rrPath(c, x - 7 * s, y - 4 * s, 14 * s, 8 * s, 2); fs(c, '#e07a5f', 2); line(c, x - 5 * s, y, x + 5 * s, y, 1.5, '#fff', false); }
     else if (k === 'zwiebel') { c.beginPath(); c.arc(x, y, 7 * s, 0, TAU); c.lineWidth = 3 * s; c.strokeStyle = '#9d6bb5'; c.stroke(); c.beginPath(); c.arc(x, y, 4 * s, 0, TAU); c.lineWidth = 2 * s; c.strokeStyle = '#c9a0dc'; c.stroke(); }
     else if (k === 'pilz') { c.beginPath(); c.arc(x, y, 7 * s, Math.PI, 0); c.closePath(); fs(c, '#c8b6a6', 2); rrPath(c, x - 2.5 * s, y, 5 * s, 6 * s, 1.5); fs(c, '#efe6dd', 1.5); }
@@ -78,12 +79,13 @@ GAMES.belegen = { make(env) {
       bgWood(c);
       recipeCard(c, 12, 12, 150, 40 + kinds.length * 30, 'Rezept');
       kinds.forEach((t, i) => { const y = 62 + i * 30; topping(c, t.k, 36, y, 1.2); if (hideT > 0) { for (let k = 0; k < want[i]; k++) topping(c, t.k, 74 + k * 16, y, 0.62); } else txt(c, '?', 90, y + 1, 18, '#adb5bd', 'left', null); });   // so viele kleine Bilder wie nötig (statt „× 3“)
+      if (!(typeof lpTeil === 'function' && lpTeil(c, 'fk_boden', 282, 190, 228, 298))) {
       rrPath(c, 180, 40, 205, 300, 18); fs(c, '#c08b55', 4);
-      rrPath(c, 196, 58, 173, 264, 34); fs(c, '#f3d39b', 3); rrPath(c, 210, 74, 145, 232, 26); c.fillStyle = '#fffaf0'; c.fill();
+      rrPath(c, 196, 58, 173, 264, 34); fs(c, '#f3d39b', 3); rrPath(c, 210, 74, 145, 232, 26); c.fillStyle = '#fffaf0'; c.fill(); }
       placed.forEach(p => topping(c, p.k, p.x, p.y, 1.1));
       kinds.forEach((t, i) => {
         const x = 70 + i * (L === 2 ? 88 : L === 1 ? 110 : 140), y = 455, sx = shake === i && sT > 0 ? shakeX(sT) * 0.5 : 0;
-        ell(c, x + sx, y, 38, 30); fs(c, '#fbf8f2', 3); for (let k = 0; k < 5; k++) topping(c, t.k, x + sx - 16 + (k % 3) * 16, y - 6 + Math.floor(k / 3) * 12, 0.9);
+        if (!(typeof lpTeil === 'function' && lpTeil(c, 'schale', x + sx, y + 2, 86))) { ell(c, x + sx, y, 38, 30); fs(c, '#fbf8f2', 3); } for (let k = 0; k < 5; k++) topping(c, t.k, x + sx - 16 + (k % 3) * 16, y - 6 + Math.floor(k / 3) * 12, 0.9);
         ell(c, x + 26, y - 26, 12, 12); fs(c, '#fff', 2); txt(c, String(have[i]), x + 26, y - 25, 13, BRAND.olive, 'center', null);
       });
     },
@@ -154,7 +156,7 @@ GAMES.limo_mix = { make(env) {
       c.beginPath(); c.arc(345, 170, 34, -1.2, 1.2); c.lineWidth = 10; c.strokeStyle = OL; c.stroke(); c.lineWidth = 6; c.strokeStyle = 'rgba(220,240,250,.95)'; c.stroke();
       ING.forEach((t, i) => {
         const x = 60 + i * 94, y = 455, sx = shake === i && sT > 0 ? shakeX(sT) * 0.5 : 0;
-        ell(c, x + sx, y, 38, 30); fs(c, '#fbf8f2', 3); for (let k = 0; k < 4; k++) ing(c, t.k, x + sx - 12 + (k % 2) * 24, y - 8 + Math.floor(k / 2) * 16, 0.8);
+        if (!(typeof lpTeil === 'function' && lpTeil(c, 'schale', x + sx, y + 2, 86))) { ell(c, x + sx, y, 38, 30); fs(c, '#fbf8f2', 3); } for (let k = 0; k < 4; k++) ing(c, t.k, x + sx - 12 + (k % 2) * 24, y - 8 + Math.floor(k / 2) * 16, 0.8);
         ell(c, x + 28, y - 26, 12, 12); fs(c, '#fff', 2); txt(c, String(have[i]), x + 28, y - 25, 13, BRAND.olive, 'center', null);
       });
     },

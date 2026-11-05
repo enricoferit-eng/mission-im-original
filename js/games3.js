@@ -40,12 +40,12 @@ GAMES.schnippeln = { make(env) {
     draw(c) {
       kitchenBg(c, 200);
       counterTxt(c, got + ' / ' + need, 200, 40, 22);
-      rrPath(c, 20, 240, 360, 130, 18); fs(c, '#e9c46a', 3); for (let k = 0; k < 6; k++) line(c, 30, 260 + k * 18, 370, 260 + k * 18, 1.5, 'rgba(140,90,40,.18)', false);
+      if (!lpT(c, 'brett', 206, 305, 390, 190)) { rrPath(c, 20, 240, 360, 130, 18); fs(c, '#e9c46a', 3); for (let k = 0; k < 6; k++) line(c, 30, 260 + k * 18, 370, 260 + k * 18, 1.5, 'rgba(140,90,40,.18)', false); }
       c.save(); c.translate(veg.x + (shake ? Math.sin(t * 60) * 3 : 0), 305); VEG[veg.k](c, veg.w); veg.cuts.forEach(q => { if (!q.done) { c.setLineDash([4, 4]); line(c, q.dx, -18, q.dx, 18, 2, '#fff', false); c.setLineDash([]); } }); c.restore();
       pieces.forEach(p => { c.save(); c.translate(p.x, p.y); c.rotate(p.a); ell(c, 0, 0, 10, 10); fs(c, p.col, 2); c.restore(); });
       // Messer
       const ky = 200 + chop * 90;
-      c.save(); c.translate(200, ky); polyPath(c, [[-6, 0], [6, 0], [14, 90], [-14, 90]]); fs(c, '#dee2e6', 3); rrPath(c, -8, -50, 16, 52, 6); fs(c, '#212529', 2.5); c.restore();
+      c.save(); c.translate(200, ky); if (!lpT(c, 'kochmesser', 0, 22, 38, 150)) { polyPath(c, [[-6, 0], [6, 0], [14, 90], [-14, 90]]); fs(c, '#dee2e6', 3); rrPath(c, -8, -50, 16, 52, 6); fs(c, '#212529', 2.5); } c.restore();
       ell(c, 200, 308, 16, 22); c.lineWidth = 3; c.strokeStyle = 'rgba(239,71,111,.5)'; c.stroke();
     },
     down() {
@@ -162,8 +162,8 @@ GAMES.pfannkuchen = { make(env) {
       kitchenBg(c, 470);
       counterTxt(c, got + ' / ' + need, 200, 40, 22);
       ell(c, panX, 490, 70, 14); c.fillStyle = 'rgba(255,90,40,.35)'; c.fill();
-      ell(c, panX, 432, 66, 22); fs(c, '#343a40', 3); rrPath(c, panX + 60, 424, 90, 14, 7); fs(c, '#212529', 2.5);
-      c.save(); c.translate(pk.x, pk.y); c.rotate(pk.a); c.scale(1, pk.air ? Math.max(0.15, Math.abs(Math.cos(pk.a * 2))) : 1); ell(c, 0, 0, 46, 16); fs(c, pk.side ? '#e9a03b' : '#f6d38d', 3); for (let k = 0; k < 5; k++) { ell(c, -26 + k * 13, -2 + (k % 2) * 5, 4, 2); c.fillStyle = pk.side ? '#b5651d' : '#e9c46a'; c.fill(); } c.restore();
+      if (!lpT(c, 'pfanne', panX + 52, 436, 250)) { ell(c, panX, 432, 66, 22); fs(c, '#343a40', 3); rrPath(c, panX + 60, 424, 90, 14, 7); fs(c, '#212529', 2.5); }
+      c.save(); c.translate(pk.x, pk.y); c.rotate(pk.a); c.scale(1, pk.air ? Math.max(0.15, Math.abs(Math.cos(pk.a * 2))) : 1); if (typeof LP !== 'undefined' && LP.on && lpSpr('teile/pfannkuchen')) { if (!pk.side) c.filter = 'brightness(1.12) saturate(.75)'; lpT(c, 'pfannkuchen', 0, 0, 124, 48); c.filter = 'none'; c.restore(); } else { ell(c, 0, 0, 46, 16); fs(c, pk.side ? '#e9a03b' : '#f6d38d', 3); for (let k = 0; k < 5; k++) { ell(c, -26 + k * 13, -2 + (k % 2) * 5, 4, 2); c.fillStyle = pk.side ? '#b5651d' : '#e9c46a'; c.fill(); } c.restore(); }
       if (miss) txt(c, 'Daneben!', 200, 250, 26, '#ef476f', 'center', '#fff');
     },
     down(x) { panX = clamp(x, 70, 330); if (fin.on() || pk.air) return; pk.air = true; pk.vy = -620 - L * 60; pk.vx = (r() - 0.5) * (120 + L * 110); pk.va = 9 + r() * 4; Sfx.play('jump'); },
@@ -181,10 +181,10 @@ GAMES.kneten = { make(env) {
     draw(c) {
       kitchenBg(c, 180);
       counterTxt(c, got + ' / ' + need, 200, 40, 22);
-      rrPath(c, 30, 210, 340, 250, 20); fs(c, '#e9c46a', 3);
+      if (!lpT(c, 'brett', 206, 335, 370, 260)) { rrPath(c, 30, 210, 340, 250, 20); fs(c, '#e9c46a', 3); }
       for (let k = 0; k < 18; k++) { ell(c, 60 + (k * 53) % 300, 230 + (k * 37) % 210, 3, 2); c.fillStyle = 'rgba(255,255,255,.7)'; c.fill(); }
       const cx = 200 + Math.sin(wob) * 40, R = 40 + f * 50;
-      c.save(); c.translate(cx, 335); c.scale(1 + squish * 0.25, 1 - squish * 0.2); ell(c, 0, 0, R * 1.2, R); fs(c, '#fcefd4', 3); ell(c, -R * 0.3, -R * 0.35, R * 0.35, R * 0.2); c.fillStyle = 'rgba(255,255,255,.7)'; c.fill(); c.restore();
+      c.save(); c.translate(cx, 335); c.scale(1 + squish * 0.25, 1 - squish * 0.2); if (!lpT(c, 'teig', 0, -R * 0.05, R * 2.55, R * 2.2)) { ell(c, 0, 0, R * 1.2, R); fs(c, '#fcefd4', 3); ell(c, -R * 0.3, -R * 0.35, R * 0.35, R * 0.2); c.fillStyle = 'rgba(255,255,255,.7)'; c.fill(); } c.restore();
       rrPath(c, 60, 490, 280, 16, 8); c.fillStyle = 'rgba(0,0,0,.2)'; c.fill(); rrPath(c, 60, 490, 280 * f, 16, 8); c.fillStyle = f > 0.8 ? '#06d6a0' : '#ffd166'; c.fill();
     },
     down(x, y) { last = { x, y }; },
@@ -208,12 +208,12 @@ GAMES.eier = { make(env) {
       kitchenBg(c, 360);
       counterTxt(c, got + ' / ' + need, 200, 40, 22);
       ell(c, 200, 420, 110, 30); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill();
-      c.beginPath(); c.moveTo(90, 360); c.quadraticCurveTo(200, 500, 310, 360); c.closePath(); fs(c, '#74c0fc', 3); ell(c, 200, 360, 110, 26); fs(c, '#e7f5ff', 3);
+      if (!lpT(c, 'schuessel', 200, 428, 250)) { c.beginPath(); c.moveTo(90, 360); c.quadraticCurveTo(200, 500, 310, 360); c.closePath(); fs(c, '#74c0fc', 3); ell(c, 200, 360, 110, 26); fs(c, '#e7f5ff', 3); }
       yolks.forEach((y, i) => { ell(c, 200 + y, 362, 12, 7); c.fillStyle = '#ffd166'; c.fill(); });
       const W2 = 18 - L * 4; rrPath(c, 200 - W2, 330, W2 * 2, 8, 4); c.fillStyle = 'rgba(6,214,160,.6)'; c.fill();
       const ex = 200 + Math.sin(ph) * 150, ey = 200;
       line(c, 200, 70, ex, ey - 30, 2, '#adb5bd', false);
-      c.save(); c.translate(ex, ey); c.rotate(Math.cos(ph) * 0.3); ell(c, 0, 0, 22, 28); fs(c, crack ? '#f8f9fa' : '#fdf0d5', 3); if (crack) { polyPath(c, [[-20, 0], [-8, -6], [0, 4], [8, -6], [20, 0]]); c.lineWidth = 2; c.strokeStyle = OL; c.stroke(); } c.restore();
+      c.save(); c.translate(ex, ey); c.rotate(Math.cos(ph) * 0.3); if (!lpT(c, 'ei', 0, 3, 46)) { ell(c, 0, 0, 22, 28); fs(c, crack ? '#f8f9fa' : '#fdf0d5', 3); } if (crack) { polyPath(c, [[-20, 0], [-8, -6], [0, 4], [8, -6], [20, 0]]); c.lineWidth = 2; c.strokeStyle = OL; c.stroke(); } c.restore();
       if (mess) { ell(c, 60 + mess * 10, 330, 26, 10); c.fillStyle = '#ffd166'; c.fill(); txt(c, 'Daneben!', 200, 270, 24, '#ef476f', 'center', '#fff'); }
     },
     down() {
@@ -295,6 +295,7 @@ GAMES.pizzaofen = { make(env) {
       fin.tick(dt);
     },
     draw(c) {
+      if (lpPizzaofen(c, S, fly, t, W1, W2)) { counterTxt(c, got + ' / ' + need, 200, 40, 22); return; }
       c.fillStyle = '#212529'; c.fillRect(0, 0, GAME_W, GAME_H);
       counterTxt(c, got + ' / ' + need, 200, 40, 22);
       S.forEach(s => {

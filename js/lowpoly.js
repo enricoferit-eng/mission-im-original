@@ -414,6 +414,7 @@ function lpBtnPatch() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpBtnPatch); else setTimeout(lpBtnPatch, 0);
 
 // ---------- Minispiel-Teile (assets/lowpoly/teile): Autos von oben, Memory-Karten, Kochtopf ----------
+const LP_TEILE_NEU = ['ofen', 'fk_roh', 'fk_gold', 'fk_schwarz', 'schieber', 'teller', 'gabel', 'messer', 'loeffel', 'glas', 'serviette', 'tasse', 'teelicht', 'brett', 'kochmesser', 'schuessel', 'ei', 'teig', 'pfannkuchen', 'zwiebel', 'pilz', 'paprika', 'gurke', 'fondue', 'hackklotz', 'axt', 'holz', 'muenze_gold', 'muenze_silber', 'muenze_kupfer', 'parkautomat', 'pumpe', 'schwamm', 'pfanne', 'fk_boden', 't_speck', 't_zwiebel', 't_pilz', 't_lauch', 'schale'];
 const LP_AUTO = { red: [190, 80, 60], blue: [90, 115, 150], green: [130, 175, 90], yellow: [215, 175, 70], white: [235, 228, 215], orange: [215, 125, 80] };
 const LP_AUTO_PICK = new Map();
 function lpAutoFor(col) {
@@ -448,9 +449,75 @@ function lpTeilePatch() {
       c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, x, top + h * 0.95, r * 1.05, r * 0.3); c.fill();
       c.drawImage(im, x - w / 2, top, w, h);
     }; }
-  ['red', 'blue', 'green', 'yellow', 'white', 'orange'].forEach(n => lpSpr('teile/auto_' + n)); ['karte_vorne', 'karte_hinten', 'topf'].forEach(n => lpSpr('teile/' + n));
+  ['red', 'blue', 'green', 'yellow', 'white', 'orange'].forEach(n => lpSpr('teile/auto_' + n)); ['karte_vorne', 'karte_hinten', 'topf'].concat(LP_TEILE_NEU).forEach(n => lpSpr('teile/' + n));
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpTeilePatch); else setTimeout(lpTeilePatch, 0);
+
+// Teil zentriert auf (x,y) mit Breite w; h optional (sonst nach Seitenverhältnis)
+function lpTeil(c, name, x, y, w, h) {
+  const im = lpSpr('teile/' + name); if (!im) return false;
+  h = h || w * im.naturalHeight / im.naturalWidth; c.drawImage(im, x - w / 2, y - h / 2, w, h); return true;
+}
+// Flammkuchen im Backzustand b: roh → goldbraun (0,7) → verkohlt (1,15), weich überblendet; von schräg vorn (gestaucht)
+function lpFlammkuchen(c, x, y, w, h, b) {
+  const a = clamp(b / 0.7, 0, 1), z = clamp((b - 0.7) / 0.45, 0, 1);
+  lpTeil(c, 'fk_roh', x, y, w, h);
+  if (a > 0) { c.globalAlpha = a; lpTeil(c, 'fk_gold', x, y, w, h); }
+  if (z > 0) { c.globalAlpha = z; lpTeil(c, 'fk_schwarz', x, y - h * 0.04, w, h * 1.09); }
+  c.globalAlpha = 1;
+}
+// Geschirr, Münzen und Gemüse der Minispiele: gemalte Teile statt Vektor (Fallback: alte Zeichnung)
+function lpGeschirrPatch() {
+  const wrap = (name, fn) => { if (typeof window[name] !== 'function') return; const f0 = window[name]; window[name] = function () { return fn.apply(this, arguments) || f0.apply(this, arguments); }; };
+  const at = (c, n, x, y, s, w, dx = 0, dy = 0) => { c.save(); c.translate(x, y); c.scale(s, s); const ok = lpTeil(c, n, dx, dy, w); c.restore(); return ok; };
+  const HELL = /^#f[0-9a-f]{2}|^#fff|^#fbf|^#f8f/i;
+  wrap('dPlate', (c, x, y, r, col = '#fff') => HELL.test(col) && lpTeil(c, 'teller', x, y, r * 2.12));
+  wrap('dFork', (c, x, y, s = 1) => { const im = lpSpr('teile/gabel'); if (!im) return false; const h = 56 * s; c.drawImage(im, x - h * im.naturalWidth / im.naturalHeight / 2, y + 3 * s - h / 2, h * im.naturalWidth / im.naturalHeight, h); return true; });
+  wrap('dKnife', (c, x, y, s = 1) => { const im = lpSpr('teile/messer'); if (!im) return false; const h = 56 * s; c.drawImage(im, x - h * im.naturalWidth / im.naturalHeight / 2, y + 3 * s - h / 2, h * im.naturalWidth / im.naturalHeight, h); return true; });
+  wrap('dSpoon', (c, x, y, s = 1) => { const im = lpSpr('teile/loeffel'); if (!im) return false; const h = 54 * s; c.drawImage(im, x - h * im.naturalWidth / im.naturalHeight / 2, y + 2 * s - h / 2, h * im.naturalWidth / im.naturalHeight, h); return true; });
+  wrap('dGlass', (c, x, y, s = 1) => at(c, 'glas', x, y, s, 32, 0, 1));
+  wrap('dNapkin', (c, x, y, s = 1) => at(c, 'serviette', x, y, s, 34));
+  wrap('dCup', (c, x, y, s = 1) => at(c, 'tasse', x, y, s, 44, 4));
+  wrap('drawCoin', (c, x, y, v, s = 1) => {
+    const R = (v >= 100 ? 28 : 22) * s; if (!lpTeil(c, v === 200 ? 'muenze_gold' : v === 100 ? 'muenze_silber' : 'muenze_kupfer', x, y + R * 0.06, R * 2.25)) return false;
+    txt(c, v >= 100 ? (v / 100) + '€' : v + 'ct', x, y + 1, 13 * s, OL, 'center', 'rgba(255,255,255,.7)'); return true;
+  });
+  if (typeof SETTING === 'object') Object.assign(SETTING, { teller: dPlate, gabel: dFork, messer: dKnife, loeffel: dSpoon, glas: dGlass, serviette: dNapkin, tasse: dCup });
+  wrap('drawIngr', (c, k, x, y, s = 1) => !ITEMS[k] && (k === 'zwiebel' || k === 'pilz' || k === 'paprika') && lpTeil(c, k, x, y - 2 * s, 38 * s));
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpGeschirrPatch); else setTimeout(lpGeschirrPatch, 0);
+const LP_OFEN_TEILE =['ofen', 'fk_roh', 'fk_gold', 'fk_schwarz', 'schieber'];
+function lpPizzaofen(c, S, fly, t, W1, W2) {
+  if (!LP.on || !LP_OFEN_TEILE.every(n => lpSpr('teile/' + n))) return false;
+  kitchenBg(c, 470);
+  const OW = 250, OH = OW * 720 / 1401, ox = 165;
+  // Schieber unten: dorthin fliegen die fertigen Flammkuchen
+  c.save(); c.translate(200, 494); c.rotate(-Math.PI / 2); lpTeil(c, 'schieber', 0, 0, 50); c.restore();
+  S.forEach(s => {
+    const oy = s.y + 46, hy = s.y + 64;   // Ofenmitte, Herd
+    c.fillStyle = 'rgba(40,25,15,.22)'; ell(c, ox + 6, s.y + 104, OW * 0.46, 7); c.fill();
+    lpTeil(c, 'ofen', ox, oy, OW, OH);
+    const gl = 0.25 + Math.sin(t * 5 + s.y) * 0.08; c.fillStyle = `rgba(255,140,40,${gl})`; ell(c, ox, hy + 10, 70, 16); c.fill();   // Glut flackert
+    if (s.on) {
+      const b = clamp(s.b, 0, 1.15), inZone = b >= W1 && b <= W2;
+      if (inZone) { c.fillStyle = `rgba(255,214,102,${0.35 + Math.sin(t * 12) * 0.15})`; ell(c, ox, hy, 76, 24); c.fill(); }
+      lpFlammkuchen(c, ox + Math.sin(t * 2 + s.y) * 1.5, hy, 128, 46, b);
+      if (b > 1) for (let k = 0; k < 3; k++) { const p = (t * 0.8 + k / 3) % 1; ell(c, ox - 30 + k * 30, hy - 14 - p * 34, 9 + p * 10, 7 + p * 6); c.fillStyle = `rgba(90,90,90,${0.5 * (1 - p)})`; c.fill(); }
+      // Backanzeige: hell → goldbraun → schwarz, grüner Bereich = jetzt rausholen
+      const gx = 312, gy = s.y + 8, gh = 80;
+      rrPath(c, gx - 3, gy - 3, 22, gh + 6, 10); fs(c, '#fbf8f2', 2.5);
+      { const g = c.createLinearGradient(0, gy + gh, 0, gy); g.addColorStop(0, '#f1e1bf'); g.addColorStop(0.6, '#e2a756'); g.addColorStop(0.85, '#8d5a3b'); g.addColorStop(1, '#2b1d14'); rrPath(c, gx, gy, 16, gh, 8); c.fillStyle = g; c.fill(); }
+      rrPath(c, gx - 2, gy + gh * (1 - W2 / 1.15), 20, gh * (W2 - W1) / 1.15, 5); c.fillStyle = 'rgba(6,214,160,.55)'; c.fill(); fs(c, null, 2.5, '#06d6a0');
+      const my = gy + gh * (1 - b / 1.15); ell(c, gx + 8, my, 11, 6); fs(c, inZone ? '#06d6a0' : '#fff', 2.5);
+    }
+  });
+  fly.forEach(f => {
+    const u = clamp(f.t / 0.5, 0, 1);
+    if (!f.burnt && !f.raw) { const x = ox + (200 - ox) * u, y = f.y + 64 + (480 - f.y - 64) * u - Math.sin(u * Math.PI) * 40; lpFlammkuchen(c, x, y, 128 - u * 40, 46 + u * 10, 0.72); }
+    c.globalAlpha = 1 - f.t / 0.8; txt(c, f.burnt ? 'Verbrannt!' : f.raw ? 'Noch roh!' : 'Perfekt!', ox, f.y + 30 - f.t * 40, 24, f.burnt ? '#ef476f' : f.raw ? '#ffd166' : '#80ed99', 'center', '#fff'); c.globalAlpha = 1;
+  });
+  return true;
+}
 
 // Gesperrter Nachbarbereich: gemalte Karte blass hinter dem Nebel (statt grauer Fläche)
 function lpFogPatch() {

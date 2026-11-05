@@ -2,6 +2,8 @@
 // ---------- Minispiele: Leicht-Aufgaben, Rätsel (Typ 2), Challenges (Typ 1) ----------
 // Alle Spiele zeichnen in einem festen Raster von 400 x 520 und werden auf den Bildschirm skaliert.
 const GAME_W = 400, GAME_H = 520;
+// Gemaltes Spielteil (assets/lowpoly/teile) zeichnen; false = alte Zeichnung nehmen
+function lpT(c, n, x, y, w, h) { return typeof lpTeil === 'function' && lpTeil(c, n, x, y, w, h); }
 
 // ---------- Druck & Tempo: Countdown, Tempo-Sterne mit Zündschnur, Combos, Musik ----------
 let GAME_MOTION = 1;                       // wie stark sich Dinge in den Aufgaben bewegen (Stufe)
