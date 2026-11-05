@@ -114,8 +114,8 @@ GAMES.eisbecher_r = { make(env) {
       recipeCard(c, 12, 12, 120, 60 + n * 34, 'Bestellung');
       for (let i = 0; i < n; i++) { const y = 60 + (n - 1 - i) * 34 + 14; if (hideT > 0 || i < idx) { ell(c, 72, y, 15, 13); fs(c, FL[order[i]].col, 2.5); } else { ell(c, 72, y, 15, 13); fs(c, '#e9ecef', 2); txt(c, '?', 72, y + 1, 14, '#adb5bd', 'center', null); } }
       // Becher
-      polyPath(c, [[190, 300], [330, 300], [300, 380], [220, 380]]); fs(c, 'rgba(200,235,250,.85)', 4);
-      rrPath(c, 252, 380, 16, 30, 3); fs(c, 'rgba(200,235,250,.85)', 3); ell(c, 260, 412, 40, 8); fs(c, 'rgba(200,235,250,.85)', 3);
+      if (!lpT(c, 'eisglas', 260, 360, 124)) { polyPath(c, [[190, 300], [330, 300], [300, 380], [220, 380]]); fs(c, 'rgba(200,235,250,.85)', 4);
+      rrPath(c, 252, 380, 16, 30, 3); fs(c, 'rgba(200,235,250,.85)', 3); ell(c, 260, 412, 40, 8); fs(c, 'rgba(200,235,250,.85)', 3); }
       for (let i = 0; i < idx; i++) { ell(c, 260 + (i % 2 ? 8 : -8), 290 - i * 26, 30, 22); fs(c, FL[order[i]].col, 3); }
       if (idx >= n) { ell(c, 260, 290 - n * 26 + 4, 7, 7); fs(c, '#e63946', 2.5); }
       FL.forEach((f, i) => { const x = 52 + i * 74, sx = shake === i && sT > 0 ? shakeX(sT) * 0.5 : 0; rrPath(c, x - 30 + sx, 432, 60, 56, 10); fs(c, '#adb5bd', 3); ell(c, x + sx, 446, 24, 10); fs(c, f.col, 2.5); txt(c, f.n, x + sx, 478, 10, '#fff', 'center', BRAND.ink, 66); });
@@ -226,7 +226,7 @@ GAMES.giessen = { make(env) {
       });
       if (held) for (let i = 0; i < 4; i++) { const yy = can.y + 20 + ((t * 300 + i * 30) % 120); ell(c, can.x - 30, yy, 3, 5); c.fillStyle = '#4dabf7'; c.fill(); }
       c.save(); c.translate(can.x, can.y);
-      rrPath(c, -20, -18, 40, 34, 8); fs(c, '#4dabf7', 3); line(c, -18, -2, -40, 18, 6, '#4dabf7'); c.beginPath(); c.arc(8, -18, 14, Math.PI, 0); c.lineWidth = 4; c.strokeStyle = OL; c.stroke(); leaf(c, 0, 0, 1.1);
+      if (!lpT(c, 'giesskanne', -6, -6, 100)) { rrPath(c, -20, -18, 40, 34, 8); fs(c, '#4dabf7', 3); line(c, -18, -2, -40, 18, 6, '#4dabf7'); c.beginPath(); c.arc(8, -18, 14, Math.PI, 0); c.lineWidth = 4; c.strokeStyle = OL; c.stroke(); leaf(c, 0, 0, 1.1); }
       c.restore();
     },
     down(x, y) { if (dist(x, y, can.x, can.y) < 60) held = true; },
@@ -288,9 +288,9 @@ GAMES.fegen = { make(env) {
     },
     draw(c) {
       terraceBg(c);
-      rrPath(c, 330, 440, 60, 70, 8); fs(c, '#6a994e', 3); txt(c, 'Kompost', 360, 430, 11, BRAND.olive, 'center', '#fff', 70);
+      if (!lpT(c, 'kompost', 360, 474, 72)) { rrPath(c, 330, 440, 60, 70, 8); fs(c, '#6a994e', 3); } txt(c, 'Kompost', 360, 430, 11, BRAND.olive, 'center', '#fff', 70);
       leaves.forEach(l => { if (l.gone) return; c.save(); c.translate(l.x, l.y); c.rotate(l.rot); ell(c, 0, 0, 9, 5); fs(c, l.col, 1.5); c.restore(); });
-      c.save(); c.translate(bx, by); rrPath(c, -4, -60, 8, 60, 3); fs(c, '#8d5a3b', 2); rrPath(c, -26, -4, 52, 18, 5); fs(c, '#e9c46a', 2.5); for (let i = -20; i <= 20; i += 6) line(c, i, 14, i, 22, 1.5, '#c9a24a', false); c.restore();
+      c.save(); c.translate(bx, by); if (!lpT(c, 'besen', 0, -24, 46, 94)) { rrPath(c, -4, -60, 8, 60, 3); fs(c, '#8d5a3b', 2); rrPath(c, -26, -4, 52, 18, 5); fs(c, '#e9c46a', 2.5); for (let i = -20; i <= 20; i += 6) line(c, i, 14, i, 22, 1.5, '#c9a24a', false); } c.restore();
       txt(c, String(leaves.filter(l => !l.gone).length), 30, 24, 18, BRAND.olive, 'left', '#fff');
     },
     down(x, y) { drag = true; bx = x; by = y; },

@@ -414,7 +414,7 @@ function lpBtnPatch() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpBtnPatch); else setTimeout(lpBtnPatch, 0);
 
 // ---------- Minispiel-Teile (assets/lowpoly/teile): Autos von oben, Memory-Karten, Kochtopf ----------
-const LP_TEILE_NEU = ['ofen', 'fk_roh', 'fk_gold', 'fk_schwarz', 'schieber', 'teller', 'gabel', 'messer', 'loeffel', 'glas', 'serviette', 'tasse', 'teelicht', 'brett', 'kochmesser', 'schuessel', 'ei', 'teig', 'pfannkuchen', 'zwiebel', 'pilz', 'paprika', 'gurke', 'fondue', 'hackklotz', 'axt', 'holz', 'muenze_gold', 'muenze_silber', 'muenze_kupfer', 'parkautomat', 'pumpe', 'schwamm', 'pfanne', 'fk_boden', 't_speck', 't_zwiebel', 't_pilz', 't_lauch', 'schale'];
+const LP_TEILE_NEU = ['ofen', 'fk_roh', 'fk_gold', 'fk_schwarz', 'schieber', 'teller', 'gabel', 'messer', 'loeffel', 'glas', 'serviette', 'tasse', 'teelicht', 'brett', 'kochmesser', 'schuessel', 'ei', 'teig', 'pfannkuchen', 'zwiebel', 'pilz', 'paprika', 'gurke', 'fondue', 'hackklotz', 'axt', 'holz', 'muenze_gold', 'muenze_silber', 'muenze_kupfer', 'parkautomat', 'pumpe', 'schwamm', 'pfanne', 'fk_boden', 't_speck', 't_zwiebel', 't_pilz', 't_lauch', 'schale', 'palme_topf', 'giesskanne', 'eisglas', 'taube', 'strandball', 'besen', 'kompost', 'bistrotisch', 'automat2', 'bus', 'koch', 'veg_karotte', 'veg_gurke', 'veg_zucchini', 'holzloeffel', 'deckel', 'eisstock', 'stein', 'schneeball', 'wespe', 'schmetterling', 'sprenger', 'sack', 'schlitten', 'schneemann'];
 const LP_AUTO = { red: [190, 80, 60], blue: [90, 115, 150], green: [130, 175, 90], yellow: [215, 175, 70], white: [235, 228, 215], orange: [215, 125, 80] };
 const LP_AUTO_PICK = new Map();
 function lpAutoFor(col) {
@@ -483,10 +483,32 @@ function lpGeschirrPatch() {
     txt(c, v >= 100 ? (v / 100) + '€' : v + 'ct', x, y + 1, 13 * s, OL, 'center', 'rgba(255,255,255,.7)'); return true;
   });
   if (typeof SETTING === 'object') Object.assign(SETTING, { teller: dPlate, gabel: dFork, messer: dKnife, loeffel: dSpoon, glas: dGlass, serviette: dNapkin, tasse: dCup });
+  wrap('drawPotPalm', (c, x, y, s = 1, t = 0) => { const im = lpSpr('teile/palme_topf'); if (!im) return false; const h = 104 * s, w = h * im.naturalWidth / im.naturalHeight;
+    c.fillStyle = 'rgba(0,0,0,.18)'; ell(c, x, y + 1, 18 * s, 6 * s); c.fill(); c.save(); c.translate(x, y); c.rotate(Math.sin(t * 1.3) * 0.025); c.drawImage(im, -w / 2, -h, w, h); c.restore(); return true; });
+  wrap('drawSnowBall', (c, x, y, s, head) => { if (!lpTeil(c, 'schneeball', x, y, s * 2.1, s * 1.98)) return false;
+    if (head) { ell(c, x - 7, y - 4, 2.5, 2.5); c.fillStyle = OL; c.fill(); ell(c, x + 7, y - 4, 2.5, 2.5); c.fill(); polyPath(c, [[x, y + 1], [x + 16, y + 4], [x, y + 6]]); fs(c, '#f77f00', 1.5); rrPath(c, x - 14, y - s - 12, 28, 14, 3); fs(c, '#212529', 2); rrPath(c, x - 20, y - s, 40, 5, 2); fs(c, '#212529', 2); }
+    else if (s < 40) { ell(c, x, y - 6, 3, 3); c.fillStyle = OL; c.fill(); ell(c, x, y + 8, 3, 3); c.fill(); }
+    return true; });
+  if (typeof VEG === 'object') for (const k in VEG) { const v0 = VEG[k]; VEG[k] = (c, w) => { if (!lpTeil(c, 'veg_' + k, 0, 0, w * 1.08, 42)) v0(c, w); }; }
+  wrap('drawFly', (c, x, y, col, t, s = 1, flip) => { const im = lpTinted('schmetterling', col); if (!im) return false; const w = 0.55 + 0.45 * Math.abs(Math.sin(t * 10)), W = 50 * s, H = W * im.height / im.width;
+    c.save(); c.translate(x, y); c.scale((flip ? -1 : 1) * w, 1); c.drawImage(im, -W / 2, -H / 2, W, H); c.restore(); return true; });
   wrap('drawIngr', (c, k, x, y, s = 1) => !ITEMS[k] && (k === 'zwiebel' || k === 'pilz' || k === 'paprika') && lpTeil(c, k, x, y - 2 * s, 38 * s));
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lpGeschirrPatch); else setTimeout(lpGeschirrPatch, 0);
-const LP_OFEN_TEILE =['ofen', 'fk_roh', 'fk_gold', 'fk_schwarz', 'schieber'];
+// Rasen (Sprenger, Schmetterlinge): gemalte Wiese statt grüner Fläche
+function lpRasen(c, y, h) { const im = LP.on && lpBgImg('floor_rasen'); if (!im) return false; lpCover(c, im, 0, y, GAME_W, h); return true; }
+// Eingefärbte Kopie eines Teils (Schmetterlinge in Spielfarben), zwischengespeichert
+const LP_TINT = {};
+function lpTinted(name, col) {
+  const key = name + col; if (LP_TINT[key]) return LP_TINT[key];
+  const im = lpSpr('teile/' + name); if (!im) return null;
+  const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const g = cv.getContext('2d');
+  g.filter = 'grayscale(1) brightness(1.45)'; g.drawImage(im, 0, 0); g.filter = 'none';
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = col; g.fillRect(0, 0, cv.width, cv.height);
+  g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0);
+  return (LP_TINT[key] = cv);
+}
+const LP_OFEN_TEILE = ['ofen', 'fk_roh', 'fk_gold', 'fk_schwarz', 'schieber'];
 function lpPizzaofen(c, S, fly, t, W1, W2) {
   if (!LP.on || !LP_OFEN_TEILE.every(n => lpSpr('teile/' + n))) return false;
   kitchenBg(c, 470);

@@ -61,16 +61,18 @@ GAMES.fondue = { make(env) {
       chaletBg(c, 250, t);
       txtGot(c, got, need, '#ffd166');
       // Rechaud mit Flamme
-      rrPath(c, PX - 70, PY + 30, 140, 70, 10); fs(c, '#343a40', 3);
-      for (let k = 0; k < 5; k++) { const fx2 = PX - 40 + k * 20, h = 18 + Math.sin(t * 14 + k) * 6; polyPath(c, [[fx2 - 8, PY + 34], [fx2, PY + 34 - h], [fx2 + 8, PY + 34]]); c.fillStyle = k % 2 ? '#ffd166' : '#f77f00'; c.fill(); }
+      const lpF = lpHas('fondue');
+      if (!lpF) rrPath(c, PX - 70, PY + 30, 140, 70, 10), fs(c, '#343a40', 3);
+      if (!lpF) for (let k = 0; k < 5; k++) { const fx2 = PX - 40 + k * 20, h = 18 + Math.sin(t * 14 + k) * 6; polyPath(c, [[fx2 - 8, PY + 34], [fx2, PY + 34 - h], [fx2 + 8, PY + 34]]); c.fillStyle = k % 2 ? '#ffd166' : '#f77f00'; c.fill(); }
       // Topf mit Käse
       const back = Math.sin(a) < 0;
       const drawFork = () => { const f = fork(), fy = f.y + dip * 50; line(c, f.x + 30, fy - 120, f.x, fy - 10, 4, '#adb5bd'); rrPath(c, f.x + 24, fy - 140, 14, 34, 5); fs(c, '#e63946', 2.5);
         rrPath(c, f.x - 12, fy - 12, 24, 22, 6); fs(c, coat > 0.75 ? '#ffd166' : coat > 0.3 ? '#f6d38d' : '#e9c46a', 2.5); if (coat > 0.3) { ell(c, f.x, fy + 6, 10, 4); c.fillStyle = '#ffd166'; c.fill(); }
         if (burn) for (let k = 0; k < 3; k++) { ell(c, f.x - 8 + k * 8, fy - 20 - ((t * 40 + k * 10) % 20), 5, 4); c.fillStyle = 'rgba(80,80,80,.5)'; c.fill(); } };
       if (back) drawFork();
-      ell(c, PX, PY + 30, 92, 26); fs(c, '#9d0208', 3); rrPath(c, PX - 92, PY - 20, 184, 50, 20); fs(c, '#c1121f', 3);
-      ell(c, PX, PY - 20, 92, 24); fs(c, '#9d0208', 3); ell(c, PX, PY - 18, 80, 18); fs(c, '#ffd166', 2);
+      if (lpF) { for (let k = 0; k < 3; k++) { const fx2 = PX - 14 + k * 14, h = 12 + Math.sin(t * 14 + k) * 4; polyPath(c, [[fx2 - 6, PY + 112], [fx2, PY + 112 - h], [fx2 + 6, PY + 112]]); c.fillStyle = k % 2 ? '#ffd166' : '#f77f00'; c.fill(); } lpT(c, 'fondue', PX + 21, PY + 61, 265); }
+      else { ell(c, PX, PY + 30, 92, 26); fs(c, '#9d0208', 3); rrPath(c, PX - 92, PY - 20, 184, 50, 20); fs(c, '#c1121f', 3);
+      ell(c, PX, PY - 20, 92, 24); fs(c, '#9d0208', 3); ell(c, PX, PY - 18, 80, 18); fs(c, '#ffd166', 2); }
       for (let k = 0; k < 4; k++) { const bx = PX - 50 + ((k * 37 + t * 20) % 100); ell(c, bx, PY - 18 + Math.sin(t * 4 + k) * 3, 6, 3); c.fillStyle = '#ffe066'; c.fill(); }
       rrPath(c, PX - 80, PY - 34, 160, 10, 5); c.fillStyle = 'rgba(6,214,160,.0)'; c.fill();
       if (!back) drawFork();
@@ -232,7 +234,7 @@ GAMES.eisrutsch = { make(env) {
       rrPath(c, ox - 8, oy - 8, N * cs + 16, N * cs + 16, 12); fs(c, '#a5d8ff', 3);
       for (let i = 0; i < N * N; i++) { const x = ox + (i % N) * cs, y = oy + Math.floor(i / N) * cs; c.fillStyle = (i + Math.floor(i / N)) % 2 ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.25)'; c.fillRect(x, y, cs, cs); }
       for (let k = 0; k < 8; k++) line(c, ox + ((k * 47 + t * 10) % (N * cs)), oy + (k * 61) % (N * cs), ox + ((k * 47 + t * 10) % (N * cs)) + 18, oy + (k * 61) % (N * cs) - 6, 2, 'rgba(255,255,255,.7)', false);
-      B.forEach((b, i) => { if (!b) return; const x = ox + (i % N + 0.5) * cs, y = oy + (Math.floor(i / N) + 0.5) * cs; ell(c, x, y + 4, cs * 0.42, cs * 0.34); fs(c, '#868e96', 3); ell(c, x - 4, y - 2, cs * 0.3, cs * 0.18); c.fillStyle = '#fff'; c.fill(); });
+      B.forEach((b, i) => { if (!b) return; const x = ox + (i % N + 0.5) * cs, y = oy + (Math.floor(i / N) + 0.5) * cs; if (!lpT(c, 'stein', x, y + 2, cs * 0.92)) { ell(c, x, y + 4, cs * 0.42, cs * 0.34); fs(c, '#868e96', 3); ell(c, x - 4, y - 2, cs * 0.3, cs * 0.18); c.fillStyle = '#fff'; c.fill(); } });
       const gx = ox + (G[0] + 0.5) * cs, gy = oy + (G[1] + 0.5) * cs; ell(c, gx, gy + cs * 0.2, cs * 0.3, cs * 0.1); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); rrPath(c, gx - cs * 0.22, gy - cs * 0.2, cs * 0.44, cs * 0.4, 6); fs(c, '#e63946', 2.5); ell(c, gx, gy - cs * 0.2, cs * 0.22, cs * 0.07); c.fillStyle = '#6f4e37'; c.fill();
       for (let k = 0; k < 2; k++) { ell(c, gx - 4 + k * 8, gy - cs * 0.4 - ((t * 20 + k * 8) % 14), 3, 4); c.fillStyle = 'rgba(255,255,255,.7)'; c.fill(); }
       const kx = ox + (ax + 0.5) * cs + (bump ? Math.sin(t * 60) * 3 : 0), ky = oy + (ay + 0.5) * cs;
@@ -273,13 +275,14 @@ GAMES.eisstock = { make(env) {
       fin.tick(dt);
     },
     draw(c) {
-      c.fillStyle = '#dbe4ee'; c.fillRect(0, 0, GAME_W, GAME_H); const g = c.createLinearGradient(0, 0, 0, GAME_H); g.addColorStop(0, '#d0ebff'); g.addColorStop(1, '#e7f5ff'); rrPath(c, 20, 0, 360, GAME_H, 0); c.fillStyle = g; c.fill();
+      if (typeof LP !== 'undefined' && LP.on) snowBg(c, t, 0); else { c.fillStyle = '#dbe4ee'; c.fillRect(0, 0, GAME_W, GAME_H); }
+      const g = c.createLinearGradient(0, 0, 0, GAME_H); g.addColorStop(0, 'rgba(208,235,255,.8)'); g.addColorStop(1, 'rgba(231,245,255,.8)'); rrPath(c, 20, 0, 360, GAME_H, 0); c.fillStyle = g; c.fill(); line(c, 20, 0, 20, GAME_H, 3, 'rgba(255,255,255,.9)', false); line(c, 380, 0, 380, GAME_H, 3, 'rgba(255,255,255,.9)', false);
       for (let k = 0; k < 10; k++) line(c, 30 + (k * 37) % 340, (k * 71) % 500, 60 + (k * 37) % 340, (k * 71) % 500 + 20, 1.5, 'rgba(255,255,255,.8)', false);
       txtGot(c, got, need);
       if (slope) txt(c, slope > 0 ? 'Eis fällt nach rechts →' : '← Eis fällt nach links', 200, 70, 14, '#118ab2', 'center', '#fff');
       for (const [rr, col] of [[44, '#4dabf7'], [30, '#fff'], [16, '#ef476f']]) { ell(c, tx, TY0, rr, rr * 0.55); fs(c, col, 2.5); }
       line(c, 40, 440, 360, 440, 3, 'rgba(239,71,111,.6)', false);
-      if (st.y < 600) { c.save(); c.translate(st.x, st.y); ell(c, 0, 6, 24, 10); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); ell(c, 0, 0, 22, 14); fs(c, '#6c757d', 3); ell(c, 0, -4, 16, 8); fs(c, '#1c7ed6', 2); c.rotate(st.a); line(c, 0, -4, 0, -26, 6, '#8d5a3b'); c.restore(); }
+      if (st.y < 600) { c.save(); c.translate(st.x, st.y); ell(c, 0, 6, 24, 10); c.fillStyle = 'rgba(0,0,0,.15)'; c.fill(); if (lpHas('eisstock')) { c.rotate(st.a); lpT(c, 'eisstock', 0, -2, 54); } else { ell(c, 0, 0, 22, 14); fs(c, '#6c757d', 3); ell(c, 0, -4, 16, 8); fs(c, '#1c7ed6', 2); c.rotate(st.a); line(c, 0, -4, 0, -26, 6, '#8d5a3b'); } c.restore(); }
       if (start && !st.go) { line(c, st.x, st.y, start.cx, start.cy, 3, 'rgba(255,255,255,.8)', false); }
       fx.forEach(f => { c.globalAlpha = 1 - f.t / 0.9; txt(c, f.s, 200, 280 - f.t * 30, 24, f.ok ? '#2b9348' : '#ef476f', 'center', '#fff'); c.globalAlpha = 1; });
       if (!st.go) txt(c, 'Mit Schwung nach oben wischen', 200, 506, 13, '#495057', 'center', '#fff');
@@ -403,8 +406,10 @@ GAMES.bus = { make(env) {
       for (let k = 0; k < Math.max(1, lanes * 2); k++) rrPath(c, 176, LY(0) + 40 - k * 35, 48, 18, 2), c.fillStyle = 'rgba(255,255,255,.75)', c.fill();
       txtGot(c, got, need);
       // Bus oben
-      c.save(); c.translate(bus.x, LY(lanes - 1) - 96); rrPath(c, -140, -40, 280, 70, 14); fs(c, '#ffd166', 3); for (let k = 0; k < 5; k++) { rrPath(c, -126 + k * 50, -30, 40, 26, 5); fs(c, '#a5d8ff', 2); }
-      const op = bus.state === 'open' ? 1 : 0; rrPath(c, -20 - op * 16, -6, 40 + op * 32, 36, 4); fs(c, op ? '#343a40' : '#fff3bf', 2.5); ell(c, -100, 30, 14, 14); fs(c, '#212529', 2.5); ell(c, 100, 30, 14, 14); fs(c, '#212529', 2.5); c.restore();
+      c.save(); c.translate(bus.x, LY(lanes - 1) - 96); const op = bus.state === 'open' ? 1 : 0;
+      if (lpT(c, 'bus', 0, -4, 300, 116)) { if (op) { rrPath(c, -34, -10, 68, 34, 5); fs(c, '#343a40', 2.5); } }
+      else { rrPath(c, -140, -40, 280, 70, 14); fs(c, '#ffd166', 3); for (let k = 0; k < 5; k++) { rrPath(c, -126 + k * 50, -30, 40, 26, 5); fs(c, '#a5d8ff', 2); }
+      rrPath(c, -20 - op * 16, -6, 40 + op * 32, 36, 4); fs(c, op ? '#343a40' : '#fff3bf', 2.5); ell(c, -100, 30, 14, 14); fs(c, '#212529', 2.5); ell(c, 100, 30, 14, 14); fs(c, '#212529', 2.5); } c.restore();
       if (bus.state === 'open') { rrPath(c, 150, 20, 100, 16, 8); fs(c, 'rgba(0,0,0,.3)', 2); rrPath(c, 152, 22, 96 * bus.wait / (5.5 - L * 1.2), 12, 6); c.fillStyle = '#ffd166'; c.fill(); }
       cars.forEach(c2 => drawCar(c, c2.x, LY(c2.k), c2.v > 0 ? Math.PI / 2 : -Math.PI / 2, c2.col, 0.75));
       c.save(); c.translate(kid.x, kid.y); drawAnimal(c, env.kind || 'dog', 0, 0, 0.8, { t, moving: hold, dir: 1, cap: false }); c.restore();

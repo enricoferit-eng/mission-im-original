@@ -4,6 +4,7 @@
 const GAME_W = 400, GAME_H = 520;
 // Gemaltes Spielteil (assets/lowpoly/teile) zeichnen; false = alte Zeichnung nehmen
 function lpT(c, n, x, y, w, h) { return typeof lpTeil === 'function' && lpTeil(c, n, x, y, w, h); }
+function lpHas(n) { return typeof LP !== 'undefined' && LP.on && !!lpSpr('teile/' + n); }
 
 // ---------- Druck & Tempo: Countdown, Tempo-Sterne mit Zündschnur, Combos, Musik ----------
 let GAME_MOTION = 1;                       // wie stark sich Dinge in den Aufgaben bewegen (Stufe)

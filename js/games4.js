@@ -394,6 +394,7 @@ GAMES.wespen = { make(env) {
       for (let k = 0; k < Math.floor((1 - ice) * 6); k++) { ell(c, IX - 40 + k * 16, IY + 60, 7, 3); c.fillStyle = '#ffd6e0'; c.fill(); }
       rrPath(c, 120, 470, 160, 14, 7); fs(c, 'rgba(0,0,0,.25)', 2); rrPath(c, 122, 472, 156 * ice, 10, 5); c.fillStyle = ice > 0.5 ? '#80ed99' : '#ef476f'; c.fill();
       Wsp.forEach(w => { c.save(); c.translate(w.x, w.y); if (w.vx < 0) c.scale(-1, 1); const fl = Math.sin(t * 70) * 0.6;
+        if (lpHas('wespe')) { c.scale(-1, 1); c.rotate(Math.sin(t * 30) * 0.06); lpT(c, 'wespe', 0, 0, 46); c.restore(); return; }
         ell(c, -2, -10, 8, 5, -0.8 + fl); c.fillStyle = 'rgba(220,240,255,.85)'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = OL; c.stroke();
         ell(c, 0, 0, 12, 8); fs(c, '#ffd60a', 2.5); c.save(); ell(c, 0, 0, 12, 8); c.clip(); c.fillStyle = '#212529'; c.fillRect(-6, -9, 3, 18); c.fillRect(1, -9, 3, 18); c.restore();
         ell(c, 11, -1, 4.5, 4.5); fs(c, '#212529', 1.5); line(c, -12, 0, -17, 0, 2, OL, false); c.restore(); });

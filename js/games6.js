@@ -77,15 +77,15 @@ GAMES.auffangen = { challenge: true, make(env) {
     },
     draw(c) {
       kitchenBg(c, 470); txtGot(c, got, need);
-      drawPersonMini(c, 200, 120);
+      if (!lpT(c, 'koch', 200, 112, 70)) drawPersonMini(c, 200, 120);
       for (const o of items) { c.save(); c.translate(o.x, o.y); c.rotate(o.a);
         if (o.k === 'burnt') { c.rotate(-o.a); for (let k = 0; k < 3; k++) { const ph = (t * 1.4 + k / 3) % 1; ell(c, -8 + k * 8 + Math.sin(t * 3 + k) * 3, -14 - ph * 30, 6 + ph * 6, 6 + ph * 6); c.fillStyle = `rgba(60,60,60,${0.7 * (1 - ph)})`; c.fill(); } c.rotate(o.a);   /* angebrannt: tiefschwarz mit dickem Rauch */
           ell(c, 0, 0, 22, 12); fs(c, '#111', 3); line(c, -10, -3, -2, 2, 2, '#ff6b35', false); line(c, 4, -4, 12, 1, 2, '#ff6b35', false); }
-        else if (o.k === 'pfannkuchen') { ell(c, 0, 0, 22, 12); fs(c, '#f4c87a', 2.5); ell(c, 0, -2, 12, 6); c.fillStyle = '#e9a94f'; c.fill(); }
+        else if (o.k === 'pfannkuchen') { if (!lpT(c, 'pfannkuchen', 0, 0, 50, 28)) { ell(c, 0, 0, 22, 12); fs(c, '#f4c87a', 2.5); ell(c, 0, -2, 12, 6); c.fillStyle = '#e9a94f'; c.fill(); } }
         else drawIngr(c, o.k, 0, 0, 0.8);
         c.restore(); }
       // Pfanne
-      ell(c, px, 440, 52, 16); fs(c, '#343a40', 3); ell(c, px, 436, 42, 10); c.fillStyle = '#495057'; c.fill(); rrPath(c, px + 48, 432, 50, 10, 5); fs(c, '#8d5a3b', 2.5);
+      if (!lpT(c, 'pfanne', px + 38, 444, 190)) { ell(c, px, 440, 52, 16); fs(c, '#343a40', 3); ell(c, px, 436, 42, 10); c.fillStyle = '#495057'; c.fill(); rrPath(c, px + 48, 432, 50, 10, 5); fs(c, '#8d5a3b', 2.5); }
       fxText(c, fx);
     },
     down(x) { tx = clamp(x, 50, 350); }, move(x) { tx = clamp(x, 50, 350); },
@@ -117,7 +117,7 @@ GAMES.teelichter = { challenge: true, make(env) {
     draw(c) {
       glassBg(c, 140, t); txtGot(c, got, need);
       lights.forEach((q, i) => {
-        ell(c, q.x, q.y + 34, 58, 18); fs(c, '#a0673a', 3); rrPath(c, q.x - 6, q.y + 50, 12, 40, 3); fs(c, '#6b4423', 2);
+        if (!lpT(c, 'bistrotisch', q.x, q.y + 84, 126)) { ell(c, q.x, q.y + 34, 58, 18); fs(c, '#a0673a', 3); rrPath(c, q.x - 6, q.y + 50, 12, 40, 3); fs(c, '#6b4423', 2); }
         if (q.on) { ell(c, q.x, q.y - 8, 26, 30); c.fillStyle = `rgba(255,214,90,${0.25 + 0.1 * Math.sin(t * 7 + i)})`; c.fill(); }
         rrPath(c, q.x - 16, q.y + 8, 32, 18, 5); fs(c, 'rgba(220,240,255,.9)', 2.5); ell(c, q.x, q.y + 10, 12, 4); fs(c, '#fff', 1.5);
         line(c, q.x, q.y + 8, q.x, q.y, 2, OL, false);
@@ -180,7 +180,7 @@ GAMES.schmetterlinge = { challenge: true, make(env) {
     },
     draw(c) {
       terraceBg(c, 200, t);
-      c.fillStyle = '#74c69d'; c.fillRect(0, 200, GAME_W, GAME_H - 200);
+      if (!lpRasen(c, 200, GAME_H - 200)) { c.fillStyle = '#74c69d'; c.fillRect(0, 200, GAME_W, GAME_H - 200); }
       for (let k = 0; k < 18; k++) { const x = (k * 71) % 400, y = 230 + (k * 53) % 280; line(c, x, y, x, y - 14, 2, '#2d6a4f', false); ell(c, x, y - 16, 5, 5); c.fillStyle = ['#ef476f', '#fff', '#ffd166', '#c77dff'][k % 4]; c.fill(); }
       rrPath(c, 110, 18, 180, 40, 20); fs(c, '#fff', 3); txt(c, got + ' / ' + need, 250, 39, 17, BRAND.olive, 'center', null); drawFly(c, 150, 38, want[0], t, 0.8);
       bugs.forEach(b => { c.globalAlpha = Math.max(0, b.a); if (b.bee) drawBee(c, b.x, b.y, t); else drawFly(c, b.x, b.y, b.col[0], t + b.ph, 1.45, b.vx < 0); c.globalAlpha = 1; });
@@ -226,14 +226,15 @@ GAMES.sprenger = { make(env) {
       drops.forEach(d => (d.t += dt * 2.4)); drops = drops.filter(d => d.t < 1); fin.tick(dt);
     },
     draw(c) {
-      c.fillStyle = '#74c69d'; c.fillRect(0, 0, GAME_W, GAME_H);
-      for (let k = 0; k < 120; k++) { const x = (k * 67) % 400, y = (k * 113) % 520; line(c, x, y, x + 2, y - 7, 1.5, 'rgba(45,106,79,.35)', false); }
+      if (!lpRasen(c, 0, GAME_H)) { c.fillStyle = '#74c69d'; c.fillRect(0, 0, GAME_W, GAME_H); }
+      if (!lpHas('sprenger')) for (let k = 0; k < 120; k++) { const x = (k * 67) % 400, y = (k * 113) % 520; line(c, x, y, x + 2, y - 7, 1.5, 'rgba(45,106,79,.35)', false); }
       spots.forEach(s => { ell(c, s.x, s.y, s.r, s.r * 0.7); c.fillStyle = `rgba(${Math.round(176 - s.w * 60)},${Math.round(137 + s.w * 60)},${Math.round(84 + s.w * 50)},${1 - s.w * 0.9})`; c.fill(); if (s.w < 1) { c.lineWidth = 2; c.strokeStyle = 'rgba(120,80,40,.4)'; c.stroke(); } });
       const done = spots.filter(s => s.w >= 1).length; txtGot(c, done, n);
       drops.forEach(d => { const k = d.t, x = lerp(d.x, d.tx, k), y = lerp(d.y, d.ty, k) - Math.sin(k * Math.PI) * 50; ell(c, x, y, 3, 3); c.fillStyle = 'rgba(160,220,255,.9)'; c.fill(); });
       // Sprenger
-      ell(c, sx, sy, 30, 12); fs(c, '#495057', 3); c.save(); c.translate(sx, sy - 14); c.rotate(ang + Math.PI / 2); rrPath(c, -6, -30, 12, 30, 5); fs(c, '#ffd166', 2.5); c.restore();
-      ell(c, sx, sy - 14, 10, 10); fs(c, '#118ab2', 2.5);
+      if (lpHas('sprenger')) { c.save(); c.translate(sx, sy - 14); c.rotate(ang + Math.PI / 2); rrPath(c, -5, -32, 10, 32, 5); fs(c, '#adb5bd', 2.5); c.restore(); lpT(c, 'sprenger', sx, sy - 10, 64); }
+      else { ell(c, sx, sy, 30, 12); fs(c, '#495057', 3); c.save(); c.translate(sx, sy - 14); c.rotate(ang + Math.PI / 2); rrPath(c, -6, -30, 12, 30, 5); fs(c, '#ffd166', 2.5); c.restore();
+      ell(c, sx, sy - 14, 10, 10); fs(c, '#118ab2', 2.5); }
       if (!aiming) { const p = tip(); ell(c, p.x, p.y, 16, 16); c.lineWidth = 2.5; c.strokeStyle = 'rgba(255,255,255,.8)'; c.stroke(); }
     },
     down(x, y) { aiming = true; this.move(x, y); },
@@ -339,11 +340,11 @@ GAMES.parkschein = { make(env) {
     draw(c) {
       asphaltBg(c, t);
       // Automat
-      rrPath(c, 110, 50, 180, 300, 16); fs(c, '#1c7ed6', 3.5); rrPath(c, 126, 70, 148, 70, 8); fs(c, '#0b3d2e', 3);
+      const lpA = lpT(c, 'automat2', 200, 186, 204, 312); if (!lpA) { rrPath(c, 110, 50, 180, 300, 16); fs(c, '#1c7ed6', 3.5); rrPath(c, 126, 70, 148, 70, 8); fs(c, '#0b3d2e', 3); }
       txt(c, eur(price), 200, 96, 26, '#80ed99', 'center', null);
       if (L === 0) { const n = price / 100, gw = Math.min(26, 140 / n); for (let k = 0; k < n; k++) { const x = 200 + (k - (n - 1) / 2) * gw; ell(c, x, 126, gw * 0.38, gw * 0.38); fs(c, k < paid / 100 ? '#ffd166' : 'rgba(255,255,255,.18)', 1.5, '#b7e4c7'); } }   // Leicht: ein Kreis je Euro, füllt sich beim Bezahlen
       else txt(c, 'bezahlt: ' + eur(paid), 200, 126, 13, '#b7e4c7', 'center', null);
-      txt(c, 'P', 150, 180, 40, '#fff', 'center', null); rrPath(c, 230, 160, 40, 8, 4); fs(c, '#212529', 2); rrPath(c, 140, 300, 120, 14, 6); fs(c, '#212529', 2);
+      if (!lpA) { txt(c, 'P', 150, 180, 40, '#fff', 'center', null); rrPath(c, 230, 160, 40, 8, 4); fs(c, '#212529', 2); rrPath(c, 140, 300, 120, 14, 6); fs(c, '#212529', 2); }
       if (ticket > 0) { rrPath(c, 150, 304 + (1 - ticket) * 30, 100, 40, 4); fs(c, '#fff', 2.5); txt(c, 'Parkschein', 200, 320 + (1 - ticket) * 30, 11, BRAND.olive, 'center', null); }
       roundDots(c, rounds, round, 26);
       flying.forEach(f => drawCoin(c, lerp(f.x, 250, f.t), lerp(f.y, 164, f.t) - Math.sin(f.t * Math.PI) * 60, f.v, 1 - f.t * 0.4));

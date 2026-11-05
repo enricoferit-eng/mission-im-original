@@ -90,7 +90,7 @@ GAMES.ruehren = { make(env) {
         rrPath(c, p.x - 40, p.y + 52, 80, 10, 5); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); rrPath(c, p.x - 40, p.y + 52, 80 * p.heat, 10, 5); c.fillStyle = p.heat > 0.75 ? '#ef476f' : p.heat > 0.5 ? '#ffd166' : '#06d6a0'; c.fill();
         c.restore();
       });
-      if (drag) { const p = P[drag.i]; c.save(); c.translate(drag.x, drag.y); c.rotate(-0.6); rrPath(c, -5, -70, 10, 80, 5); fs(c, '#c08b55', 2.5); ell(c, 0, 12, 10, 14); fs(c, '#c08b55', 2.5); c.restore(); }
+      if (drag) { const p = P[drag.i]; c.save(); c.translate(drag.x, drag.y); c.rotate(-0.6); if (!lpT(c, 'holzloeffel', 0, -22, 30, 100)) { rrPath(c, -5, -70, 10, 80, 5); fs(c, '#c08b55', 2.5); ell(c, 0, 12, 10, 14); fs(c, '#c08b55', 2.5); } c.restore(); }
     },
     down(x, y) { const i = P.findIndex(p => dist(x, y, p.x, p.y) < 60); if (i >= 0) { drag = { i, x, y }; last = { x, y }; } },
     move(x, y) {
@@ -126,7 +126,7 @@ GAMES.ueberkochen = { make(env) {
         ell(c, p.x, p.y + 40, 56, 14); c.fillStyle = p.on ? `rgba(239,71,111,${0.3 + p.foam * 0.5})` : 'rgba(0,0,0,.2)'; c.fill();
         pot(c, p.x + jig, p.y, 44, '#dee2e6');
         if (p.on || p.spill) { const f = p.spill ? 1 : p.foam; for (let k = 0; k < 7; k++) { ell(c, p.x - 36 + k * 12 + jig, p.y - 18 - f * 26 - (k % 2) * 4, 10 + f * 4, 8 + f * 4); c.fillStyle = '#fff'; c.fill(); } if (p.spill) for (let k = 0; k < 4; k++) { ell(c, p.x - 46 + k * 30, p.y + 30 + (k % 2) * 6, 14, 6); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); } }
-        c.save(); c.translate(p.x + jig, p.y - 26 - (p.on ? p.foam * 30 + Math.abs(Math.sin(t * 25)) * p.foam * 10 : 0) - p.lid * 60); c.rotate(p.lid * 0.6); ell(c, 0, 0, 46, 12); fs(c, '#adb5bd', 3); rrPath(c, -8, -14, 16, 10, 4); fs(c, '#212529', 2); c.restore();
+        c.save(); c.translate(p.x + jig, p.y - 26 - (p.on ? p.foam * 30 + Math.abs(Math.sin(t * 25)) * p.foam * 10 : 0) - p.lid * 60); c.rotate(p.lid * 0.6); if (!lpT(c, 'deckel', 0, -8, 104)) { ell(c, 0, 0, 46, 12); fs(c, '#adb5bd', 3); rrPath(c, -8, -14, 16, 10, 4); fs(c, '#212529', 2); } c.restore();
         if (p.on && p.foam > 0.6) txt(c, '!', p.x + 50, p.y - 50, 26, '#ef476f', 'center', '#fff');
       });
     },
